@@ -250,9 +250,12 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 			cdp?.close();
 			// Only a browser this process started is this process's to stop.
 			chrome?.process?.kill();
+			// A confined browser (snap, flatpak) keeps its profile where it is allowed to, not where it was asked for.
+			const usedProfile = chrome?.profileDir ?? ownProfile;
 			cdp = undefined;
 			chrome = undefined;
-			if (ownProfile) rmSync(ownProfile, { recursive: true, force: true });
+			// Windows holds on to a profile's files for a moment after its browser is gone.
+			if (ownProfile && usedProfile) rmSync(usedProfile, { recursive: true, force: true, maxRetries: 3 });
 			return undefined;
 		}),
 	);
