@@ -386,3 +386,7 @@ export function htmlToText(html: string, baseUrl?: string): ReadablePage {
 	const needsJavaScript = text.length < 200 && scripts > 0 && html.length > 2000;
 	return { title, text, needsJavaScript };
 }
+
+/** For callers that read structure instead of text, such as the search result parsers. */
+export const findElements = find;
+export const elementText = (node: HtmlNode): string => squash(plainText(node));

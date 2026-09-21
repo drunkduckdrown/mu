@@ -42,6 +42,7 @@ import { registerSwarm, type SwarmRunner } from "./features/swarm.ts";
 import { registerSwarmChild } from "./features/swarm-child.ts";
 import { registerTools } from "./features/tools.ts";
 import { registerWarming } from "./features/warming.ts";
+import { registerWeb } from "./features/web.ts";
 import { registerWelcome } from "./features/welcome.ts";
 import type { PresentationListener } from "./presentation.ts";
 import { KyrnRuntime, recentTurnDigests } from "./runtime.ts";
@@ -85,7 +86,8 @@ export type FeatureName =
 	| "hive"
 	| "tools"
 	| "browser"
-	| "background";
+	| "background"
+	| "web";
 
 export function createKyrnJudgeExtension(options: KyrnJudgeExtensionOptions = {}): (pi: ExtensionAPI) => void {
 	return (pi) => registerKyrn(pi, options);
@@ -152,6 +154,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["tools", registerTools],
 		["browser", registerBrowser],
 		["background", registerBackground],
+		["web", registerWeb],
 	];
 	for (const [name, register] of features) {
 		if (!options.only || options.only.includes(name)) register(runtime);
