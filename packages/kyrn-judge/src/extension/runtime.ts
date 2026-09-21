@@ -4,6 +4,7 @@ import { CapabilityCatalog } from "../catalog/catalog.ts";
 import { featureOptions, type KyrnConfig } from "../config.ts";
 import { DecisionEngine, type DecisionMode } from "../decision.ts";
 import type { PreflightOutcome, TaskFrame } from "../decisions/input-preflight.ts";
+import type { NotifyFn } from "../decisions/notify-routing.ts";
 import { JudgeError } from "../errors.ts";
 import { compactFrame, type Frame, type FrameState, isStale } from "../frame/frame.ts";
 import type { JudgeLike } from "../judge.ts";
@@ -275,6 +276,9 @@ export class KyrnRuntime {
 
 	/** Whoever shows the time between a message and its turn sets this; nobody has to. */
 	onProgress?: (step: string) => void;
+
+	/** Set by the notify feature: tells the model of an event from outside the conversation now, at the next turn, or never. */
+	notify?: NotifyFn;
 
 	/** Says what is being worked out before the turn starts ("choosing skills"). Showing it is best effort. */
 	progress(step: string): void {

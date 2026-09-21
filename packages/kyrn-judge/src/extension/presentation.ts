@@ -27,6 +27,12 @@ export interface KyrnPresentationEvent {
 		| "diagnostics.delivered"
 		| "diagnostics.held"
 		| "diagnostics.dropped"
+		| "background.start"
+		| "background.exit"
+		| "background.stop"
+		| "background.match"
+		| "web.fetch"
+		| "web.search"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;

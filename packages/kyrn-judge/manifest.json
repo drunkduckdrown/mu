@@ -1613,6 +1613,235 @@
 			]
 		},
 		{
+			"name": "background",
+			"title": {
+				"zh": "后台命令",
+				"en": "Background commands"
+			},
+			"summary": {
+				"zh": "bg_start / bg_output / bg_stop：开发服务器、长时间构建不占用回合；结束时是否打断交给“通知分流”；会话结束时全部终止。",
+				"en": "bg_start / bg_output / bg_stop: dev servers and long builds without blocking the turn. Whether the end of a job interrupts is decided by notification routing; every job stops with the session."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "maxJobs",
+					"kind": "number",
+					"default": 8,
+					"min": 1,
+					"max": 32,
+					"label": {
+						"zh": "同时运行的任务上限",
+						"en": "Jobs running at the same time"
+					}
+				},
+				{
+					"key": "bufferChars",
+					"kind": "number",
+					"default": 262144,
+					"min": 10000,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "每个任务留在内存里的输出",
+						"en": "Output kept in memory per job"
+					},
+					"help": {
+						"zh": "只留最新的；完整输出在日志文件里。",
+						"en": "The newest is kept; the log file has everything."
+					}
+				},
+				{
+					"key": "maxOutputChars",
+					"kind": "number",
+					"default": 20000,
+					"min": 1000,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "bg_output 单次返回上限",
+						"en": "Most that one bg_output returns"
+					}
+				},
+				{
+					"key": "killGraceMs",
+					"kind": "number",
+					"default": 3000,
+					"min": 0,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "强制终止前的等待",
+						"en": "Wait before a job is killed by force"
+					},
+					"help": {
+						"zh": "先发 SIGTERM（Windows 上是不带 /F 的 taskkill），超时后强制。",
+						"en": "SIGTERM first (taskkill without /F on Windows), force after this long."
+					}
+				},
+				{
+					"key": "logDir",
+					"kind": "text",
+					"default": "",
+					"label": {
+						"zh": "日志目录",
+						"en": "Log directory"
+					},
+					"help": {
+						"zh": "留空为 ~/.mu/jobs/<会话 id>，7 天后清理。",
+						"en": "Empty means ~/.mu/jobs/<session id>, cleared after 7 days."
+					}
+				},
+				{
+					"key": "inheritShell",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "沿用前台 shell 设置",
+						"en": "Use the foreground shell settings"
+					},
+					"help": {
+						"zh": "读取 settings.json 的 shellPath 和 shellCommandPrefix，与 bash 工具一致。",
+						"en": "Reads shellPath and shellCommandPrefix from settings.json, like the bash tool."
+					}
+				},
+				{
+					"key": "wakeWhenIdle",
+					"kind": "boolean",
+					"default": false,
+					"label": {
+						"zh": "空闲时任务结束可唤醒代理",
+						"en": "A finished job may wake an idle agent"
+					},
+					"help": {
+						"zh": "只有判定为“立刻”时才会开始新回合；关闭时只留一条消息。",
+						"en": "Only a verdict of \"now\" starts a turn; when off the notice is only appended."
+					}
+				}
+			]
+		},
+		{
+			"name": "web",
+			"title": {
+				"zh": "网页读取与搜索",
+				"en": "Web reading and search"
+			},
+			"summary": {
+				"zh": "web_fetch 把网页读成文字（限时限量，拒绝内网地址，页面文字标为不可信）；web_search 用国内不需要密钥就能访问的搜索源。",
+				"en": "web_fetch reads a page as text (time and size limits, internal addresses refused, page text labelled untrusted); web_search uses a source that answers from mainland China without a key."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "search",
+					"kind": "text",
+					"default": "so",
+					"label": {
+						"zh": "搜索源",
+						"en": "Search source"
+					},
+					"help": {
+						"zh": "so（360）、sogou、bing-cn、searxng:<地址>，或带 {query} 的网址。",
+						"en": "so (360), sogou, bing-cn, searxng:<base url>, or a URL with {query} in it."
+					}
+				},
+				{
+					"key": "searchFallback",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "失败时换用其他内置源",
+						"en": "Try the other built-in sources on failure"
+					},
+					"help": {
+						"zh": "遇到验证页、没有结果或结果与查询无关时生效。",
+						"en": "Applies to a verification page, no results, or results unrelated to the query."
+					}
+				},
+				{
+					"key": "maxChars",
+					"kind": "number",
+					"default": 20000,
+					"min": 500,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "web_fetch 单次返回上限",
+						"en": "Most that one web_fetch returns"
+					}
+				},
+				{
+					"key": "timeoutMs",
+					"kind": "number",
+					"default": 20000,
+					"min": 1000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "单次请求时限",
+						"en": "Time limit of one request"
+					}
+				},
+				{
+					"key": "maxBytes",
+					"kind": "number",
+					"default": 2000000,
+					"min": 10000,
+					"label": {
+						"zh": "下载上限（字节）",
+						"en": "Download limit (bytes)"
+					}
+				},
+				{
+					"key": "maxRedirects",
+					"kind": "number",
+					"default": 5,
+					"min": 0,
+					"max": 20,
+					"label": {
+						"zh": "最多跟随的重定向",
+						"en": "Redirects followed"
+					}
+				},
+				{
+					"key": "allowLoopback",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "允许读取本机开发服务器",
+						"en": "Allow this machine's dev servers"
+					},
+					"help": {
+						"zh": "仅当网址直接写 localhost 或 127.0.0.1 时；从外部网页重定向过来的一律拒绝。",
+						"en": "Only when the URL itself says localhost or 127.0.0.1; a redirect from the web is always refused."
+					}
+				},
+				{
+					"key": "allowPrivate",
+					"kind": "boolean",
+					"default": false,
+					"label": {
+						"zh": "允许内网地址",
+						"en": "Allow private network addresses"
+					},
+					"help": {
+						"zh": "10/8、172.16/12、192.168/16、链路本地等。默认拒绝，防止网页诱导读取内网。",
+						"en": "10/8, 172.16/12, 192.168/16, link-local and the like. Refused by default so a page cannot steer the reader into the local network."
+					}
+				}
+			]
+		},
+		{
 			"name": "welcome",
 			"title": {
 				"zh": "欢迎页",

@@ -1,4 +1,4 @@
-import { notifyRouting } from "../../decisions/notify-routing.ts";
+import { type NotifyFn, notifyRouting } from "../../decisions/notify-routing.ts";
 import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
 
 /**
@@ -7,24 +7,29 @@ import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
  * The first source is the context budget; file watchers and background tasks
  * plug in through `notify`.
  */
-export function registerNotify(runtime: KyrnRuntime): (event: string) => Promise<void> {
+export function registerNotify(runtime: KyrnRuntime): NotifyFn {
 	const options = runtime.options("notify", { enabled: true, budgetThresholds: [70, 85] });
 	const { pi } = runtime;
 	const announced = new Set<number>();
 
-	const notify = async (event: string): Promise<void> => {
-		if (!options.enabled) return;
+	const notify: NotifyFn = async (event, extra = {}) => {
+		if (!options.enabled) return "drop";
 		const decision = await runtime.engine.decide(notifyRouting, {
 			event,
 			goal: runtime.taskFrame()?.goal ?? "",
 			currentAction: clip(runtime.lastAssistantText, 300),
 		});
-		if (decision.source !== "judge" || decision.outcome === "drop") return;
-		pi.sendMessage(
-			{ customType: "kyrn.notice", content: event, display: true },
-			{ deliverAs: decision.outcome === "now" ? "steer" : "nextTurn" },
-		);
+		const outcome = decision.source === "judge" ? decision.outcome : (extra.unjudged ?? "drop");
+		if (outcome === "drop") return outcome;
+		const message = { customType: "kyrn.notice", content: extra.content ?? event, display: true };
+		if (outcome === "next_turn") pi.sendMessage(message, { deliverAs: "nextTurn" });
+		// Steering an idle agent only appends the message; waking it is for the source to allow.
+		else if (extra.wake && (runtime.ctx?.isIdle() ?? false)) pi.sendMessage(message, { triggerTurn: true });
+		else pi.sendMessage(message, { deliverAs: "steer" });
+		return outcome;
 	};
+	// Background jobs, file watchers and the like plug in here.
+	runtime.notify = notify;
 
 	if (options.enabled) {
 		pi.on(

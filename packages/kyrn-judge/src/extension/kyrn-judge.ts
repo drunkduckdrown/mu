@@ -22,6 +22,7 @@ import type { DecisionMode } from "../decision.ts";
 import { Judge } from "../judge.ts";
 import type { JudgeProvider } from "../types.ts";
 import { registerAdmission } from "./features/admission.ts";
+import { registerBackground } from "./features/background.ts";
 import { registerBrowser } from "./features/browser.ts";
 import { registerCatalog } from "./features/catalog.ts";
 import { registerCommands } from "./features/commands.ts";
@@ -47,6 +48,7 @@ import { registerSwarmChild } from "./features/swarm-child.ts";
 import { registerTools } from "./features/tools.ts";
 import { registerTtsr } from "./features/ttsr.ts";
 import { registerWarming } from "./features/warming.ts";
+import { registerWeb } from "./features/web.ts";
 import { registerWelcome } from "./features/welcome.ts";
 import type { PresentationListener } from "./presentation.ts";
 import { KyrnRuntime, recentTurnDigests } from "./runtime.ts";
@@ -101,7 +103,9 @@ export type FeatureName =
 	| "tools"
 	| "browser"
 	| "inherit"
-	| "mcp";
+	| "mcp"
+	| "background"
+	| "web";
 
 export function createKyrnJudgeExtension(options: KyrnJudgeExtensionOptions = {}): (pi: ExtensionAPI) => void {
 	return (pi) => registerKyrn(pi, options);
@@ -177,6 +181,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["browser", registerBrowser],
 		["inherit", (shared) => registerInherit(shared, roots)],
 		["mcp", (shared) => registerMcp(shared, roots, options.mcp)],
+		["background", registerBackground],
+		["web", registerWeb],
 	];
 	for (const [name, register] of features) {
 		if (!options.only || options.only.includes(name)) register(runtime);

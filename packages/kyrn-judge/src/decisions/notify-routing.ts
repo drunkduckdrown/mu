@@ -14,6 +14,22 @@ export interface NotifyInput {
 
 export type NotifyOutcome = "now" | "next_turn" | "drop";
 
+export interface NoticeOptions {
+	/** What the model reads when the notice is delivered. The judge only sees the one-line event. */
+	readonly content?: string;
+	/**
+	 * Delivery without a verdict (the decision is off or in shadow, the judge is unreachable). The default
+	 * is `drop`: a notice that exists only because of the judge must not appear without it. A source whose
+	 * events the model has to hear of anyway (a background job that ended) passes `next_turn`.
+	 */
+	readonly unjudged?: NotifyOutcome;
+	/** Let a `now` verdict start a turn when the agent is idle. */
+	readonly wake?: boolean;
+}
+
+/** The router of `features/notify.ts`, as other features see it. Resolves to what was done with the event. */
+export type NotifyFn = (event: string, options?: NoticeOptions) => Promise<NotifyOutcome>;
+
 export const notifyRouting = defineDecision({
 	id: "notify.routing",
 	version: 1,
