@@ -9,6 +9,7 @@
 #   mu ledger [n] [--json]   what the judge decided in the last n sessions
 #   mu doctor                check the installation
 #   mu link | unlink         put the `mu` command on your PATH (~/.local/bin) | remove it
+#   mu migrate [--dry-run]   once: move the home from before the rename, ~/.kyrn, to ~/.mu
 #   mu help | version
 #
 # Everything else goes to the agent unchanged: `mu --help` lists every flag,
@@ -36,11 +37,11 @@ done
 ROOT="$(cd -P "$(dirname "$SOURCE")/../.." && pwd)"
 BIN="$ROOT/kyrn/bin"
 LINK="${MU_LINK_DIR:-${KYRN_LINK_DIR:-$HOME/.local/bin}}/mu"
-# The home moves from ~/.kyrn to ~/.mu in one step, by hand. Until then the old one stays in use,
+# The home moves from ~/.kyrn to ~/.mu in one step (`mu migrate`). Until then the old one stays in use,
 # and ~/.mu is never created next to it: two homes would mean two logins and two session lists.
 if [[ -d "$HOME/.mu" || ! -d "$HOME/.kyrn" ]]; then MU_DIR="$HOME/.mu"; else MU_DIR="$HOME/.kyrn"; fi
 
-usage() { sed -n '2,15p' "$BIN/mu" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,16p' "$BIN/mu" | sed 's/^# \{0,1\}//'; }
 
 # Where a path really is, through any chain of links.
 real_path() {
@@ -94,10 +95,68 @@ ensure_app_dir() {
   export PI_PACKAGE_DIR="$app"
 }
 
+# ~/.kyrn becomes ~/.mu: one rename of the whole folder, so nothing inside is opened, copied or rewritten,
+# and the login files keep their permissions. The old path stays behind as a link, because the desktop app's
+# session mappings store absolute paths into it.
+migrate() {
+  local old="$HOME/.kyrn" new="$HOME/.mu" dry="" busy="" pid found
+  [[ "${1:-}" == "--dry-run" ]] && dry=1
+  if [[ -L "$old" ]]; then
+    echo "Already moved: $old is a link to $(readlink "$old")."
+    return 0
+  fi
+  if [[ ! -d "$old" ]]; then
+    echo "Nothing to move: there is no $old."
+    return 0
+  fi
+  if [[ -e "$new" || -L "$new" ]]; then
+    echo "$new already exists, so nothing was moved. Two homes are never merged or overwritten here:" >&2
+    echo "look at both folders and decide which one is the real one." >&2
+    return 1
+  fi
+  # Whatever is running would write into the gap between the rename and the link, and split the home in two.
+  pid="$(cat "$old/local-judge/judge.pid" 2>/dev/null || true)"
+  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+    busy+="  the local judge (pid $pid). Stop it: mu judge stop"$'\n'
+  fi
+  found="$(pgrep -f "kyrn-judge/src/extension/kyrn-judge.ts" 2>/dev/null | tr '\n' ' ' || true)"
+  [[ -n "$found" ]] && busy+="  mu sessions, in a terminal or behind the desktop app (pid $found). Close them."$'\n'
+  found="$(pgrep -f "$old/browser-profile" 2>/dev/null | tr '\n' ' ' || true)"
+  [[ -n "$found" ]] && busy+="  the mu browser (pid $found). Close it."$'\n'
+  found="$(pgrep -x aioncore 2>/dev/null | tr '\n' ' ' || true)"
+  [[ -n "$found" ]] && busy+="  the desktop app's backend (pid $found). Quit the desktop app."$'\n'
+  if [[ -n "$busy" ]]; then
+    echo "Nothing was moved, because these are still using $old:" >&2
+    printf '%s' "$busy" >&2
+    return 1
+  fi
+  if [[ -n "$dry" ]]; then
+    echo "Would move   $old -> $new"
+    [[ -f "$old/agent/kyrn.json" && ! -e "$old/agent/mu.json" ]] && echo "Would rename $new/agent/kyrn.json -> mu.json"
+    echo "Would link   $old -> $new"
+    echo "Nothing was changed."
+    return 0
+  fi
+  mv "$old" "$new"
+  ln -s "$new" "$old"
+  echo "moved    $old -> $new"
+  if [[ -f "$new/agent/kyrn.json" && ! -e "$new/agent/mu.json" ]]; then
+    mv "$new/agent/kyrn.json" "$new/agent/mu.json"
+    echo "renamed  $new/agent/kyrn.json -> mu.json"
+  fi
+  echo "linked   $old -> $new (paths stored from before the rename keep working)"
+  echo "Check it: mu doctor"
+}
+
 case "${1:-}" in
   help)
     usage
     exit 0
+    ;;
+  migrate)
+    shift
+    migrate "$@"
+    exit $?
     ;;
   judge)
     shift

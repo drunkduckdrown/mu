@@ -43,6 +43,9 @@ try {
 row(linked ? "ok" : "--", "command", linked ? `${tilde(link)} -> ${tilde(linked)}` : `not on PATH yet: ${join(root, "kyrn/bin/mu")} link`);
 
 row("--", "home", tilde(agentDir));
+if (home === ".kyrn" && agentDir.startsWith(join(homedir(), ".kyrn"))) {
+	row("--", "", "this home is from before the rename: `mu migrate` moves it to ~/.mu (`--dry-run` to look first)");
+}
 row(
 	existsSync(join(agentDir, "auth.json")) ? "ok" : "fix",
 	"login",
