@@ -15,10 +15,15 @@ import type { CdpConnection } from "./cdp.ts";
  * DevTools protocol the loop uses (`Target.*` to open, attach and close a tab,
  * then page-level methods), and a few methods of its own under `Mu.`:
  *
- *   Mu.hello    -> { embedded: true, version }   tells the app apart from a plain Chrome
+ *   Mu.hello    { version, session } -> { embedded: true, version }   tells the app apart from a plain Chrome
+ *   Mu.run      { state, goal, url } | { state, status, reason }      what the run is for, and how it ended
  *   Mu.control  -> { paused, stop }              asked before every step
  *   Mu.confirm  { label, url } -> { allowed }    the app's own dialog for irreversible actions
  *   Mu.step     { ...record }                    one line for the live overlay; no answer needed
+ *
+ * `session` is the app's name for the conversation this harness process serves (`MU_DESKTOP_SESSION`, set by
+ * the app's adapter), so the tab opens beside the right conversation. Everything about one run is sent with
+ * that tab's DevTools session id, because several runs can share one connection.
  */
 export const ADVERT_FILE = "desktop-browser.json";
 const PROTOCOL_VERSION = 1;
@@ -85,34 +90,55 @@ export interface EmbeddedControl {
 /** The app's side of a run. Every call is best effort: a closed panel must not take the run down with it. */
 export class EmbeddedBrowser {
 	private readonly cdp: CdpConnection;
+	private readonly tab: string | undefined;
 
-	private constructor(cdp: CdpConnection) {
+	private constructor(cdp: CdpConnection, tab?: string) {
 		this.cdp = cdp;
+		this.tab = tab;
 	}
 
-	/** Undefined when the other end is a plain browser, or an app speaking a newer protocol. */
-	static async handshake(cdp: CdpConnection): Promise<EmbeddedBrowser | undefined> {
+	/** Undefined when the other end is a plain browser, an app speaking a newer protocol, or an app with no conversation on screen. */
+	static async handshake(
+		cdp: CdpConnection,
+		env: Readonly<Record<string, string | undefined>> = process.env,
+	): Promise<EmbeddedBrowser | undefined> {
 		try {
-			const hello = await cdp.send("Mu.hello", { version: PROTOCOL_VERSION }, undefined, 2000);
+			const session = muEnv("DESKTOP_SESSION", env);
+			const hello = await cdp.send(
+				"Mu.hello",
+				session ? { version: PROTOCOL_VERSION, session } : { version: PROTOCOL_VERSION },
+				undefined,
+				2000,
+			);
 			return hello.embedded === true && hello.version === PROTOCOL_VERSION ? new EmbeddedBrowser(cdp) : undefined;
 		} catch {
 			return undefined;
 		}
 	}
 
+	/** The same app, speaking about one tab: pass the tab's DevTools session id. */
+	forTab(sessionId: string): EmbeddedBrowser {
+		return new EmbeddedBrowser(this.cdp, sessionId);
+	}
+
+	/** What the run is for, and later how it ended, so the app can say more than "finished". */
+	run(report: Readonly<Record<string, unknown>>): void {
+		this.cdp.send("Mu.run", { ...report }, this.tab, 2000).catch(() => undefined);
+	}
+
 	async control(): Promise<EmbeddedControl> {
 		try {
-			const state = await this.cdp.send("Mu.control", {}, undefined, 2000);
+			const state = await this.cdp.send("Mu.control", {}, this.tab, 2000);
 			return { paused: state.paused === true, stop: state.stop === true };
 		} catch {
 			return { paused: false, stop: false };
 		}
 	}
 
-	/** The person at the app decides. No answer within the app's own time limit means no. */
+	/** The person at the app decides. The app says no by itself after 120 s; waiting a little longer lets that answer arrive. */
 	async confirm(label: string, url: string): Promise<boolean> {
 		try {
-			const answer = await this.cdp.send("Mu.confirm", { label, url }, undefined, 120_000);
+			const answer = await this.cdp.send("Mu.confirm", { label, url }, this.tab, 125_000);
 			return answer.allowed === true;
 		} catch {
 			return false;
@@ -120,7 +146,7 @@ export class EmbeddedBrowser {
 	}
 
 	step(record: Readonly<Record<string, unknown>>): void {
-		this.cdp.send("Mu.step", { ...record }, undefined, 2000).catch(() => undefined);
+		this.cdp.send("Mu.step", { ...record }, this.tab, 2000).catch(() => undefined);
 	}
 
 	/**

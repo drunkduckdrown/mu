@@ -1,6 +1,6 @@
 # 应用内浏览器 × UltraFast 判定循环
 
-更新日期：2026-09-22。状态：harness 一侧已完成并测试（提交 `e0a74b713`）；桌面端一侧（本文第 3 节的桥）进行中。两侧按本文的协议对接。
+更新日期：2026-09-22（第二版）。状态：harness 一侧已完成并测试；桌面端的桥已在分支 `claude/mu-browser` 上完成，并用 harness 自己的 `CdpConnection` / `BrowserSession` / `runBrowserTask` / `EmbeddedBrowser` 在真实 Electron 里端到端跑通（35 项检查），尚未合入桌面端主干。第二版按联调结果补了：对话归属、逐标签页寻址、`Mu.run`、键盘被拒的处理、确认等待时长、桥会拒绝的方法。
 
 ## 1. 要解决什么
 
@@ -18,7 +18,10 @@ mu 的 `browse` 工具移植自 browser-use/jev-ultrafast：主模型只说一�
 
 - `packages/kyrn-judge/src/browser/embedded.ts`：发现端点、握手、控制、确认、逐步通知。
 - 发现顺序：环境变量 `MU_BROWSER_ENDPOINT`（旧名 `KYRN_BROWSER_ENDPOINT` 也认）→ 数据目录里的 `desktop-browser.json`（内容 `{ "url": "ws://127.0.0.1:<端口>/<令牌>", "pid": <应用主进程号> }`）。只接受回环地址的 `ws://`；`pid` 对应的进程不在了就当没有。
-- 连上后先发 `Mu.hello`。对方不认识这个方法（普通 Chrome）或版本不符，就退回 mu 自己的浏览器。
+- 连上后先发 `Mu.hello`，带上 `session`：应用的适配器启动 harness 时设置的 `MU_DESKTOP_SESSION`（应用里这个对话的标识），桥据此把标签页开在对应对话旁边。终端里直接运行的 mu 没有这个变量，就不带。对方不认识这个方法（普通 Chrome）、版本不符、或回答 `embedded: false`（应用开着但没有可以放页面的对话），都退回 mu 自己的浏览器。
+- 一次运行里所有 `Mu.` 调用都带上该标签页的 DevTools `sessionId`：同一条连接上可以有多次运行，桥靠它区分。
+- 运行开始和结束各发一次 `Mu.run`，应用因此能显示目标，结束时能显示真实的结局与原因，而不只是“已结束”。
+- 键盘类命令（`Input.dispatchKeyEvent`、`Input.insertText`）被桥以“页面没有拿到键盘”拒绝时，当作页面已变（`StalePage`）：重新观察、重新判断，而不是让整次运行失败。次数受判断预算约束。
 - 子代理（`KYRN_SWARM_DEPTH`）不用应用内浏览器：几个子代理抢一个面板没有意义。
 - 功能开关：`features.browser.embedded`（默认开）。
 - 展示事件：`browser.run`（开始 / 结束及状态）和 `browser.step`（步号、操作类型、目标标签、URL、概率、页面是否变化）。标签来自网页，是不可信文本，只能当文字显示。
@@ -50,9 +53,10 @@ harness 实际用到的方法以 `packages/kyrn-judge/src/browser/session.ts` �
 
 | 方法 | 应答 | 说明 |
 | --- | --- | --- |
-| `Mu.hello { version }` | `{ embedded: true, version: 1 }` | 握手 |
+| `Mu.hello { version, session? }` | `{ embedded: boolean, version: 1 }` | 握手。`session` 是应用里的对话标识（只含字母、数字、`_`、`-`，最长 80）。没有可放页面的对话时 `embedded: false` |
+| `Mu.run { state: "started", goal, url }` / `{ state: "finished", status, reason? }` | `{}` | 目标与结局。`status` 取 `done` / `blocked` / `budget` / `needs_confirmation` / `aborted` / `read` / `failed`。可选：不发的话桥只能如实显示“已结束”（用户按了停止或拒绝了确认这两种它自己看得见） |
 | `Mu.control {}` | `{ paused: boolean, stop: boolean }` | harness 每一步之前都会问。`paused` 期间 harness 每 400 ms 再问一次；`stop` 为真则本次运行以“已中止”结束。新一次运行开始时（下一个 `Target.createTarget`）两者复位 |
-| `Mu.confirm { label, url }` | `{ allowed: boolean }` | 弹出应用内确认框：“mu 想执行：<label>”，显示页面地址。120 秒内没人回答视为拒绝。`label` 是网页文本，只能当纯文本显示 |
+| `Mu.confirm { label, url }` | `{ allowed: boolean }` | 弹出应用内确认框：“mu 想执行：<label>”，显示页面地址。120 秒内没人回答视为拒绝；harness 等 125 秒，好让这个“拒绝”先到。`label` 是网页文本，只能当纯文本显示 |
 | `Mu.step { step, kind, action, url, probability, pageChanged }` | `{}` | 给页面上方的实时步骤条用，不需要等待 |
 
 ### 3.4 安全要求
@@ -62,9 +66,23 @@ harness 实际用到的方法以 `packages/kyrn-judge/src/browser/session.ts` �
 - 浏览页面用独立的 session 分区（例如 `persist:mu-browser`），与应用自身的渲染进程、与用户的系统浏览器都隔离；不给页面任何 Node 能力。
 - 只允许 `http:` / `https:` 导航；下载、权限请求（摄像头、定位等）默认拒绝。
 - 用户正在手动操作同一个页面时（接管），桥把 `paused` 置真，避免人与循环同时点。
+- 页面会话里桥会拒绝：`Target.*`、`Browser.*`、`Page.setDownloadBehavior`、`DOM.setFileInputFiles`，以及非 `http(s)` 的 `Page.navigate`。
+- Chromium 把协议发来的按键和文字送给“窗口里拿着键盘焦点的东西”，而不是命令指名的页面。桥在发键盘类命令之前先把焦点放到该页面上；放不上去就拒绝（错误文本含 `does not hold the keyboard`），宁可不输入，也不输入到应用自己的消息框里。
+- 页面丢失之后（崩溃、被 DevTools 抢走、连接断开），`Mu.control` 回答 `stop: true`，循环在下一步之前结束。
 
 ## 4. 验证情况
 
 已验证（harness）：回环地址校验；环境变量与广告文件两种发现方式、已退出应用的广告被忽略；与普通 Chrome、与更高协议版本的对端握手失败后退回；暂停时等待、停止时结束、`AbortSignal`；确认框的放行与拒绝、面板消失时一律拒绝；逐步通知不阻塞；`beforeStep` 返回假时循环在下一步之前结束且不再提问判定器。测试用一个手写的最小 WebSocket 服务充当桥（`test/browser-embedded.test.ts`，6 个用例）。
 
-未验证：与真实桌面端桥的端到端联调（要等桥完成）；`<webview>` 内页面对 `Input.*` 事件的响应与独立 Chrome 是否完全一致；多标签、多对话并行。
+第二版新增（harness，`test/browser-embedded.test.ts` 现为 9 个用例）：握手带对话标识、终端里不带；`embedded: false` 时退回；`forTab` 之后的控制、确认、步骤、运行通知都带该标签页的 `sessionId`；键盘被拒变成 `StalePage`，其它 `Input.*` 失败仍是失败（已用变异检查确认测试能抓到）。
+
+桌面端的桥（分支 `claude/mu-browser`）：97 个单元 / DOM 测试；`scripts/kyrn/browser-bridge-check/run.mjs` 在真实 Electron 44.4.3 里用 harness 的原代码跑通 35 项（开页、点击、输入、暂停、停止、确认、令牌错误被拒、广告文件权限）。
+
+未验证：真实应用窗口里、真实判定器驱动下的整次运行（要等桥合入并启动应用）；多标签、多对话并行只有单元测试；Windows 上的 `webContents.debugger` 行为未在真机验证。
+
+## 5. 留给用户拍板的四件事（桥的实现者提出）
+
+1. 同一对话再次运行时复用已有标签页，还是每次新开。现状：新开。
+2. 收起浏览器面板是否等于结束运行。现状：是，收起即停止。
+3. 循环点击页面会把键盘焦点移进页面（否则无法输入），此时用户在消息框里打字会被打断。现状：接受，运行期间步骤条会提示。
+4. 浏览页面用独立分区 `persist:mu-browser`，应用里“清除浏览数据”目前不覆盖它。现状：未覆盖，需要在设置里单独给一个清除入口。

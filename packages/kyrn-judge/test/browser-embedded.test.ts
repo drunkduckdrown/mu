@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { runBrowserTask } from "../src/browser/agent.ts";
 import { CdpConnection } from "../src/browser/cdp.ts";
 import { ADVERT_FILE, EmbeddedBrowser, findEmbeddedEndpoint, loopbackSocket } from "../src/browser/embedded.ts";
-import type { BrowserSession, PageState } from "../src/browser/session.ts";
+import { BrowserSession, type PageAction, type PageState, StalePage } from "../src/browser/session.ts";
 import { DecisionEngine } from "../src/decision.ts";
 import { Judge } from "../src/judge.ts";
 import { MemoryLedger } from "../src/ledger.ts";
@@ -16,7 +16,7 @@ type Reply = Record<string, unknown> | Error;
 
 /** A WebSocket server small enough to read: text frames only, which is all the DevTools protocol sends. */
 function bridge(answer: (method: string, params: Record<string, unknown>) => Reply) {
-	const calls: { method: string; params: Record<string, unknown> }[] = [];
+	const calls: { method: string; params: Record<string, unknown>; sessionId?: string }[] = [];
 	const sockets: Duplex[] = [];
 	const server: Server = createServer();
 	server.on("upgrade", (request, socket) => {
@@ -48,8 +48,9 @@ function bridge(answer: (method: string, params: Record<string, unknown>) => Rep
 					id: number;
 					method: string;
 					params: Record<string, unknown>;
+					sessionId?: string;
 				};
-				calls.push({ method: message.method, params: message.params });
+				calls.push({ method: message.method, params: message.params, sessionId: message.sessionId });
 				const reply = answer(message.method, message.params);
 				const body = Buffer.from(
 					JSON.stringify(
@@ -141,6 +142,93 @@ describe("the desktop app's browser", () => {
 
 		const newer = await connected(() => ({ embedded: true, version: 2 }));
 		expect(await EmbeddedBrowser.handshake(newer.cdp)).toBeUndefined();
+
+		// An app with no conversation on screen has nowhere to show a page.
+		const nowhere = await connected(() => ({ embedded: false, version: 1 }));
+		expect(await EmbeddedBrowser.handshake(nowhere.cdp)).toBeUndefined();
+	});
+
+	it("says which conversation it serves, so the page opens beside it", async () => {
+		const hello = (method: string) => (method === "Mu.hello" ? { embedded: true, version: 1 } : {});
+		const named = await connected(hello);
+		await EmbeddedBrowser.handshake(named.cdp, { MU_DESKTOP_SESSION: "conv_42" });
+		expect(named.fake.calls[0]).toEqual({ method: "Mu.hello", params: { version: 1, session: "conv_42" } });
+
+		const terminal = await connected(hello);
+		await EmbeddedBrowser.handshake(terminal.cdp, {});
+		expect(terminal.fake.calls[0]).toEqual({ method: "Mu.hello", params: { version: 1 } });
+	});
+
+	it("speaks about one tab, because several runs can share the connection", async () => {
+		const shared = await connected((method) =>
+			method === "Mu.hello"
+				? { embedded: true, version: 1 }
+				: method === "Mu.confirm"
+					? { allowed: true }
+					: { paused: false, stop: false },
+		);
+		const app = (await EmbeddedBrowser.handshake(shared.cdp, {})) as EmbeddedBrowser;
+		const tab = app.forTab("session-7");
+
+		tab.run({ state: "started", goal: "find the price", url: "https://example.com/" });
+		expect(await tab.control()).toEqual({ paused: false, stop: false });
+		expect(await tab.confirm("Pay now", "https://example.com/pay")).toBe(true);
+		tab.step({ step: 1, kind: "click", action: "Search" });
+		tab.run({ state: "finished", status: "blocked", reason: "three actions in a row changed nothing" });
+		await expect.poll(() => shared.fake.calls.filter((call) => call.method === "Mu.run")).toHaveLength(2);
+
+		const aboutTheTab = shared.fake.calls.filter((call) => call.method !== "Mu.hello");
+		expect(aboutTheTab.map((call) => call.method).sort()).toEqual(
+			["Mu.confirm", "Mu.control", "Mu.run", "Mu.run", "Mu.step"].sort(),
+		);
+		expect(aboutTheTab.every((call) => call.sessionId === "session-7")).toBe(true);
+		expect(shared.fake.calls.filter((call) => call.method === "Mu.run").map((call) => call.params)).toEqual([
+			{ state: "started", goal: "find the price", url: "https://example.com/" },
+			{ state: "finished", status: "blocked", reason: "three actions in a row changed nothing" },
+		]);
+	});
+
+	it("takes keys the app would not deliver as a page to look at again, and other failures as failures", async () => {
+		const field: PageAction = { id: "a1", kind: "fill", label: "Search", node: 5 };
+		const page: PageState = {
+			url: "https://example.com/",
+			title: "Example",
+			text: "hello",
+			actions: [field],
+			marker: 1,
+			page_key: 1,
+			guards: {},
+			omitted_actions: 0,
+			fingerprint: "f",
+		};
+		let keyboard: Error = new Error("The page does not hold the keyboard, so nothing was typed");
+		const pageOf = (expression: string) =>
+			expression.includes("document.readyState")
+				? "complete"
+				: expression.includes("state?.marker")
+					? 1
+					: expression.includes("getBoundingClientRect(), x =")
+						? { x: 10, y: 10 }
+						: null;
+		const app = await connected((method, params) => {
+			if (method === "Target.createTarget") return { targetId: "tab-1" };
+			if (method === "Target.attachToTarget") return { sessionId: "session-1" };
+			if (method === "Runtime.evaluate") return { result: { value: pageOf(String(params.expression)) } };
+			if (method === "Input.dispatchKeyEvent") return keyboard;
+			return {};
+		});
+		const session = await BrowserSession.open(app.cdp, "https://example.com/");
+		expect(session.id).toBe("session-1");
+
+		await expect(session.act(field, page, "shoes")).rejects.toBeInstanceOf(StalePage);
+		// The click went to the page by its coordinates; only the typing was held back.
+		expect(app.fake.calls.some((call) => call.method === "Input.dispatchMouseEvent")).toBe(true);
+		expect(app.fake.calls.some((call) => call.method === "Input.insertText")).toBe(false);
+
+		keyboard = new Error("Target closed");
+		const failure = await session.act(field, page, "shoes").catch((error: unknown) => error);
+		expect(failure).toBeInstanceOf(Error);
+		expect(failure).not.toBeInstanceOf(StalePage);
 	});
 
 	it("waits while the person has the run paused, and ends it when they stop it", async () => {

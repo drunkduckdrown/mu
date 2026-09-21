@@ -85,8 +85,26 @@ export class BrowserSession {
 		return session;
 	}
 
-	private call(method: string, params: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
-		return this.cdp.send(method, params, this.sessionId);
+	/** The DevTools session of this tab. The desktop app's bridge uses it to tell runs on one connection apart. */
+	get id(): string {
+		return this.sessionId;
+	}
+
+	private async call(method: string, params: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
+		try {
+			return await this.cdp.send(method, params, this.sessionId);
+		} catch (error) {
+			// In the app, keys go to whatever holds the window's keyboard. When the page does not, the app types
+			// nothing rather than into the person's message box. That is a page to look at again, not a failure.
+			if (
+				method.startsWith("Input.") &&
+				error instanceof Error &&
+				/does not hold the keyboard/.test(error.message)
+			) {
+				throw new StalePage(error.message);
+			}
+			throw error;
+		}
 	}
 
 	private async evaluate(expression: string, awaitPromise = false): Promise<unknown> {
