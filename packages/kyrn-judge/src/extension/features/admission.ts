@@ -88,7 +88,9 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 				const frame = runtime.taskFrame();
 				const goal = [frame?.goal, frame?.currentSubgoal].filter(Boolean).join("\n");
 				const intent = clip(runtime.lastAssistantText, 400);
-				const plan = await planTestLog({ call, goal, intent, output: text }, options.testLog, runtime.engine, {
+				// Selecting by the goal needs a goal that is current. The repeat rule never reads it, so it carries on.
+				const strategy = options.testLog === "jev" && runtime.frameStale ? "rules" : options.testLog;
+				const plan = await planTestLog({ call, goal, intent, output: text }, strategy, runtime.engine, {
 					signal: ctx.signal,
 				});
 				const rendered = renderTestLog(plan, archivePath);

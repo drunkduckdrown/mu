@@ -109,7 +109,9 @@ export function registerForgetting(runtime: KyrnRuntime): void {
 			const levels = options.thresholds.filter(
 				(threshold) => (usage?.percent ?? 0) >= threshold && !crossed.has(threshold),
 			);
-			if (levels.length > 0) {
+			// A goal known to be out of date is no basis for forgetting. The crossing stays armed until the frame caught up;
+			// what was shrunk before stays shrunk, so the cached prefix does not move.
+			if (levels.length > 0 && !runtime.frameStale) {
 				const epoch = generation;
 				const nextReplaced = new Map(replaced);
 				const nextJudged = new Set(judged);

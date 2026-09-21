@@ -72,6 +72,19 @@
 			}
 		},
 		{
+			"id": "task.frame",
+			"group": "input",
+			"feature": "frame",
+			"title": {
+				"zh": "任务帧更新",
+				"en": "Task frame update"
+			},
+			"summary": {
+				"zh": "每条消息判断一次：它是新任务、新的硬约束、对做法的纠正、新的子目标，还是什么都没变。只有变了才让模型重写任务帧。",
+				"en": "Asks of each message: a new task, a new hard constraint, a correction, a new subgoal, or no change. Only a change has a model rewrite the task frame."
+			}
+		},
+		{
 			"id": "input.interjection",
 			"group": "input",
 			"feature": "interjection",
@@ -474,6 +487,67 @@
 					"label": {
 						"zh": "最多等待",
 						"en": "Wait at most"
+					}
+				}
+			]
+		},
+		{
+			"name": "frame",
+			"title": {
+				"zh": "任务帧与待办",
+				"en": "Task frame and to-do list"
+			},
+			"summary": {
+				"zh": "记住你到底要什么：目标、你的硬约束（原话加出处）、当前子目标、验收条件。验收条件就是待办清单，模型用 todo 工具勾选。所有“和目标相关吗”的判断都以它为准，回退会话时它跟着回退。",
+				"en": "Keeps what you actually want: the goal, your hard constraints (your own words, with their source), the current subgoal and the acceptance items. Those items are the to-do list the model ticks with the todo tool. Every goal-relevance judgment reads it, and it rewinds with the session."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "waitMs",
+					"kind": "number",
+					"default": 3000,
+					"min": 0,
+					"max": 30000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "回合最多等任务帧多久",
+						"en": "A turn waits for its frame at most"
+					},
+					"help": {
+						"zh": "从消息到达算起。超时不丢弃：本回合先用上一版加这条原话，更新完成后照常落地。",
+						"en": "Counted from the arrival of the message. A late update is not dropped: the turn starts on the previous version plus the raw message, and the update lands when it is ready."
+					}
+				},
+				{
+					"key": "writerTimeoutMs",
+					"kind": "number",
+					"default": 20000,
+					"min": 1000,
+					"max": 120000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "重写任务帧的时限",
+						"en": "Time limit for writing a frame"
+					},
+					"help": {
+						"zh": "超时或写坏了就保留上一版并标记为过期，按目标筛选上下文的功能暂停，下一条消息时重试。",
+						"en": "On a timeout or a malformed reply the last version stays and is marked stale, goal-based filtering holds back, and the next message retries."
+					}
+				},
+				{
+					"key": "show",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "在对话里显示任务帧更新",
+						"en": "Show frame updates in the chat"
 					}
 				}
 			]

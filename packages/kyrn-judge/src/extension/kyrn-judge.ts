@@ -27,6 +27,7 @@ import { registerCommands } from "./features/commands.ts";
 import { registerCompaction } from "./features/compaction.ts";
 import { registerCompletion } from "./features/completion.ts";
 import { registerForgetting } from "./features/forgetting.ts";
+import { registerFrame } from "./features/frame.ts";
 import { registerGuard } from "./features/guard.ts";
 import { registerHive } from "./features/hive.ts";
 import { registerInterjection } from "./features/interjection.ts";
@@ -65,6 +66,7 @@ export interface KyrnJudgeExtensionOptions {
 export type FeatureName =
 	| "interjection"
 	| "preflight"
+	| "frame"
 	| "memory"
 	| "skills"
 	| "catalog"
@@ -126,6 +128,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 	const features: readonly [FeatureName, (runtime: KyrnRuntime) => void][] = [
 		["interjection", registerInterjection],
 		["preflight", registerPreflight],
+		// Right after preflight, which counts the turns: the frame has to be current before anything reads it.
+		["frame", registerFrame],
 		["memory", registerMemory],
 		["skills", registerSkills],
 		// Registered before the features that add capabilities, and that is fine: it reads the catalog when a turn starts.

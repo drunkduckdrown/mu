@@ -5,6 +5,7 @@ import { featureOptions, type KyrnConfig } from "../config.ts";
 import { DecisionEngine, type DecisionMode } from "../decision.ts";
 import type { PreflightOutcome, TaskFrame } from "../decisions/input-preflight.ts";
 import { JudgeError } from "../errors.ts";
+import { compactFrame, type Frame, type FrameState, isStale } from "../frame/frame.ts";
 import type { JudgeLike } from "../judge.ts";
 import { CompositeLedger, type LedgerRecord, type LedgerSink, MemoryLedger } from "../ledger.ts";
 import type { LlmCompletion } from "../providers/llm.ts";
@@ -98,6 +99,13 @@ export class KyrnRuntime {
 	toolCalls = 0;
 	/** The assistant's latest prose, used as the stated intent of the tool calls that follow it. */
 	lastAssistantText = "";
+	/** The task frame as the frame feature keeps it. Undefined while that feature is off: the stand-in answers then. */
+	frameState: FrameState | undefined;
+	/**
+	 * Whoever keeps the task frame sets this. It hears of a message the moment its turn is counted,
+	 * so the frame's judge runs alongside preflight's instead of after its wait.
+	 */
+	onTurnBegin?: (userMessage: string) => void;
 	private latestCtx: ExtensionContext | undefined;
 	private firstUserMessage = "";
 	private presentationSequence = 0;
@@ -122,7 +130,8 @@ export class KyrnRuntime {
 			defaultMode: config.modes.default ?? "shadow",
 			modes: Object.fromEntries(Object.entries(config.modes).filter(([specId]) => specId !== "default")),
 			recordState: config.recordState,
-			origin: () => ({ turn: this.userTurns }),
+			// Which turn asked, and under which version of the task: a verdict about "the goal" is only as good as that goal.
+			origin: () => ({ turn: this.userTurns, frame: this.frameState?.frame?.version ?? 0 }),
 		});
 		for (const [specId, tiers] of Object.entries(config.routes)) this.route(specId, tiers);
 	}
@@ -214,13 +223,33 @@ export class KyrnRuntime {
 		this.userTurns++;
 		if (!this.firstUserMessage) this.firstUserMessage = userMessage;
 		this.turn = emptyTurn(userMessage);
+		try {
+			this.onTurnBegin?.(userMessage);
+		} catch {
+			// The frame is bookkeeping: a turn starts without it.
+		}
+	}
+
+	/** The full task frame: goal, constraints with their sources, acceptance items, open questions, version. */
+	get frame(): Frame | undefined {
+		return this.frameState?.frame;
 	}
 
 	/**
-	 * A stand-in until a writer model maintains a real one: the session's first
-	 * request is the goal and the latest message is the current subgoal.
+	 * True while the frame is known to be behind the conversation: an update failed, or one is still
+	 * running although the turn has started. Filters that drop content by its relevance to the goal hold back.
+	 */
+	get frameStale(): boolean {
+		return this.frameState !== undefined && isStale(this.frameState);
+	}
+
+	/**
+	 * The one seam every consumer reads: the compact shape of the real frame. With the frame feature
+	 * off, the old stand-in answers: the session's first request is the goal, the latest message the subgoal.
 	 */
 	taskFrame(): TaskFrame | undefined {
+		const real = this.frameState && compactFrame(this.frameState);
+		if (real) return real;
 		if (!this.firstUserMessage) return undefined;
 		const goal = clip(this.firstUserMessage, 300);
 		const current = clip(this.turn.userMessage, 200);

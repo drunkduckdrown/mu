@@ -12,6 +12,7 @@ export interface KyrnPresentationEvent {
 		| "decision"
 		| "progress"
 		| "memory.stored"
+		| "frame.updated"
 		| "capability.opened"
 		| "browser.run"
 		| "browser.step"
