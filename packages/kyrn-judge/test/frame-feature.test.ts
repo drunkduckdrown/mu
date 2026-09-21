@@ -246,6 +246,55 @@ describe("task frame feature", () => {
 		expect(results()[1]).not.toContain("pads minute 33");
 	});
 
+	it("a second writer failure in a row hands over to the rules, so the frame is never stale for good", async () => {
+		const { harness, shown } = await start(verdicts("correction", "none"));
+		harness.setResponses([
+			fauxAssistantMessage("I will add a cursor column."),
+			fauxAssistantMessage("not json"),
+			fauxAssistantMessage("Ok."),
+			fauxAssistantMessage('{"goal": 7}'),
+			fauxAssistantMessage("Ok again."),
+		]);
+		await harness.session.prompt(GOAL);
+		await harness.session.prompt(CORRECTION);
+		expect(shown()).toMatchObject({ stale: true, frame: { version: 1 } });
+
+		await harness.session.prompt("go on");
+		expect(shown()).toMatchObject({ reason: "updated", stale: false, unmerged: [] });
+		expect(shown()?.frame).toMatchObject({ version: 2, source: "rules", change: "correction", goal: GOAL });
+		expect(shown()?.frame.constraints).toMatchObject([{ text: CORRECTION, source: { turn: 2 } }]);
+	});
+
+	it("tells the model again after a compaction, which drops mu's own notes", async () => {
+		const { harness, notes } = await start(verdicts("correction", "none", "none"));
+		harness.setResponses([
+			fauxAssistantMessage("I will add a cursor column."),
+			writerReply({ constraints: [CORRECTION] }),
+			fauxAssistantMessage("No schema change."),
+			fauxAssistantMessage("Three."),
+			fauxAssistantMessage("Four."),
+		]);
+		await harness.session.prompt(GOAL);
+		await harness.session.prompt(CORRECTION);
+		await harness.session.prompt("ok?");
+		expect(notes()).toHaveLength(1);
+
+		const firstKept = harness.sessionManager.getEntries().find((entry) => entry.type === "message");
+		const id = harness.sessionManager.appendCompaction("summary", firstKept?.id ?? "", 9000);
+		const entry = harness.sessionManager.getEntry(id);
+		if (entry?.type !== "compaction") throw new Error("Missing compaction");
+		await harness.session.extensionRunner.emit({
+			type: "session_compact",
+			compactionEntry: entry,
+			fromExtension: false,
+			reason: "manual",
+			willRetry: false,
+		});
+		await harness.session.prompt("and the tests?");
+		expect(notes().at(-1)).toContain(CORRECTION);
+		expect(notes().length).toBeGreaterThan(1);
+	});
+
 	it("shadow records the verdict and changes nothing; off does not even ask", async () => {
 		const shadow = await start(verdicts("correction", "new_task"), { mode: "shadow" });
 		shadow.harness.setResponses([
