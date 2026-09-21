@@ -33,6 +33,10 @@ export interface KyrnPresentationEvent {
 		| "background.match"
 		| "web.fetch"
 		| "web.search"
+		| "swarm.worktree.created"
+		| "swarm.patch.ready"
+		| "swarm.patch.applied"
+		| "swarm.worktree.removed"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;
