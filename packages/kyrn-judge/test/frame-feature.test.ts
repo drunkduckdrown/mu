@@ -348,6 +348,39 @@ describe("task frame feature", () => {
 		expect(entries().every((entry) => entry.frame.version === 1)).toBe(true);
 	});
 
+	it("completion: 'done' with an acceptance item open earns the one nudge, and it names the item", async () => {
+		const sure: Answer = { type: "boolean", probability: 0.96 };
+		const { harness } = await start(
+			(request): Record<string, Answer> =>
+				"claims_done" in request.questions
+					? { claims_done: sure, needs_check: { type: "boolean", probability: 0.1 } }
+					: {},
+			{ only: ["preflight", "frame", "completion"] },
+		);
+		harness.setResponses([
+			fauxAssistantMessage([fauxToolCall("todo", { action: "add", text: "limit is capped at 100" })], {
+				stopReason: "toolUse",
+			}),
+			fauxAssistantMessage("All done, pagination works."),
+			fauxAssistantMessage("Right, the cap is missing. Adding it."),
+			fauxAssistantMessage("unused"),
+		]);
+
+		await harness.session.prompt(GOAL);
+		await vi.waitFor(() => expect(harness.getPendingResponseCount()).toBe(1));
+
+		const nudges = harness.session.messages.flatMap((message) =>
+			message.role === "custom" && (message as { customType?: string }).customType === "kyrn.nudge"
+				? [String((message as { content?: unknown }).content)]
+				: [],
+		);
+		// Nothing was edited, so the old check alone would have stayed silent.
+		expect(nudges).toHaveLength(1);
+		expect(nudges[0]).toContain("a1 limit is capped at 100");
+		expect(nudges[0]).toContain("todo tool");
+		expect(nudges[0]).not.toContain("You edited");
+	});
+
 	it("todo is a baseline capability in the catalog", async () => {
 		let runtime: KyrnRuntime | undefined;
 		const extensions = await createTestExtensionsResult([

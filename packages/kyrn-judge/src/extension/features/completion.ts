@@ -1,5 +1,6 @@
 import type { AgentEndEvent } from "@earendil-works/pi-coding-agent";
 import { turnCompletion } from "../../decisions/turn-completion.ts";
+import { openItems } from "../../frame/frame.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
 
 const EDIT_TOOLS = ["edit", "write"];
@@ -34,7 +35,10 @@ export function registerCompletion(runtime: KyrnRuntime): void {
 		failOpen<AgentEndEvent, undefined>(async (event, ctx) => {
 			runtime.touch(ctx);
 			const turn = runtime.turn;
-			if (turn.nudgedForCompletion || turn.editedFiles.size === 0 || turn.ranCommandAfterLastEdit) return undefined;
+			const unverified = turn.editedFiles.size > 0 && !turn.ranCommandAfterLastEdit;
+			// The to-do list is the task frame's acceptance criteria: "done" with one of them open is a claim too.
+			const open = openItems(runtime.frame);
+			if (turn.nudgedForCompletion || (!unverified && open.length === 0)) return undefined;
 			const last = [...event.messages].reverse().find((message) => message.role === "assistant");
 			const finalMessage = last ? textOf((last as { content?: unknown }).content) : "";
 			if (!finalMessage.trim()) return undefined;
@@ -44,13 +48,25 @@ export function registerCompletion(runtime: KyrnRuntime): void {
 				finalMessage: clip(finalMessage, 600),
 				editedFiles: turn.editedFiles.size,
 				ranCommandAfterLastEdit: turn.ranCommandAfterLastEdit,
+				openItems: open.length,
 			});
 			if (decision.source !== "judge" || decision.outcome !== "nudge") return undefined;
 			turn.nudgedForCompletion = true;
+			const said: string[] = [];
+			if (unverified) {
+				said.push(
+					`You edited ${[...turn.editedFiles].join(", ")} and nothing has run since. Verify the change (run the relevant test, build or command), or say plainly why it cannot be verified here.`,
+				);
+			}
+			if (open.length > 0) {
+				said.push(
+					`These acceptance items are still open: ${open.map((item) => `${item.id} ${item.text}`).join("; ")}. Finish them and tick each with the todo tool and one line of evidence, or say which no longer apply.`,
+				);
+			}
 			pi.sendMessage(
 				{
 					customType: "kyrn.nudge",
-					content: `You edited ${[...turn.editedFiles].join(", ")} and nothing has run since. Verify the change (run the relevant test, build or command), or say plainly why it cannot be verified here.`,
+					content: said.join("\n"),
 					display: true,
 				},
 				{ triggerTurn: true },

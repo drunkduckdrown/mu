@@ -34,6 +34,7 @@ Judgment layer
   /mu judge <tiers>      which models judge, in order: laya | laya,jev | llm:<provider>/<model>
   /mu route <decision> <tiers|default>      one decision on its own judge, e.g. browser.step luna
   /mu mode <decision|default> <off|shadow|active>
+  /frame                   the task as mu holds it: goal, your hard constraints and where you said them, to-do items
   /ledger [n]              the last n verdicts with timing
   /remember <lesson>       keep a lesson for future sessions
 

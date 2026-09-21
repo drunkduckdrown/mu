@@ -11,13 +11,16 @@ export interface CompletionInput {
 	readonly finalMessage: string;
 	readonly editedFiles: number;
 	readonly ranCommandAfterLastEdit: boolean;
+	/** Acceptance items of the task frame that nobody has ticked. */
+	readonly openItems?: number;
 }
 
 export type CompletionOutcome = "done" | "nudge";
 
 export const turnCompletion = defineDecision({
 	id: "turn.completion",
-	version: 1,
+	// 2: an open acceptance item contradicts "done" (policy only, the questions are unchanged).
+	version: 2,
 	cacheImpact: "append-only",
 	latency: "inline",
 	capabilities: { needs_check: "meta" },
@@ -37,9 +40,11 @@ export const turnCompletion = defineDecision({
 		};
 	},
 	policy(answers, input): CompletionOutcome {
+		if (threeZone(answers.claims_done) !== "yes") return "done";
+		// The list is what "finished" means for this task, whatever was or was not run.
+		if ((input.openItems ?? 0) > 0) return "nudge";
 		if (input.editedFiles === 0 || input.ranCommandAfterLastEdit) return "done";
-		const unverifiedClaim = threeZone(answers.claims_done) === "yes" && threeZone(answers.needs_check) === "yes";
-		return unverifiedClaim ? "nudge" : "done";
+		return threeZone(answers.needs_check) === "yes" ? "nudge" : "done";
 	},
 	fallback(): CompletionOutcome {
 		return "done";

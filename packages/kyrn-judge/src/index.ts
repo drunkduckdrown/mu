@@ -58,7 +58,30 @@ export {
 	type TaskFrame,
 	type TurnType,
 } from "./decisions/input-preflight.ts";
+export { type TaskFrameInput, type TaskFrameOutcome, taskFrame } from "./decisions/task-frame.ts";
 export { isJudgeError, JudgeError, type JudgeErrorKind } from "./errors.ts";
+export {
+	type AcceptanceItem,
+	addItem,
+	type Constraint,
+	compactFrame,
+	createFrame,
+	describeFrame,
+	type Frame,
+	type FrameChange,
+	type FrameEntryData,
+	type FrameSource,
+	type FrameState,
+	isStale,
+	openItems,
+	parseFrameEntry,
+	renderFrameNote,
+	ruleUpdate,
+	tickItem,
+	type UnmergedText,
+	type UserText,
+} from "./frame/frame.ts";
+export { findVerbatim, mergeWriterFrame, parseWriterReply, type WriterFrame, writerRequest } from "./frame/writer.ts";
 export {
 	Judge,
 	type JudgeCall,
