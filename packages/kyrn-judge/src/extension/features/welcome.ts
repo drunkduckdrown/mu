@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { homedir } from "node:os";
+import { basename } from "node:path";
 import { keyText, VERSION as PI_VERSION, type Theme } from "@earendil-works/pi-coding-agent";
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
@@ -157,7 +158,7 @@ export function registerWelcome(runtime: KyrnRuntime): void {
 			if (ctx.mode !== "tui") return undefined;
 			let redraw: (() => void) | undefined;
 			// The title bar has no frame to keep aligned, so the letter itself can stand here.
-			ctx.ui.setTitle(`μ - ${ctx.cwd.split("/").pop() ?? ""}`);
+			ctx.ui.setTitle(`μ - ${basename(ctx.cwd)}`);
 			ctx.ui.setHeader((tui, theme) => {
 				let expanded = false;
 				redraw = () => tui.requestRender();

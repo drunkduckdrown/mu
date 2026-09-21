@@ -1,0 +1,174 @@
+// Types of mu.mjs, for the tests that call its functions with win32, linux and WSL parameters.
+import type { PlatformPath } from "node:path";
+
+export type Platform = NodeJS.Platform;
+export type Env = Readonly<Record<string, string | undefined>>;
+
+export const MIN_NODE: readonly [number, number];
+export function nodeVersionOk(version: string): boolean;
+export function pathFor(platform: Platform): PlatformPath;
+export function muEnv(name: string, env: Env): string | undefined;
+export function muHome(host: { home: string; platform: Platform; isDir(path: string): boolean }): string;
+export function detectWsl(host: { platform: Platform; env: Env; procVersion?: string }): boolean;
+export function platformName(host: { platform: Platform; wsl?: boolean }): string;
+export function usage(platform: Platform): string;
+
+export function parseEnvFile(text: string): { entries: [string, string][]; problems: number[] };
+export function envFileAdditions(input: {
+	env: Env;
+	entries: readonly (readonly [string, string])[];
+	platform: Platform;
+}): Record<string, string>;
+
+export type ViewKind = "symlink" | "junction" | "copy";
+export function appViewPlan(platform: Platform): { name: string; kind: ViewKind }[];
+export function appPackageJson(upstreamText: string): string;
+export function ensureAppView(input: {
+	platform: Platform;
+	app: string;
+	upstream: string;
+	fs?: Record<string, (...args: never[]) => unknown>;
+}): string[];
+
+export function resolveTsx(input: {
+	root: string;
+	platform: Platform;
+	exists(path: string): boolean;
+	readFile(path: string): string;
+}): string | undefined;
+export function installHint(input: { root: string; platform: Platform }): string;
+export function agentDirFor(input: { env: Env; muDir: string; platform: Platform }): string;
+export function wantsLaya(input: {
+	env: Env;
+	agentDir: string;
+	platform: Platform;
+	readFile(path: string): string;
+}): boolean;
+export function localJudgeSupport(input: { platform: Platform; env: Env; wsl?: boolean }): {
+	runs: boolean;
+	url?: string;
+	message?: string;
+};
+export function launchStrategy(input: { platform: Platform; env: Env; canExec: boolean }): "exec" | "spawn";
+
+export interface LaunchPlan {
+	error?: undefined;
+	command: string;
+	args: string[];
+	env: Record<string, string>;
+	strategy: "exec" | "spawn";
+	muDir: string;
+	appDir: string;
+	agentDir: string;
+	startJudge: boolean;
+	notes: string[];
+	preface?: string;
+}
+export function planLaunch(input: {
+	platform: Platform;
+	env: Env;
+	argv: readonly string[];
+	root: string;
+	home: string;
+	execPath: string;
+	canExec?: boolean;
+	wsl?: boolean;
+	fs: { exists(path: string): boolean; isDir(path: string): boolean; readFile(path: string): string };
+}): LaunchPlan | { error: string };
+
+export type JudgePlan =
+	| { kind: "script"; command: string; args: string[] }
+	| { kind: "health"; url: string }
+	| { kind: "unsupported"; message: string };
+export function planJudge(input: {
+	platform: Platform;
+	env: Env;
+	argv: readonly string[];
+	bin: string;
+	wsl?: boolean;
+}): JudgePlan;
+
+export function linkPath(input: { platform: Platform; env: Env; home: string }): string;
+export function shimContent(input: { linkDir: string; bin: string }): string;
+export function findOnPath(input: {
+	name: string;
+	platform: Platform;
+	env: Env;
+	isFile(path: string): boolean;
+}): string | undefined;
+export function onPath(input: { dir: string; platform: Platform; env: Env }): boolean;
+export type LinkPlan =
+	| { action: "refuse"; errors: string[] }
+	| { action: "link"; link: string; target: string; content?: string; message: string; notes: string[] };
+export function planLink(input: {
+	platform: Platform;
+	env: Env;
+	home: string;
+	bin: string;
+	argv: readonly string[];
+	fs: {
+		realPath(path: string): string;
+		exists(path: string): boolean;
+		isFile(path: string): boolean;
+		readFile(path: string): string;
+	};
+}): LinkPlan;
+export function planUnlink(input: {
+	platform: Platform;
+	env: Env;
+	home: string;
+	fs: { isLink(path: string): boolean; readFile(path: string): string };
+}): { remove?: string; message: string };
+export function linkState(input: {
+	platform: Platform;
+	link: string;
+	bin: string;
+	fs: { readFile(path: string): string; readlink(path: string): string };
+}): string | undefined;
+
+export interface ProcessRow {
+	pid: number;
+	name: string;
+	command: string;
+}
+export interface Busy {
+	sessions: number[];
+	browser: number[];
+	desktop: number[];
+}
+export function parseCsv(text: string): string[][];
+export function parseTasklist(text: string): ProcessRow[];
+export function parseWindowsProcesses(text: string): ProcessRow[];
+export function busyFromProcesses(input: {
+	processes: readonly ProcessRow[];
+	old: string;
+	platform: Platform;
+	self: number;
+}): Busy;
+export function findBusy(input: {
+	platform: Platform;
+	old: string;
+	self: number;
+	run(command: string, args: string[]): string | undefined;
+}): Busy | undefined;
+export function migrate(input: {
+	platform: Platform;
+	home: string;
+	argv: readonly string[];
+	self: number;
+	run(command: string, args: string[]): string | undefined;
+	alive(pid: number): boolean;
+	out(line: string): void;
+	err(line: string): void;
+	fs: {
+		isLink(path: string): boolean;
+		isDir(path: string): boolean;
+		exists(path: string): boolean;
+		readlink(path: string): string;
+		readFile(path: string): string;
+		rename(from: string, to: string): void;
+		link(target: string, at: string, kind: "junction" | "dir"): void;
+	};
+}): number;
+
+export function main(argv?: string[]): Promise<number>;

@@ -7,6 +7,7 @@ import { basename, join } from "node:path";
 import { getAgentDir, type Theme } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { swarmRouting } from "../../decisions/swarm-routing.ts";
+import { stopPlan } from "../../platform.ts";
 import { describeRecord } from "../../swarm/patches.ts";
 import {
 	activeRuns,
@@ -122,7 +123,11 @@ export const spawnRunner: SwarmRunner = async (task, assignment, signal, env, ob
 
 			const terminate = () => {
 				if (child.exitCode !== null || child.signalCode !== null) return;
-				child.kill("SIGTERM");
+				// On Windows `kill` ends the sub-agent alone and orphans what it started: there the whole tree goes.
+				const stop = stopPlan(process.platform, child.pid, false);
+				if (stop.kind === "command") {
+					spawn(stop.command, stop.args, { stdio: "ignore", windowsHide: true }).on("error", () => child.kill());
+				} else child.kill(stop.signal);
 				const hard = setTimeout(() => {
 					if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
 				}, KILL_GRACE_MS);

@@ -6,6 +6,8 @@
 import { existsSync, readFileSync, readlinkSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import { detectWsl, linkState, localJudgeSupport, parseEnvFile, platformName, resolveTsx } from "./mu.mjs";
 
 const [root, link] = process.argv.slice(2);
 /** `MU_<name>`, or the `KYRN_<name>` spelling from before the rename. */
@@ -25,22 +27,38 @@ function readJson(path) {
 	}
 }
 
+let procVersion = "";
+try {
+	if (process.platform === "linux") procVersion = readFileSync("/proc/version", "utf8");
+} catch {}
+const wsl = detectWsl({ platform: process.platform, env: process.env, procVersion });
+row("--", "platform", `${platformName({ platform: process.platform, wsl })} (${process.platform} ${process.arch})`);
+
 const [major, minor] = process.versions.node.split(".").map(Number);
 row(major > 22 || (major === 22 && minor >= 19) ? "ok" : "fix", "node", `v${process.versions.node} (needs >= 22.19)`);
 
+// The JavaScript behind tsx, which is what the launcher runs: node_modules/.bin holds a .cmd shim on Windows.
+const tsx = resolveTsx({ root, platform: process.platform, exists: existsSync, readFile: (path) => readFileSync(path, "utf8") });
 row(
-	existsSync(join(root, "node_modules/.bin/tsx")) ? "ok" : "fix",
+	tsx ? "ok" : "fix",
 	"dependencies",
-	existsSync(join(root, "node_modules/.bin/tsx"))
+	tsx
 		? "installed"
 		: `missing: cd ${root} && npm ci --ignore-scripts && npm run hydrate:model-data`,
 );
 
-let linked;
-try {
-	linked = readlinkSync(link);
-} catch {}
-row(linked ? "ok" : "--", "command", linked ? `${tilde(link)} -> ${tilde(linked)}` : `not on PATH yet: ${join(root, "kyrn/bin/mu")} link`);
+// A link on POSIX, a small mu.cmd on Windows, where a link to a script cannot be run.
+const linked = linkState({
+	platform: process.platform,
+	link,
+	bin: join(root, "kyrn", "bin"),
+	fs: { readFile: (path) => readFileSync(path, "utf8"), readlink: readlinkSync },
+});
+row(
+	linked ? "ok" : "--",
+	"command",
+	linked ? linked.replaceAll(homedir(), "~") : `not on PATH yet: ${join(root, "kyrn", "bin", process.platform === "win32" ? "mu.cmd" : "mu")} link`,
+);
 
 row("--", "home", tilde(agentDir));
 if (home === ".kyrn" && agentDir.startsWith(join(homedir(), ".kyrn"))) {
@@ -70,7 +88,12 @@ if (overrides.length > 0) row("--", "modes", overrides.map(([id, value]) => `${i
 const ladder = config?.features?.swarm?.models ?? [];
 row("--", "sub-agents", ladder.length > 0 ? `model ladder ${ladder.join(" < ")}` : "use the session's model (no ladder configured)");
 
-if (tiers.some((tier) => tier.startsWith("laya"))) {
+const judgeSupport = localJudgeSupport({ platform: process.platform, env: process.env, wsl });
+if (tiers.some((tier) => tier.startsWith("laya")) && !judgeSupport.runs && !judgeSupport.url) {
+	// Not a failure of this installation: the sidecar is Core ML, and there is none for this platform.
+	row("--", "local judge", `not available on ${platformName({ platform: process.platform, wsl })}: the Laya sidecar is Core ML (macOS, Apple Silicon).`);
+	row("--", "", "laya's decisions fall back to the next judge or to pi's behaviour. Use jev, an llm judge, or MU_LOCAL_JUDGE_URL=<a server with the same contract>");
+} else if (tiers.some((tier) => tier.startsWith("laya"))) {
 	const base = env("LOCAL_JUDGE_URL") ?? `http://127.0.0.1:${env("LOCAL_JUDGE_PORT") ?? 47823}`;
 	const startedAt = performance.now();
 	try {
@@ -79,12 +102,19 @@ if (tiers.some((tier) => tier.startsWith("laya"))) {
 		const ms = Math.round(performance.now() - startedAt);
 		row(health.status === "ok" ? "ok" : "--", "local judge", `${base} · ${health.status} · ${health.model ?? "laya"} · ${ms} ms`);
 	} catch {
-		row("fix", "local judge", `${base} does not answer: mu judge start   (first time: mu judge setup)`);
+		row(
+			"fix",
+			"local judge",
+			judgeSupport.runs
+				? `${base} does not answer: mu judge start   (first time: mu judge setup)`
+				: `${base} (MU_LOCAL_JUDGE_URL) does not answer`,
+		);
 	}
 }
 if (tiers.some((tier) => tier.startsWith("jev") || tier === "gateway")) {
-	const env = existsSync(join(root, ".env")) ? readFileSync(join(root, ".env"), "utf8") : "";
-	const has = (name) => Boolean(process.env[name]) || new RegExp(`^${name}=.+`, "m").test(env);
+	// Parsed the way the launcher parses it (quotes, `export `), and only asked whether a name has a value.
+	const fromFile = existsSync(join(root, ".env")) ? parseEnvFile(readFileSync(join(root, ".env"), "utf8")).entries : [];
+	const has = (name) => Boolean(process.env[name]) || fromFile.some(([key, value]) => key === name && value !== "");
 	const direct = has("TYPESAFE_API_KEY");
 	const gateway = has("AI_GATEWAY_API_KEY");
 	row(
@@ -98,9 +128,19 @@ if (tiers.some((tier) => tier.startsWith("jev") || tier === "gateway")) {
 	);
 }
 
-const { findChrome } = await import(join(root, "packages/kyrn-judge/src/browser/chrome.ts"));
-const chrome = findChrome();
-row(chrome ? "ok" : "fix", "browser", chrome ?? "no Chrome or Chromium found: install one or set MU_CHROME");
+// A file URL: Windows cannot import "C:\\..." as it stands.
+const { browserAdvice, findBrowser, thisBrowserHost } = await import(
+	pathToFileURL(join(root, "packages", "kyrn-judge", "src", "browser", "chrome.ts")).href
+);
+const browserHost = thisBrowserHost();
+const chrome = findBrowser(browserHost);
+const [advice, ...moreAdvice] = chrome ? [] : browserAdvice(browserHost).split("\n");
+row(
+	chrome ? "ok" : "fix",
+	"browser",
+	chrome ? `${chrome.executable}${chrome.side === "windows" ? "  (on the Windows side, reached over mirrored networking)" : ""}` : advice,
+);
+for (const line of moreAdvice) row("--", "", line);
 const canRelate = (tier) => tier.startsWith("jev") || tier === "gateway" || tier.startsWith("llm:") || config?.judges?.[tier]?.type === "llm";
 const browseTiers = config?.routes?.["browser.step"] ?? tiers;
 const routed = Object.entries(config?.routes ?? {});
