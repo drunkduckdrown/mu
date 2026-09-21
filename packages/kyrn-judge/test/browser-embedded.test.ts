@@ -1,0 +1,227 @@
+import { createHash } from "node:crypto";
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
+import type { Duplex } from "node:stream";
+import { afterEach, describe, expect, it } from "vitest";
+import { runBrowserTask } from "../src/browser/agent.ts";
+import { CdpConnection } from "../src/browser/cdp.ts";
+import { ADVERT_FILE, EmbeddedBrowser, findEmbeddedEndpoint, loopbackSocket } from "../src/browser/embedded.ts";
+import type { BrowserSession, PageState } from "../src/browser/session.ts";
+import { DecisionEngine } from "../src/decision.ts";
+import { Judge } from "../src/judge.ts";
+import { MemoryLedger } from "../src/ledger.ts";
+import { MockJudgeProvider } from "../src/providers/mock.ts";
+
+type Reply = Record<string, unknown> | Error;
+
+/** A WebSocket server small enough to read: text frames only, which is all the DevTools protocol sends. */
+function bridge(answer: (method: string, params: Record<string, unknown>) => Reply) {
+	const calls: { method: string; params: Record<string, unknown> }[] = [];
+	const sockets: Duplex[] = [];
+	const server: Server = createServer();
+	server.on("upgrade", (request, socket) => {
+		sockets.push(socket);
+		const accept = createHash("sha1")
+			.update(`${request.headers["sec-websocket-key"]}258EAFA5-E914-47DA-95CA-C5AB0DC85B11`)
+			.digest("base64");
+		socket.write(
+			`HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: ${accept}\r\n\r\n`,
+		);
+		let buffered = Buffer.alloc(0);
+		socket.on("data", (chunk: Buffer) => {
+			buffered = Buffer.concat([buffered, chunk]);
+			while (buffered.length >= 6) {
+				let length = buffered[1] & 0x7f;
+				let offset = 2;
+				if (length === 126) {
+					length = buffered.readUInt16BE(2);
+					offset = 4;
+				}
+				if (buffered.length < offset + 4 + length) return;
+				const mask = buffered.subarray(offset, offset + 4);
+				const payload = Buffer.from(buffered.subarray(offset + 4, offset + 4 + length));
+				for (let index = 0; index < payload.length; index++) payload[index] ^= mask[index % 4];
+				const opcode = buffered[0] & 0x0f;
+				buffered = buffered.subarray(offset + 4 + length);
+				if (opcode !== 1) continue;
+				const message = JSON.parse(payload.toString("utf8")) as {
+					id: number;
+					method: string;
+					params: Record<string, unknown>;
+				};
+				calls.push({ method: message.method, params: message.params });
+				const reply = answer(message.method, message.params);
+				const body = Buffer.from(
+					JSON.stringify(
+						reply instanceof Error
+							? { id: message.id, error: { message: reply.message } }
+							: { id: message.id, result: reply },
+					),
+				);
+				const header =
+					body.length < 126
+						? Buffer.from([0x81, body.length])
+						: Buffer.from([0x81, 126, body.length >> 8, body.length & 0xff]);
+				socket.write(Buffer.concat([header, body]));
+			}
+		});
+	});
+	return {
+		calls,
+		listen: () =>
+			new Promise<string>((resolve) =>
+				server.listen(0, "127.0.0.1", () =>
+					resolve(`ws://127.0.0.1:${(server.address() as AddressInfo).port}/token`),
+				),
+			),
+		close: () => {
+			for (const socket of sockets) socket.destroy();
+			server.close();
+		},
+	};
+}
+
+describe("the desktop app's browser", () => {
+	const open: { close(): void }[] = [];
+	afterEach(() => {
+		while (open.length > 0) open.pop()?.close();
+	});
+
+	async function connected(answer: Parameters<typeof bridge>[0]) {
+		const fake = bridge(answer);
+		open.push(fake);
+		const cdp = await CdpConnection.connect(await fake.listen());
+		open.push(cdp);
+		return { fake, cdp };
+	}
+
+	it("is only ever a loopback socket", () => {
+		expect(loopbackSocket("ws://127.0.0.1:9000/abc")).toBe(true);
+		expect(loopbackSocket("ws://localhost:9000/abc")).toBe(true);
+		expect(loopbackSocket("ws://192.168.1.5:9000/abc")).toBe(false);
+		expect(loopbackSocket("wss://example.com/abc")).toBe(false);
+		expect(loopbackSocket("http://127.0.0.1:9000/abc")).toBe(false);
+		expect(loopbackSocket("not a url")).toBe(false);
+	});
+
+	it("is found through the variable or the app's advert, and not when that app has quit", () => {
+		const advert = (value: unknown) => ({
+			home: "/home/u/.mu",
+			env: {},
+			readFile: (path: string) => {
+				expect(path.endsWith(ADVERT_FILE)).toBe(true);
+				return JSON.stringify(value);
+			},
+		});
+		const url = "ws://127.0.0.1:41000/secret";
+
+		expect(findEmbeddedEndpoint({ env: { MU_BROWSER_ENDPOINT: url } })).toEqual({ url });
+		expect(findEmbeddedEndpoint({ env: { KYRN_BROWSER_ENDPOINT: url } })).toEqual({ url });
+		expect(findEmbeddedEndpoint({ env: { MU_BROWSER_ENDPOINT: "ws://10.0.0.2:1/x" } })).toBeUndefined();
+		expect(findEmbeddedEndpoint({ ...advert({ url, pid: 7 }), isRunning: () => true })).toEqual({ url, pid: 7 });
+		expect(findEmbeddedEndpoint({ ...advert({ url, pid: 7 }), isRunning: () => false })).toBeUndefined();
+		expect(findEmbeddedEndpoint(advert({ url: "ws://evil.example/x", pid: 7 }))).toBeUndefined();
+		expect(
+			findEmbeddedEndpoint({
+				home: "/home/u/.mu",
+				env: {},
+				readFile: () => {
+					throw new Error("ENOENT");
+				},
+			}),
+		).toBeUndefined();
+	});
+
+	it("tells the app from a plain browser, which does not know the Mu methods", async () => {
+		const app = await connected((method) => (method === "Mu.hello" ? { embedded: true, version: 1 } : {}));
+		expect(await EmbeddedBrowser.handshake(app.cdp)).toBeInstanceOf(EmbeddedBrowser);
+
+		const chrome = await connected((method) => new Error(`'${method}' wasn't found`));
+		expect(await EmbeddedBrowser.handshake(chrome.cdp)).toBeUndefined();
+
+		const newer = await connected(() => ({ embedded: true, version: 2 }));
+		expect(await EmbeddedBrowser.handshake(newer.cdp)).toBeUndefined();
+	});
+
+	it("waits while the person has the run paused, and ends it when they stop it", async () => {
+		const states = [
+			{ paused: true, stop: false },
+			{ paused: true, stop: false },
+			{ paused: false, stop: false },
+		];
+		const pausing = await connected((method) =>
+			method === "Mu.hello" ? { embedded: true, version: 1 } : (states.shift() ?? { paused: false, stop: false }),
+		);
+		const app = (await EmbeddedBrowser.handshake(pausing.cdp)) as EmbeddedBrowser;
+		expect(await app.mayContinue(undefined, 5)).toBe(true);
+		expect(pausing.fake.calls.filter((call) => call.method === "Mu.control")).toHaveLength(3);
+
+		const stopping = await connected((method) =>
+			method === "Mu.hello" ? { embedded: true, version: 1 } : { paused: true, stop: true },
+		);
+		const stopped = (await EmbeddedBrowser.handshake(stopping.cdp)) as EmbeddedBrowser;
+		expect(await stopped.mayContinue(undefined, 5)).toBe(false);
+
+		const aborted = new AbortController();
+		aborted.abort();
+		expect(await app.mayContinue(aborted.signal, 5)).toBe(false);
+	});
+
+	it("asks the person at the app before an irreversible action, and a panel that is gone means no", async () => {
+		const asking = await connected((method, params) =>
+			method === "Mu.hello" ? { embedded: true, version: 1 } : { allowed: params.label === "Delete draft" },
+		);
+		const app = (await EmbeddedBrowser.handshake(asking.cdp)) as EmbeddedBrowser;
+		expect(await app.confirm("Delete draft", "https://example.com/mail")).toBe(true);
+		expect(await app.confirm("Pay now", "https://example.com/pay")).toBe(false);
+		expect(asking.fake.calls.at(-1)).toEqual({
+			method: "Mu.confirm",
+			params: { label: "Pay now", url: "https://example.com/pay" },
+		});
+
+		app.step({ step: 1, kind: "click", action: "Search" });
+		await expect.poll(() => asking.fake.calls.some((call) => call.method === "Mu.step")).toBe(true);
+
+		asking.cdp.close();
+		expect(await app.confirm("Delete draft", "https://example.com/mail")).toBe(false);
+		expect(await app.control()).toEqual({ paused: false, stop: false });
+	});
+
+	it("ends a run before its next step when the person watching says stop", async () => {
+		const page: PageState = {
+			url: "https://example.com/",
+			title: "Example",
+			text: "hello",
+			actions: [],
+			marker: 1,
+			page_key: 1,
+			guards: {},
+			omitted_actions: 0,
+			fingerprint: "f",
+		};
+		const session = { observe: async () => page, fresh: async () => true } as unknown as BrowserSession;
+		let asked = 0;
+		const engine = new DecisionEngine({
+			judge: new Judge({
+				provider: new MockJudgeProvider(() => {
+					asked++;
+					return {};
+				}),
+			}),
+			ledger: new MemoryLedger(),
+			defaultMode: "active",
+		});
+
+		const result = await runBrowserTask({
+			session,
+			engine,
+			goal: "anything",
+			writeText: async () => undefined,
+			beforeStep: async () => false,
+		});
+
+		expect(result.status).toBe("aborted");
+		expect(result.reason).toContain("stopped");
+		expect(asked).toBe(0);
+	});
+});

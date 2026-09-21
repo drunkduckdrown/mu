@@ -13,6 +13,8 @@ export interface KyrnPresentationEvent {
 		| "progress"
 		| "memory.stored"
 		| "capability.opened"
+		| "browser.run"
+		| "browser.step"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;

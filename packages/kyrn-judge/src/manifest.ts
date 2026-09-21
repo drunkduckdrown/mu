@@ -832,6 +832,19 @@ export const MANIFEST: HarnessManifest = {
 					label: { zh: "每步读取的页面文字", en: "Page text read per step" },
 				},
 				{
+					key: "embedded",
+					kind: "boolean",
+					default: true,
+					label: {
+						zh: "桌面端运行时使用应用内的浏览器面板",
+						en: "Use the desktop app's browser panel when it is running",
+					},
+					help: {
+						zh: "这样每一步都看得见，可以随时暂停、停止或接管；应用没开时用 mu 自己的浏览器。",
+						en: "Every step is then visible and can be paused, stopped or taken over; without the app mu's own browser is used.",
+					},
+				},
+				{
 					key: "profileDir",
 					kind: "text",
 					default: "",

@@ -93,6 +93,11 @@ export class CdpConnection {
 		});
 	}
 
+	/** True once the other end is gone: a cached connection has to be replaced, not reused. */
+	get isClosed(): boolean {
+		return this.closed;
+	}
+
 	close(): void {
 		this.closed = true;
 		this.socket.close();

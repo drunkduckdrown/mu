@@ -103,7 +103,9 @@ export interface BrowserTaskOptions {
 	/** Supplies the string to type. Judges choose; they cannot write. */
 	readonly writeText: (context: FieldContext) => Promise<string | undefined>;
 	/** Asked before an action that looks irreversible. Absent means "never allowed". */
-	readonly confirm?: (label: string) => Promise<boolean>;
+	readonly confirm?: (label: string, url: string) => Promise<boolean>;
+	/** Asked before every step. False ends the run: someone watching it said stop. It may take its time (a pause). */
+	readonly beforeStep?: () => Promise<boolean>;
 	readonly maxSteps?: number;
 	readonly signal?: AbortSignal;
 	readonly onStep?: (record: BrowserStepRecord) => void;
@@ -142,6 +144,8 @@ export async function runBrowserTask(options: BrowserTaskOptions): Promise<Brows
 
 	while (true) {
 		if (options.signal?.aborted) return finish("aborted");
+		if (options.beforeStep && !(await options.beforeStep()))
+			return finish("aborted", "stopped by the person watching");
 		if (history.length >= maxSteps || decisions >= maxSteps * 2)
 			return finish("budget", `stopped after ${maxSteps} actions`);
 		if (!(await session.fresh(page))) page = await session.observe();
@@ -179,7 +183,7 @@ export async function runBrowserTask(options: BrowserTaskOptions): Promise<Brows
 		} else {
 			let text: string | undefined;
 			if (action.kind === "click" && IRREVERSIBLE.test(action.label)) {
-				const allowed = options.confirm ? await options.confirm(action.label) : false;
+				const allowed = options.confirm ? await options.confirm(action.label, page.url) : false;
 				if (!allowed)
 					return finish("needs_confirmation", `"${action.label}" looks irreversible and was not confirmed`);
 			}
