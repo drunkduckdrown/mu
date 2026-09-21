@@ -7,7 +7,7 @@ import { createTestExtensionsResult, createTestResourceLoader } from "../../codi
 import { parseConfig } from "../src/config.ts";
 import type { DecisionMode } from "../src/decision.ts";
 import { registerForgetting } from "../src/extension/features/forgetting.ts";
-import { FRAME_ENTRY, FRAME_MESSAGE } from "../src/extension/features/frame.ts";
+import { FRAME_ENTRY, FRAME_MESSAGE, registerFrame } from "../src/extension/features/frame.ts";
 import { createKyrnJudgeExtension, type FeatureName } from "../src/extension/kyrn-judge.ts";
 import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
 import { KyrnRuntime } from "../src/extension/runtime.ts";
@@ -302,6 +302,63 @@ describe("task frame feature", () => {
 		await harness.session.navigateTree(leaf ?? "");
 		expect(shown()).toMatchObject({ reason: "restored", frame: { version: 2 } });
 		expect(shown()?.frame.constraints[0].text).toBe(CORRECTION);
+	});
+
+	it("todo: the model adds an item, ticks it with evidence and lists it; none of that bumps the version", async () => {
+		const { harness, shown, entries } = await start(verdicts());
+		const call = (params: Record<string, string>) =>
+			fauxAssistantMessage([fauxToolCall("todo", params)], { stopReason: "toolUse" });
+		harness.setResponses([
+			call({ action: "add", text: "the cursor survives a deleted row" }),
+			call({ action: "add", text: "limit is capped at 100" }),
+			call({ action: "done", id: "a9", evidence: "guessing" }),
+			call({ action: "done", id: "a1" }),
+			call({ action: "done", id: "a1", evidence: "users.test.ts: 14 passed" }),
+			call({ action: "list" }),
+			fauxAssistantMessage("One item is still open."),
+		]);
+
+		await harness.session.prompt(GOAL);
+
+		expect(harness.session.getActiveToolNames()).toContain("todo");
+		const results = harness.session.messages
+			.filter((message) => message.role === "toolResult")
+			.map((message) => JSON.stringify((message as { content?: unknown }).content));
+		expect(results[0]).toContain("Added a1: the cursor survives a deleted row");
+		expect(results[2]).toContain('No item has the id \\"a9\\"');
+		expect(results[3]).toContain("evidence");
+		expect(results[4]).toContain("Ticked a1");
+		expect(results[5]).toContain("[x] a1 the cursor survives a deleted row · users.test.ts: 14 passed");
+		expect(results[5]).toContain("[ ] a2 limit is capped at 100");
+
+		expect(shown()).toMatchObject({ reason: "progress", frame: { version: 1, nextItem: 3 } });
+		expect(shown()?.frame.acceptance).toEqual([
+			{
+				id: "a1",
+				text: "the cursor survives a deleted row",
+				done: true,
+				doneBy: "model",
+				evidence: "users.test.ts: 14 passed",
+				addedBy: "model",
+			},
+			{ id: "a2", text: "limit is capped at 100", done: false, addedBy: "model" },
+		]);
+		// Stored like a version, so a reload or a rewind has the same list: created, two adds, one tick. Refusals store nothing.
+		expect(entries().map((entry) => entry.reason)).toEqual(["created", "progress", "progress", "progress"]);
+		expect(entries().every((entry) => entry.frame.version === 1)).toBe(true);
+	});
+
+	it("todo is a baseline capability in the catalog", async () => {
+		let runtime: KyrnRuntime | undefined;
+		const extensions = await createTestExtensionsResult([
+			(pi: ConstructorParameters<typeof KyrnRuntime>[0]) => {
+				runtime = new KyrnRuntime(pi, parseConfig({}), new Judge({ provider: new MockJudgeProvider() }));
+				registerFrame(runtime);
+			},
+		]);
+		expect(extensions.extensions).toHaveLength(1);
+		expect(runtime?.catalog.get("tool:todo")).toMatchObject({ kind: "tool", tools: ["todo"], exposure: "always" });
+		expect(runtime?.catalog.hiddenTools().has("todo")).toBe(false);
 	});
 
 	it("forgetting holds back while the frame is stale, and carries on once it has caught up", async () => {

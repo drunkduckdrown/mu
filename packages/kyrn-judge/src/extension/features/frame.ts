@@ -1,6 +1,8 @@
 import type { ExtensionContext, InputEvent, InputEventResult } from "@earendil-works/pi-coding-agent";
+import { Type } from "typebox";
 import { taskFrame } from "../../decisions/task-frame.ts";
 import {
+	addItem,
 	compactFrame,
 	createFrame,
 	describeFrame,
@@ -14,6 +16,7 @@ import {
 	parseFrameEntry,
 	renderFrameNote,
 	ruleUpdate,
+	tickItem,
 	type UserText,
 	withEntryId,
 } from "../../frame/frame.ts";
@@ -436,6 +439,62 @@ export function registerFrame(runtime: KyrnRuntime): void {
 			return undefined;
 		}),
 	);
+
+	// The to-do list is the frame's acceptance criteria: one list, so "done" means what the user asked for.
+	const checklist = (frame: Frame | undefined): string =>
+		frame && frame.acceptance.length > 0
+			? frame.acceptance
+					.map(
+						(item) =>
+							`[${item.done ? "x" : " "}] ${item.id} ${item.text}${item.evidence ? ` · ${item.evidence}` : ""}`,
+					)
+					.join("\n")
+			: 'The list is empty. Add what has to be true before the task is finished: todo({ action: "add", text: "…" }).';
+	const answer = (action: string, text: string, error = false) => ({
+		content: [{ type: "text" as const, text }],
+		details: { action, error, items: [...(state().frame?.acceptance ?? [])] },
+	});
+	pi.registerTool({
+		name: "todo",
+		label: "To-do",
+		description:
+			"The checklist of what has to be true before the task is finished, kept in mu's task frame. list shows it. done ticks one item and needs one line of evidence (the command that passed, the file that changed). add records an item you discovered. Tick items as you finish them; do not say the task is done while one is open.",
+		parameters: Type.Object({
+			action: Type.Unsafe<"list" | "done" | "add">({
+				type: "string",
+				enum: ["list", "done", "add"],
+				description: "list, done or add",
+			}),
+			id: Type.Optional(Type.String({ description: "Id of the item to tick, such as a2 (done)" })),
+			evidence: Type.Optional(Type.String({ description: "One line on what shows the item is met (done)" })),
+			text: Type.Optional(Type.String({ description: "What has to be true (add)" })),
+		}),
+		execute: async (_toolCallId, params) => {
+			const current = state();
+			const frame = current.frame;
+			if (!frame) return answer(params.action, "There is no task yet, so there is nothing to tick.", true);
+			if (params.action === "list") return answer("list", checklist(frame));
+			const changed =
+				params.action === "done"
+					? tickItem(frame, params.id ?? "", params.evidence ?? "", "model")
+					: params.action === "add"
+						? addItem(frame, params.text ?? "", "model")
+						: { error: `Unknown action "${String(params.action)}". Use list, done or add.` };
+			if ("error" in changed) return answer(params.action, changed.error, true);
+			// Progress, not a change of task: same version, stored the same way, so a rewind takes the tick back too.
+			commit({ frame: changed.frame, unmerged: current.unmerged }, "progress");
+			const verb = params.action === "done" ? "Ticked" : "Added";
+			return answer(params.action, `${verb} ${changed.item.id}: ${changed.item.text}\n${checklist(changed.frame)}`);
+		},
+	});
+	runtime.catalog.register({
+		id: "tool:todo",
+		kind: "tool",
+		title: "To-do list",
+		description: "The task's acceptance checklist: list it, tick an item with evidence, add one that was discovered.",
+		tools: ["todo"],
+		exposure: "always",
+	});
 
 	pi.registerCommand("frame", {
 		description: "The task frame: goal, your hard constraints and where you said them, subgoal, acceptance items",
