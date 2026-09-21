@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { CapabilityCatalog } from "../catalog/catalog.ts";
 import { featureOptions, type KyrnConfig } from "../config.ts";
 import { DecisionEngine, type DecisionMode } from "../decision.ts";
 import type { PreflightOutcome, TaskFrame } from "../decisions/input-preflight.ts";
@@ -84,6 +85,8 @@ export class KyrnRuntime {
 	readonly config: KyrnConfig;
 	readonly engine: DecisionEngine;
 	readonly memory = new MemoryLedger();
+	/** Everything installed that the judge may open per task: packs, MCP servers, language servers. */
+	readonly catalog = new CapabilityCatalog();
 	readonly problems: string[] = [];
 	readonly savings: Savings = { admissionOmittedChars: 0, skillsHiddenChars: 0, forgottenChars: 0, compactedChars: 0 };
 	readonly sessionId = randomUUID();

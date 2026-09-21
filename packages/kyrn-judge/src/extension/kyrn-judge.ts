@@ -15,12 +15,14 @@
  * never surface as an exception.
  */
 import { type ExtensionAPI, getAgentDir } from "@earendil-works/pi-coding-agent";
+import type { Capability } from "../catalog/catalog.ts";
 import { DEFAULT_CONFIG, type KyrnConfig, loadConfig } from "../config.ts";
 import type { DecisionMode } from "../decision.ts";
 import { Judge } from "../judge.ts";
 import type { JudgeProvider } from "../types.ts";
 import { registerAdmission } from "./features/admission.ts";
 import { registerBrowser } from "./features/browser.ts";
+import { registerCatalog } from "./features/catalog.ts";
 import { registerCommands } from "./features/commands.ts";
 import { registerCompaction } from "./features/compaction.ts";
 import { registerCompletion } from "./features/completion.ts";
@@ -56,6 +58,8 @@ export interface KyrnJudgeExtensionOptions {
 	swarmRunner?: SwarmRunner;
 	/** Register only these features, e.g. `["browser"]` for the browser alone on a stock pi. Default: all of them. */
 	only?: readonly FeatureName[];
+	/** Extra catalog entries, for embedding and tests. Whoever passes them registers their tools. */
+	capabilities?: readonly Capability[];
 }
 
 export type FeatureName =
@@ -63,6 +67,7 @@ export type FeatureName =
 	| "preflight"
 	| "memory"
 	| "skills"
+	| "catalog"
 	| "guard"
 	| "admission"
 	| "forgetting"
@@ -105,6 +110,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 	);
 	runtime.enabled = !loaded.disabled;
 	runtime.onPresentation = options.onPresentation;
+	for (const capability of options.capabilities ?? []) runtime.catalog.register(capability);
 	registerWelcome(runtime);
 	if (loaded.disabled) {
 		registerCommands(runtime);
@@ -122,6 +128,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["preflight", registerPreflight],
 		["memory", registerMemory],
 		["skills", registerSkills],
+		// Registered before the features that add capabilities, and that is fine: it reads the catalog when a turn starts.
+		["catalog", registerCatalog],
 		["guard", registerGuard],
 		["admission", registerAdmission],
 		["forgetting", registerForgetting],

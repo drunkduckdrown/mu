@@ -12,6 +12,7 @@ export interface KyrnPresentationEvent {
 		| "decision"
 		| "progress"
 		| "memory.stored"
+		| "capability.opened"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;
