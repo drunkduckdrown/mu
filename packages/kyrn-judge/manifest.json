@@ -1294,6 +1294,120 @@
 			]
 		},
 		{
+			"name": "background",
+			"title": {
+				"zh": "后台命令",
+				"en": "Background commands"
+			},
+			"summary": {
+				"zh": "bg_start / bg_output / bg_stop：开发服务器、长时间构建不占用回合；结束时是否打断交给“通知分流”；会话结束时全部终止。",
+				"en": "bg_start / bg_output / bg_stop: dev servers and long builds without blocking the turn. Whether the end of a job interrupts is decided by notification routing; every job stops with the session."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "maxJobs",
+					"kind": "number",
+					"default": 8,
+					"min": 1,
+					"max": 32,
+					"label": {
+						"zh": "同时运行的任务上限",
+						"en": "Jobs running at the same time"
+					}
+				},
+				{
+					"key": "bufferChars",
+					"kind": "number",
+					"default": 262144,
+					"min": 10000,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "每个任务留在内存里的输出",
+						"en": "Output kept in memory per job"
+					},
+					"help": {
+						"zh": "只留最新的；完整输出在日志文件里。",
+						"en": "The newest is kept; the log file has everything."
+					}
+				},
+				{
+					"key": "maxOutputChars",
+					"kind": "number",
+					"default": 20000,
+					"min": 1000,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "bg_output 单次返回上限",
+						"en": "Most that one bg_output returns"
+					}
+				},
+				{
+					"key": "killGraceMs",
+					"kind": "number",
+					"default": 3000,
+					"min": 0,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "强制终止前的等待",
+						"en": "Wait before a job is killed by force"
+					},
+					"help": {
+						"zh": "先发 SIGTERM（Windows 上是不带 /F 的 taskkill），超时后强制。",
+						"en": "SIGTERM first (taskkill without /F on Windows), force after this long."
+					}
+				},
+				{
+					"key": "logDir",
+					"kind": "text",
+					"default": "",
+					"label": {
+						"zh": "日志目录",
+						"en": "Log directory"
+					},
+					"help": {
+						"zh": "留空为 ~/.mu/jobs/<会话 id>，7 天后清理。",
+						"en": "Empty means ~/.mu/jobs/<session id>, cleared after 7 days."
+					}
+				},
+				{
+					"key": "inheritShell",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "沿用前台 shell 设置",
+						"en": "Use the foreground shell settings"
+					},
+					"help": {
+						"zh": "读取 settings.json 的 shellPath 和 shellCommandPrefix，与 bash 工具一致。",
+						"en": "Reads shellPath and shellCommandPrefix from settings.json, like the bash tool."
+					}
+				},
+				{
+					"key": "wakeWhenIdle",
+					"kind": "boolean",
+					"default": false,
+					"label": {
+						"zh": "空闲时任务结束可唤醒代理",
+						"en": "A finished job may wake an idle agent"
+					},
+					"help": {
+						"zh": "只有判定为“立刻”时才会开始新回合；关闭时只留一条消息。",
+						"en": "Only a verdict of \"now\" starts a turn; when off the notice is only appended."
+					}
+				}
+			]
+		},
+		{
 			"name": "welcome",
 			"title": {
 				"zh": "欢迎页",

@@ -17,6 +17,12 @@ export interface KyrnPresentationEvent {
 		| "constraint.blocked"
 		| "browser.run"
 		| "browser.step"
+		| "background.start"
+		| "background.exit"
+		| "background.stop"
+		| "background.match"
+		| "web.fetch"
+		| "web.search"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;

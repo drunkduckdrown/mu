@@ -80,7 +80,12 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 			if (event.content.some((block) => block.type !== "text")) return undefined;
 			const text = textOf(event.content);
 			if (text.length < options.minChars) return undefined;
-			const call = describeCall(toolName, event.input);
+			// bg_output is called with a job id; what produced the text is the job's command, which its result carries.
+			const details = event.details as { command?: unknown } | undefined;
+			const call = describeCall(
+				toolName,
+				typeof details?.command === "string" ? { command: details.command } : event.input,
+			);
 			const archiveDir = join(tmpdir(), `kyrn-${runtime.sessionId}`);
 			const archivePath = join(archiveDir, `${event.toolCallId.replace(/[^\w.-]/g, "_")}.txt`);
 

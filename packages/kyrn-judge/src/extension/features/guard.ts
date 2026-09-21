@@ -15,6 +15,9 @@ const RULES: readonly (readonly [RegExp, string])[] = [
 	[/\bsudo\b/, "runs as root"],
 ];
 
+/** Tools whose `command` is a shell command line. A command is no safer for running in the background. */
+const COMMAND_TOOLS: ReadonlySet<string> = new Set(["bash", "bg_start"]);
+
 /** Why a shell command deserves a second look, or undefined when no rule matches. */
 export function riskFlag(command: string): string | undefined {
 	return RULES.find(([pattern]) => pattern.test(command))?.[1];
@@ -33,7 +36,7 @@ export function registerGuard(runtime: KyrnRuntime): void {
 		"tool_call",
 		failOpen(async (event, ctx) => {
 			runtime.touch(ctx);
-			if (event.toolName !== "bash") return undefined;
+			if (!COMMAND_TOOLS.has(event.toolName)) return undefined;
 			const command = String((event.input as { command?: unknown }).command ?? "");
 			const flag = riskFlag(command);
 			if (!flag) return undefined;

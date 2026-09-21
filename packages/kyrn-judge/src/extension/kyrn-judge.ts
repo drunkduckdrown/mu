@@ -21,6 +21,7 @@ import type { DecisionMode } from "../decision.ts";
 import { Judge } from "../judge.ts";
 import type { JudgeProvider } from "../types.ts";
 import { registerAdmission } from "./features/admission.ts";
+import { registerBackground } from "./features/background.ts";
 import { registerBrowser } from "./features/browser.ts";
 import { registerCatalog } from "./features/catalog.ts";
 import { registerCommands } from "./features/commands.ts";
@@ -83,7 +84,8 @@ export type FeatureName =
 	| "swarm"
 	| "hive"
 	| "tools"
-	| "browser";
+	| "browser"
+	| "background";
 
 export function createKyrnJudgeExtension(options: KyrnJudgeExtensionOptions = {}): (pi: ExtensionAPI) => void {
 	return (pi) => registerKyrn(pi, options);
@@ -149,6 +151,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["hive", (shared) => registerHive(shared, options.swarmRunner)],
 		["tools", registerTools],
 		["browser", registerBrowser],
+		["background", registerBackground],
 	];
 	for (const [name, register] of features) {
 		if (!options.only || options.only.includes(name)) register(runtime);
