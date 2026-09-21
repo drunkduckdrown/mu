@@ -35,6 +35,8 @@ Judgment layer
   /mu route <decision> <tiers|default>      one decision on its own judge, e.g. browser.step luna
   /mu mode <decision|default> <off|shadow|active>
   /frame                   the task as mu holds it: goal, your hard constraints and where you said them, to-do items
+  /goal <condition>        keep the agent working until the condition holds; /goal shows it, /goal clear ends it
+  /capabilities            what is installed, and what the judge has opened for this task
   /ledger [n]              the last n verdicts with timing
   /remember <lesson>       keep a lesson for future sessions
 
