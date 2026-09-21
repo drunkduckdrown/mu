@@ -12,8 +12,10 @@ import {
 	type FrameEntryData,
 	type FrameState,
 	frameEntry,
+	inheritConstraints,
 	isStale,
 	parseFrameEntry,
+	parseInheritedConstraints,
 	renderFrameNote,
 	ruleUpdate,
 	tickItem,
@@ -229,7 +231,9 @@ export function registerFrame(runtime: KyrnRuntime): void {
 	};
 
 	const create = (ask: Ask) => {
-		commit({ frame: createFrame(asText(ask)), unmerged: [] }, "created", ask);
+		// A sub-agent starts under what the user told its parent: the constraint gate holds there too.
+		const inherited = parseInheritedConstraints(process.env.KYRN_SWARM_CONSTRAINTS);
+		commit({ frame: inheritConstraints(createFrame(asText(ask)), inherited), unmerged: [] }, "created", ask);
 		// The note would only repeat the prompt it rides along with.
 		notedVersion = 1;
 	};

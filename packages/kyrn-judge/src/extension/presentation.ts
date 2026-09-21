@@ -14,6 +14,7 @@ export interface KyrnPresentationEvent {
 		| "memory.stored"
 		| "frame.updated"
 		| "capability.opened"
+		| "constraint.blocked"
 		| "browser.run"
 		| "browser.step"
 		| "context.policy"

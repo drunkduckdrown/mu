@@ -1,0 +1,56 @@
+import { toolConstraint } from "../../decisions/tool-constraint.ts";
+import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
+
+/** Tools that change something. Reading and searching never go against "do not modify". */
+const MUTATING = new Set(["edit", "write", "bash", "sg_rewrite", "bg_start", "apply_patch_from"]);
+
+/** What a call would do, short enough for a judge: where, and the beginning of what. */
+export function describeCall(toolName: string, input: unknown): string {
+	const record = (typeof input === "object" && input !== null ? input : {}) as Record<string, unknown>;
+	const text = (value: unknown) => (typeof value === "string" ? value : "");
+	if (toolName === "bash" || toolName === "bg_start") return clip(text(record.command), 500);
+	const path = text(record.path) || text(record.file_path) || text(record.file);
+	const body = text(record.content) || text(record.newText) || text(record.new_string) || text(record.rewrite);
+	return clip(`${path}${body ? ` <- ${body}` : ""}` || JSON.stringify(record), 500);
+}
+
+/**
+ * Keeps the user's hard constraints, not just shows them: a call that changes
+ * something is checked against every constraint in the task frame before it
+ * runs. The block reason is the user's own sentence.
+ */
+export function registerConstraints(runtime: KyrnRuntime): void {
+	const options = runtime.options("constraints", { enabled: true, maxConstraints: 6, waitMs: 5000 });
+	if (!options.enabled) return;
+
+	runtime.pi.on(
+		"tool_call",
+		failOpen(async (event, ctx) => {
+			runtime.touch(ctx);
+			if (!MUTATING.has(event.toolName)) return undefined;
+			// The newest constraints are the ones a user is most likely to see broken.
+			const constraints = (runtime.frame?.constraints ?? [])
+				.slice(-options.maxConstraints)
+				.map((entry) => entry.text);
+			if (constraints.length === 0 || runtime.mode(toolConstraint.id) === "off") return undefined;
+
+			const decision = await Promise.race([
+				runtime.engine.decide(
+					toolConstraint,
+					{ toolName: event.toolName, call: describeCall(event.toolName, event.input), constraints },
+					{ signal: ctx.signal },
+				),
+				new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), options.waitMs)),
+			]);
+			// Shadow records what it would have stopped. Only an active, judged verdict stops a call.
+			if (!decision || decision.mode !== "active" || decision.source !== "judge") return undefined;
+			const broken = decision.outcome.broken.map((index) => constraints[index]).filter(Boolean);
+			if (broken.length === 0) return undefined;
+			runtime.present("constraint.blocked", { toolName: event.toolName, constraints: broken });
+			return {
+				block: true,
+				reason: `mu: this call goes against what the user said: ${broken.map((text) => `"${clip(text, 200)}"`).join("; ")}. Do it another way, or ask the user whether the instruction still holds.`,
+			};
+		}),
+	);
+}

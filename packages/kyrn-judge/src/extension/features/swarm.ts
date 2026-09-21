@@ -360,6 +360,9 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 		execute: async (_toolCallId, params, signal, onUpdate, ctx) => {
 			runtime.touch(ctx);
 			const tasks: SwarmTask[] = params.tasks.slice(0, options.maxTasks);
+			const constraints = (runtime.frame?.constraints ?? []).map((constraint) => constraint.text);
+			const inheritedConstraints =
+				constraints.length > 0 ? { KYRN_SWARM_CONSTRAINTS: JSON.stringify(constraints.slice(-12)) } : undefined;
 			const names = uniqueNames(tasks.map((task) => task.title));
 			announceRouting(onUpdate, tasks.length);
 			const roles = usable();
@@ -402,6 +405,8 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 					role: assignments[index].agent?.name,
 					model: assignments[index].model,
 					thinking: assignments[index].thinking,
+					// What the user ruled out for the task holds for whoever works on a part of it.
+					env: inheritedConstraints,
 				})),
 			});
 			streamUpdates(run, onUpdate);

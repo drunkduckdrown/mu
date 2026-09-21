@@ -238,6 +238,16 @@ export const MANIFEST: HarnessManifest = {
 			},
 		},
 		{
+			id: "tool.constraint",
+			group: "tools",
+			feature: "constraints",
+			title: { zh: "硬约束把关", en: "Hard constraint gate" },
+			summary: {
+				zh: "你说过“先别改 X”“不要加依赖”这类话会原文记在任务帧里；每次要改动东西之前，逐条判断这次调用是否违反，确信违反才拦下，并用你的原话告诉模型。",
+				en: "What you ruled out is kept word for word in the task frame; before a call that changes something, each constraint is checked, and only a confident violation is stopped, in your own words.",
+			},
+		},
+		{
 			id: "files.locate",
 			group: "tools",
 			feature: "locate",
@@ -506,6 +516,35 @@ export const MANIFEST: HarnessManifest = {
 			summary: { zh: "危险命令在执行前确认。", en: "Confirms dangerous commands before they run." },
 			defaultEnabled: true,
 			options: [],
+		},
+		{
+			name: "constraints",
+			title: { zh: "硬约束把关", en: "Hard constraint gate" },
+			summary: {
+				zh: "改动文件或执行命令之前，对照你的硬约束检查一遍；子代理同样受这些约束限制。",
+				en: "Checks a change or a command against your hard constraints first; sub-agents work under them too.",
+			},
+			defaultEnabled: true,
+			options: [
+				{
+					key: "maxConstraints",
+					kind: "number",
+					default: 6,
+					min: 1,
+					max: 20,
+					label: { zh: "每次最多对照的约束条数", en: "Constraints checked per call at most" },
+					help: { zh: "取最新的几条。", en: "The newest ones are used." },
+				},
+				{
+					key: "waitMs",
+					kind: "number",
+					default: 5000,
+					min: 500,
+					max: 30000,
+					unit: ms,
+					label: { zh: "最多等待", en: "Wait at most" },
+				},
+			],
 		},
 		{
 			name: "admission",

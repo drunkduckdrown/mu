@@ -121,6 +121,32 @@ export function createFrame(first: UserText): Frame {
 	};
 }
 
+/** A sub-agent works under its parent's constraints. Turn 0 marks them as handed down, not said in this session. */
+export function inheritConstraints(frame: Frame, texts: readonly string[]): Frame {
+	const known = new Set(frame.constraints.map((constraint) => constraint.text));
+	const added: Constraint[] = [];
+	for (const raw of texts) {
+		const text = raw.trim().slice(0, CONSTRAINT_CHARS);
+		if (text.length === 0 || known.has(text)) continue;
+		known.add(text);
+		added.push({ text, source: { turn: 0 } });
+	}
+	return added.length === 0 ? frame : { ...frame, constraints: [...frame.constraints, ...added] };
+}
+
+/** What the parent put into `KYRN_SWARM_CONSTRAINTS`: a JSON list of sentences. Anything else is nothing. */
+export function parseInheritedConstraints(raw: string | undefined): readonly string[] {
+	if (!raw) return [];
+	try {
+		const parsed: unknown = JSON.parse(raw);
+		return Array.isArray(parsed)
+			? parsed.filter((item): item is string => typeof item === "string").slice(0, 12)
+			: [];
+	} catch {
+		return [];
+	}
+}
+
 /**
  * The update when no model can write one. It never rephrases: a constraint or
  * a correction is kept word for word, and a message whose effect is unclear

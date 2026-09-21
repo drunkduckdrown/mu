@@ -26,6 +26,7 @@ import { registerCatalog } from "./features/catalog.ts";
 import { registerCommands } from "./features/commands.ts";
 import { registerCompaction } from "./features/compaction.ts";
 import { registerCompletion } from "./features/completion.ts";
+import { registerConstraints } from "./features/constraints.ts";
 import { registerForgetting } from "./features/forgetting.ts";
 import { registerFrame } from "./features/frame.ts";
 import { registerGuard } from "./features/guard.ts";
@@ -71,6 +72,7 @@ export type FeatureName =
 	| "skills"
 	| "catalog"
 	| "guard"
+	| "constraints"
 	| "admission"
 	| "forgetting"
 	| "compaction"
@@ -135,6 +137,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		// Registered before the features that add capabilities, and that is fine: it reads the catalog when a turn starts.
 		["catalog", registerCatalog],
 		["guard", registerGuard],
+		["constraints", registerConstraints],
 		["admission", registerAdmission],
 		["forgetting", registerForgetting],
 		["compaction", registerCompaction],
