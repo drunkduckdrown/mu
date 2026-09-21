@@ -14,6 +14,7 @@
  * treats a throwing `tool_call` handler as a block, so a judge outage must
  * never surface as an exception.
  */
+import { homedir } from "node:os";
 import { type ExtensionAPI, getAgentDir } from "@earendil-works/pi-coding-agent";
 import type { Capability } from "../catalog/catalog.ts";
 import { DEFAULT_CONFIG, type KyrnConfig, loadConfig } from "../config.ts";
@@ -32,7 +33,9 @@ import { registerFrame } from "./features/frame.ts";
 import { registerGoal } from "./features/goal.ts";
 import { registerGuard } from "./features/guard.ts";
 import { registerHive } from "./features/hive.ts";
+import { type HarnessRoots, registerInherit } from "./features/inherit.ts";
 import { registerInterjection } from "./features/interjection.ts";
+import { type McpFeatureOptions, registerMcp } from "./features/mcp.ts";
 import { registerMemory } from "./features/memory.ts";
 import { registerMonitor } from "./features/monitor.ts";
 import { registerNotify } from "./features/notify.ts";
@@ -64,6 +67,13 @@ export interface KyrnJudgeExtensionOptions {
 	only?: readonly FeatureName[];
 	/** Extra catalog entries, for embedding and tests. Whoever passes them registers their tools. */
 	capabilities?: readonly Capability[];
+	/**
+	 * The home folder whose Claude Code, Cursor and Codex setup is inherited, and the agent directory mu keeps its
+	 * state in. Default: the real ones, unless `config` or `provider` was injected, in which case no home is read.
+	 */
+	roots?: HarnessRoots;
+	/** For tests of the MCP feature. */
+	mcp?: McpFeatureOptions;
 }
 
 export type FeatureName =
@@ -87,7 +97,9 @@ export type FeatureName =
 	| "swarm"
 	| "hive"
 	| "tools"
-	| "browser";
+	| "browser"
+	| "inherit"
+	| "mcp";
 
 export function createKyrnJudgeExtension(options: KyrnJudgeExtensionOptions = {}): (pi: ExtensionAPI) => void {
 	return (pi) => registerKyrn(pi, options);
@@ -128,6 +140,10 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 	// A sub-agent first of all listens to its parent: a wrap-up request has to be known before anything else reacts to a step.
 	if (process.env.KYRN_SWARM_CONTROL) registerSwarmChild(runtime, process.env.KYRN_SWARM_CONTROL);
 
+	// Whoever injected a provider or a config owns the setup, and that includes not reading the user's home folder.
+	const roots: HarnessRoots | undefined =
+		options.roots ?? (options.config || options.provider ? undefined : { home: homedir(), agentDir: getAgentDir() });
+
 	// Order matters where two features share an event: interjection must see a
 	// mid-run message before anything else, and preflight must set the turn's
 	// gear before memory and skills read it.
@@ -155,6 +171,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["hive", (shared) => registerHive(shared, options.swarmRunner)],
 		["tools", registerTools],
 		["browser", registerBrowser],
+		["inherit", (shared) => registerInherit(shared, roots)],
+		["mcp", (shared) => registerMcp(shared, roots, options.mcp)],
 	];
 	for (const [name, register] of features) {
 		if (!options.only || options.only.includes(name)) register(runtime);

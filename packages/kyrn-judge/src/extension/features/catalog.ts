@@ -127,11 +127,13 @@ export function registerCatalog(runtime: KyrnRuntime): void {
 					};
 				}
 				applyLoadout();
+				// Read again: a capability that only learns its tools by starting (an MCP server) replaced its entry while opening.
+				const tools = (catalog.get(params.open) ?? known).tools;
 				return {
 					content: [
 						{
 							type: "text",
-							text: `${known.title} is open. Its tools are available from your next step: ${known.tools.join(", ")}`,
+							text: `${known.title} is open. Its tools are available from your next step: ${tools.join(", ")}`,
 						},
 					],
 					details: { opened: params.open, matches: [] } satisfies FindDetails as FindDetails,

@@ -48,6 +48,8 @@ export interface KyrnConfig {
 	readonly routes: Readonly<Record<string, readonly string[]>>;
 	/** Per-feature switches and options, read by each feature. */
 	readonly features: Readonly<Record<string, unknown>>;
+	/** mu's own MCP servers: `{ "servers": { "<name>": { "command" | "url", … } } }`. Read by `src/inherit/mcp-config.ts`. */
+	readonly mcp?: unknown;
 	/** "provider/model-id" of a small generative model for the things a judge cannot do: task frames, lessons. */
 	readonly writer?: string;
 	/** Store judged states in the ledger (needed to distil a local judge). Off by default: states hold user content. */
@@ -129,6 +131,7 @@ export function parseConfig(value: unknown): KyrnConfig {
 		modes: { ...DEFAULT_CONFIG.modes, ...readModes(value.modes) },
 		routes: readRoutes(value.routes),
 		features: isRecord(value.features) ? value.features : {},
+		mcp: isRecord(value.mcp) ? value.mcp : undefined,
 		writer: typeof value.writer === "string" ? value.writer : undefined,
 		recordState: value.recordState === true,
 	};
