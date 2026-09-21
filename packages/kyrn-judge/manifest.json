@@ -345,6 +345,19 @@
 			}
 		},
 		{
+			"id": "swarm.patch",
+			"group": "team",
+			"feature": "swarm",
+			"title": {
+				"zh": "子代理补丁的范围检查",
+				"en": "Scope check of a sub-agent's patch"
+			},
+			"summary": {
+				"zh": "隔离的子代理交回补丁时，只看任务、改动的路径和行数，判断改动是否超出任务、哪些文件与任务无关；只给主代理一句提示，从不拦截。",
+				"en": "When an isolated sub-agent hands back a patch, judges from the task, the changed paths and the line counts whether it stays within the task and which files look unrelated. One line of advice for the main agent; it never blocks."
+			}
+		},
+		{
 			"id": "hive.publish",
 			"group": "team",
 			"feature": "hive",
@@ -1267,6 +1280,63 @@
 					"help": {
 						"zh": "留空使用 <agent 目录>/agents。",
 						"en": "Empty uses <agent dir>/agents."
+					}
+				},
+				{
+					"key": "isolation",
+					"kind": "choice",
+					"default": "worktree",
+					"choices": [
+						{
+							"value": "worktree",
+							"label": {
+								"zh": "在独立的 git worktree 里改",
+								"en": "Edit in a git worktree of its own"
+							}
+						},
+						{
+							"value": "none",
+							"label": {
+								"zh": "直接在当前目录改",
+								"en": "Edit in place"
+							}
+						}
+					],
+					"label": {
+						"zh": "会改文件的子代理",
+						"en": "Sub-agents that edit files"
+					},
+					"help": {
+						"zh": "隔离时改动以补丁交回，由主代理用 apply_patch_from 决定是否应用；不在 git 仓库里时自动退回原地修改。",
+						"en": "Isolated changes come back as a patch that the main agent applies with apply_patch_from, or not. Outside a git repository it falls back to editing in place."
+					}
+				},
+				{
+					"key": "carryUncommitted",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "带上未提交的改动",
+						"en": "Carry uncommitted changes over"
+					},
+					"help": {
+						"zh": "子代理从主代理当前看到的文件状态开始，而不是从上一次提交开始。",
+						"en": "The sub-agent starts from the files as the main agent sees them, not from the last commit."
+					}
+				},
+				{
+					"key": "patchPreviewLines",
+					"kind": "number",
+					"default": 30,
+					"min": 0,
+					"max": 400,
+					"label": {
+						"zh": "补丁预览行数",
+						"en": "Lines of patch preview"
+					},
+					"help": {
+						"zh": "随子代理报告一起给主代理看的补丁开头。",
+						"en": "The beginning of the patch shown with the sub-agent's report."
 					}
 				}
 			]

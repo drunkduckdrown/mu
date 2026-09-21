@@ -19,6 +19,10 @@ export interface KyrnPresentationEvent {
 		| "ttsr.interrupted"
 		| "browser.run"
 		| "browser.step"
+		| "swarm.worktree.created"
+		| "swarm.patch.ready"
+		| "swarm.patch.applied"
+		| "swarm.worktree.removed"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;
