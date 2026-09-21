@@ -144,6 +144,8 @@ export function registerGoal(runtime: KyrnRuntime): void {
 			const last = [...event.messages].reverse().find((message) => message.role === "assistant") as
 				| { content?: unknown; stopReason?: string }
 				| undefined;
+			// Cut by the harness itself, which also sends the model back to work: not an interruption by the user.
+			if (runtime.harnessAbort) return undefined;
 			if (last?.stopReason === "aborted") {
 				pause(ctx, "you interrupted the run");
 				return undefined;

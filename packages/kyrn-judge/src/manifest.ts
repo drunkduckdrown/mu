@@ -288,6 +288,16 @@ export const MANIFEST: HarnessManifest = {
 			},
 		},
 		{
+			id: "output.drift",
+			group: "turn",
+			feature: "ttsr",
+			title: { zh: "写偏即停（实验）", en: "Mid-stream correction (experiment)" },
+			summary: {
+				zh: "模型边输出，判定器边每隔几百字对照一次你的硬约束和下面配置的规则；确信写偏了就立刻掐断输出，告诉模型是哪一条，让它从断点接着写。只有开启了“写偏即停”功能才会运行。",
+				en: "While the model writes, the judge reads the tail of its output against your hard constraints and the configured rules every few hundred characters; on a confident violation the output is cut, the rule is named, and the model carries on from there. Runs only with the feature switched on.",
+			},
+		},
+		{
 			id: "goal.met",
 			group: "turn",
 			feature: "goal",
@@ -762,6 +772,52 @@ export const MANIFEST: HarnessManifest = {
 					label: { zh: "同一调用重复几次算打转", en: "Repeats that count as a loop" },
 				},
 				{ key: "window", kind: "number", default: 8, min: 2, max: 100, label: { zh: "观察窗口", en: "Window" } },
+			],
+		},
+		{
+			name: "ttsr",
+			title: { zh: "写偏即停（实验）", en: "Mid-stream correction (experiment)" },
+			summary: {
+				zh: "语义版 TTSR：不用正则，而由判定器发现模型写偏，中断输出、摆出规则、从原处继续。默认关闭；开启后每隔一段输出就会多一次判定调用。",
+				en: "Semantic TTSR: the judge, not a regular expression, notices the output going astray, cuts it, shows the rule and lets the model carry on. Off by default; when on, every stretch of output costs one more judge call.",
+			},
+			defaultEnabled: false,
+			options: [
+				{
+					key: "rules",
+					kind: "list",
+					default: [],
+					label: { zh: "一直要守的规则", en: "Rules to hold at all times" },
+					help: {
+						zh: "一行一条，用平常的话写，例如“用中文回答”“不要写占位实现”。任务帧里你的硬约束会自动加入，不必重复。",
+						en: "One per line, in plain words, e.g. “Answer in Chinese”, “No placeholder implementations”. Your hard constraints from the task frame are added automatically.",
+					},
+				},
+				{
+					key: "segmentChars",
+					kind: "number",
+					default: 600,
+					min: 200,
+					max: 5000,
+					label: { zh: "每输出多少字符判一次", en: "Characters of output per check" },
+				},
+				{
+					key: "maxRules",
+					kind: "number",
+					default: 4,
+					min: 1,
+					max: 12,
+					label: { zh: "每次最多对照的规则条数", en: "Rules checked per call at most" },
+					help: { zh: "超出时保留你最近说的。", en: "When there are more, the ones you said last stay." },
+				},
+				{
+					key: "maxInterrupts",
+					kind: "number",
+					default: 2,
+					min: 1,
+					max: 10,
+					label: { zh: "两次发言之间最多中断几次", en: "Cuts at most between two of your messages" },
+				},
 			],
 		},
 		{

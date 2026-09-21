@@ -41,6 +41,7 @@ import { registerSkills } from "./features/skills.ts";
 import { registerSwarm, type SwarmRunner } from "./features/swarm.ts";
 import { registerSwarmChild } from "./features/swarm-child.ts";
 import { registerTools } from "./features/tools.ts";
+import { registerTtsr } from "./features/ttsr.ts";
 import { registerWarming } from "./features/warming.ts";
 import { registerWelcome } from "./features/welcome.ts";
 import type { PresentationListener } from "./presentation.ts";
@@ -75,6 +76,7 @@ export type FeatureName =
 	| "guard"
 	| "constraints"
 	| "goal"
+	| "ttsr"
 	| "admission"
 	| "forgetting"
 	| "compaction"
@@ -144,6 +146,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["forgetting", registerForgetting],
 		["compaction", registerCompaction],
 		["monitor", registerMonitor],
+		["ttsr", registerTtsr],
 		["goal", registerGoal],
 		["completion", registerCompletion],
 		["notify", registerNotify],

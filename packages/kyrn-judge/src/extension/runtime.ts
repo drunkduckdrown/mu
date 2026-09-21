@@ -103,6 +103,8 @@ export class KyrnRuntime {
 	frameState: FrameState | undefined;
 	/** A goal is set and running: deciding whether the agent may stop is the goal feature's job, nobody else's. */
 	goalActive = false;
+	/** The harness itself cut the run that is ending (mid-stream correction), and will start the next one. Not the user's Esc. */
+	harnessAbort = false;
 	/**
 	 * Whoever keeps the task frame sets this. It hears of a message the moment its turn is counted,
 	 * so the frame's judge runs alongside preflight's instead of after its wait.

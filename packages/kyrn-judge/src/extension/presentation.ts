@@ -16,6 +16,7 @@ export interface KyrnPresentationEvent {
 		| "capability.opened"
 		| "constraint.blocked"
 		| "goal.state"
+		| "ttsr.interrupted"
 		| "browser.run"
 		| "browser.step"
 		| "context.policy"
