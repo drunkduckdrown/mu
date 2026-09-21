@@ -121,6 +121,8 @@ export function parseSo(body: string): SearchResult[] {
 				findElements(item, (node) => hasClass(node, "res-comm-con"))[0];
 			// The address behind 360's click tracking is carried next to it.
 			const url = link.attrs["data-mdurl"] || link.attrs["data-url"] || link.attrs.href;
+			// 360's own widgets (translation, images, maps) sit in the list like results. They are not.
+			if (/^https?:\/\/(?!www\.)[\w-]+\.so\.com\//.test(url)) return [];
 			return [{ title, url, snippet: described ? elementText(described) : restText(item, title) }];
 		}),
 		"https://www.so.com/",

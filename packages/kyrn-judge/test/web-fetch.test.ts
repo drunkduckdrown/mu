@@ -311,6 +311,21 @@ describe("html to readable text", () => {
 		}
 	});
 
+	it("keeps the words of a box of links and drops its addresses, but not those of a reference list in the text", () => {
+		const menu = Array.from({ length: 8 }, (_, n) => `<a href="/chapter-${n}">Chapter ${n}</a>`).join(" ");
+		const references = Array.from(
+			{ length: 6 },
+			(_, n) => `<li><a href="https://ref.example/${n}">Reference ${n}</a></li>`,
+		);
+		const text = htmlToText(
+			`<body><div class="sidebar"><b>Contents</b> ${menu}</div><div class="post"><p>${"Body text of the tutorial. ".repeat(20)}</p><ul>${references.join("")}</ul></div></body>`,
+			"https://site.example/",
+		).text;
+		expect(text).toContain("Contents Chapter 0 Chapter 1");
+		expect(text).not.toContain("https://site.example/chapter-0");
+		expect(text).toContain("- Reference 5 (https://ref.example/5)");
+	});
+
 	it("survives markup that is broken, and falls back to the body when there is no main element", () => {
 		const broken = htmlToText(
 			"<div><p>one<p>two</div></span><b>three</b> <a href='/x'>four</a><script>alert(1)",

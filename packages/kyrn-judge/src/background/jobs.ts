@@ -212,20 +212,32 @@ export class JobManager {
 		child.stderr?.on("data", onData);
 
 		let flushTimer: NodeJS.Timeout | undefined;
+		let finishing = false;
 		const finish = () => {
-			if (job.finished) return;
+			if (finishing) return;
+			finishing = true;
 			if (flushTimer) clearTimeout(flushTimer);
-			// Asked before the waiters are released: whoever waits on this job is told by its own call.
-			const observed = job.waiting > 0;
-			job.finished = true;
 			job.endedAt ??= Date.now();
 			job.exitCode ??= 1;
 			append(cleaner.push(decoder.decode()) + cleaner.flush());
 			job.lingering = child.pid !== undefined && groupAlive(child.pid, this.platform);
+			let announced = false;
+			const announce = () => {
+				if (announced) return;
+				announced = true;
+				// Asked before the waiters are released: whoever waits on this job is told by its own call.
+				const observed = job.waiting > 0;
+				job.finished = true;
+				for (const listener of [...job.listeners]) listener();
+				this.emit({ type: "exit", job: this.info(job), observed });
+			};
 			// A lingering group still holds the pipes: its output keeps arriving, so the log stays open until they close.
-			if (!job.lingering) this.closeLog(job);
-			for (const listener of [...job.listeners]) listener();
-			this.emit({ type: "exit", job: this.info(job), observed });
+			const log = job.lingering ? undefined : job.log;
+			if (!log) return announce();
+			// The job counts as ended once its log is on disk: whoever is told of the end may read the file next.
+			job.log = undefined;
+			log.end(announce);
+			setTimeout(announce, 500).unref();
 		};
 		child.once("error", (error) => {
 			append(`[mu: the command could not be started: ${error.message}]\n`);

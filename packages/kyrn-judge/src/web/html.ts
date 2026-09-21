@@ -291,6 +291,14 @@ function renderTable(table: ElementNode, context: RenderContext): string {
 		.join("\n");
 }
 
+/** Many links and hardly a word between them: a menu, a sidebar, a tag cloud. Sites in the wild rarely say <nav>. */
+function isLinkList(node: ElementNode): boolean {
+	const links = find(node, (child) => child.tag === "a");
+	if (links.length < 5) return false;
+	const linked = links.reduce((sum, link) => sum + squash(plainText(link)).length, 0);
+	return linked >= squash(plainText(node)).length * 0.7;
+}
+
 /** Block content. Each returned piece is one block; the caller separates them with a blank line. */
 function blocks(node: ElementNode, context: RenderContext, depth = 0): string[] {
 	const out: string[] = [];
@@ -340,8 +348,10 @@ function blocks(node: ElementNode, context: RenderContext, depth = 0): string[] 
 			out.push("---");
 		} else if (BLOCK.has(child.tag) || child.tag === "li") {
 			flush();
-			// A page header is navigation in all but name: its links keep their text and lose their address.
-			out.push(...blocks(child, child.tag === "header" ? { ...context, links: false } : context, depth));
+			// A page header is navigation in all but name, and so is a box of nothing but links, whatever
+			// its tag: their links keep their text and lose their address.
+			const chrome = context.links && (child.tag === "header" || isLinkList(child));
+			out.push(...blocks(child, chrome ? { ...context, links: false } : context, depth));
 		} else {
 			run += inline(child, context);
 		}
