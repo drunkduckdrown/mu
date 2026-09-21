@@ -24,6 +24,9 @@ export interface KyrnPresentationEvent {
 		| "ttsr.interrupted"
 		| "browser.run"
 		| "browser.step"
+		| "diagnostics.delivered"
+		| "diagnostics.held"
+		| "diagnostics.dropped"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;

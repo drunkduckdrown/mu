@@ -35,6 +35,7 @@ import { registerGuard } from "./features/guard.ts";
 import { registerHive } from "./features/hive.ts";
 import { type HarnessRoots, registerInherit } from "./features/inherit.ts";
 import { registerInterjection } from "./features/interjection.ts";
+import { registerLsp } from "./features/lsp.ts";
 import { type McpFeatureOptions, registerMcp } from "./features/mcp.ts";
 import { registerMemory } from "./features/memory.ts";
 import { registerMonitor } from "./features/monitor.ts";
@@ -91,6 +92,7 @@ export type FeatureName =
 	| "forgetting"
 	| "compaction"
 	| "monitor"
+	| "lsp"
 	| "completion"
 	| "notify"
 	| "warming"
@@ -163,6 +165,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["compaction", registerCompaction],
 		["monitor", registerMonitor],
 		["ttsr", registerTtsr],
+		// Before the goal and completion checks: errors an edit introduced are said before "verify your change" is.
+		["lsp", registerLsp],
 		["goal", registerGoal],
 		["completion", registerCompletion],
 		["notify", registerNotify],
