@@ -2,6 +2,7 @@ import type { AgentEndEvent } from "@earendil-works/pi-coding-agent";
 import { turnCompletion } from "../../decisions/turn-completion.ts";
 import { openItems } from "../../frame/frame.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
+import { isShellTool } from "../shell-tools.ts";
 
 const EDIT_TOOLS = ["edit", "write"];
 
@@ -23,7 +24,7 @@ export function registerCompletion(runtime: KyrnRuntime): void {
 			if (EDIT_TOOLS.includes(toolName)) {
 				runtime.turn.editedFiles.add(String((event.input as { path?: unknown }).path ?? "?"));
 				runtime.turn.ranCommandAfterLastEdit = false;
-			} else if (toolName === "bash" && runtime.turn.editedFiles.size > 0) {
+			} else if (isShellTool(toolName) && runtime.turn.editedFiles.size > 0) {
 				runtime.turn.ranCommandAfterLastEdit = true;
 			}
 			return undefined;

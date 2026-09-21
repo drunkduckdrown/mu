@@ -1,5 +1,6 @@
 import { toolRisk } from "../../decisions/tool-risk.ts";
 import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
+import { SHELL_TOOLS } from "../shell-tools.ts";
 
 const RULES: readonly (readonly [RegExp, string])[] = [
 	[/\brm\s+(-[a-zA-Z]+\s+)*-[a-zA-Z]*[rf]/, "recursive or forced delete"],
@@ -11,12 +12,23 @@ const RULES: readonly (readonly [RegExp, string])[] = [
 	[/\b(drop|truncate)\s+(table|database|schema)\b/i, "drops database objects"],
 	[/\bmkfs\b|\bdd\b.*\bof=\/dev\//, "overwrites a device"],
 	[/\bchmod\s+-R\s+0?777\b/, "opens permissions recursively"],
+	// The same deeds in PowerShell and cmd.
+	[
+		/\b(Remove-Item|rm|ri|del|erase|rd|rmdir)\b[^|;\n]*(-Recurse|-Force|-r\b|-rf\b|\/s\b|\/q\b)/i,
+		"recursive or forced delete",
+	],
+	[
+		/\b(Invoke-Expression|iex)\b[^|;\n]*\b(Invoke-WebRequest|iwr|Invoke-RestMethod|irm|curl|wget|DownloadString)\b|\b(Invoke-WebRequest|iwr|Invoke-RestMethod|irm|curl|wget)\b[^|;\n]*\|\s*(Invoke-Expression|iex)\b/i,
+		"runs a downloaded script",
+	],
+	[/\bStart-Process\b[^|;\n]*-Verb\s+RunAs\b|\brunas\b/i, "runs as administrator"],
+	[/\bformat\s+[a-z]:|\bFormat-Volume\b|\bClear-Disk\b/i, "overwrites a device"],
 	[/\b(curl|wget)\b[^|;&]*\|\s*(sudo\s+)?(ba|z)?sh\b/, "runs a downloaded script"],
 	[/\bsudo\b/, "runs as root"],
 ];
 
 /** Tools whose `command` is a shell command line. A command is no safer for running in the background. */
-const COMMAND_TOOLS: ReadonlySet<string> = new Set(["bash", "bg_start"]);
+const COMMAND_TOOLS: ReadonlySet<string> = new Set([...SHELL_TOOLS, "bg_start"]);
 
 /** Why a shell command deserves a second look, or undefined when no rule matches. */
 export function riskFlag(command: string): string | undefined {

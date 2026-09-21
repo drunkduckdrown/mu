@@ -498,7 +498,11 @@ describe("turn.rewind and what counts as a change", () => {
 		expect(isMutatingCall("read", { path: "a" })).toBe(false);
 		expect(isMutatingCall("bash", { command: "git log -3" })).toBe(false);
 		expect(isMutatingCall("bash", { command: "sed -i s/a/b/ x" })).toBe(true);
-		expect(isMutatingCall("powershell", { command: "Get-ChildItem" })).toBe(true);
+		// pi's shell on Windows is the powershell tool: read-only cmdlets read, everything else may write.
+		expect(isMutatingCall("powershell", { command: "Get-ChildItem src" })).toBe(false);
+		expect(isMutatingCall("powershell", { command: "gci src | Select-String TODO" })).toBe(false);
+		expect(isMutatingCall("powershell", { command: "Set-Content a.txt hi" })).toBe(true);
+		expect(isMutatingCall("powershell", { command: "Get-Content a.txt > b.txt" })).toBe(true);
 		expect(isMutatingCall("some_mcp_tool", {})).toBe(true);
 		expect(isCheckCommand("npx vitest --run test/a.test.ts")).toBe(true);
 		expect(isCheckCommand("npm run build")).toBe(true);

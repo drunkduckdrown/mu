@@ -130,7 +130,7 @@ export function summarizeCall(name: string, args: unknown): string {
 		return undefined;
 	};
 	let detail: string | undefined;
-	if (name === "bash") detail = pick("command");
+	if (name === "bash" || name === "powershell") detail = pick("command");
 	else if (name === "browse") detail = [pick("url"), pick("goal") && `"${pick("goal")}"`].filter(Boolean).join(" ");
 	else if (name === "grep") detail = [pick("pattern"), pick("path", "glob")].filter(Boolean).join(" in ");
 	else detail = pick("path", "file_path", "query", "pattern", "url", "command");

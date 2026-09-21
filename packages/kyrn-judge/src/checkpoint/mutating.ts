@@ -5,6 +5,8 @@
  * Wrong in the safe direction only: an unknown tool or command counts as changing files (one snapshot
  * more than needed), and a command counts as read-only only when every part of it is on a short list.
  */
+import { isShellTool } from "../extension/shell-tools.ts";
+
 const READ_ONLY_TOOLS: ReadonlySet<string> = new Set([
 	"read",
 	"grep",
@@ -23,7 +25,7 @@ const READ_ONLY_TOOLS: ReadonlySet<string> = new Set([
 /** Redirection, chaining, substitution, a second line: anything that lets a command do more than it says first. */
 const SHELL_TRICKS = /[<>;&`\n\r]|\$\(|\$\{/;
 const READ_ONLY_PROGRAM =
-	/^(?:ls|pwd|cat|head|tail|wc|which|file|stat|du|df|date|whoami|uname|echo|printf|rg|grep|sort|uniq|cut|nl|tree|git\s+(?:status|log|diff|show|blame|rev-parse|ls-files|describe))(?:\s|$)/;
+	/^(?:ls|pwd|cat|head|tail|wc|which|file|stat|du|df|date|whoami|uname|echo|printf|rg|grep|sort|uniq|cut|nl|tree|git\s+(?:status|log|diff|show|blame|rev-parse|ls-files|describe)|Get-ChildItem|gci|dir|Get-Content|gc|type|Get-Location|Select-String|sls|Get-Item|gi|Get-Date|Write-Output|Write-Host)(?:\s|$)/i;
 
 /** True for a pipeline of plain read-only programs, e.g. `git status`, `cat a.txt | grep x | head -5`. */
 export function isReadOnlyCommand(command: string): boolean {
@@ -34,7 +36,7 @@ export function isReadOnlyCommand(command: string): boolean {
 
 export function isMutatingCall(toolName: string, input: Readonly<Record<string, unknown>>): boolean {
 	if (READ_ONLY_TOOLS.has(toolName)) return false;
-	if (toolName === "bash") return !isReadOnlyCommand(String(input.command ?? ""));
+	if (isShellTool(toolName)) return !isReadOnlyCommand(String(input.command ?? ""));
 	return true;
 }
 

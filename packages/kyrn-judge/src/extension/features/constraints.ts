@@ -1,14 +1,15 @@
 import { toolConstraint } from "../../decisions/tool-constraint.ts";
 import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
+import { isShellTool } from "../shell-tools.ts";
 
 /** Tools that change something. Reading and searching never go against "do not modify". */
-const MUTATING = new Set(["edit", "write", "bash", "sg_rewrite", "bg_start", "apply_patch_from"]);
+const MUTATING = new Set(["edit", "write", "bash", "powershell", "sg_rewrite", "bg_start", "apply_patch_from"]);
 
 /** What a call would do, short enough for a judge: where, and the beginning of what. */
 export function describeCall(toolName: string, input: unknown): string {
 	const record = (typeof input === "object" && input !== null ? input : {}) as Record<string, unknown>;
 	const text = (value: unknown) => (typeof value === "string" ? value : "");
-	if (toolName === "bash" || toolName === "bg_start") return clip(text(record.command), 500);
+	if (isShellTool(toolName) || toolName === "bg_start") return clip(text(record.command), 500);
 	const path = text(record.path) || text(record.file_path) || text(record.file);
 	const body = text(record.content) || text(record.newText) || text(record.new_string) || text(record.rewrite);
 	return clip(`${path}${body ? ` <- ${body}` : ""}` || JSON.stringify(record), 500);
