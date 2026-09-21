@@ -268,6 +268,24 @@ export class KyrnRuntime {
 	/** Whoever shows the time between a message and its turn sets this; nobody has to. */
 	onProgress?: (step: string) => void;
 
+	private readonly troubleListeners = new Set<(kind: "loop" | "drift", detail: string) => void>();
+
+	/** Hears what the monitor noticed about the run. Whoever acts on trouble (the judged rewind) listens here. */
+	onTrouble(listener: (kind: "loop" | "drift", detail: string) => void): void {
+		this.troubleListeners.add(listener);
+	}
+
+	/** The monitor says the agent goes in circles or has drifted. A listener that fails is not the monitor's problem. */
+	trouble(kind: "loop" | "drift", detail: string): void {
+		for (const listener of this.troubleListeners) {
+			try {
+				listener(kind, detail);
+			} catch {
+				// Reacting to trouble is optional; noticing it is not.
+			}
+		}
+	}
+
 	/** Says what is being worked out before the turn starts ("choosing skills"). Showing it is best effort. */
 	progress(step: string): void {
 		this.present("progress", { step });

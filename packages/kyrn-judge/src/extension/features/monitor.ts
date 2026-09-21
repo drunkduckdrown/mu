@@ -45,6 +45,7 @@ export function registerMonitor(runtime: KyrnRuntime): void {
 			if (looping && !warnedLoops.has(action)) {
 				warnedLoops.add(action);
 				pi.appendEntry("kyrn.monitor", { kind: "loop", action });
+				runtime.trouble("loop", action);
 				steer(
 					`The same call has now run ${options.repeats} times with the same outcome (${action}). Say what it told you and try a different approach.`,
 				);
@@ -59,6 +60,7 @@ export function registerMonitor(runtime: KyrnRuntime): void {
 				.then((decision) => {
 					if (decision.source !== "judge") return;
 					if (decision.outcome === "drift") {
+						runtime.trouble("drift", "the recent steps look unrelated to the goal");
 						steer(
 							`Check your course: the recent steps look unrelated to the goal ("${goal}"). Return to it or say why the detour is needed.`,
 						);
