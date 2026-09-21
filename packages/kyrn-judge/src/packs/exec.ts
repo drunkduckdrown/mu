@@ -191,7 +191,7 @@ export function invocationFor(command: string, args: readonly string[], lookup: 
 	return { command: shell, args: ["/d", "/s", "/c", `"${line}"`], verbatim: true };
 }
 
-export type Binary = "ast-grep" | "git";
+export type Binary = "ast-grep" | "git" | "gh";
 
 /**
  * What to tell someone whose machine lacks a program a pack needs. mu installs
@@ -215,6 +215,15 @@ export function installHint(binary: Binary, platform: NodeJS.Platform): string {
 							"pip install ast-grep-cli",
 						];
 		return `ast-grep is not installed. Install it with: ${ways[0]} (or: ${ways.slice(1).join(", ")}).`;
+	}
+	if (binary === "gh") {
+		const ways =
+			platform === "darwin"
+				? ["brew install gh"]
+				: platform === "win32"
+					? ["winget install --id GitHub.cli --source winget", "scoop install gh"]
+					: ["see https://github.com/cli/cli/blob/trunk/docs/install_linux.md", "brew install gh"];
+		return `gh (the GitHub CLI) is not installed. Install it with: ${ways[0]}${ways.length > 1 ? ` (or: ${ways.slice(1).join(", ")})` : ""}, then run gh auth login.`;
 	}
 	const ways =
 		platform === "darwin"

@@ -1645,6 +1645,23 @@ export const MANIFEST: HarnessManifest = {
 						en: "Empty: ast-grep, then sg, from PATH.",
 					},
 				},
+				{
+					key: "github",
+					kind: "boolean",
+					default: true,
+					label: { zh: "GitHub（通过 gh）", en: "GitHub through gh" },
+					help: {
+						zh: "不加工具，只带一个教模型用 gh 处理 PR、issue、检查和发布的技能。需要本机装有 gh。",
+						en: "No tools, one skill that teaches gh for PRs, issues, checks and releases. Needs gh on this machine.",
+					},
+				},
+				{
+					key: "ghCommand",
+					kind: "text",
+					default: "",
+					label: { zh: "gh 的路径", en: "Path of gh" },
+					help: { zh: "留空则在 PATH 里找 gh。", en: "Empty: gh from PATH." },
+				},
 			],
 		},
 	],

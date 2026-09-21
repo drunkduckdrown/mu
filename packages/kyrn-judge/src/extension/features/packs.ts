@@ -4,6 +4,7 @@ import { run } from "../../packs/exec.ts";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
 import { CAPABILITY_ENTRY } from "./catalog.ts";
 import { astGrepPack } from "./packs/ast-grep.ts";
+import { githubPack } from "./packs/github.ts";
 import type { Pack, PackShared } from "./packs/pack.ts";
 
 /**
@@ -27,6 +28,9 @@ export function registerPacks(runtime: KyrnRuntime): void {
 		maxDiffChars: 12000,
 		/** Empty: `ast-grep`, then `sg`, from PATH. */
 		astGrepCommand: "",
+		github: true,
+		/** Empty: `gh` from PATH. */
+		ghCommand: "",
 	});
 	if (!options.enabled) return;
 	const { pi, catalog } = runtime;
@@ -54,6 +58,8 @@ export function registerPacks(runtime: KyrnRuntime): void {
 			}),
 		);
 	}
+
+	if (options.github) packs.push(githubPack(shared, { command: options.ghCommand }));
 
 	const starting = new Map<string, Promise<void>>();
 	const start = (pack: Pack): Promise<void> => {
@@ -88,6 +94,13 @@ export function registerPacks(runtime: KyrnRuntime): void {
 		}
 		return undefined;
 	};
+	// A skill travels with its pack from the start: hidden or not, the skill disclosure decision covers it.
+	const skills = packs.flatMap((pack) => pack.skills ?? []);
+	pi.on(
+		"resources_discover",
+		failOpen(() => (skills.length > 0 ? { skillPaths: skills } : undefined)),
+	);
+
 	pi.on(
 		"session_start",
 		failOpen<SessionStartEvent, undefined>((_event, ctx) => startAllWhenNothingIsHidden(ctx)),

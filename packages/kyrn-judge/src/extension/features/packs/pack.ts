@@ -13,6 +13,8 @@ export interface Pack {
 	/** One sentence for the judge: what kind of task needs this. */
 	readonly description: string;
 	readonly tools: readonly string[];
+	/** Skill files the pack ships, contributed when resources are discovered, whether or not the pack is open. */
+	readonly skills?: readonly string[];
 	start(): Promise<void>;
 }
 

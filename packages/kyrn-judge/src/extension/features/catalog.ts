@@ -87,7 +87,7 @@ export function registerCatalog(runtime: KyrnRuntime): void {
 			return {
 				message: {
 					customType: CAPABILITY_MESSAGE,
-					content: `Capabilities opened for this request:\n${opened.map((capability) => `${line(capability)} (tools: ${capability.tools.join(", ")})`).join("\n")}`,
+					content: `Capabilities opened for this request:\n${opened.map((capability) => `${line(capability)}${capability.tools.length > 0 ? ` (tools: ${capability.tools.join(", ")})` : ""}`).join("\n")}`,
 					display: true,
 				},
 			};
@@ -133,7 +133,10 @@ export function registerCatalog(runtime: KyrnRuntime): void {
 					content: [
 						{
 							type: "text",
-							text: `${known.title} is open. Its tools are available from your next step: ${tools.join(", ")}`,
+							text:
+								tools.length > 0
+									? `${known.title} is open. Its tools are available from your next step: ${tools.join(", ")}`
+									: `${known.title} is open. It adds no tools: ${known.description}`,
 						},
 					],
 					details: { opened: params.open, matches: [] } satisfies FindDetails as FindDetails,
