@@ -8,7 +8,20 @@ export {
 	runBrowserTask,
 } from "./browser/agent.ts";
 export { CdpConnection, CdpError } from "./browser/cdp.ts";
-export { findChrome, type LaunchedChrome, type LaunchOptions, launchChrome } from "./browser/chrome.ts";
+export {
+	type BrowserHost,
+	type BrowserLaunchPlan,
+	browserAdvice,
+	browserCandidates,
+	type FoundBrowser,
+	findBrowser,
+	findChrome,
+	type LaunchedChrome,
+	type LaunchOptions,
+	launchChrome,
+	planBrowserLaunch,
+	thisBrowserHost,
+} from "./browser/chrome.ts";
 export { type ActionKind, BrowserSession, type PageAction, type PageState, StalePage } from "./browser/session.ts";
 export {
 	CascadeJudge,

@@ -7,6 +7,8 @@ import { basename, join } from "node:path";
 import { getAgentDir, type Theme } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { swarmRouting } from "../../decisions/swarm-routing.ts";
+import { stopPlan } from "../../platform.ts";
+import { describeRecord } from "../../swarm/patches.ts";
 import {
 	activeRuns,
 	type BeeObserver,
@@ -20,11 +22,12 @@ import type { BeeEvent } from "../../swarm/state.ts";
 import { renderSwarm } from "../../swarm/view.ts";
 import { type AgentDefinition, type AgentThinking, loadAgents } from "../agents.ts";
 import { clip, type KyrnRuntime } from "../runtime.ts";
+import { Isolation, type IsolationOutcome, type Placement, patchesOf } from "./swarm-isolation.ts";
 
 /** A role the main model asked for by name is in `agent`. Left out, the judge picks one. */
 export type SwarmTask = BeeTask;
 
-export interface SwarmAssignment {
+export interface SwarmAssignment extends Placement {
 	/** The role the sub-agent plays. Undefined runs a plain sub-agent with every tool and no role prompt. */
 	agent?: AgentDefinition;
 	/** "provider/model-id", or undefined to use the child's default model. */
@@ -70,6 +73,8 @@ export function childArgs(task: SwarmTask, assignment: SwarmAssignment, promptPa
 	if (assignment.model) args.push("--model", assignment.model);
 	if (assignment.agent?.tools) args.push("--tools", assignment.agent.tools.join(","));
 	if (promptPath) args.push("--append-system-prompt", promptPath);
+	// A temp checkout is a path nobody ever trusted; it is the parent's project, so the parent's answer holds.
+	if (assignment.trusted !== undefined) args.push(assignment.trusted ? "--approve" : "--no-approve");
 	args.push(...forwardedExtensionArgs(), `Task: ${task.instructions}`);
 	return args;
 }
@@ -103,6 +108,8 @@ export const spawnRunner: SwarmRunner = async (task, assignment, signal, env, ob
 		return await new Promise<string>((resolve, reject) => {
 			const invocation = piInvocation(childArgs(task, assignment, promptPath));
 			const child = spawn(invocation.command, invocation.args, {
+				// An isolated sub-agent works in its own checkout; everyone else where the parent is.
+				cwd: assignment.cwd,
 				// No stdin: print mode would otherwise wait for it when it is not a terminal.
 				stdio: ["ignore", "pipe", "pipe"],
 				env: { ...process.env, KYRN_SWARM_DEPTH: "1", ...env },
@@ -116,7 +123,11 @@ export const spawnRunner: SwarmRunner = async (task, assignment, signal, env, ob
 
 			const terminate = () => {
 				if (child.exitCode !== null || child.signalCode !== null) return;
-				child.kill("SIGTERM");
+				// On Windows `kill` ends the sub-agent alone and orphans what it started: there the whole tree goes.
+				const stop = stopPlan(process.platform, child.pid, false);
+				if (stop.kind === "command") {
+					spawn(stop.command, stop.args, { stdio: "ignore", windowsHide: true }).on("error", () => child.kill());
+				} else child.kill(stop.signal);
 				const hard = setTimeout(() => {
 					if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
 				}, KILL_GRACE_MS);
@@ -325,11 +336,19 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 		defaultAgent: "worker",
 		/** Where the user's own roles live. Empty means `<agentDir>/agents`. */
 		agentsDir: "",
+		/** `worktree`: a role that edits files works in its own git worktree and hands back a patch. `none`: everyone works in place. */
+		isolation: "worktree",
+		/** An isolated sub-agent starts from the parent's uncommitted state, not from the last commit. */
+		carryUncommitted: true,
+		/** Lines of a patch shown with the sub-agent's report. */
+		patchPreviewLines: 30,
 		...SWARM_LIMIT_DEFAULTS,
 	});
 	// A sub-agent does not get to spawn its own swarm.
 	if (!options.enabled || process.env.KYRN_SWARM_DEPTH) return;
 	const { pi } = runtime;
+	const isolation = new Isolation(runtime, options);
+	isolation.registerTool();
 
 	// Read per call: a role file edited mid-session applies to the next delegation.
 	const agents = (): AgentDefinition[] => loadAgents(options.agentsDir || join(getAgentDir(), "agents"));
@@ -344,7 +363,9 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 		label: "Delegate",
 		description: `Run independent tasks in parallel, each in a fresh sub-agent with its own context window. Use it for work that splits into parts that do not depend on each other, and for side work whose details you do not need (broad code search, web research). Each sub-agent sees only its own instructions, so make them self-contained. A fitting role, model and thinking level are chosen per task; name a role only when you want a specific one (${agents()
 			.map((agent) => agent.name)
-			.join(", ")}). Returns each sub-agent's final report.`,
+			.join(
+				", ",
+			)}). Returns each sub-agent's final report. In a git repository a sub-agent that edits files works in an isolated copy, and its changes come back as a patch that only apply_patch_from brings in.`,
 		parameters: Type.Object({
 			tasks: Type.Array(
 				Type.Object({
@@ -353,6 +374,12 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 						description: "Complete, self-contained instructions, including what to report back",
 					}),
 					agent: Type.Optional(Type.String({ description: "Role name. Leave out to have one chosen." })),
+					isolation: Type.Optional(
+						Type.Union([Type.Literal("worktree"), Type.Literal("none")], {
+							description:
+								"worktree: edit in an isolated copy and hand back a patch (default for roles that edit). none: edit in place",
+						}),
+					),
 				}),
 				{ minItems: 1 },
 			),
@@ -393,10 +420,37 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 				};
 			});
 
+			// Who edits gets a checkout of its own, if there is a repository to make one from.
+			const runDir = join(tmpdir(), `kyrn-swarm-${randomUUID().slice(0, 8)}`);
+			const isolated = new Map<SwarmTask, number>();
+			tasks.forEach((task, index) => {
+				if (isolation.wanted(params.tasks[index].isolation, assignments[index].agent) === "worktree")
+					isolated.set(task, index);
+			});
+			const outcomesOfIsolation = new Map<SwarmTask, IsolationOutcome>();
+			let placedRunner = runner;
+			if (isolated.size > 0) {
+				const { repo, problem } = await isolation.repo(ctx.cwd);
+				if (repo) {
+					placedRunner = isolation.wrap(
+						runner,
+						{ repo, cwd: ctx.cwd, runDir, trusted: ctx.isProjectTrusted(), isolated },
+						outcomesOfIsolation,
+					);
+				} else {
+					for (const task of isolated.keys()) {
+						outcomesOfIsolation.set(task, {
+							isolated: false,
+							notes: [`Not isolated (${problem}): it worked in place, in your working tree.`],
+						});
+					}
+				}
+			}
+
 			const run = new SwarmRun<SwarmAssignment>({
 				kind: "delegate",
 				title: `${tasks.length} task${tasks.length === 1 ? "" : "s"}`,
-				dir: join(tmpdir(), `kyrn-swarm-${randomUUID().slice(0, 8)}`),
+				dir: runDir,
 				limits: limitsFrom(options),
 				bees: tasks.map((task, index) => ({
 					name: names[index],
@@ -410,14 +464,16 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 				})),
 			});
 			streamUpdates(run, onUpdate);
-			const outcomes = await run.run(runner, signal);
+			const outcomes = await run.run(placedRunner, signal);
 			const reports = outcomes.map((outcome) => outcome.report);
+			// The judge's view of what wants to come back. It is a line of text, never a gate.
+			await isolation.review(outcomesOfIsolation, signal).catch(() => undefined);
 
 			const text = tasks
 				.map((task, index) => {
 					const { agent, model, thinking } = assignments[index];
 					const label = [agent?.name ?? "no role", model ?? "default model", `thinking ${thinking}`].join(", ");
-					return `## ${task.title} [${label}]\n${reports[index]}`;
+					return `## ${task.title} [${label}]\n${reports[index]}${isolation.describe(outcomesOfIsolation.get(task))}`;
 				})
 				.join("\n\n");
 			return {
@@ -425,6 +481,7 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 				details: {
 					snapshot: compactSnapshot(run.snapshot()),
 					reports,
+					patches: tasks.map((task) => outcomesOfIsolation.get(task)?.patch?.id ?? null),
 					assignments: assignments.map(({ agent, model, thinking, routedBy }) => ({
 						agent: agent?.name,
 						model,
@@ -477,8 +534,14 @@ export function registerSwarmCommand(runtime: KyrnRuntime): void {
 		const [verb = "status", ...rest] = args.trim().split(/\s+/).filter(Boolean);
 		const name = rest.join(" ") || undefined;
 		const runs = activeRuns();
+		// What isolated sub-agents handed back stays listed after they are gone: it is waiting for a decision.
+		const patches = patchesOf(runtime).map((record) => `  ${describeRecord(record)}`);
+		const patchList = patches.length > 0 ? `patches (apply_patch_from brings one in)\n${patches.join("\n")}` : "";
 		if (runs.length === 0) {
-			ctx.ui.notify("No sub-agents are running. They start when the agent uses its delegate or hive tool.", "info");
+			ctx.ui.notify(
+				patchList || "No sub-agents are running. They start when the agent uses its delegate or hive tool.",
+				"info",
+			);
 			return;
 		}
 		if (verb === "stop" || verb === "kill") {
@@ -499,7 +562,12 @@ export function registerSwarmCommand(runtime: KyrnRuntime): void {
 		}
 		const theme = PLAIN;
 		ctx.ui.notify(
-			runs.map((run) => renderSwarm(run.snapshot(), { expanded: true, width: 110 }, theme).join("\n")).join("\n\n"),
+			[
+				...runs.map((run) => renderSwarm(run.snapshot(), { expanded: true, width: 110 }, theme).join("\n")),
+				patchList,
+			]
+				.filter(Boolean)
+				.join("\n\n"),
 			"info",
 		);
 	};

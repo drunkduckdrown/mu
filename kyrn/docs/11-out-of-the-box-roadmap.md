@@ -25,7 +25,7 @@ Jev 管得住上下文，管不住安装体积、维护量、故障面和安全�
 | LSP 诊断 | 接用户机器上已装的语言服务器，懒启动。改完文件后取诊断，与改之前的基线相减，只留“这次改动新引入的”。`diagnostics.delivery` 由 Jev 决定现在说、回合末说还是不说；规则兜底：带着新错误宣称完成时一定说 | **已完成**（功能 `lsp`，判定点 `diagnostics.delivery`，设计见 `features/lsp-diagnostics.md`）：自写最小 LSP 客户端，发现 typescript-language-server / pyright / gopls / rust-analyzer / clangd，懒启动；改之前先用旧文本打开文件取基线，只留这次改动新引入的；子代理默认不启动语言服务器。项目自带的服务器定义要过真正的信任确认。**对真实的 gopls 0.20 跑通了**（临时 Go 模块：改动前就有的错误不报，改动新引入的那一条报出来，约 1.5 秒；`MU_LSP_REAL=1` 的可选测试）。本机其它服务器跑不了：没装 typescript-language-server；`clangd` 被“未同意 Xcode 许可”挡住；`rust-analyzer` 只是 rustup 的空壳。待你定：内置服务器是否也要等项目信任（rust-analyzer 会执行 `build.rs`） |
 | 后台命令 | `bg_start` / `bg_output` / `bg_stop`，输出环形缓冲加日志文件，结束时是否打断当前工作交给已有的 `notify.routing` | **已完成**（功能 `background`，设计见 `features/background-and-web.md`）：整棵进程树一起杀（POSIX 进程组，Windows `taskkill /T`），会话结束全部清理，`bg_output` 只给上次之后的新输出，可等一个正则出现；`bg_start` 与 `bash` 走同一套风险把关；日志在 `~/.mu/jobs`。Windows 未在真机验证 |
 | 网页读取 + 国内能用的搜索 | `web_fetch`（限时限量，HTML 转可读文本，页面文字标为不可信）+ `web_search`（来源可换） | **已完成**（功能 `web`）。默认搜索源改成了 **360（`so`）**：实测必应中国对脚本请求返回的是不相关结果（约 25 次请求，换头、换协议、带 cookie 都一样），百度直接跳验证码，搜狗和 360 正常；结果与查询对不上时自动换下一个源并说明原因。`web_fetch` 拒绝内网 / 链路本地地址（检查做在连接自己用的 DNS 解析里），每一跳重定向重新检查，能解 GBK / Big5；URL 明写 localhost 时放行（调试本机服务要用），从外网跳到 localhost 一律拒绝。没在纯大陆直连网络上验证过 |
-| worktree 隔离、能改文件的子代理 | `delegate` 增加 `isolation: "worktree"`：子代理在临时 worktree 和分支里改，结束后把 diff 交回，由父代理决定应用；冲突交给冲突解决包 | 待做 |
+| worktree 隔离、能改文件的子代理 | `delegate` 增加 `isolation: "worktree"`：子代理在临时 worktree 和分支里改，结束后把 diff 交回，由父代理决定应用；冲突交给冲突解决包 | **已完成**（并入已有的 `swarm` 功能，设计见 `features/worktree-subagents.md`）：能改文件的角色默认进 worktree（建在仓库外的临时目录，分支 `mu/agent-*`，用完连分支一起删）；父代理没提交的改动（含未跟踪文件）会带过去；结果是一个二进制安全的补丁，父代理用 `apply_patch_from` 查看或应用，应用走临时 index，**要么全成要么不动**，你的 index 和 stash 从不触碰；判定点 `swarm.patch` 给补丁的范围把一句关。子代理照样受你的硬约束限制。不是 git 仓库、正在 rebase/merge 等状态时退回原地工作并说明原因。未验证：Windows、真实子进程与真实模型、子模块 / LFS。待你定：worktree 里没有 `node_modules`，子代理跑不了依赖它的测试，要不要加一个把被忽略目录链接进去的选项（代价是子代理能改到你的 `node_modules`） |
 | checkpoint + 判断回退 | 每个用户回合用影子 git 目录给工作区拍快照（不碰用户仓库的 index）。回退 = 文件回到快照 + 会话树回到对应条目。`turn.rewind`：monitor 发现反复失败时由 Jev 判断是不是死路，再向用户提议 | 待做 |
 | to-do | 直接用任务帧里的验收条件，模型用 `todo` 勾选和补充，完成检查读它 | **已完成**：`todo` 工具读写任务帧的验收条件，完成核对会点名未完成项 |
 
@@ -52,13 +52,16 @@ pi 自带的示例扩展里已有 plan-mode、subagent、todo、git-checkpoint�
 
 ## 4. Windows 与 WSL
 
-现状是 POSIX 专用：启动器和桌面端的 `scripts/kyrn/*` 是 bash，`mu migrate` 用 `pgrep`，本地判定服务是 Core ML（只有 macOS）。做法：
+原来是 POSIX 专用：启动器和桌面端的 `scripts/kyrn/*` 是 bash，`mu migrate` 用 `pgrep`，本地判定服务是 Core ML（只有 macOS）。设计、审计表和真机首查清单见 `kyrn/docs/features/windows-and-wsl.md`。**以下“已完成”都指代码加按平台参数化的单元测试，macOS 上实跑通过；没有一项在真实的 Windows 或 WSL 机器上运行过。**
 
-1. 启动器换成 Node 实现（`mu.mjs`），bash 和 `mu.cmd` 都只是一行转发；路径一律 `node:path` + `os.homedir()`。
-2. 新代码一律跨平台：进程用 `spawn` 不经 shell，Windows 上的 `.cmd` 垫片单独处理；pi 上游已有 `powershell` 工具可用。
-3. Chrome 发现补上 Windows 和 WSL 的路径；WSL 里优先用 Windows 侧的浏览器和 `wslpath` 转换。
-4. 本地判定服务在 Windows 上换运行时（ONNX/CPU），接口不变。
-5. 没有 Windows 机器可测的部分，用按平台参数化的单元测试覆盖路径与命令拼装，并在这里如实标注“未在真机验证”。
+| 项 | 做法 | 状态 |
+| --- | --- | --- |
+| 1. 启动器 | Node 实现（`kyrn/bin/mu.mjs`，无依赖），每个决定是带 `platform` / `env` / 文件系统参数的纯函数；`kyrn/bin/mu`（bash）只负责选 Node >= 22.19，`mu.cmd` / `mu.ps1` 是 Windows 的转发器；应用视图在 Windows 上用 junction 加复制；`.env` 由 Node 解析，不再 source；`mu link` 在 Windows 上写 `mu.cmd` 垫片；`mu migrate` 在 Windows 上用 `tasklist` + PowerShell 代替 `pgrep`、留 junction | 已完成，未在真机验证。既有启动器测试原样通过 |
+| 2. 新代码跨平台 | 进程用 `spawn` 加参数数组、不经 shell；tsx 走真正的 JS 入口而不是 `.cmd` 垫片；子代理在 Windows 上用 `taskkill /T` 整树结束（MCP 客户端、后台命令已各自处理） | 已完成，未在真机验证。**未解决**：`guard` / `constraints` / `completion` / `prune` / `swarm/state` 只认 `bash` 工具，看不到 Windows 上 `powershell` 工具的命令 |
+| 3. 浏览器发现 | Windows：Program Files、Program Files (x86)、LOCALAPPDATA 下的 Chrome / Chromium / Edge / Brave。Linux：包、PATH、snap、flatpak（受限环境的 profile 换位置）。WSL：**先用 WSL 里的浏览器**；Windows 侧浏览器只在 mirrored 网络模式下用（回环可达），NAT 模式下拒绝并给出安装与 `.wslconfig` 指引，因为调试端口没有鉴权、不能开给网络。（原计划“WSL 里优先用 Windows 侧浏览器”据此改了） | 已完成，未在真机验证 |
+| 4. 本地判定服务 | 非 macOS 上 `mu judge …` 和 `mu doctor` 如实说明 Core ML 只有 macOS，指向 Jev、llm 判定器、桌面端在做的本地判定服务，并保留 `MU_LOCAL_JUDGE_URL` 接缝。Windows 上换运行时（ONNX / CPU）、接口不变 | 说明与接缝已完成；换运行时待做 |
+| 5. 桌面端 | 适配器在 Windows 上应直接 `spawn(node, [mu.mjs, …])`，结束会话用 `taskkill /T` 或关闭 stdin；`scripts/kyrn/*` 仍是 bash | 待做（桌面仓库） |
+| 6. 真机验证 | 按设计说明第 8 节的清单在 Windows 和 WSL（NAT、mirrored 各一次）上过一遍 | 待做：需要一台 Windows 机器 |
 
 ## 4.5 调度教训
 

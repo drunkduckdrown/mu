@@ -25,6 +25,7 @@ import { registerAdmission } from "./features/admission.ts";
 import { registerBackground } from "./features/background.ts";
 import { registerBrowser } from "./features/browser.ts";
 import { registerCatalog } from "./features/catalog.ts";
+import { type CheckpointDeps, registerCheckpoint } from "./features/checkpoint.ts";
 import { registerCommands } from "./features/commands.ts";
 import { registerCompaction } from "./features/compaction.ts";
 import { registerCompletion } from "./features/completion.ts";
@@ -78,6 +79,8 @@ export interface KyrnJudgeExtensionOptions {
 	roots?: HarnessRoots;
 	/** For tests of the MCP feature. */
 	mcp?: McpFeatureOptions;
+	/** For tests of the checkpoint feature: how git is run. */
+	checkpoint?: CheckpointDeps;
 }
 
 export type FeatureName =
@@ -97,6 +100,7 @@ export type FeatureName =
 	| "monitor"
 	| "lsp"
 	| "completion"
+	| "checkpoint"
 	| "notify"
 	| "warming"
 	| "swarm"
@@ -175,6 +179,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["lsp", registerLsp],
 		["goal", registerGoal],
 		["completion", registerCompletion],
+		// After the guard and the monitor: a blocked call needs no checkpoint, and the monitor's trouble is what the rewind hears.
+		["checkpoint", (shared) => registerCheckpoint(shared, roots, options.checkpoint)],
 		["notify", registerNotify],
 		["warming", registerWarming],
 		["swarm", (shared) => registerSwarm(shared, options.swarmRunner)],

@@ -1,0 +1,1065 @@
+#!/usr/bin/env node
+// mu command line: everything the launcher does, in plain Node so that it runs on macOS, Linux, WSL and Windows.
+// (`mu help` prints the commands: see USAGE below.)
+//
+// Who starts this file:
+// - kyrn/bin/mu      (bash) on macOS, Linux and WSL. It only finds a Node >= 22.19, from PATH or from nvm: a
+//                    machine whose default Node is older cannot be trusted to run this file at all.
+// - kyrn/bin/mu.cmd  on Windows, with whatever `node` is on PATH (mu.ps1 is the same for PowerShell).
+//
+// No dependency and no TypeScript here: this runs before tsx has been found.
+//
+// Every decision is an exported function that takes the platform, the environment and the file system as
+// parameters and returns what would be done. There is no Windows machine where this is developed, so the
+// Windows and WSL behaviour is proven by calling these functions with win32 and linux parameters
+// (packages/kyrn-judge/test/launcher-platforms.test.ts); `main` only carries the plans out.
+//
+// What the launcher sets up:
+// - mu's own home, ~/.mu/agent (auth, sessions, settings), apart from a stock pi in ~/.pi.
+//   A machine that still has ~/.kyrn and no ~/.mu keeps using ~/.kyrn until that folder is moved (`mu migrate`).
+// - mu's name on the agent: PI_PACKAGE_DIR points at ~/.mu/app, a view of packages/coding-agent whose
+//   package.json carries piConfig {name: mu, configDir: .mu}. No upstream file is edited.
+// - the judgment layer (packages/kyrn-judge), with judges from ~/.mu/agent/mu.json or MU_JUDGE
+//   (e.g. "laya", "laya,luna", "laya,jev", "off"). When "laya" is among them the sidecar is started (macOS only).
+//   kyrn.json and every KYRN_* variable are still read when the mu spelling is absent.
+// - the repo-root .env (the Jev key), read as data and handed to the agent without ever being printed.
+import { spawn, spawnSync } from "node:child_process";
+import {
+	accessSync,
+	constants as fsConstants,
+	copyFileSync,
+	existsSync,
+	lstatSync,
+	mkdirSync,
+	readFileSync,
+	readlinkSync,
+	realpathSync,
+	renameSync,
+	statSync,
+	symlinkSync,
+	unlinkSync,
+	writeFileSync,
+	writeSync,
+} from "node:fs";
+import { homedir, constants as osConstants } from "node:os";
+import nodePath from "node:path";
+import { fileURLToPath } from "node:url";
+
+/** pi's minimum. */
+export const MIN_NODE = [22, 19];
+
+/** True when a Node version such as "24.16.0" or "v22.19.0" can run pi. */
+export function nodeVersionOk(version) {
+	const [major, minor] = String(version).replace(/^v/, "").split(".").map(Number);
+	if (!Number.isInteger(major) || !Number.isInteger(minor)) return false;
+	return major > MIN_NODE[0] || (major === MIN_NODE[0] && minor >= MIN_NODE[1]);
+}
+
+/** `node:path` for the platform in question, so that win32 paths can be computed (and tested) on macOS. */
+export function pathFor(platform) {
+	return platform === "win32" ? nodePath.win32 : nodePath.posix;
+}
+
+/** `MU_<name>`, or the `KYRN_<name>` spelling from before the rename when the new one is unset or empty. */
+export function muEnv(name, env) {
+	return env[`MU_${name}`] || env[`KYRN_${name}`] || undefined;
+}
+
+/**
+ * ~/.mu, or ~/.kyrn on a machine whose home has not been moved yet. Nothing here ever creates ~/.mu beside
+ * ~/.kyrn: two homes would mean two logins and two session lists.
+ */
+export function muHome({ home, platform, isDir }) {
+	const path = pathFor(platform);
+	const current = path.join(home, ".mu");
+	return isDir(current) || !isDir(path.join(home, ".kyrn")) ? current : path.join(home, ".kyrn");
+}
+
+/** WSL is Linux to the launcher. It matters to the browser and to what `mu doctor` reports. */
+export function detectWsl({ platform, env, procVersion }) {
+	if (platform !== "linux") return false;
+	return Boolean(env.WSL_DISTRO_NAME) || /microsoft/i.test(procVersion ?? "");
+}
+
+export function platformName({ platform, wsl }) {
+	if (platform === "darwin") return "macOS";
+	if (platform === "win32") return "Windows";
+	if (platform === "linux") return wsl ? "WSL" : "Linux";
+	return platform;
+}
+
+export function usage(platform) {
+	const linkDir = platform === "win32" ? "%USERPROFILE%\\.local\\bin" : "~/.local/bin";
+	return [
+		"mu command line. (The project was called KYRN until 2026-09-21; the old spellings below still work.)",
+		"",
+		"  mu                       interactive session in the current directory",
+		'  mu "prompt"              interactive, starting with this prompt',
+		'  mu -p "prompt"           one-shot: print the answer and exit',
+		"  mu -c | -r               continue the last session | pick one to resume",
+		"  mu judge <cmd>           the local judge (Laya): setup | start | stop | status | run",
+		"  mu ledger [n] [--json]   what the judge decided in the last n sessions",
+		"  mu doctor                check the installation",
+		`  mu link | unlink         put the \`mu\` command on your PATH (${linkDir}) | remove it`,
+		"  mu migrate [--dry-run]   once: move the home from before the rename, ~/.kyrn, to ~/.mu",
+		"  mu help | version",
+		"",
+		"Everything else goes to the agent unchanged: `mu --help` lists every flag,",
+		"and `mu install|remove|update|list|config` manage pi packages.",
+	].join("\n");
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// .env
+// ---------------------------------------------------------------------------------------------------------
+
+/**
+ * Reads KEY=VALUE lines. The file is data, not a script: nothing in it is executed or expanded, which is
+ * what makes it work without a shell (the bash launcher used to source it).
+ *
+ * Understood: blank lines, `# comments`, an `export ` prefix, single quotes (literal), double quotes (with
+ * \" \\ \$ \` and a value that continues over several lines), and ` # comment` after an unquoted value.
+ * A line that is none of these is skipped and only its line NUMBER is reported: its text may be a secret.
+ */
+export function parseEnvFile(text) {
+	const entries = [];
+	const problems = [];
+	const lines = String(text).replace(/^\uFEFF/, "").split(/\r?\n/);
+	for (let index = 0; index < lines.length; index++) {
+		const line = lines[index].trim();
+		if (!line || line.startsWith("#")) continue;
+		const match = /^(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line);
+		if (!match) {
+			problems.push(index + 1);
+			continue;
+		}
+		const [, key, rest] = match;
+		const quote = rest[0];
+		if (quote !== '"' && quote !== "'") {
+			entries.push([key, rest.replace(/\s+#.*$/, "").trim()]);
+			continue;
+		}
+		// A quoted value ends at the matching quote, which may be some lines further down.
+		let body = rest.slice(1);
+		let end = closingQuote(body, quote);
+		const startedAt = index;
+		while (end < 0 && index + 1 < lines.length) {
+			body += `\n${lines[++index]}`;
+			end = closingQuote(body, quote);
+		}
+		if (end < 0) {
+			// Never closed: only that line is given up, the lines after it are still read.
+			problems.push(startedAt + 1);
+			index = startedAt;
+			continue;
+		}
+		const value = body.slice(0, end);
+		entries.push([key, quote === '"' ? value.replace(/\\(["\\$`])/g, "$1") : value]);
+	}
+	return { entries, problems };
+}
+
+function closingQuote(text, quote) {
+	for (let index = 0; index < text.length; index++) {
+		if (quote === '"' && text[index] === "\\") index++;
+		else if (text[index] === quote) return index;
+	}
+	return -1;
+}
+
+/**
+ * What the file adds to the environment: only the variables that are not already there. The real environment
+ * wins, also with an empty value (`AI_GATEWAY_API_KEY= mu` is how one run goes without the key).
+ * Windows treats variable names without regard to case.
+ */
+export function envFileAdditions({ env, entries, platform }) {
+	const fold = (name) => (platform === "win32" ? name.toUpperCase() : name);
+	const taken = new Set(Object.keys(env).map(fold));
+	const added = {};
+	for (const [key, value] of entries) {
+		if (taken.has(fold(key))) continue;
+		taken.add(fold(key));
+		added[key] = value;
+	}
+	return added;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// The app view: <home>/app
+// ---------------------------------------------------------------------------------------------------------
+
+/**
+ * <home>/app is packages/coding-agent seen through links, plus a package.json that names the app. It lives
+ * outside the repository on purpose: a linked source tree inside it makes biome skip the real one.
+ *
+ * Symbolic links need a privilege on Windows (or Developer Mode). Directory junctions do not, so folders
+ * become junctions there; a junction cannot point at a file, so the two files become copies.
+ */
+export function appViewPlan(platform) {
+	const folder = platform === "win32" ? "junction" : "symlink";
+	const file = platform === "win32" ? "copy" : "symlink";
+	return [
+		{ name: "src", kind: folder },
+		{ name: "docs", kind: folder },
+		{ name: "examples", kind: folder },
+		{ name: "README.md", kind: file },
+		{ name: "CHANGELOG.md", kind: file },
+	];
+}
+
+/** Its package name stays pi's: pi updates itself by that name, and `mu` on npm is someone else's package. */
+export function appPackageJson(upstreamText) {
+	const pkg = JSON.parse(upstreamText);
+	pkg.piConfig = { name: "mu", configDir: ".mu" };
+	return `${JSON.stringify(pkg, null, "\t")}\n`;
+}
+
+const realFs = {
+	copyFileSync,
+	existsSync,
+	lstatSync,
+	mkdirSync,
+	readFileSync,
+	readlinkSync,
+	statSync,
+	symlinkSync,
+	unlinkSync,
+	writeFileSync,
+};
+
+function lstatOrUndefined(fs, target) {
+	try {
+		return fs.lstatSync(target);
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Brings the view up to date and returns what it did, one line per change. Only links and files are ever
+ * replaced, with `unlink`: nothing here deletes recursively, because through a junction that would reach
+ * the real source tree.
+ */
+export function ensureAppView({ platform, app, upstream, fs = realFs }) {
+	const path = pathFor(platform);
+	const same = (a, b) => {
+		const [left, right] = [path.resolve(a), path.resolve(b)];
+		return platform === "win32" ? left.toLowerCase() === right.toLowerCase() : left === right;
+	};
+	const done = [];
+	fs.mkdirSync(app, { recursive: true });
+	for (const { name, kind } of appViewPlan(platform)) {
+		const source = path.join(upstream, name);
+		const target = path.join(app, name);
+		const stat = lstatOrUndefined(fs, target);
+		if (kind === "copy") {
+			if (!fs.existsSync(source)) continue;
+			const stale =
+				!stat ||
+				!stat.isFile() ||
+				stat.size !== fs.statSync(source).size ||
+				stat.mtimeMs < fs.statSync(source).mtimeMs;
+			if (!stale) continue;
+			if (stat?.isDirectory()) continue;
+			if (stat) fs.unlinkSync(target);
+			fs.copyFileSync(source, target);
+			done.push(`copy ${name}`);
+			continue;
+		}
+		if (stat?.isSymbolicLink()) {
+			let current;
+			try {
+				current = fs.readlinkSync(target);
+			} catch {}
+			if (current !== undefined && same(current, source)) continue;
+		}
+		// A real folder here was put there by hand. It is left alone rather than emptied.
+		if (stat?.isDirectory()) continue;
+		if (stat) fs.unlinkSync(target);
+		if (kind === "junction") fs.symlinkSync(source, target, "junction");
+		else fs.symlinkSync(source, target);
+		done.push(`${kind} ${name}`);
+	}
+	// Rebuilt when upstream moved on, and when the view still names the app something else (a home from before the rename).
+	const manifest = path.join(app, "package.json");
+	const upstreamManifest = path.join(upstream, "package.json");
+	const current = lstatOrUndefined(fs, manifest);
+	const rebuild =
+		!current ||
+		fs.statSync(upstreamManifest).mtimeMs > current.mtimeMs ||
+		!fs.readFileSync(manifest, "utf8").includes('"name": "mu"');
+	if (rebuild) {
+		fs.writeFileSync(manifest, appPackageJson(fs.readFileSync(upstreamManifest, "utf8")));
+		done.push("package.json");
+	}
+	return done;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Starting pi
+// ---------------------------------------------------------------------------------------------------------
+
+/**
+ * The JavaScript file behind the `tsx` command. node_modules/.bin/tsx is a `.cmd` shim on Windows, and a shim
+ * can only be started through a shell, where a prompt with quotes or `&` in it is re-parsed. Running the real
+ * entry with the Node that runs this file avoids the shell on every platform.
+ */
+export function resolveTsx({ root, platform, exists, readFile }) {
+	const path = pathFor(platform);
+	// Looked for the way Node resolves an import: here, then in every parent. A git worktree of this repository
+	// kept under the main checkout (as the agent worktrees are) has no node_modules of its own and runs on the
+	// main checkout's, exactly as its imports do.
+	for (let dir = root; ; dir = path.dirname(dir)) {
+		const entry = tsxEntry(path.join(dir, "node_modules", "tsx"), path, exists, readFile);
+		if (entry) return entry;
+		if (path.dirname(dir) === dir) return undefined;
+	}
+}
+
+function tsxEntry(dir, path, exists, readFile) {
+	let bin;
+	try {
+		bin = JSON.parse(readFile(path.join(dir, "package.json"))).bin;
+	} catch {
+		return undefined;
+	}
+	const relative = typeof bin === "string" ? bin : bin?.tsx;
+	if (typeof relative !== "string") return undefined;
+	const entry = path.join(dir, ...relative.split("/").filter((part) => part && part !== "."));
+	return exists(entry) ? entry : undefined;
+}
+
+export function installHint({ root, platform }) {
+	const steps = [`cd ${root}`, "npm ci --ignore-scripts", "npm run hydrate:model-data"];
+	// Windows PowerShell 5 has no `&&`.
+	return platform === "win32"
+		? `mu's dependencies are not installed. Run:\n${steps.map((step) => `  ${step}`).join("\n")}`
+		: `mu's dependencies are not installed. Run:  ${steps.join(" && ")}`;
+}
+
+/**
+ * pi reads <APP NAME>_CODING_AGENT_DIR and nothing else, so with the app named mu that export decides the
+ * home. The pi and KYRN spellings are exported too, for scripts that still read them.
+ */
+export function agentDirFor({ env, muDir, platform }) {
+	return (
+		muEnv("AGENT_DIR", env) || muEnv("CODING_AGENT_DIR", env) || pathFor(platform).join(muDir, "agent")
+	);
+}
+
+/** Whether the configuration asks for the local judge. */
+export function wantsLaya({ env, agentDir, platform, readFile }) {
+	const judges = muEnv("JUDGE", env);
+	if (judges) return `,${judges},`.includes(",laya");
+	const path = pathFor(platform);
+	for (const name of ["mu.json", "kyrn.json"]) {
+		let text;
+		try {
+			text = readFile(path.join(agentDir, name));
+		} catch {
+			continue;
+		}
+		// Like the file itself: kyrn.json is only looked at when there is no mu.json.
+		return text.includes('"laya');
+	}
+	return false;
+}
+
+/** The Core ML sidecar exists for macOS only. Anything else needs a server of its own behind MU_LOCAL_JUDGE_URL. */
+export function localJudgeSupport({ platform, env, wsl = false }) {
+	if (platform === "darwin") return { runs: true };
+	const url = muEnv("LOCAL_JUDGE_URL", env);
+	const where = platformName({ platform, wsl });
+	return {
+		runs: false,
+		url,
+		message: [
+			`The local judge (Laya) is a Core ML sidecar: it runs on macOS with Apple Silicon only, not on ${where}.`,
+			"mu works without it: use Jev (TYPESAFE_API_KEY or AI_GATEWAY_API_KEY) or an llm judge in mu.json;",
+			"the desktop app's own local judge is being built. Decisions without a judge fall back to pi's behaviour.",
+			"A server that speaks the same contract (GET /health, POST /evaluate) can be used from here:",
+			"  MU_LOCAL_JUDGE_URL=http://host:port",
+		].join("\n"),
+	};
+}
+
+/** exec replaces this process, as the bash launcher did; spawn is what Windows has. MU_LAUNCH forces either. */
+export function launchStrategy({ platform, env, canExec }) {
+	const forced = muEnv("LAUNCH", env);
+	if (platform === "win32" || !canExec || forced === "spawn") return "spawn";
+	return "exec";
+}
+
+/**
+ * Everything about starting pi, decided without touching anything: the command, its arguments as an array
+ * (never a shell string) and the child's whole environment.
+ *
+ * `fs` is { exists, isDir, readFile }. Returns { error } when pi cannot be started.
+ */
+export function planLaunch({ platform, env, argv, root, home, execPath, fs, canExec = false, wsl = false }) {
+	const path = pathFor(platform);
+	const tsx = resolveTsx({ root, platform, exists: fs.exists, readFile: fs.readFile });
+	if (!tsx) return { error: installHint({ root, platform }) };
+
+	const muDir = muHome({ home, platform, isDir: fs.isDir });
+	const appDir = muEnv("APP_DIR", env) || path.join(muDir, "app");
+	const agentDir = agentDirFor({ env, muDir, platform });
+
+	const notes = [];
+	let fromFile = {};
+	let envText;
+	try {
+		envText = fs.readFile(path.join(root, ".env"));
+	} catch {}
+	if (envText !== undefined) {
+		const parsed = parseEnvFile(envText);
+		fromFile = envFileAdditions({ env, entries: parsed.entries, platform });
+		// Line numbers only: the text of a line that did not parse may well be a secret.
+		if (parsed.problems.length > 0) notes.push(`mu: .env: skipped line ${parsed.problems.join(", ")} (not KEY=VALUE)`);
+	}
+
+	const childEnv = {};
+	for (const [key, value] of Object.entries({ ...fromFile, ...env })) {
+		if (typeof value === "string") childEnv[key] = value;
+	}
+	childEnv.PI_PACKAGE_DIR = appDir;
+	childEnv.MU_CODING_AGENT_DIR = agentDir;
+	childEnv.KYRN_CODING_AGENT_DIR = agentDir;
+	childEnv.PI_CODING_AGENT_DIR = agentDir;
+	// A fork run from source follows upstream through git, not through pi's release check.
+	childEnv.PI_SKIP_VERSION_CHECK = childEnv.PI_SKIP_VERSION_CHECK || "1";
+
+	let startJudge = false;
+	if (wantsLaya({ env: childEnv, agentDir, platform, readFile: fs.readFile })) {
+		const support = localJudgeSupport({ platform, env: childEnv, wsl });
+		if (support.runs) startJudge = true;
+		else if (!support.url) {
+			notes.push(
+				`mu: the configuration asks for the local judge (laya), which runs on macOS only; on ${platformName({ platform, wsl })} its decisions fall back to the next judge or to pi's behaviour (mu judge status)`,
+			);
+		}
+	}
+
+	return {
+		command: execPath,
+		args: [
+			tsx,
+			"--tsconfig",
+			path.join(root, "tsconfig.json"),
+			path.join(root, "packages", "coding-agent", "src", "experimental", "cli.ts"),
+			"-e",
+			path.join(root, "packages", "kyrn-judge", "src", "extension", "kyrn-judge.ts"),
+			...argv,
+		],
+		env: childEnv,
+		strategy: launchStrategy({ platform, env, canExec }),
+		muDir,
+		appDir,
+		agentDir,
+		startJudge,
+		notes,
+		preface: argv[0] === "-h" || argv[0] === "--help" ? `${usage(platform)}\n\nAgent flags:\n` : undefined,
+	};
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// mu judge
+// ---------------------------------------------------------------------------------------------------------
+
+/** What `mu judge <cmd>` does here: the macOS script, a look at a server of one's own, or a plain explanation. */
+export function planJudge({ platform, env, argv, bin, wsl = false }) {
+	const args = argv.length > 0 ? argv : ["status"];
+	const support = localJudgeSupport({ platform, env, wsl });
+	if (support.runs) return { kind: "script", command: pathFor(platform).join(bin, "kyrn-judge-local"), args };
+	if (args[0] === "status" && support.url) return { kind: "health", url: `${support.url.replace(/\/+$/, "")}/health` };
+	return { kind: "unsupported", message: support.message };
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// mu link | unlink
+// ---------------------------------------------------------------------------------------------------------
+
+export function linkPath({ platform, env, home }) {
+	const path = pathFor(platform);
+	const dir = muEnv("LINK_DIR", env) || path.join(home, ".local", "bin");
+	return path.join(dir, platform === "win32" ? "mu.cmd" : "mu");
+}
+
+const SHIM_MARK = "rem mu-link-shim: written by `mu link`, removed by `mu unlink`.";
+
+/**
+ * The file `mu link` writes on Windows, where a link to a script cannot be run. It names mu.cmd relative to
+ * itself when both are on one drive: cmd reads a batch file in the console's code page, so a path written
+ * out in full breaks under a non-ASCII user name, while %~dp0 is filled in by cmd itself.
+ */
+export function shimContent({ linkDir, bin }) {
+	const path = nodePath.win32;
+	const target = path.join(bin, "mu.cmd");
+	const relative = path.relative(linkDir, target);
+	const named = path.isAbsolute(relative) ? target : `%~dp0${relative}`;
+	return ["@echo off", SHIM_MARK, `"${named}" %*`, ""].join("\r\n");
+}
+
+/** The first `name` a shell would run. `isFile` answers for a path that exists, is a file and may be executed. */
+export function findOnPath({ name, platform, env, isFile }) {
+	const path = pathFor(platform);
+	const raw = (platform === "win32" ? (env.PATH ?? env.Path ?? env.path) : env.PATH) ?? "";
+	const extensions =
+		platform === "win32"
+			? (env.PATHEXT ?? env.Pathext ?? ".COM;.EXE;.BAT;.CMD").split(";").filter(Boolean)
+			: [""];
+	for (const dir of raw.split(path.delimiter)) {
+		if (!dir) continue;
+		for (const extension of extensions) {
+			const candidate = path.join(dir, `${name}${extension.toLowerCase()}`);
+			if (isFile(candidate)) return candidate;
+		}
+	}
+	return undefined;
+}
+
+export function onPath({ dir, platform, env }) {
+	const path = pathFor(platform);
+	const raw = (platform === "win32" ? (env.PATH ?? env.Path ?? env.path) : env.PATH) ?? "";
+	const fold = (value) => {
+		const trimmed = value.length > 3 ? value.replace(/[\\/]+$/, "") : value;
+		return platform === "win32" ? trimmed.toLowerCase() : trimmed;
+	};
+	return raw.split(path.delimiter).some((entry) => entry && fold(entry) === fold(dir));
+}
+
+/**
+ * Homebrew's maildir-utils is also called `mu`. A command that is not this one is never replaced, and never
+ * shadowed silently. `fs` is { realPath, exists, isFile, readFile }: realPath follows links the way a shell
+ * does, also through a link whose target is gone.
+ */
+export function planLink({ platform, env, home, bin, argv, fs }) {
+	const path = pathFor(platform);
+	const link = linkPath({ platform, env, home });
+	const linkDir = path.dirname(link);
+	const windows = platform === "win32";
+	const mine = path.join(bin, windows ? "mu.cmd" : "mu");
+	const content = windows ? shimContent({ linkDir, bin }) : undefined;
+	const same = (a, b) => (windows ? a.toLowerCase() === b.toLowerCase() : a === b);
+	const isThisMu = (candidate) => {
+		if (same(fs.realPath(candidate), mine)) return true;
+		if (!windows) return false;
+		try {
+			return fs.readFile(candidate) === content;
+		} catch {
+			return false;
+		}
+	};
+
+	if (fs.exists(link) && !isThisMu(link)) {
+		return {
+			action: "refuse",
+			errors: [
+				`${link} already exists and is not this mu; it was left alone. Choose another folder: MU_LINK_DIR=<dir> mu link`,
+			],
+		};
+	}
+	const other = findOnPath({ name: "mu", platform, env, isFile: fs.isFile });
+	if (other && !isThisMu(other) && argv[0] !== "--force") {
+		return {
+			action: "refuse",
+			errors: [
+				`Another mu is already on your PATH: ${other}`,
+				"Nothing was linked. To put this one first anyway: mu link --force (or MU_LINK_DIR=<dir> mu link)",
+			],
+		};
+	}
+	const notes = [];
+	if (!onPath({ dir: linkDir, platform, env })) {
+		notes.push(`Note: ${linkDir} is not on your PATH yet.`);
+		if (windows) {
+			// The user's own PATH, never `setx PATH "%PATH%;..."`: that copies the machine's PATH into it and cuts it at 1024 characters.
+			notes.push(
+				"Add it for your user in PowerShell, then open a new terminal:",
+				`  [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", "User") + ";${linkDir}", "User")`,
+			);
+		}
+	}
+	if (windows && /[^\x00-\x7f]/.test(content)) {
+		notes.push(
+			"Note: the path from that folder to this repository has non-ASCII characters in it, and cmd reads a batch file in the",
+			"console's code page. If `mu` then cannot find its target, choose a folder on the same drive (MU_LINK_DIR), or put",
+			`${bin} on your PATH instead.`,
+		);
+	}
+	return { action: "link", link, target: mine, content, message: `mu -> ${mine}`, notes };
+}
+
+export function planUnlink({ platform, env, home, fs }) {
+	const link = linkPath({ platform, env, home });
+	if (platform === "win32") {
+		let text;
+		try {
+			text = fs.readFile(link);
+		} catch {}
+		return text?.includes(SHIM_MARK)
+			? { remove: link, message: `removed ${link}` }
+			: { message: `${link} is not a shim written by mu link; nothing removed` };
+	}
+	return fs.isLink(link)
+		? { remove: link, message: `removed ${link}` }
+		: { message: `${link} is not a link; nothing removed` };
+}
+
+/** What `mu doctor` says about the command. */
+export function linkState({ platform, link, bin, fs }) {
+	if (platform === "win32") {
+		try {
+			return fs.readFile(link).includes(SHIM_MARK) ? `${link} -> ${pathFor(platform).join(bin, "mu.cmd")}` : undefined;
+		} catch {
+			return undefined;
+		}
+	}
+	try {
+		return `${link} -> ${fs.readlink(link)}`;
+	} catch {
+		return undefined;
+	}
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// mu migrate
+// ---------------------------------------------------------------------------------------------------------
+
+/** Minimal CSV, as `tasklist /FO CSV` and PowerShell's ConvertTo-Csv write it: quoted fields, "" for a quote. */
+export function parseCsv(text) {
+	const rows = [];
+	let row = [];
+	let field = "";
+	let quoted = false;
+	const source = String(text).replace(/^\uFEFF/, "");
+	for (let index = 0; index < source.length; index++) {
+		const char = source[index];
+		if (quoted) {
+			if (char === '"' && source[index + 1] === '"') {
+				field += '"';
+				index++;
+			} else if (char === '"') quoted = false;
+			else field += char;
+		} else if (char === '"') quoted = true;
+		else if (char === ",") {
+			row.push(field);
+			field = "";
+		} else if (char === "\n" || char === "\r") {
+			if (char === "\r" && source[index + 1] === "\n") index++;
+			row.push(field);
+			field = "";
+			if (row.some((cell) => cell !== "")) rows.push(row);
+			row = [];
+		} else field += char;
+	}
+	row.push(field);
+	if (row.some((cell) => cell !== "")) rows.push(row);
+	return rows;
+}
+
+/** `tasklist /FO CSV /NH`: "Image Name","PID","Session Name","Session#","Mem Usage". */
+export function parseTasklist(text) {
+	return parseCsv(text)
+		.map(([name, pid]) => ({ name: name ?? "", pid: Number(pid), command: "" }))
+		.filter((entry) => Number.isInteger(entry.pid) && entry.pid > 0);
+}
+
+/** `Get-CimInstance Win32_Process | Select-Object ProcessId,Name,CommandLine | ConvertTo-Csv -NoTypeInformation`. */
+export function parseWindowsProcesses(text) {
+	const [header, ...rows] = parseCsv(text);
+	if (!header) return [];
+	const column = (title) => header.findIndex((cell) => cell.toLowerCase() === title);
+	const [pid, name, command] = [column("processid"), column("name"), column("commandline")];
+	if (pid < 0) return [];
+	return rows
+		.map((row) => ({ pid: Number(row[pid]), name: row[name] ?? "", command: row[command] ?? "" }))
+		.filter((entry) => Number.isInteger(entry.pid) && entry.pid > 0);
+}
+
+const SESSION_MARK = "kyrn-judge/src/extension/kyrn-judge.ts";
+
+/**
+ * Who is still using the old home, from a process list ({ pid, name, command }). Windows paths are compared
+ * with forward slashes and without regard to case.
+ */
+export function busyFromProcesses({ processes, old, platform, self }) {
+	const fold = (value) => (platform === "win32" ? value.replaceAll("\\", "/").toLowerCase() : value);
+	const others = processes.filter((entry) => entry.pid !== self);
+	const pids = (match) => others.filter(match).map((entry) => entry.pid);
+	const profile = fold(pathFor(platform).join(old, "browser-profile"));
+	return {
+		sessions: pids((entry) => fold(entry.command).includes(SESSION_MARK)),
+		browser: pids((entry) => fold(entry.command).includes(profile)),
+		desktop: pids((entry) => /^aioncore(\.exe)?$/i.test(entry.name)),
+	};
+}
+
+/**
+ * Looks at what is running. POSIX asks pgrep, exactly as the bash launcher did. Windows has no pgrep:
+ * tasklist gives the names and one PowerShell call gives the command lines. `run(command, args)` returns
+ * stdout, or undefined when the command could not be run.
+ */
+export function findBusy({ platform, old, run, self }) {
+	if (platform !== "win32") {
+		const pgrep = (args) =>
+			(run("pgrep", args) ?? "")
+				.split(/\s+/)
+				.filter(Boolean)
+				.map(Number)
+				.filter((pid) => pid !== self);
+		return {
+			sessions: pgrep(["-f", SESSION_MARK]),
+			browser: pgrep(["-f", pathFor(platform).join(old, "browser-profile")]),
+			desktop: pgrep(["-x", "aioncore"]),
+		};
+	}
+	const names = run("tasklist", ["/FO", "CSV", "/NH"]);
+	const commands = run("powershell.exe", [
+		"-NoProfile",
+		"-NonInteractive",
+		"-Command",
+		"[Console]::OutputEncoding=[Text.Encoding]::UTF8; Get-CimInstance Win32_Process | Select-Object ProcessId,Name,CommandLine | ConvertTo-Csv -NoTypeInformation",
+	]);
+	// Without a process list nothing can be ruled out, and then nothing is moved.
+	if (names === undefined || commands === undefined) return undefined;
+	return busyFromProcesses({
+		processes: [...parseTasklist(names), ...parseWindowsProcesses(commands)],
+		old,
+		platform,
+		self,
+	});
+}
+
+/**
+ * ~/.kyrn becomes ~/.mu: one rename of the whole folder, so nothing inside is opened, copied or rewritten,
+ * and the login files keep their permissions. The old path stays behind as a link (a junction on Windows),
+ * because the desktop app's session mappings store absolute paths into it.
+ *
+ * `fs` is { isLink, isDir, exists, readlink, readFile, rename, link(target, at, kind) }. Returns the exit code.
+ */
+export function migrate({ platform, home, argv, fs, run, alive, self, out, err }) {
+	const path = pathFor(platform);
+	const old = path.join(home, ".kyrn");
+	const next = path.join(home, ".mu");
+	const dry = argv[0] === "--dry-run";
+	if (fs.isLink(old)) {
+		out(`Already moved: ${old} is a link to ${fs.readlink(old)}.`);
+		return 0;
+	}
+	if (!fs.isDir(old)) {
+		out(`Nothing to move: there is no ${old}.`);
+		return 0;
+	}
+	if (fs.exists(next) || fs.isLink(next)) {
+		err(`${next} already exists, so nothing was moved. Two homes are never merged or overwritten here:`);
+		err("look at both folders and decide which one is the real one.");
+		return 1;
+	}
+	// Whatever is running would write into the gap between the rename and the link, and split the home in two.
+	const busy = [];
+	let pid = 0;
+	try {
+		pid = Number.parseInt(fs.readFile(path.join(old, "local-judge", "judge.pid")).trim(), 10);
+	} catch {}
+	if (pid > 0 && alive(pid)) busy.push(`  the local judge (pid ${pid}). Stop it: mu judge stop`);
+	const found = findBusy({ platform, old, run, self });
+	if (!found) {
+		err("Nothing was moved: the list of running processes could not be read (tasklist, powershell), so it is not known whether mu is still running.");
+		return 1;
+	}
+	const list = (pids) => pids.join(" ");
+	if (found.sessions.length > 0) {
+		busy.push(`  mu sessions, in a terminal or behind the desktop app (pid ${list(found.sessions)}). Close them.`);
+	}
+	if (found.browser.length > 0) busy.push(`  the mu browser (pid ${list(found.browser)}). Close it.`);
+	if (found.desktop.length > 0) {
+		busy.push(`  the desktop app's backend (pid ${list(found.desktop)}). Quit the desktop app.`);
+	}
+	if (busy.length > 0) {
+		err(`Nothing was moved, because these are still using ${old}:`);
+		for (const line of busy) err(line);
+		return 1;
+	}
+	const config = path.join("agent", "kyrn.json");
+	const renameConfig = fs.exists(path.join(old, config)) && !fs.exists(path.join(old, "agent", "mu.json"));
+	if (dry) {
+		out(`Would move   ${old} -> ${next}`);
+		if (renameConfig) out(`Would rename ${path.join(next, config)} -> mu.json`);
+		out(`Would link   ${old} -> ${next}`);
+		out("Nothing was changed.");
+		return 0;
+	}
+	fs.rename(old, next);
+	// A junction needs no privilege on Windows; elsewhere the kind of link is ignored.
+	fs.link(next, old, platform === "win32" ? "junction" : "dir");
+	out(`moved    ${old} -> ${next}`);
+	if (renameConfig) {
+		fs.rename(path.join(next, config), path.join(next, "agent", "mu.json"));
+		out(`renamed  ${path.join(next, config)} -> mu.json`);
+	}
+	out(`linked   ${old} -> ${next} (paths stored from before the rename keep working)`);
+	out("Check it: mu doctor");
+	return 0;
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Carrying the plans out
+// ---------------------------------------------------------------------------------------------------------
+
+function isDir(target) {
+	try {
+		return statSync(target).isDirectory();
+	} catch {
+		return false;
+	}
+}
+
+function isLink(target) {
+	try {
+		return lstatSync(target).isSymbolicLink();
+	} catch {
+		return false;
+	}
+}
+
+/** Where a path really is, through any chain of links, also when the last target is gone. */
+function realPath(target) {
+	let current = target;
+	for (let hops = 0; hops < 40 && isLink(current); hops++) {
+		const dir = nodePath.dirname(current);
+		let physical = dir;
+		try {
+			physical = realpathSync(dir);
+		} catch {}
+		current = nodePath.resolve(physical, readlinkSync(current));
+	}
+	try {
+		return nodePath.join(realpathSync(nodePath.dirname(current)), nodePath.basename(current));
+	} catch {
+		return current;
+	}
+}
+
+function isRunnableFile(target) {
+	try {
+		if (!statSync(target).isFile()) return false;
+		if (process.platform !== "win32") accessSync(target, fsConstants.X_OK);
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+/** Synchronous on purpose: whatever is printed must be out before the agent, which shares the descriptor, writes. */
+function write(fd, text) {
+	try {
+		writeSync(fd, `${text}\n`);
+	} catch {
+		(fd === 2 ? console.error : console.log)(text);
+	}
+}
+const out = (text) => write(1, text);
+const err = (text) => write(2, text);
+
+/** Runs a command to its end and gives back its exit code, replacing this process where that is possible. */
+function handOver({ command, args, env, strategy }) {
+	if (strategy === "exec") {
+		try {
+			process.execve(command, [command, ...args], env);
+		} catch {
+			// Not available after all (a permission model, an exotic platform): start it as a child instead.
+		}
+	}
+	return new Promise((resolve) => {
+		const child = spawn(command, args, { stdio: "inherit", env });
+		// A terminal delivers ctrl+c to the child by itself. On Windows `kill` cannot deliver a signal, it only
+		// ends the process, so there this process just stays alive until the child has dealt with it.
+		const relay = (signal) => {
+			if (process.platform !== "win32") child.kill(signal);
+		};
+		for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) process.on(signal, () => relay(signal));
+		if (process.platform === "win32") process.on("SIGBREAK", () => {});
+		child.on("error", (error) => {
+			err(`mu: could not start ${command}: ${error.message}`);
+			resolve(1);
+		});
+		child.on("exit", (code, signal) => resolve(code ?? 128 + (osConstants.signals[signal] ?? 0)));
+	});
+}
+
+export async function main(argv = process.argv.slice(2)) {
+	const platform = process.platform;
+	const env = process.env;
+	const home = homedir();
+	const path = pathFor(platform);
+	const bin = realpathSync(nodePath.dirname(fileURLToPath(import.meta.url)));
+	const root = path.resolve(bin, "..", "..");
+	const canExec = typeof process.execve === "function";
+	const strategy = launchStrategy({ platform, env, canExec });
+	const readText = (target) => readFileSync(target, "utf8");
+	let procVersion = "";
+	try {
+		if (platform === "linux") procVersion = readText("/proc/version");
+	} catch {}
+	const wsl = detectWsl({ platform, env, procVersion });
+
+	if (!nodeVersionOk(process.versions.node)) {
+		err(`mu needs Node >= ${MIN_NODE.join(".")} (found ${process.version}). Try: nvm install 24`);
+		return 1;
+	}
+
+	const [command, ...rest] = argv;
+	if (command === "help") {
+		out(usage(platform));
+		return 0;
+	}
+	if (command === "migrate") {
+		return migrate({
+			platform,
+			home,
+			argv: rest,
+			self: process.pid,
+			out,
+			err,
+			alive: (pid) => {
+				try {
+					return process.kill(pid, 0);
+				} catch {
+					return false;
+				}
+			},
+			run: (file, args) => {
+				const result = spawnSync(file, args, { encoding: "utf8", windowsHide: true });
+				return result.error ? undefined : result.stdout;
+			},
+			fs: {
+				isLink,
+				isDir,
+				exists: existsSync,
+				readlink: readlinkSync,
+				readFile: readText,
+				rename: renameSync,
+				link: (target, at, kind) => symlinkSync(target, at, kind),
+			},
+		});
+	}
+	if (command === "judge") {
+		const plan = planJudge({ platform, env, argv: rest, bin, wsl });
+		if (plan.kind === "script") return handOver({ command: plan.command, args: plan.args, env, strategy });
+		if (plan.kind === "unsupported") {
+			err(plan.message);
+			return 1;
+		}
+		try {
+			const response = await fetch(plan.url, { signal: AbortSignal.timeout(2000) });
+			out(await response.text());
+			return 0;
+		} catch {
+			out(`the judge server does not answer at ${plan.url}`);
+			return 1;
+		}
+	}
+	if (command === "ledger") {
+		return handOver({ command: process.execPath, args: [path.join(bin, "kyrn-ledger"), ...rest], env, strategy });
+	}
+	if (command === "doctor") {
+		const link = linkPath({ platform, env, home });
+		return handOver({
+			command: process.execPath,
+			args: [path.join(bin, "kyrn-doctor"), root, link, ...rest],
+			env,
+			strategy,
+		});
+	}
+	if (command === "link") {
+		const plan = planLink({
+			platform,
+			env,
+			home,
+			bin,
+			argv: rest,
+			fs: { realPath, exists: (target) => existsSync(target) || isLink(target), isFile: isRunnableFile, readFile: readText },
+		});
+		if (plan.action === "refuse") {
+			for (const line of plan.errors) err(line);
+			return 1;
+		}
+		mkdirSync(path.dirname(plan.link), { recursive: true });
+		if (platform === "win32") writeFileSync(plan.link, plan.content);
+		else {
+			if (isLink(plan.link)) unlinkSync(plan.link);
+			symlinkSync(plan.target, plan.link);
+		}
+		out(plan.message);
+		for (const line of plan.notes) err(line);
+		return 0;
+	}
+	if (command === "unlink") {
+		const plan = planUnlink({ platform, env, home, fs: { isLink, readFile: readText } });
+		if (plan.remove) unlinkSync(plan.remove);
+		out(plan.message);
+		return 0;
+	}
+
+	// Asked before `version` too, as it always was: a checkout without its dependencies says so at the first command.
+	if (!resolveTsx({ root, platform, exists: existsSync, readFile: readText })) {
+		err(installHint({ root, platform }));
+		return 1;
+	}
+	if (command === "version") {
+		const version = (file) => JSON.parse(readText(path.join(root, "packages", file, "package.json"))).version;
+		out(`mu ${version("kyrn-judge")} (pi ${version("coding-agent")})`);
+		return 0;
+	}
+
+	const plan = planLaunch({
+		platform,
+		env,
+		argv,
+		root,
+		home,
+		execPath: process.execPath,
+		canExec,
+		wsl,
+		fs: { exists: existsSync, isDir, readFile: readText },
+	});
+	if (plan.error) {
+		err(plan.error);
+		return 1;
+	}
+
+	ensureAppView({ platform, app: plan.appDir, upstream: path.join(root, "packages", "coding-agent") });
+	mkdirSync(plan.agentDir, { recursive: true });
+	for (const note of plan.notes) err(note);
+	// The local judge is one shared sidecar; starting it is idempotent and must never block mu.
+	if (plan.startJudge) {
+		const started = spawnSync(path.join(bin, "kyrn-judge-local"), ["start"], { stdio: "ignore", env: plan.env });
+		if (started.status !== 0) {
+			err("mu: the local judge did not start (mu judge status); decisions fall back to pi's behaviour");
+		}
+	}
+	if (plan.preface) out(plan.preface);
+	return handOver(plan);
+}
+
+function isMain() {
+	if (!process.argv[1]) return false;
+	try {
+		const [invoked, self] = [realpathSync(process.argv[1]), fileURLToPath(import.meta.url)];
+		return process.platform === "win32" ? invoked.toLowerCase() === self.toLowerCase() : invoked === self;
+	} catch {
+		return false;
+	}
+}
+
+if (isMain()) {
+	main().then(
+		// Everything was written synchronously, so nothing is cut off; an idle keep-alive socket must not hold the exit up.
+		(code) => process.exit(code),
+		(error) => {
+			err(`mu: ${error instanceof Error ? error.message : String(error)}`);
+			process.exitCode = 1;
+		},
+	);
+}

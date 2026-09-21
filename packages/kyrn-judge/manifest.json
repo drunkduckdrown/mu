@@ -280,6 +280,19 @@
 			}
 		},
 		{
+			"id": "turn.rewind",
+			"group": "turn",
+			"feature": "checkpoint",
+			"title": {
+				"zh": "判断回退",
+				"en": "Judged rewind"
+			},
+			"summary": {
+				"zh": "监测发现原地打转或同一条命令连续失败时，判断这条路是不是死路；只有确信是死路且没有进展，才向你提议回到本回合开始前的检查点。它自己从不回退。",
+				"en": "When the monitor sees the agent going in circles, or one command failing again and again, judges whether the approach is a dead end; only a confident dead end with no progress proposes going back to the turn's checkpoint. It never rewinds by itself."
+			}
+		},
+		{
 			"id": "turn.completion",
 			"group": "turn",
 			"feature": "completion",
@@ -355,6 +368,19 @@
 			"summary": {
 				"zh": "为每个委派任务挑选角色，并按难度选择模型档位和思考等级。",
 				"en": "Picks a role for each delegated task, and a model tier and thinking level by difficulty."
+			}
+		},
+		{
+			"id": "swarm.patch",
+			"group": "team",
+			"feature": "swarm",
+			"title": {
+				"zh": "子代理补丁的范围检查",
+				"en": "Scope check of a sub-agent's patch"
+			},
+			"summary": {
+				"zh": "隔离的子代理交回补丁时，只看任务、改动的路径和行数，判断改动是否超出任务、哪些文件与任务无关；只给主代理一句提示，从不拦截。",
+				"en": "When an isolated sub-agent hands back a patch, judges from the task, the changed paths and the line counts whether it stays within the task and which files look unrelated. One line of advice for the main agent; it never blocks."
 			}
 		},
 		{
@@ -992,6 +1018,138 @@
 			]
 		},
 		{
+			"name": "checkpoint",
+			"title": {
+				"zh": "检查点与回退",
+				"en": "Checkpoints and rewind"
+			},
+			"summary": {
+				"zh": "每个会改文件的回合，在第一次改动前给工作区拍一张快照，存在 mu 自己的影子 git 目录里，不碰你的仓库。/rewind 让文件和对话一起回到那一刻，/rewind undo 撤销回退。",
+				"en": "Before the first change of every turn that edits files, snapshots the working tree into mu's own shadow git directory, never touching your repository. /rewind takes files and conversation back, /rewind undo takes the rewind back."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "dir",
+					"kind": "text",
+					"default": "",
+					"label": {
+						"zh": "快照存放目录",
+						"en": "Where snapshots are kept"
+					},
+					"help": {
+						"zh": "留空则放在 mu 主目录的 mu/checkpoints 下，每个项目一个影子仓库。",
+						"en": "Empty means mu/checkpoints in the mu home, one shadow repository per project."
+					}
+				},
+				{
+					"key": "keep",
+					"kind": "number",
+					"default": 50,
+					"min": 1,
+					"max": 1000,
+					"label": {
+						"zh": "每个项目保留的快照数",
+						"en": "Snapshots kept per project"
+					}
+				},
+				{
+					"key": "maxAgeDays",
+					"kind": "number",
+					"default": 14,
+					"min": 1,
+					"max": 365,
+					"label": {
+						"zh": "快照保留天数",
+						"en": "Days a snapshot is kept"
+					},
+					"unit": {
+						"zh": "天",
+						"en": "days"
+					}
+				},
+				{
+					"key": "maxFileMb",
+					"kind": "number",
+					"default": 5,
+					"min": 1,
+					"max": 1024,
+					"label": {
+						"zh": "单个文件大小上限",
+						"en": "Largest file in a snapshot"
+					},
+					"help": {
+						"zh": "更大的文件不进快照，回退时也绝不动它。",
+						"en": "Larger files stay out of snapshots, and a rewind never touches them."
+					},
+					"unit": {
+						"zh": "MB",
+						"en": "MB"
+					}
+				},
+				{
+					"key": "ignore",
+					"kind": "list",
+					"default": [],
+					"label": {
+						"zh": "额外忽略的路径",
+						"en": "Extra paths to ignore"
+					},
+					"help": {
+						"zh": "gitignore 写法，一行一条。项目自己的 .gitignore 和内置清单（node_modules、构建产物等）始终生效。",
+						"en": "gitignore patterns, one per line. The project's own .gitignore and the built-in list (node_modules, build outputs and so on) always apply."
+					}
+				},
+				{
+					"key": "timeoutMs",
+					"kind": "number",
+					"default": 30000,
+					"min": 1000,
+					"max": 600000,
+					"label": {
+						"zh": "单次快照最长用时",
+						"en": "Longest a snapshot may take"
+					},
+					"help": {
+						"zh": "超时则本回合不拍快照，工具照常执行。",
+						"en": "Past this the turn goes without a checkpoint; the tool call still runs."
+					},
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					}
+				},
+				{
+					"key": "propose",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "发现死路时提议回退",
+						"en": "Propose a rewind at a dead end"
+					}
+				},
+				{
+					"key": "confirmSeconds",
+					"kind": "number",
+					"default": 120,
+					"min": 0,
+					"max": 3600,
+					"label": {
+						"zh": "提议等待你回答的时间",
+						"en": "How long a proposal waits for you"
+					},
+					"help": {
+						"zh": "到时未答就继续原来的工作。0 表示一直等。",
+						"en": "Unanswered, the run carries on. 0 waits forever."
+					},
+					"unit": {
+						"zh": "秒",
+						"en": "s"
+					}
+				}
+			]
+		},
+		{
 			"name": "monitor",
 			"title": {
 				"zh": "跑偏监测",
@@ -1437,6 +1595,63 @@
 					"help": {
 						"zh": "留空使用 <agent 目录>/agents。",
 						"en": "Empty uses <agent dir>/agents."
+					}
+				},
+				{
+					"key": "isolation",
+					"kind": "choice",
+					"default": "worktree",
+					"choices": [
+						{
+							"value": "worktree",
+							"label": {
+								"zh": "在独立的 git worktree 里改",
+								"en": "Edit in a git worktree of its own"
+							}
+						},
+						{
+							"value": "none",
+							"label": {
+								"zh": "直接在当前目录改",
+								"en": "Edit in place"
+							}
+						}
+					],
+					"label": {
+						"zh": "会改文件的子代理",
+						"en": "Sub-agents that edit files"
+					},
+					"help": {
+						"zh": "隔离时改动以补丁交回，由主代理用 apply_patch_from 决定是否应用；不在 git 仓库里时自动退回原地修改。",
+						"en": "Isolated changes come back as a patch that the main agent applies with apply_patch_from, or not. Outside a git repository it falls back to editing in place."
+					}
+				},
+				{
+					"key": "carryUncommitted",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "带上未提交的改动",
+						"en": "Carry uncommitted changes over"
+					},
+					"help": {
+						"zh": "子代理从主代理当前看到的文件状态开始，而不是从上一次提交开始。",
+						"en": "The sub-agent starts from the files as the main agent sees them, not from the last commit."
+					}
+				},
+				{
+					"key": "patchPreviewLines",
+					"kind": "number",
+					"default": 30,
+					"min": 0,
+					"max": 400,
+					"label": {
+						"zh": "补丁预览行数",
+						"en": "Lines of patch preview"
+					},
+					"help": {
+						"zh": "随子代理报告一起给主代理看的补丁开头。",
+						"en": "The beginning of the patch shown with the sub-agent's report."
 					}
 				}
 			]

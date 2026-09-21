@@ -21,6 +21,10 @@ export interface KyrnPresentationEvent {
 		| "mcp.tools_changed"
 		| "constraint.blocked"
 		| "goal.state"
+		| "checkpoint.taken"
+		| "rewind.proposed"
+		| "rewind.done"
+		| "rewind.undone"
 		| "ttsr.interrupted"
 		| "browser.run"
 		| "browser.step"
@@ -33,6 +37,10 @@ export interface KyrnPresentationEvent {
 		| "background.match"
 		| "web.fetch"
 		| "web.search"
+		| "swarm.worktree.created"
+		| "swarm.patch.ready"
+		| "swarm.patch.applied"
+		| "swarm.worktree.removed"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;

@@ -7,7 +7,7 @@ import {
 	keyText,
 	VERSION as PI_VERSION,
 } from "@earendil-works/pi-coding-agent";
-import { findChrome } from "../../browser/chrome.ts";
+import { browserAdvice, findBrowser, thisBrowserHost } from "../../browser/chrome.ts";
 import type { DecisionMode } from "../../decision.ts";
 import type { LedgerRecord } from "../../ledger.ts";
 import { loadAgents } from "../agents.ts";
@@ -194,7 +194,8 @@ export function registerCommands(runtime: KyrnRuntime): void {
 			runtime.touch(ctx);
 			const ok = (good: boolean) => (good ? "ok  " : "FIX ");
 			const probe = runtime.enabled ? await engine.probe() : undefined;
-			const chrome = findChrome();
+			const browserHost = thisBrowserHost();
+			const chrome = findBrowser(browserHost)?.executable;
 			const available = ctx.modelRegistry.getAvailable();
 			const providers = [...new Set(available.map((model) => model.provider))];
 			const agentsDir = join(getAgentDir(), "agents");
@@ -211,7 +212,7 @@ export function registerCommands(runtime: KyrnRuntime): void {
 					? `${ok(probe.ok)}judge      ${engine.providerId} ${probe.ok ? `answers in ${probe.latencyMs} ms` : `does not answer (${probe.error}). For laya: mu judge start`}`
 					: "--  judge      off (MU_JUDGE=off)",
 				`--  decisions  default ${engine.getMode("*")}. Change with /mu mode default <off|shadow|active>`,
-				`${ok(Boolean(chrome))}browser    ${chrome ?? "no Chrome or Chromium found; set MU_CHROME"}`,
+				`${ok(Boolean(chrome))}browser    ${chrome ?? browserAdvice(browserHost)}`,
 				`--  browse     driven by ${engine.judgeFor("browser.step").id}. It needs a judge that can relate a goal to a page (jev, or an llm judge): /mu route browser.step luna`,
 				`${ok(roles.length > 0)}sub-agents ${roles.map((role) => role.name).join(", ")} · your own go in ${agentsDir}`,
 				`${ok(missing.length === 0)}ladder     ${ladder.length === 0 ? "none: sub-agents use the session's model" : ladder.join(" < ")}${

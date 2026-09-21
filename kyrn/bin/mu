@@ -1,30 +1,12 @@
 #!/usr/bin/env bash
-# mu command line. (The project was called KYRN until 2026-09-21; the old spellings below still work.)
+# mu command line on macOS, Linux and WSL. (The project was called KYRN until 2026-09-21.)
 #
-#   mu                       interactive session in the current directory
-#   mu "prompt"              interactive, starting with this prompt
-#   mu -p "prompt"           one-shot: print the answer and exit
-#   mu -c | -r               continue the last session | pick one to resume
-#   mu judge <cmd>           the local judge (Laya): setup | start | stop | status | run
-#   mu ledger [n] [--json]   what the judge decided in the last n sessions
-#   mu doctor                check the installation
-#   mu link | unlink         put the `mu` command on your PATH (~/.local/bin) | remove it
-#   mu migrate [--dry-run]   once: move the home from before the rename, ~/.kyrn, to ~/.mu
-#   mu help | version
+# Everything the launcher does is in mu.mjs, next to this file, so that it also runs on Windows (mu.cmd).
+# `mu help` lists the commands.
 #
-# Everything else goes to the agent unchanged: `mu --help` lists every flag,
-# and `mu install|remove|update|list|config` manage pi packages.
-#
-# What this launcher sets up:
-# - a Node >= 22.19 (pi's minimum), taken from nvm when the default one is older
-# - mu's own home, ~/.mu/agent (auth, sessions, settings), apart from a stock pi in ~/.pi.
-#   A machine that still has ~/.kyrn and no ~/.mu keeps using ~/.kyrn until that folder is moved.
-# - mu's name on the agent: PI_PACKAGE_DIR points at ~/.mu/app, a view of packages/coding-agent
-#   whose package.json carries piConfig {name: mu, configDir: .mu}. No upstream file is edited.
-# - the judgment layer (packages/kyrn-judge), with judges from ~/.mu/agent/mu.json or MU_JUDGE
-#   (e.g. "laya", "laya,luna", "laya,jev", "off"). When "laya" is among them the sidecar is started.
-#   kyrn.json and every KYRN_* variable are still read when the mu spelling is absent.
-# - the repo-root .env (AI_GATEWAY_API_KEY for Jev), exported without printing it
+# Only one job is left here: finding a Node >= 22.19 (pi's minimum), from PATH or else from nvm. It has to
+# happen before any JavaScript runs, because a machine whose default Node is older cannot be trusted to run
+# the launcher itself.
 set -euo pipefail
 
 # The command is usually a symlink in ~/.local/bin: follow it back to the repository.
@@ -34,223 +16,31 @@ while [[ -L "$SOURCE" ]]; do
   SOURCE="$(readlink "$SOURCE")"
   [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
 done
-ROOT="$(cd -P "$(dirname "$SOURCE")/../.." && pwd)"
-BIN="$ROOT/kyrn/bin"
-LINK="${MU_LINK_DIR:-${KYRN_LINK_DIR:-$HOME/.local/bin}}/mu"
-# The home moves from ~/.kyrn to ~/.mu in one step (`mu migrate`). Until then the old one stays in use,
-# and ~/.mu is never created next to it: two homes would mean two logins and two session lists.
-if [[ -d "$HOME/.mu" || ! -d "$HOME/.kyrn" ]]; then MU_DIR="$HOME/.mu"; else MU_DIR="$HOME/.kyrn"; fi
+BIN="$(cd -P "$(dirname "$SOURCE")" && pwd)"
 
-usage() { sed -n '2,16p' "$BIN/mu" | sed 's/^# \{0,1\}//'; }
-
-# Where a path really is, through any chain of links.
-real_path() {
-  local path="$1" dir
-  while [[ -L "$path" ]]; do
-    dir="$(cd -P "$(dirname "$path")" && pwd)"
-    path="$(readlink "$path")"
-    [[ "$path" != /* ]] && path="$dir/$path"
-  done
-  echo "$(cd -P "$(dirname "$path")" && pwd)/$(basename "$path")"
+# True for "24.16.0", "v22.19.0"; false for "22.18.0", "20.20.1" and for anything that is not a version.
+new_enough() {
+  local version="${1#v}" major minor
+  major="${version%%.*}"
+  minor="${version#*.}"
+  minor="${minor%%.*}"
+  [[ "$major" =~ ^[0-9]+$ && "$minor" =~ ^[0-9]+$ ]] || return 1
+  ((major > 22 || (major == 22 && minor >= 19)))
 }
 
-node_major() { node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0; }
-
-pick_node() {
-  if [[ "$(node_major)" -lt 22 ]]; then
-    for dir in $(ls -d "$HOME"/.nvm/versions/node/v* 2>/dev/null | sort -rV); do
-      major="${dir##*/v}"
-      major="${major%%.*}"
-      if [[ "$major" -ge 22 ]]; then
-        export PATH="$dir/bin:$PATH"
-        break
-      fi
-    done
-  fi
-  if [[ "$(node_major)" -lt 22 ]]; then
-    echo "mu needs Node >= 22.19 (found $(node --version 2>/dev/null || echo none)). Try: nvm install 24" >&2
-    exit 1
-  fi
-}
-
-# ~/.mu/app is packages/coding-agent seen through symlinks, plus a package.json that names the app.
-# It lives outside the repository on purpose: a symlinked source tree inside it makes biome skip the real one.
-# Its package name stays pi's: pi updates itself by that name, and `mu` on npm is someone else's package.
-ensure_app_dir() {
-  local app="${MU_APP_DIR:-${KYRN_APP_DIR:-$MU_DIR/app}}" upstream="$ROOT/packages/coding-agent" name
-  mkdir -p "$app"
-  for name in src docs examples README.md CHANGELOG.md; do
-    [[ "$(readlink "$app/$name" 2>/dev/null)" == "$upstream/$name" ]] || ln -sfn "$upstream/$name" "$app/$name"
-  done
-  # Rebuilt when upstream moved on, and when the view still names the app something else (a home from before the rename).
-  if [[ ! -f "$app/package.json" || "$upstream/package.json" -nt "$app/package.json" ]] ||
-    ! /usr/bin/grep -q '"name": "mu"' "$app/package.json"; then
-    node -e '
-      const fs = require("node:fs");
-      const pkg = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
-      pkg.piConfig = { name: "mu", configDir: ".mu" };
-      fs.writeFileSync(process.argv[2], `${JSON.stringify(pkg, null, "\t")}\n`);
-    ' "$upstream/package.json" "$app/package.json"
-  fi
-  export PI_PACKAGE_DIR="$app"
-}
-
-# ~/.kyrn becomes ~/.mu: one rename of the whole folder, so nothing inside is opened, copied or rewritten,
-# and the login files keep their permissions. The old path stays behind as a link, because the desktop app's
-# session mappings store absolute paths into it.
-migrate() {
-  local old="$HOME/.kyrn" new="$HOME/.mu" dry="" busy="" pid found
-  [[ "${1:-}" == "--dry-run" ]] && dry=1
-  if [[ -L "$old" ]]; then
-    echo "Already moved: $old is a link to $(readlink "$old")."
-    return 0
-  fi
-  if [[ ! -d "$old" ]]; then
-    echo "Nothing to move: there is no $old."
-    return 0
-  fi
-  if [[ -e "$new" || -L "$new" ]]; then
-    echo "$new already exists, so nothing was moved. Two homes are never merged or overwritten here:" >&2
-    echo "look at both folders and decide which one is the real one." >&2
-    return 1
-  fi
-  # Whatever is running would write into the gap between the rename and the link, and split the home in two.
-  pid="$(cat "$old/local-judge/judge.pid" 2>/dev/null || true)"
-  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
-    busy+="  the local judge (pid $pid). Stop it: mu judge stop"$'\n'
-  fi
-  found="$(pgrep -f "kyrn-judge/src/extension/kyrn-judge.ts" 2>/dev/null | tr '\n' ' ' || true)"
-  [[ -n "$found" ]] && busy+="  mu sessions, in a terminal or behind the desktop app (pid $found). Close them."$'\n'
-  found="$(pgrep -f "$old/browser-profile" 2>/dev/null | tr '\n' ' ' || true)"
-  [[ -n "$found" ]] && busy+="  the mu browser (pid $found). Close it."$'\n'
-  found="$(pgrep -x aioncore 2>/dev/null | tr '\n' ' ' || true)"
-  [[ -n "$found" ]] && busy+="  the desktop app's backend (pid $found). Quit the desktop app."$'\n'
-  if [[ -n "$busy" ]]; then
-    echo "Nothing was moved, because these are still using $old:" >&2
-    printf '%s' "$busy" >&2
-    return 1
-  fi
-  if [[ -n "$dry" ]]; then
-    echo "Would move   $old -> $new"
-    [[ -f "$old/agent/kyrn.json" && ! -e "$old/agent/mu.json" ]] && echo "Would rename $new/agent/kyrn.json -> mu.json"
-    echo "Would link   $old -> $new"
-    echo "Nothing was changed."
-    return 0
-  fi
-  mv "$old" "$new"
-  ln -s "$new" "$old"
-  echo "moved    $old -> $new"
-  if [[ -f "$new/agent/kyrn.json" && ! -e "$new/agent/mu.json" ]]; then
-    mv "$new/agent/kyrn.json" "$new/agent/mu.json"
-    echo "renamed  $new/agent/kyrn.json -> mu.json"
-  fi
-  echo "linked   $old -> $new (paths stored from before the rename keep working)"
-  echo "Check it: mu doctor"
-}
-
-case "${1:-}" in
-  help)
-    usage
-    exit 0
-    ;;
-  migrate)
-    shift
-    migrate "$@"
-    exit $?
-    ;;
-  judge)
-    shift
-    exec "$BIN/kyrn-judge-local" "${@:-status}"
-    ;;
-  ledger)
-    shift
-    pick_node
-    exec "$BIN/kyrn-ledger" "$@"
-    ;;
-  doctor)
-    shift
-    pick_node
-    exec node "$BIN/kyrn-doctor" "$ROOT" "$LINK" "$@"
-    ;;
-  link)
-    # Homebrew's maildir-utils is also called `mu`. A command that is not this one is never replaced or shadowed silently.
-    other="$(command -v mu 2>/dev/null || true)"
-    if [[ -n "$other" && "$(real_path "$other")" == "$BIN/mu" ]]; then other=""; fi
-    if [[ -e "$LINK" || -L "$LINK" ]] && [[ "$(real_path "$LINK")" != "$BIN/mu" ]]; then
-      echo "$LINK already exists and is not this mu; it was left alone. Choose another folder: MU_LINK_DIR=<dir> mu link" >&2
-      exit 1
+# `node --version` costs a third of `node -p ...`: it answers before the runtime is started.
+if ! new_enough "$(node --version 2>/dev/null || true)"; then
+  for dir in $(ls -d "$HOME"/.nvm/versions/node/v* 2>/dev/null | sort -rV); do
+    if new_enough "${dir##*/}"; then
+      # First on PATH too, so that what the agent starts (node, npm, npx) is the same Node.
+      export PATH="$dir/bin:$PATH"
+      break
     fi
-    if [[ -n "$other" && "${2:-}" != "--force" ]]; then
-      echo "Another mu is already on your PATH: $other" >&2
-      echo "Nothing was linked. To put this one first anyway: mu link --force (or MU_LINK_DIR=<dir> mu link)" >&2
-      exit 1
-    fi
-    mkdir -p "$(dirname "$LINK")"
-    ln -sfn "$BIN/mu" "$LINK"
-    echo "mu -> $BIN/mu"
-    case ":$PATH:" in
-      *":$(dirname "$LINK"):"*) ;;
-      *) echo "Note: $(dirname "$LINK") is not on your PATH yet." >&2 ;;
-    esac
-    exit 0
-    ;;
-  unlink)
-    if [[ -L "$LINK" ]]; then rm "$LINK" && echo "removed $LINK"; else echo "$LINK is not a link; nothing removed"; fi
-    exit 0
-    ;;
-esac
-
-pick_node
-
-if [[ ! -x "$ROOT/node_modules/.bin/tsx" ]]; then
-  echo "mu's dependencies are not installed. Run:  cd $ROOT && npm ci --ignore-scripts && npm run hydrate:model-data" >&2
+  done
+fi
+if ! new_enough "$(node --version 2>/dev/null || true)"; then
+  echo "mu needs Node >= 22.19 (found $(node --version 2>/dev/null || echo none)). Try: nvm install 24" >&2
   exit 1
 fi
 
-if [[ "${1:-}" == "version" ]]; then
-  node -e '
-    const read = (path) => JSON.parse(require("node:fs").readFileSync(path, "utf8")).version;
-    console.log(`mu ${read(process.argv[1])} (pi ${read(process.argv[2])})`);
-  ' "$ROOT/packages/kyrn-judge/package.json" "$ROOT/packages/coding-agent/package.json"
-  exit 0
-fi
-
-ensure_app_dir
-# pi reads <APP NAME>_CODING_AGENT_DIR and nothing else, so with the app named mu this export decides the home.
-# The pi and KYRN spellings are exported too, for scripts that still read them.
-export MU_CODING_AGENT_DIR="${MU_AGENT_DIR:-${KYRN_AGENT_DIR:-${MU_CODING_AGENT_DIR:-${KYRN_CODING_AGENT_DIR:-$MU_DIR/agent}}}}"
-export KYRN_CODING_AGENT_DIR="$MU_CODING_AGENT_DIR"
-export PI_CODING_AGENT_DIR="$MU_CODING_AGENT_DIR"
-mkdir -p "$MU_CODING_AGENT_DIR"
-# A fork run from source follows upstream through git, not through pi's release check.
-export PI_SKIP_VERSION_CHECK="${PI_SKIP_VERSION_CHECK:-1}"
-
-if [[ -f "$ROOT/.env" ]]; then
-  set -a
-  # shellcheck disable=SC1091
-  . "$ROOT/.env"
-  set +a
-fi
-
-# The local judge is one shared sidecar; starting it is idempotent and must never block mu.
-wants_laya() {
-  local judges="${MU_JUDGE:-${KYRN_JUDGE:-}}" config="$MU_CODING_AGENT_DIR/mu.json"
-  if [[ -n "$judges" ]]; then [[ ",$judges," == *",laya"* ]]; return; fi
-  [[ -f "$config" ]] || config="$MU_CODING_AGENT_DIR/kyrn.json"
-  [[ ! -f "$config" ]] && return 1
-  /usr/bin/grep -q '"laya' "$config"
-}
-if wants_laya; then
-  "$BIN/kyrn-judge-local" start >/dev/null 2>&1 || echo "mu: the local judge did not start (mu judge status); decisions fall back to pi's behaviour" >&2
-fi
-
-if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
-  usage
-  echo
-  echo "Agent flags:"
-  echo
-fi
-
-exec "$ROOT/node_modules/.bin/tsx" --tsconfig "$ROOT/tsconfig.json" \
-  "$ROOT/packages/coding-agent/src/experimental/cli.ts" \
-  -e "$ROOT/packages/kyrn-judge/src/extension/kyrn-judge.ts" "$@"
+exec node "$BIN/mu.mjs" "$@"
