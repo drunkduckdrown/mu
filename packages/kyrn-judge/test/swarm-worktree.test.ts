@@ -203,6 +203,28 @@ describe("worktree: one task's isolated checkout", () => {
 		await removeWorktree(runGit, worktree);
 	});
 
+	it("works when the parent is itself a linked worktree on a detached HEAD, as an agent's checkout is", async () => {
+		const root = area();
+		const repo = makeRepo(root, { "a.txt": "one\n" });
+		const parent = join(root, "parent checkout");
+		sh(repo, "worktree", "add", "--detach", parent, "HEAD");
+		writeFileSync(join(parent, "a.txt"), "one\nparent's uncommitted line\n");
+
+		const check = await checkRepo(runGit, parent);
+		expect(check).toMatchObject({ ok: true, repo: { root: parent } });
+		// Its own git directory, where a merge or rebase of THIS checkout would leave its files.
+		expect(check.ok && check.repo.gitDir).toContain(join(".git", "worktrees"));
+
+		const { worktree } = await open(parent, join(root, "kyrn-swarm-t", "w0"));
+		expect(readFileSync(join(worktree.dir, "a.txt"), "utf8")).toContain("parent's uncommitted line");
+		writeFileSync(join(worktree.dir, "b.txt"), "b\n");
+		const collected = await collectPatch(runGit, worktree);
+		expect(collected).toMatchObject({ ok: true, summary: { files: [{ path: "b.txt", status: "added" }] } });
+		expect(await removeWorktree(runGit, worktree)).toEqual([]);
+		// The parent checkout is still registered; ours is not.
+		expect(sh(repo, "worktree", "list", "--porcelain").match(/^worktree /gm)).toHaveLength(2);
+	});
+
 	it("reports a checkout that cannot be made and leaves nothing behind", async () => {
 		const root = area();
 		const repo = makeRepo(root, { "a.txt": "one\n" });

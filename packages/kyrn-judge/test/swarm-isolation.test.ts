@@ -76,9 +76,9 @@ describe("delegate with worktree isolation", () => {
 		return Object.assign(harness, { repo: realpathSync(harness.tempDir) });
 	}
 
-	const delegate = (tasks: Record<string, unknown>[]) =>
+	const delegate = (tasks: Record<string, string>[]) =>
 		fauxAssistantMessage([fauxToolCall("delegate", { tasks })], { stopReason: "toolUse" });
-	const applyFrom = (args: Record<string, unknown>) =>
+	const applyFrom = (args: Record<string, string>) =>
 		fauxAssistantMessage([fauxToolCall("apply_patch_from", args)], { stopReason: "toolUse" });
 
 	it("runs a worker in its own checkout, hands back a patch with the judge's view, and applies it only when asked", async () => {
@@ -240,7 +240,7 @@ describe("delegate with worktree isolation", () => {
 			return "ok";
 		};
 		const isolatedTitles = () => [...where].filter(([, cwd]) => cwd !== undefined).map(([title]) => title);
-		const tasks = [
+		const tasks: Record<string, string>[] = [
 			{ title: "look", instructions: "Find it", agent: "scout" },
 			{ title: "edit", instructions: "Change it", agent: "worker" },
 			{ title: "in-place", instructions: "Change it here", agent: "worker", isolation: "none" },
@@ -285,6 +285,39 @@ describe("delegate with worktree isolation", () => {
 		expect(rebase("Edit /var/proj/src/a.ts and /private/var/proj/b.ts", parent, "/tmp/w0")).toBe(
 			"Edit /tmp/w0/src/a.ts and /tmp/w0/b.ts",
 		);
+	});
+
+	it("takes a running sub-agent's checkout down when the session shuts down", async () => {
+		let cwd = "";
+		let started: () => void = () => {};
+		let release: () => void = () => {};
+		const running = new Promise<void>((resolve) => {
+			started = resolve;
+		});
+		const harness = await start(
+			(_task, assignment) =>
+				new Promise<string>((resolve) => {
+					cwd = assignment.cwd ?? "";
+					release = () => resolve("late");
+					started();
+				}),
+		);
+		harness.setResponses([delegate([{ title: "slow", instructions: "Take your time" }]), fauxAssistantMessage("ok")]);
+		const prompt = harness.session.prompt("Go.");
+		await running;
+		expect(existsSync(cwd)).toBe(true);
+		expect(sh(harness.repo, "branch", "--list", "mu/agent-*")).not.toBe("");
+
+		await harness.session.extensionRunner.emit({ type: "session_shutdown", reason: "quit" });
+
+		expect(existsSync(cwd)).toBe(false);
+		expect(existsSync(`${cwd}.json`)).toBe(false);
+		expect(sh(harness.repo, "branch", "--list", "mu/agent-*")).toBe("");
+		expect(sh(harness.repo, "worktree", "list", "--porcelain").match(/^worktree /gm)).toHaveLength(1);
+		// The sub-agent coming back afterwards finds its checkout gone, and that is not an error for anyone.
+		release();
+		await prompt;
+		expect(resultTexts(harness)[0]).toContain("late");
 	});
 
 	it("says nothing about scope in shadow mode, and answers an unknown patch id with the ones it has", async () => {
