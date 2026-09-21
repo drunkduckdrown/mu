@@ -169,3 +169,12 @@ src/a.ts:20:9 warning 6133 'x' is declared but never used.
 - 只用完整文本同步（`didChange` 发全文）。大文件上有额外开销，超过 `maxFileBytes` 的文件直接跳过。
 - 同一个文件被并行的两个工具调用同时修改的情况没有处理。
 - 内置服务器被视为可信。但有些语言服务器本身会执行项目里的代码（rust-analyzer 跑 `build.rs` 和过程宏，typescript-language-server 会加载工作区 `node_modules` 里的 TypeScript）。是否让内置服务器也等项目信任，留给用户决定。
+
+## 真实服务器上的验证（2026-09-22 补）
+
+`test/lsp-real-server.test.ts` 是可选测试（`MU_LSP_REAL=1`），只用本机已装的服务器，不代装。
+
+- **gopls 0.20.0 + Go 1.24.1：通过。** 临时 Go 模块，文件里原有一个未声明标识符的错误；改动在最前面加一行注释、在末尾加一个新的未声明标识符。结果只报新引入的那一条，原有错误虽然行号下移了一行也不算新。连跑三次稳定，单次约 1.5 秒。
+- typescript-language-server：本机未安装，用例跳过。
+- clangd：`/usr/bin/clangd` 是 Xcode 的转发壳，本机尚未同意 Xcode 许可，进程一启动就退出。客户端对此的表现是启动失败并给出原因，不会卡住；要用它需要你自己在终端执行一次 `sudo xcodebuild -license`。
+- rust-analyzer：`~/.cargo/bin/rust-analyzer` 是 rustup 的壳，对应组件没装。
