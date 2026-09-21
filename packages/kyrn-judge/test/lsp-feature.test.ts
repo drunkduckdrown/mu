@@ -218,6 +218,40 @@ describe("lsp diagnostics feature", () => {
 		});
 	}
 
+	it("does not wait for a slow server: what arrives late is told when the model stops", async () => {
+		const { toolResults, told, run, harness } = await start(verdict(no), {
+			lsp: { settleMs: 60 },
+			server: { delayMs: 400 },
+		});
+		await run("Break it.", [
+			write("a.fake", "bad !error E1 slow to be found\n"),
+			fauxAssistantMessage("Done."),
+			fauxAssistantMessage("Fixed."),
+			fauxAssistantMessage("unused"),
+		]);
+		await vi.waitFor(() => expect(harness.getPendingResponseCount()).toBe(1));
+		expect(toolResults().join("\n")).not.toContain("mu diagnostics");
+		expect(told()).toHaveLength(1);
+		expect(told()[0]).toContain("a.fake:1:5 error E1 slow to be found");
+	});
+
+	it("lists servers, what runs and the last error under /lsp, and registers them in the catalog", async () => {
+		const { harness, run } = await start(verdict(no));
+		await run("Go.", [write("a.fake", "fine\n"), fauxAssistantMessage("Done.")]);
+		const shown: string[] = [];
+		const command = harness.session.extensionRunner.getCommand("lsp");
+		await command?.handler("", {
+			cwd: harness.tempDir,
+			isProjectTrusted: () => true,
+			ui: { notify: (message: string) => shown.push(message) },
+		} as never);
+		expect(shown).toHaveLength(1);
+		expect(shown[0]).toMatch(/ok {2}fake +\.fake · .*node/);
+		expect(shown[0]).toContain("running in ");
+		expect(shown[0]).toContain("1 open · started 1x");
+		expect(shown[0]).toContain("0 new diagnostics tracked this turn");
+	});
+
 	it("restarts a crashed server once, on its next use, and then leaves it down", async () => {
 		const { starts, toolResults, run } = await start(verdict(no));
 		await run("Go.", [

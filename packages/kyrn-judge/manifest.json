@@ -1050,6 +1050,19 @@
 					}
 				},
 				{
+					"key": "subAgents",
+					"kind": "boolean",
+					"default": false,
+					"label": {
+						"zh": "子代理也启动语言服务器",
+						"en": "Sub-agents start language servers too"
+					},
+					"help": {
+						"zh": "默认关闭：每个子代理各起一套服务器会很吃资源。",
+						"en": "Off by default: one set of servers per sub-agent is heavy on the machine."
+					}
+				},
+				{
 					"key": "settleMs",
 					"kind": "number",
 					"default": 1500,

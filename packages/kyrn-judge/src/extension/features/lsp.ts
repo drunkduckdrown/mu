@@ -65,6 +65,8 @@ export function registerLsp(runtime: KyrnRuntime): void {
 		/** Add, override or remove (`false`) servers: `{ "<id>": { command, args, extensions, rootMarkers } }`. */
 		servers: {} as Record<string, unknown>,
 		editTools: ["edit", "write"],
+		/** Sub-agents of a swarm or hive start no servers of their own unless this is set: five bees, five rust-analyzers. */
+		subAgents: false,
 		settleMs: 1500,
 		turnEndSettleMs: 3000,
 		quietMs: 250,
@@ -74,7 +76,7 @@ export function registerLsp(runtime: KyrnRuntime): void {
 		maxFileBytes: 2_000_000,
 		waitMs: 4000,
 	});
-	if (!options.enabled) return;
+	if (!options.enabled || (process.env.KYRN_SWARM_DEPTH && !options.subAgents)) return;
 	const { pi } = runtime;
 
 	runtime.catalog.register({
@@ -172,6 +174,7 @@ export function registerLsp(runtime: KyrnRuntime): void {
 
 	const newTurn = () => {
 		tracker.reset();
+		calls.clear();
 		edited = new Set();
 		recentEdits = [];
 		toldAtTurnEnd = false;
