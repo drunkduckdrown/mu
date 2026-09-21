@@ -32,6 +32,14 @@ function ledgerRecords(harness: Harness): LedgerRecord[] {
 	return records;
 }
 
+/**
+ * The records of the decision these tests are about. A default session holds hidden capability packs,
+ * so every message is also asked which of them it needs (`capability.disclosure`).
+ */
+function preflightRecords(harness: Harness): LedgerRecord[] {
+	return ledgerRecords(harness).filter((record) => record.specId === inputPreflight.id);
+}
+
 describe("kyrn judge extension", () => {
 	const harnesses: Harness[] = [];
 
@@ -46,9 +54,9 @@ describe("kyrn judge extension", () => {
 		harness.setResponses([fauxAssistantMessage("It refreshes the access token.")]);
 
 		await harness.session.prompt("By the way, what does the refreshToken helper do?");
-		await vi.waitFor(() => expect(ledgerRecords(harness)).toHaveLength(1));
+		await vi.waitFor(() => expect(preflightRecords(harness)).toHaveLength(1));
 
-		const [record] = ledgerRecords(harness);
+		const [record] = preflightRecords(harness);
 		expect(record).toMatchObject({
 			specId: "input.preflight",
 			specVersion: inputPreflight.version,
@@ -62,8 +70,9 @@ describe("kyrn judge extension", () => {
 		// Shadow mode: the outcome acted on is the stock default, not the verdict.
 		expect(record.outcome).toMatchObject({ turnType: "unknown", gear: "standard" });
 
-		expect(provider.calls).toHaveLength(1);
-		expect(provider.calls[0].state).toMatchObject({
+		const preflightCalls = provider.calls.filter((call) => "turn_type" in call.questions);
+		expect(preflightCalls).toHaveLength(1);
+		expect(preflightCalls[0].state).toMatchObject({
 			user_message: "By the way, what does the refreshToken helper do?",
 		});
 		// Ledger entries live in the session file but never reach the model.
@@ -137,9 +146,12 @@ describe("kyrn judge extension", () => {
 		harness.setResponses([fauxAssistantMessage("hello")]);
 
 		await harness.session.prompt("hi");
-		await vi.waitFor(() => expect(ledgerRecords(harness)).toHaveLength(1));
+		await vi.waitFor(() => expect(preflightRecords(harness)).toHaveLength(1));
 
-		expect(ledgerRecords(harness)[0]).toMatchObject({ source: "fallback", reason: "error:payment_required" });
+		// Every decision of the turn fell back, the one about hidden capabilities included.
+		for (const record of ledgerRecords(harness)) {
+			expect(record).toMatchObject({ source: "fallback", reason: "error:payment_required" });
+		}
 		expect(harness.session.messages.map((message) => message.role)).toEqual(["system", "user", "assistant"]);
 	});
 });

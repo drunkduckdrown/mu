@@ -41,6 +41,7 @@ import { type McpFeatureOptions, registerMcp } from "./features/mcp.ts";
 import { registerMemory } from "./features/memory.ts";
 import { registerMonitor } from "./features/monitor.ts";
 import { registerNotify } from "./features/notify.ts";
+import { registerPacks } from "./features/packs.ts";
 import { registerPreflight } from "./features/preflight.ts";
 import { registerSkills } from "./features/skills.ts";
 import { registerSwarm, type SwarmRunner } from "./features/swarm.ts";
@@ -105,7 +106,8 @@ export type FeatureName =
 	| "inherit"
 	| "mcp"
 	| "background"
-	| "web";
+	| "web"
+	| "packs";
 
 export function createKyrnJudgeExtension(options: KyrnJudgeExtensionOptions = {}): (pi: ExtensionAPI) => void {
 	return (pi) => registerKyrn(pi, options);
@@ -183,6 +185,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["mcp", (shared) => registerMcp(shared, roots, options.mcp)],
 		["background", registerBackground],
 		["web", registerWeb],
+		["packs", registerPacks],
 	];
 	for (const [name, register] of features) {
 		if (!options.only || options.only.includes(name)) register(runtime);
