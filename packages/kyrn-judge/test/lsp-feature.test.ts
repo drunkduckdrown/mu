@@ -145,6 +145,32 @@ describe("lsp diagnostics feature", () => {
 		expect(harness.getPendingResponseCount()).toBe(0);
 	});
 
+	it("works the same for the edit tool, and stays out of a failed edit", async () => {
+		const { toolResults, run, file } = await start(verdict(no));
+		writeFileSync(file("a.fake"), "one\ntwo !error E1 was here before\nthree\n");
+		const edit = (oldText: string, newText: string) =>
+			fauxAssistantMessage(
+				[fauxText("Editing."), fauxToolCall("edit", { path: "a.fake", edits: [{ oldText, newText }] })],
+				{
+					stopReason: "toolUse",
+				},
+			);
+		await run("Change line three.", [
+			edit("no such text", "x"),
+			edit("three", "three !error E2 introduced by the edit"),
+			fauxAssistantMessage("Done."),
+			fauxAssistantMessage("Seen."),
+		]);
+		expect(toolResults()[0]).not.toContain("mu diagnostics");
+		expect(toolResults()[1]).toContain("a.fake:3:7 error E2 introduced by the edit");
+		// The edit tool's own diff shows the old line as context; the diagnostics block must not.
+		const block = toolResults()[1].slice(
+			toolResults()[1].indexOf("[mu diagnostics"),
+			toolResults()[1].indexOf("[mu diagnostics end"),
+		);
+		expect(block).not.toContain("was here before");
+	});
+
 	it("holds what the model is about to fix anyway, and says nothing when it did", async () => {
 		const { toolResults, told, kinds, run, harness } = await start(verdict(yes));
 		await run("Rename helper everywhere.", [
