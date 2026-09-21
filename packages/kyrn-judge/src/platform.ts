@@ -74,6 +74,22 @@ export function wslToWindowsPath(path: string, { distro, mountRoot = "/mnt/" }: 
 	return `\\\\wsl.localhost\\${distro}${path.replace(/\/+$/, "").replaceAll("/", "\\")}`;
 }
 
+export type StopPlan =
+	| { readonly kind: "signal"; readonly signal: "SIGTERM" | "SIGKILL" }
+	| { readonly kind: "command"; readonly command: string; readonly args: string[] };
+
+/**
+ * How to stop a child and whatever it started. Windows has no signals: `kill` ends that one process at once
+ * and leaves its children running, so the whole tree is taken down with taskkill. (The MCP client does the
+ * same for its servers.)
+ */
+export function stopPlan(platform: NodeJS.Platform, pid: number | undefined, hard: boolean): StopPlan {
+	if (platform === "win32" && pid !== undefined) {
+		return { kind: "command", command: "taskkill", args: ["/pid", String(pid), "/T", "/F"] };
+	}
+	return { kind: "signal", signal: hard ? "SIGKILL" : "SIGTERM" };
+}
+
 /** What `wslpath -u` answers for a path on a drive: `C:\Users\x` is `/mnt/c/Users/x`. */
 export function windowsToWslPath(path: string, { mountRoot = "/mnt/" }: WslPaths = {}): string | undefined {
 	const match = /^([a-z]):[\\/]*(.*)$/i.exec(path);

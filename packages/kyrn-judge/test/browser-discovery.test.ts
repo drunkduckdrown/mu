@@ -10,7 +10,7 @@ import {
 	planBrowserLaunch,
 	windowsSideProblem,
 } from "../src/browser/chrome.ts";
-import { hostName, isWsl, windowsToWslPath, wslMountRoot, wslToWindowsPath } from "../src/platform.ts";
+import { hostName, isWsl, stopPlan, windowsToWslPath, wslMountRoot, wslToWindowsPath } from "../src/platform.ts";
 
 /**
  * Not run on a real Windows or WSL machine: these tests prove which paths are looked at and which command
@@ -245,6 +245,18 @@ describe("telling the platforms apart, and their paths", () => {
 		expect(windowsToWslPath("C:\\")).toBe("/mnt/c");
 		expect(windowsToWslPath("\\\\server\\share")).toBeUndefined();
 		expect(windowsToWslPath("C:\\x", { mountRoot: "/" })).toBe("/c/x");
+	});
+
+	it("stops a sub-agent with a signal, and on Windows with its whole tree", () => {
+		expect(stopPlan("darwin", 4242, false)).toEqual({ kind: "signal", signal: "SIGTERM" });
+		expect(stopPlan("linux", 4242, true)).toEqual({ kind: "signal", signal: "SIGKILL" });
+		expect(stopPlan("win32", 4242, false)).toEqual({
+			kind: "command",
+			command: "taskkill",
+			args: ["/pid", "4242", "/T", "/F"],
+		});
+		// A child that never got a pid has no tree to take down.
+		expect(stopPlan("win32", undefined, false)).toEqual({ kind: "signal", signal: "SIGTERM" });
 	});
 
 	it("reads where the drives are mounted from /etc/wsl.conf", () => {
