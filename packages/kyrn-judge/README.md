@@ -14,7 +14,7 @@ pi -e packages/kyrn-judge/src/extension/kyrn-browser.ts      # only the browser
 pi -e packages/kyrn-judge/src/extension/kyrn-swarm.ts        # only judge-routed sub-agents
 ```
 
-From this repository, `kyrn/bin/mu` runs pi from source with the full extension and its own agent directory (`~/.mu/agent`). `mu link` puts the command on your PATH. On a machine that still has `~/.kyrn` from before the rename, `mu migrate` moves it to `~/.mu` in one step (`--dry-run` shows what it would do); until then the old home stays in use.
+From this repository, `kyrn/bin/mu` (on Windows `kyrn\bin\mu.cmd`; the launcher itself is `kyrn/bin/mu.mjs`, and its Windows and WSL paths have not been run on a real machine yet, see `kyrn/docs/features/windows-and-wsl.md`) runs pi from source with the full extension and its own agent directory (`~/.mu/agent`). `mu link` puts the command on your PATH. On a machine that still has `~/.kyrn` from before the rename, `mu migrate` moves it to `~/.mu` in one step (`--dry-run` shows what it would do); until then the old home stays in use.
 
 ## Configure it
 

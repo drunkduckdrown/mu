@@ -52,13 +52,16 @@ pi 自带的示例扩展里已有 plan-mode、subagent、todo、git-checkpoint�
 
 ## 4. Windows 与 WSL
 
-现状是 POSIX 专用：启动器和桌面端的 `scripts/kyrn/*` 是 bash，`mu migrate` 用 `pgrep`，本地判定服务是 Core ML（只有 macOS）。做法：
+原来是 POSIX 专用：启动器和桌面端的 `scripts/kyrn/*` 是 bash，`mu migrate` 用 `pgrep`，本地判定服务是 Core ML（只有 macOS）。设计、审计表和真机首查清单见 `kyrn/docs/features/windows-and-wsl.md`。**以下“已完成”都指代码加按平台参数化的单元测试，macOS 上实跑通过；没有一项在真实的 Windows 或 WSL 机器上运行过。**
 
-1. 启动器换成 Node 实现（`mu.mjs`），bash 和 `mu.cmd` 都只是一行转发；路径一律 `node:path` + `os.homedir()`。
-2. 新代码一律跨平台：进程用 `spawn` 不经 shell，Windows 上的 `.cmd` 垫片单独处理；pi 上游已有 `powershell` 工具可用。
-3. Chrome 发现补上 Windows 和 WSL 的路径；WSL 里优先用 Windows 侧的浏览器和 `wslpath` 转换。
-4. 本地判定服务在 Windows 上换运行时（ONNX/CPU），接口不变。
-5. 没有 Windows 机器可测的部分，用按平台参数化的单元测试覆盖路径与命令拼装，并在这里如实标注“未在真机验证”。
+| 项 | 做法 | 状态 |
+| --- | --- | --- |
+| 1. 启动器 | Node 实现（`kyrn/bin/mu.mjs`，无依赖），每个决定是带 `platform` / `env` / 文件系统参数的纯函数；`kyrn/bin/mu`（bash）只负责选 Node >= 22.19，`mu.cmd` / `mu.ps1` 是 Windows 的转发器；应用视图在 Windows 上用 junction 加复制；`.env` 由 Node 解析，不再 source；`mu link` 在 Windows 上写 `mu.cmd` 垫片；`mu migrate` 在 Windows 上用 `tasklist` + PowerShell 代替 `pgrep`、留 junction | 已完成，未在真机验证。既有启动器测试原样通过 |
+| 2. 新代码跨平台 | 进程用 `spawn` 加参数数组、不经 shell；tsx 走真正的 JS 入口而不是 `.cmd` 垫片；子代理在 Windows 上用 `taskkill /T` 整树结束（MCP 客户端、后台命令已各自处理） | 已完成，未在真机验证。**未解决**：`guard` / `constraints` / `completion` / `prune` / `swarm/state` 只认 `bash` 工具，看不到 Windows 上 `powershell` 工具的命令 |
+| 3. 浏览器发现 | Windows：Program Files、Program Files (x86)、LOCALAPPDATA 下的 Chrome / Chromium / Edge / Brave。Linux：包、PATH、snap、flatpak（受限环境的 profile 换位置）。WSL：**先用 WSL 里的浏览器**；Windows 侧浏览器只在 mirrored 网络模式下用（回环可达），NAT 模式下拒绝并给出安装与 `.wslconfig` 指引，因为调试端口没有鉴权、不能开给网络。（原计划“WSL 里优先用 Windows 侧浏览器”据此改了） | 已完成，未在真机验证 |
+| 4. 本地判定服务 | 非 macOS 上 `mu judge …` 和 `mu doctor` 如实说明 Core ML 只有 macOS，指向 Jev、llm 判定器、桌面端在做的本地判定服务，并保留 `MU_LOCAL_JUDGE_URL` 接缝。Windows 上换运行时（ONNX / CPU）、接口不变 | 说明与接缝已完成；换运行时待做 |
+| 5. 桌面端 | 适配器在 Windows 上应直接 `spawn(node, [mu.mjs, …])`，结束会话用 `taskkill /T` 或关闭 stdin；`scripts/kyrn/*` 仍是 bash | 待做（桌面仓库） |
+| 6. 真机验证 | 按设计说明第 8 节的清单在 Windows 和 WSL（NAT、mirrored 各一次）上过一遍 | 待做：需要一台 Windows 机器 |
 
 ## 4.5 调度教训
 
