@@ -128,7 +128,7 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 				const lines = run.reduce((sum, chunk) => sum + chunk.split("\n").length, 0);
 				omittedChars += chars;
 				kept.push(
-					`[kyrn: ${lines} lines (${chars} chars) of ${[...kinds].join("/")} output omitted; full output: ${archivePath}]`,
+					`[mu: ${lines} lines (${chars} chars) of ${[...kinds].join("/")} output omitted; full output: ${archivePath}]`,
 				);
 				kinds.clear();
 				run = [];

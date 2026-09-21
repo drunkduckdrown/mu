@@ -1,10 +1,12 @@
-# KYRN 项目现状与交接
+# mu（原 KYRN）项目现状与交接
 
-更新日期：2026-09-21。依据本地代码、配置、此前实际测试和桌面观察整理。
+更新日期：2026-09-22。依据本地代码、配置、此前实际测试和桌面观察整理。
+
+> **更名**：项目于 2026-09-21 由 KYRN 更名为 **mu**，终端命令 `mu`，视觉标识 μ（U+03BC）。第一阶段只改用户看得见的名字和数据路径：命令、`/mu`、欢迎页、`mu.json`、`MU_*` 环境变量、`~/.mu`。仓库文件夹名、包名 `@kyrn/judge`、目录 `packages/kyrn-judge` 和 `kyrn/`、会话里已存的 `kyrn.*` 类型名都没有改。旧的命令名、`kyrn.json`、`KYRN_*` 变量继续有效。对照表、保留项的原因和迁移步骤见 [10-rename-to-mu.md](10-rename-to-mu.md)。下文正文里的 "KYRN" 指同一个项目。
 
 ## 1. 项目要做什么
 
-**KYRN 是以 pi 为执行底座、深度融合 JeV 的编程 Harness，同时提供 CLI 和桌面入口。**
+**mu（原名 KYRN）是以 pi 为执行底座、深度融合 JeV 的编程 Harness，同时提供 CLI 和桌面入口。**
 
 用户的目标是：用尽可能小、尽可能相关的上下文，完成正确的事情，最大程度发挥主模型能力。不是单纯把提示词剪短，也不是给聊天界面多接几个模型。
 
@@ -46,9 +48,11 @@ JeV 是当前主用判断模型，但不是不可替换的基础设施。保留 
 | AionUi 桌面二开 | `/Users/baihe/Documents/KYRN-desktop`，分支 `codex/kyrn-desktop` |
 | 正式桌面开发入口 | `/Users/baihe/Documents/KYRN-desktop/scripts/kyrn/start` |
 | 早期独立桌面壳 | `/Users/baihe/Documents/KYRN-desktop/kyrn`，已暂停；不要误当产品入口 |
-| 判断配置 | `/Users/baihe/.kyrn/agent/kyrn.json` |
-| pi 模型与上下文配置 | `/Users/baihe/.kyrn/agent/settings.json` |
-| ACP 会话映射与桌面事件 | `/Users/baihe/.kyrn/acp-sessions` |
+| CLI | `/Users/baihe/Documents/KYRN/kyrn/bin/mu`（`mu link` 后即 `mu`）；`kyrn/bin/kyrn` 是转发到它的兼容脚本，桌面适配器仍调用这个旧路径 |
+| 数据目录 | `~/.mu`；机器上只有 `~/.kyrn`、还没有 `~/.mu` 时继续用 `~/.kyrn`，绝不在旧目录旁边另建新目录。迁移是手工的一步，见 10 号文档 |
+| 判断配置 | `<数据目录>/agent/mu.json`；没有时读同目录的 `kyrn.json` |
+| pi 模型与上下文配置 | `<数据目录>/agent/settings.json` |
+| ACP 会话映射与桌面事件 | `<数据目录>/acp-sessions` |
 
 当前桌面架构：
 
@@ -56,7 +60,7 @@ JeV 是当前主用判断模型，但不是不可替换的基础设施。保留 
 AionUi 原有 UI
   → AionCore 的 ACP 管理
   → KYRN ACP Adapter
-  → kyrn --mode rpc
+  → mu --mode rpc（经 kyrn/bin/kyrn 转发）
   → pi + @kyrn/judge
 ```
 
@@ -308,7 +312,7 @@ JeV 显示的是实际问题、概率、判定与采取的动作，不是虚构�
 - /Users/baihe/Documents/KYRN，分支 kyrn：pi fork，核心新增包 packages/kyrn-judge。
 - /Users/baihe/Documents/KYRN-desktop，分支 codex/kyrn-desktop：AionUi 二开。
 
-桌面方向已经确定：最大程度复用原 AionUi 的项目、会话、模型/思考选择、工具和文件组件，通过 ACP → kyrn --mode rpc 原生接入。不要继续 /Users/baihe/Documents/KYRN-desktop/kyrn 中已暂停的独立桌面壳。其他代理入口已禁用，但源码没有彻底删除；不要把禁用写成物理裁剪完成。
+桌面方向已经确定：最大程度复用原 AionUi 的项目、会话、模型/思考选择、工具和文件组件，通过 ACP → mu --mode rpc 原生接入。不要继续 /Users/baihe/Documents/KYRN-desktop/kyrn 中已暂停的独立桌面壳。其他代理入口已禁用，但源码没有彻底删除；不要把禁用写成物理裁剪完成。
 
 当前已经有：可插拔判断引擎、能力级联、决策账本、输入归类与可见等待、技能披露、经验捕获/召回、工具结果准入、主动遗忘、Beta 压缩、delegate/hive、蜂群运行状态/预算/收尾/停止、JeV 发布与投递闸、内置浏览器、原生 thinking、右侧协作面板、上下文占用/阈值/压缩效果、绿色缓存命中圆环。优先完善已有实现，不另起重复系统。
 
@@ -330,9 +334,9 @@ JeV 显示的是实际问题、概率、判定与采取的动作，不是虚构�
 凭据只在 /Users/baihe/Documents/KYRN/.env，由启动器加载。不得打印、复制到文档/日志/代码或把它们放进命令参数；不要读取 OAuth auth.json，不修改全局 ~/.claude/settings.json，不代填付款资料。判断配置来自用户 agent 目录，不从项目仓库自动信任外部端点。保留浏览器独立 profile。
 
 Node 可用路径：/Users/baihe/.nvm/versions/node/v24.16.0/bin。
-CLI：/Users/baihe/Documents/KYRN/kyrn/bin/kyrn
+CLI：/Users/baihe/Documents/KYRN/kyrn/bin/mu（旧路径 kyrn/bin/kyrn 转发到它）
 桌面：/Users/baihe/Documents/KYRN-desktop/scripts/kyrn/start
-配置：/Users/baihe/.kyrn/agent/kyrn.json 和 settings.json。
+配置：~/.mu/agent/mu.json 和 settings.json（未迁移的机器上是 ~/.kyrn/agent/kyrn.json，两种都读）。
 
 先完整阅读要改的文件，再做小范围实现。Harness 修改后跑 npm run check；只跑相关测试文件，不直接运行全量 npm test 或 npm run build。pi 会话测试用 faux harness，不花真实模型 tokens。桌面做类型、专项 lint、测试、i18n 类型生成与校验。测试用户设置时使用隔离目录，别为演示伪造事件或篡改真实会话。
 

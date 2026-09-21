@@ -1,5 +1,5 @@
 /**
- * The KYRN browser alone, for a stock pi:
+ * The mu browser alone, for a stock pi:
  *
  *   pi -e packages/kyrn-judge/src/extension/kyrn-browser.ts
  *

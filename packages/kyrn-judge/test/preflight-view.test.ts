@@ -181,14 +181,14 @@ describe("preflight view", () => {
 	it("has the judge read what a prompt template does instead of its name", () => {
 		const commands = [
 			{ name: "init", description: "Analyze the codebase and write AGENTS.md" },
-			{ name: "skill:kyrn-browser", description: "Drive the built-in browser" },
+			{ name: "skill:mu-browser", description: "Drive the built-in browser" },
 			{ name: "bare" },
 		];
 		expect(judgedText("/init", commands)).toBe("Analyze the codebase and write AGENTS.md");
 		expect(judgedText("/init focus on the tests", commands)).toBe(
 			"Analyze the codebase and write AGENTS.md\nfocus on the tests",
 		);
-		expect(judgedText("/skill:kyrn-browser open mdn", commands)).toBe("Drive the built-in browser\nopen mdn");
+		expect(judgedText("/skill:mu-browser open mdn", commands)).toBe("Drive the built-in browser\nopen mdn");
 		// Nothing to go on: better no verdict than one about the word "/bare".
 		expect(judgedText("/bare", commands)).toBeUndefined();
 		// A path is not a command.

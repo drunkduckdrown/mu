@@ -1,6 +1,6 @@
 /**
  * A minimal Chrome DevTools Protocol client over Node's built-in WebSocket.
- * No dependencies: KYRN ships its browser without pulling in Playwright.
+ * No dependencies: mu ships its browser without pulling in Playwright.
  */
 interface Pending {
 	resolve(value: Record<string, unknown>): void;

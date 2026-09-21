@@ -87,7 +87,7 @@ export class KyrnRuntime {
 	readonly problems: string[] = [];
 	readonly savings: Savings = { admissionOmittedChars: 0, skillsHiddenChars: 0, forgottenChars: 0, compactedChars: 0 };
 	readonly sessionId = randomUUID();
-	/** False when the judge is switched off (KYRN_JUDGE=off): the CLI stays, the judgment layer asks nothing. */
+	/** False when the judge is switched off (MU_JUDGE=off): the CLI stays, the judgment layer asks nothing. */
 	enabled = true;
 	turn: TurnState = emptyTurn("");
 	userTurns = 0;
@@ -124,7 +124,7 @@ export class KyrnRuntime {
 		for (const [specId, tiers] of Object.entries(config.routes)) this.route(specId, tiers);
 	}
 
-	/** Answer one decision with its own tiers, e.g. `/kyrn route browser.step luna`. Empty tiers undo it. */
+	/** Answer one decision with its own tiers, e.g. `/mu route browser.step luna`. Empty tiers undo it. */
 	route(specId: string, tiers: readonly string[]): readonly string[] {
 		const before = this.problems.length;
 		this.engine.setJudgeFor(specId, tiers.length > 0 ? this.buildConfiguredJudge(tiers) : undefined);
@@ -146,7 +146,7 @@ export class KyrnRuntime {
 		return built.judge;
 	}
 
-	/** Switch the decision model at runtime, e.g. `/kyrn judge laya,jev`. */
+	/** Switch the decision model at runtime, e.g. `/mu judge laya,jev`. */
 	useJudges(tiers: readonly string[]): readonly string[] {
 		const before = this.problems.length;
 		this.engine.setJudge(this.buildConfiguredJudge(tiers));

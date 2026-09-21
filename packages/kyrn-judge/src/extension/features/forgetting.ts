@@ -46,7 +46,7 @@ function isForgettingState(value: unknown): value is ForgettingState {
 
 function shrink(text: string, call: string): string {
 	const omitted = text.length - 2 * KEEP_EDGE_CHARS;
-	return `${text.slice(0, KEEP_EDGE_CHARS)}\n[kyrn: ${omitted} chars of old output from "${call}" omitted; run it again if you need them]\n${text.slice(-KEEP_EDGE_CHARS)}`;
+	return `${text.slice(0, KEEP_EDGE_CHARS)}\n[mu: ${omitted} chars of old output from "${call}" omitted; run it again if you need them]\n${text.slice(-KEEP_EDGE_CHARS)}`;
 }
 
 /**
@@ -141,7 +141,7 @@ export function registerForgetting(runtime: KyrnRuntime): void {
 					if (result.toolName === "read" && !result.isError) {
 						const previous = latestRead.get(call);
 						if (previous && !nextReplaced.has(previous))
-							nextReplaced.set(previous, `[kyrn: superseded by a later ${call}]`);
+							nextReplaced.set(previous, `[mu: superseded by a later ${call}]`);
 						latestRead.set(call, result.toolCallId);
 						return;
 					}

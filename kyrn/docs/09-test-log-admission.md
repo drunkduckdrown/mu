@@ -1,5 +1,7 @@
 # 测试日志准入实验：开源调研、设计、JeV 验证与真实会话回放
 
+> 已于 2026-09-21 更名为 mu（命令 `mu`，标识 μ）。本文是更名前的记录，正文保持原样；新旧名对照见 [10-rename-to-mu.md](10-rename-to-mu.md)。
+
 日期：2026-09-21。状态：**已接入为可选策略，默认关闭**（`features.admission.testLog`，取值 `off` / `rules` / `jev`）。
 
 代码：`packages/kyrn-judge/src/admission/test-log.ts`，接入点 `src/extension/features/admission.ts`

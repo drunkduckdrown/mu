@@ -1,11 +1,11 @@
 ---
-name: kyrn-browser
-description: Operate real websites with KYRN's fast judge-driven browser (the browse tool and the browser sub-agent). Use when a task needs clicking, typing or searching on a site, reading a page that only renders in a browser, or web research across several pages.
+name: mu-browser
+description: Operate real websites with mu's fast judge-driven browser (the browse tool and the browser sub-agent). Use when a task needs clicking, typing or searching on a site, reading a page that only renders in a browser, or web research across several pages.
 ---
 
-# KYRN browser
+# mu browser
 
-`browse` opens a page in KYRN's own Chrome profile and carries out a goal on it. A fast judgment model picks every click from the elements actually on the page; you only state the goal and read the result. One call replaces a whole click-by-click conversation, which keeps your context small.
+`browse` opens a page in mu's own Chrome profile and carries out a goal on it. A fast judgment model picks every click from the elements actually on the page; you only state the goal and read the result. One call replaces a whole click-by-click conversation, which keeps your context small.
 
 ## How to call it
 

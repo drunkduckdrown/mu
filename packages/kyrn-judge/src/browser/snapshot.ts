@@ -9,7 +9,7 @@
  *
  * Password, file and hidden inputs are never exposed as targets.
  *
- * KYRN's changes: the walk, the visibility checks and the hit test cross open
+ * mu's changes: the walk, the visibility checks and the hit test cross open
  * shadow roots, because sites built from web components keep their controls
  * there, where querySelectorAll, closest and elementFromPoint do not reach.
  * Closed shadow roots and iframes are not observed.

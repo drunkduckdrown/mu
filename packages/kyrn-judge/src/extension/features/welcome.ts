@@ -4,7 +4,11 @@ import { keyText, VERSION as PI_VERSION, type Theme } from "@earendil-works/pi-c
 import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
 
-const WORDMARK = ["█▄▀ █▄█ █▀█ █▄ █", "█ █  █  █▀▄ █ ▀█"];
+/**
+ * The letter μ, three rows tall so its stem can drop below the line. Drawn in blocks rather than typed:
+ * U+03BC has ambiguous width, and a terminal that renders it two cells wide would push the frame's right edge out.
+ */
+const WORDMARK = ["█  █  ", "█▄▄█▄ ", "█     "];
 const MAX_BOX_WIDTH = 78;
 const MIN_BOX_WIDTH = 44;
 
@@ -65,10 +69,13 @@ export function renderWelcome(view: WelcomeView, width: number, paint: Paint): s
 		["model", model],
 		["cwd", cwd],
 	];
-	const title = [
-		`${paint.bold(paint.fg("accent", WORDMARK[0]))}   ${paint.fg("text", "judgment-first coding agent")}`,
-		`${paint.bold(paint.fg("accent", WORDMARK[1]))}   ${paint.fg("dim", `v${view.version} · built on pi ${view.piVersion}`)}`,
+	const beside = [
+		`${paint.bold(paint.fg("text", "mu"))}${paint.fg("text", " · judgment-first coding agent")}`,
+		paint.fg("dim", `v${view.version} · built on pi ${view.piVersion}`),
+		// μ is "micro" as a unit prefix, 微 in Chinese: see the small thing, know the large one.
+		paint.fg("dim", "见微知著"),
 	];
+	const title = WORDMARK.map((row, index) => `${paint.bold(paint.fg("accent", row))}  ${beside[index]}`);
 	const body = [
 		"",
 		...title,
@@ -95,8 +102,8 @@ export function renderWelcome(view: WelcomeView, width: number, paint: Paint): s
 				'  vouches for risky commands, notices drift, loops and unverified "done"',
 				"  drives the browser click by click and routes sub-agents to a role and a model",
 				paint.fg("muted", "Switch it"),
-				"  /kyrn judge laya,jev     which models answer, in order",
-				"  /kyrn mode default shadow     record verdicts without acting on them",
+				"  /mu judge laya,jev     which models answer, in order",
+				"  /mu mode default shadow     record verdicts without acting on them",
 			]
 		: [];
 
@@ -122,12 +129,12 @@ export function renderWelcome(view: WelcomeView, width: number, paint: Paint): s
 }
 
 /** Who the model is told it is. Constant for the whole session, so it costs the prompt cache nothing. */
-export const IDENTITY = `This harness is KYRN, a judgment-first coding agent built on pi. If asked what you are or where you run, say KYRN.
+export const IDENTITY = `This harness is mu (written μ), a judgment-first coding agent built on pi. If asked what you are or where you run, say mu.
 A small judgment model works beside you. It may replace noisy tool output with a one-line pointer to the full text, add one-line hints or lessons before a turn, and it performs every click of the \`browse\` tool.
 Commands the user can type: /help, /status, /doctor.`;
 
 /**
- * The first thing the user sees: what KYRN is, which judge is answering and
+ * The first thing the user sees: what mu is, which judge is answering and
  * how fast, which model is thinking, and the handful of commands worth knowing.
  */
 export function registerWelcome(runtime: KyrnRuntime): void {
@@ -138,7 +145,7 @@ export function registerWelcome(runtime: KyrnRuntime): void {
 	runtime.pi.on(
 		"before_agent_start",
 		failOpen((event) => {
-			event.systemPromptOptions.sections = { ...event.systemPromptOptions.sections, kyrn: IDENTITY };
+			event.systemPromptOptions.sections = { ...event.systemPromptOptions.sections, mu: IDENTITY };
 			return undefined;
 		}),
 	);
@@ -149,7 +156,8 @@ export function registerWelcome(runtime: KyrnRuntime): void {
 			runtime.touch(ctx);
 			if (ctx.mode !== "tui") return undefined;
 			let redraw: (() => void) | undefined;
-			ctx.ui.setTitle(`kyrn - ${ctx.cwd.split("/").pop() ?? ""}`);
+			// The title bar has no frame to keep aligned, so the letter itself can stand here.
+			ctx.ui.setTitle(`μ - ${ctx.cwd.split("/").pop() ?? ""}`);
 			ctx.ui.setHeader((tui, theme) => {
 				let expanded = false;
 				redraw = () => tui.requestRender();

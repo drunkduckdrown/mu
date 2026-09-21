@@ -1,5 +1,5 @@
 /**
- * KYRN's judge-routed sub-agents alone, for a stock pi:
+ * mu's judge-routed sub-agents alone, for a stock pi:
  *
  *   pi -e packages/kyrn-judge/src/extension/kyrn-swarm.ts
  *

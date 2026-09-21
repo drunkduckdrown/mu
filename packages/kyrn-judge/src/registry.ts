@@ -2,6 +2,7 @@ import { CascadeJudge, type CascadeTier } from "./cascade.ts";
 import { BUILT_IN_JUDGES, type JudgeConfig, type KyrnConfig } from "./config.ts";
 import { JudgeError } from "./errors.ts";
 import { Judge, type JudgeLike } from "./judge.ts";
+import { muEnv } from "./naming.ts";
 import { type ApiKeyResolver, GatewayJudgeProvider } from "./providers/gateway.ts";
 import { type LlmCompletion, LlmJudgeProvider } from "./providers/llm.ts";
 import { LocalJudgeProvider } from "./providers/local.ts";
@@ -39,7 +40,7 @@ function createProvider(name: string, judge: JudgeConfig, host: JudgeHost): Judg
 		case "mock":
 			return new MockJudgeProvider();
 		case "local":
-			return new LocalJudgeProvider({ baseUrl: judge.baseUrl ?? host.env?.KYRN_LOCAL_JUDGE_URL });
+			return new LocalJudgeProvider({ baseUrl: judge.baseUrl ?? muEnv("LOCAL_JUDGE_URL", host.env ?? {}) });
 		case "http": {
 			const apiKeyEnv = judge.apiKeyEnv;
 			return new LocalJudgeProvider({

@@ -223,7 +223,7 @@ describe("judge configuration", () => {
 		expect(loadConfig({ env: {} }).config.tiers).toEqual(["jev"]);
 	});
 
-	it("ignores malformed parts of kyrn.json instead of failing", () => {
+	it("ignores malformed parts of mu.json instead of failing", () => {
 		const config = parseConfig({
 			tiers: "laya",
 			modes: { default: "loud", "tool.admission": "active" },

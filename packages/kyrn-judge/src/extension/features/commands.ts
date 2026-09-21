@@ -20,7 +20,7 @@ const MODES: readonly string[] = ["off", "shadow", "active"];
 const PROMPTS_DIR = fileURLToPath(new URL("../../../prompts", import.meta.url));
 
 /** Built when asked for: key names are only known once the user's keybindings are loaded. */
-const help = () => `KYRN ${KYRN_VERSION} · judgment-first coding agent, built on pi ${PI_VERSION}
+const help = () => `mu ${KYRN_VERSION} · judgment-first coding agent, built on pi ${PI_VERSION}
 
 Start here
   /status                  judge, modes, what was kept out of the context, recent verdicts
@@ -31,9 +31,9 @@ Start here
 Judgment layer
   Every message is read by the judge first: it waits above the editor while that happens (esc skips
   the wait), and the verdict stays under it in the chat. ${keyText("app.tools.expand")} shows every answer behind a verdict.
-  /kyrn judge <tiers>      which models judge, in order: laya | laya,jev | llm:<provider>/<model>
-  /kyrn route <decision> <tiers|default>      one decision on its own judge, e.g. browser.step luna
-  /kyrn mode <decision|default> <off|shadow|active>
+  /mu judge <tiers>      which models judge, in order: laya | laya,jev | llm:<provider>/<model>
+  /mu route <decision> <tiers|default>      one decision on its own judge, e.g. browser.step luna
+  /mu mode <decision|default> <off|shadow|active>
   /ledger [n]              the last n verdicts with timing
   /remember <lesson>       keep a lesson for future sessions
 
@@ -74,7 +74,7 @@ function describeRecord(record: LedgerRecord): string[] {
 }
 
 /**
- * The slash commands that make KYRN a CLI of its own rather than a bag of
+ * The slash commands that make mu a CLI of its own rather than a bag of
  * hooks: help, status, a self-check, and the switches of the judgment layer.
  */
 export function registerCommands(runtime: KyrnRuntime): void {
@@ -101,7 +101,7 @@ export function registerCommands(runtime: KyrnRuntime): void {
 		return lines.join("\n");
 	};
 
-	const kyrn = async (args: string, ctx: ExtensionCommandContext): Promise<void> => {
+	const mu = async (args: string, ctx: ExtensionCommandContext): Promise<void> => {
 		runtime.touch(ctx);
 		const [verb, first, second] = args.trim().split(/\s+/);
 		if (verb === "judge" && first) {
@@ -137,9 +137,9 @@ export function registerCommands(runtime: KyrnRuntime): void {
 		ctx.ui.notify(status(ctx), "info");
 	};
 
-	pi.registerCommand("kyrn", {
+	pi.registerCommand("mu", {
 		description:
-			"KYRN status. Also: /kyrn judge <tiers> | /kyrn route <decision> <tiers|default> | /kyrn mode <decision|default> <off|shadow|active>",
+			"mu status. Also: /mu judge <tiers> | /mu route <decision> <tiers|default> | /mu mode <decision|default> <off|shadow|active>",
 		getArgumentCompletions: (prefix) => {
 			const options = [
 				"judge laya",
@@ -151,16 +151,16 @@ export function registerCommands(runtime: KyrnRuntime): void {
 			const matches = options.filter((option) => option.startsWith(prefix));
 			return matches.length > 0 ? matches.map((value) => ({ value, label: value })) : null;
 		},
-		handler: kyrn,
+		handler: mu,
 	});
 
 	pi.registerCommand("status", {
 		description: "Model, judge, decision modes, context savings and the latest verdicts",
-		handler: async (_args, ctx) => kyrn("", ctx),
+		handler: async (_args, ctx) => mu("", ctx),
 	});
 
 	pi.registerCommand("help", {
-		description: "What KYRN can do and every command worth knowing",
+		description: "What mu can do and every command worth knowing",
 		handler: async (_args, ctx) => ctx.ui.notify(help(), "info"),
 	});
 
@@ -178,7 +178,7 @@ export function registerCommands(runtime: KyrnRuntime): void {
 			const records = runtime.memory.records.slice(-count);
 			ctx.ui.notify(
 				records.length === 0
-					? "No verdicts yet in this session. Across sessions: kyrn ledger"
+					? "No verdicts yet in this session. Across sessions: mu ledger"
 					: records.flatMap(describeRecord).join("\n"),
 				"info",
 			);
@@ -205,11 +205,11 @@ export function registerCommands(runtime: KyrnRuntime): void {
 				`${ok(Boolean(ctx.model))}model      ${ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : "none selected: /login, then /model"}`,
 				`${ok(providers.length > 0)}login      ${providers.length > 0 ? providers.join(", ") : "no provider has credentials: /login"}`,
 				probe
-					? `${ok(probe.ok)}judge      ${engine.providerId} ${probe.ok ? `answers in ${probe.latencyMs} ms` : `does not answer (${probe.error}). For laya: kyrn judge start`}`
-					: "--  judge      off (KYRN_JUDGE=off)",
-				`--  decisions  default ${engine.getMode("*")}. Change with /kyrn mode default <off|shadow|active>`,
-				`${ok(Boolean(chrome))}browser    ${chrome ?? "no Chrome or Chromium found; set KYRN_CHROME"}`,
-				`--  browse     driven by ${engine.judgeFor("browser.step").id}. It needs a judge that can relate a goal to a page (jev, or an llm judge): /kyrn route browser.step luna`,
+					? `${ok(probe.ok)}judge      ${engine.providerId} ${probe.ok ? `answers in ${probe.latencyMs} ms` : `does not answer (${probe.error}). For laya: mu judge start`}`
+					: "--  judge      off (MU_JUDGE=off)",
+				`--  decisions  default ${engine.getMode("*")}. Change with /mu mode default <off|shadow|active>`,
+				`${ok(Boolean(chrome))}browser    ${chrome ?? "no Chrome or Chromium found; set MU_CHROME"}`,
+				`--  browse     driven by ${engine.judgeFor("browser.step").id}. It needs a judge that can relate a goal to a page (jev, or an llm judge): /mu route browser.step luna`,
 				`${ok(roles.length > 0)}sub-agents ${roles.map((role) => role.name).join(", ")} · your own go in ${agentsDir}`,
 				`${ok(missing.length === 0)}ladder     ${ladder.length === 0 ? "none: sub-agents use the session's model" : ladder.join(" < ")}${
 					missing.length > 0 ? ` · not available: ${missing.join(", ")}` : ""

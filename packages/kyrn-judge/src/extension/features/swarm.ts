@@ -213,7 +213,7 @@ export function announceRouting(
 	});
 }
 
-/** Limits of a swarm, as they are written in kyrn.json. */
+/** Limits of a swarm, as they are written in mu.json. */
 export const SWARM_LIMIT_DEFAULTS = {
 	/** Minutes a sub-agent may work before it is told to wrap up and report. 0 means no budget. */
 	beeMinutes: 10,
@@ -305,7 +305,7 @@ function describeAgent(agent: AgentDefinition): string {
 }
 
 /**
- * C1-C4, the swarm. pi has no sub-agents by design; KYRN adds one tool. Each
+ * C1-C4, the swarm. pi has no sub-agents by design; mu adds one tool. Each
  * task runs in its own context window, and because that context starts empty,
  * the judge can give every task the role, the cheapest model and the thinking
  * level that fit it without costing the main session any prompt cache.

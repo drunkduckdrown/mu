@@ -1,5 +1,5 @@
 /**
- * KYRN harness layer as a pi extension.
+ * The mu harness layer as a pi extension.
  *
  *   pi -e packages/kyrn-judge/src/extension/kyrn-judge.ts
  *

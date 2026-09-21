@@ -1,7 +1,7 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
+import { muEnv, muHome } from "../naming.ts";
 
 const CANDIDATES: readonly string[] = [
 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -14,14 +14,15 @@ const CANDIDATES: readonly string[] = [
 ];
 
 export function findChrome(env: Readonly<Record<string, string | undefined>> = process.env): string | undefined {
-	if (env.KYRN_CHROME && existsSync(env.KYRN_CHROME)) return env.KYRN_CHROME;
+	const chosen = muEnv("CHROME", env);
+	if (chosen && existsSync(chosen)) return chosen;
 	return CANDIDATES.find((path) => existsSync(path));
 }
 
 export interface LaunchedChrome {
 	/** WebSocket URL of the browser-level DevTools endpoint. */
 	readonly endpoint: string;
-	/** Undefined when an already running KYRN browser was reused. */
+	/** Undefined when an already running mu browser was reused. */
 	readonly process?: ChildProcess;
 }
 
@@ -47,23 +48,23 @@ async function isAlive(endpoint: string): Promise<boolean> {
 
 export interface LaunchOptions {
 	readonly executable?: string;
-	/** Default ~/.kyrn/browser-profile: KYRN's own profile, never the user's personal one. */
+	/** Default ~/.mu/browser-profile: mu's own profile, never the user's personal one. */
 	readonly profileDir?: string;
 	readonly headless?: boolean;
 }
 
 /**
  * Starts Chrome with a dedicated profile and a DevTools port, or reuses the
- * one KYRN already started. The user's own Chrome profile, with its cookies
+ * one mu already started. The user's own Chrome profile, with its cookies
  * and logged-in sessions, is never touched.
  */
 export async function launchChrome(options: LaunchOptions = {}): Promise<LaunchedChrome> {
-	const profileDir = options.profileDir ?? join(homedir(), ".kyrn", "browser-profile");
+	const profileDir = options.profileDir ?? join(muHome(), "browser-profile");
 	const running = readEndpoint(profileDir);
 	if (running && (await isAlive(running))) return { endpoint: running };
 
 	const executable = options.executable ?? findChrome();
-	if (!executable) throw new Error("No Chrome or Chromium found. Install one or set KYRN_CHROME to its executable.");
+	if (!executable) throw new Error("No Chrome or Chromium found. Install one or set MU_CHROME to its executable.");
 	mkdirSync(profileDir, { recursive: true });
 	rmSync(join(profileDir, "DevToolsActivePort"), { force: true });
 

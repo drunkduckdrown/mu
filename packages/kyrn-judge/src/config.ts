@@ -2,13 +2,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { JudgeProfile } from "./cascade.ts";
 import type { DecisionMode } from "./decision.ts";
+import { CONFIG_FILE, LEGACY_CONFIG_FILE, muEnv } from "./naming.ts";
 
 /**
  * How one judge is reached. The decision points never see this: they ask
  * typed questions, and whichever model is configured here answers them.
  *
  * - `gateway`: a judge model behind the Vercel AI Gateway (Jev).
- * - `local`:   the Laya sidecar started by `kyrn/bin/kyrn-judge-local`.
+ * - `local`:   the Laya sidecar started by `mu judge start`.
  * - `http`:    any endpoint that takes `{state, questions}` and returns `{answers}`.
  * - `llm`:     a generative model from the host's model registry, prompted to answer as JSON.
  * - `mock`:    neutral answers, for tests and offline work.
@@ -116,7 +117,7 @@ function readJudges(value: unknown): Record<string, JudgeConfig> {
 	return judges;
 }
 
-/** Parses the contents of `kyrn.json`. Unknown or malformed parts fall back to defaults instead of throwing. */
+/** Parses the contents of `mu.json`. Unknown or malformed parts fall back to defaults instead of throwing. */
 export function parseConfig(value: unknown): KyrnConfig {
 	if (!isRecord(value)) return DEFAULT_CONFIG;
 	const tiers = Array.isArray(value.tiers)
@@ -134,16 +135,17 @@ export function parseConfig(value: unknown): KyrnConfig {
 }
 
 export interface ConfigSource {
-	/** Directory holding `kyrn.json`, normally the agent directory (~/.kyrn/agent). */
+	/** Directory holding `mu.json`, normally the agent directory (~/.mu/agent). */
 	readonly dir?: string;
 	readonly env?: Readonly<Record<string, string | undefined>>;
 }
 
 /**
- * `kyrn.json` from the agent directory, then environment overrides:
- *   KYRN_JUDGE        comma-separated tiers, e.g. "laya" or "laya,jev"; "off" disables the kernel
- *   KYRN_JUDGE_MODE   default mode for every decision
- *   KYRN_WRITER       "provider/model-id"
+ * `mu.json` from the agent directory (`kyrn.json` when there is none), then environment overrides:
+ *   MU_JUDGE        comma-separated tiers, e.g. "laya" or "laya,jev"; "off" disables the kernel
+ *   MU_JUDGE_MODE   default mode for every decision
+ *   MU_WRITER       "provider/model-id"
+ * Each is also read under its old `KYRN_` spelling.
  *
  * Only the user's own directory is read. A project must not be able to point
  * the judge, which sees user messages, at an endpoint of its choosing.
@@ -152,26 +154,29 @@ export function loadConfig(source: ConfigSource = {}): { config: KyrnConfig; dis
 	const env = source.env ?? process.env;
 	let config = DEFAULT_CONFIG;
 	let problem: string | undefined;
-	if (source.dir) {
+	// The first file that exists wins, even when it is broken: a half-written mu.json must not silently bring back old settings.
+	for (const file of source.dir ? [CONFIG_FILE, LEGACY_CONFIG_FILE] : []) {
 		try {
-			config = parseConfig(JSON.parse(readFileSync(join(source.dir, "kyrn.json"), "utf8")));
+			config = parseConfig(JSON.parse(readFileSync(join(source.dir as string, file), "utf8")));
+			break;
 		} catch (error) {
-			const missing = (error as NodeJS.ErrnoException).code === "ENOENT";
-			if (!missing)
-				problem = `kyrn.json could not be read: ${error instanceof Error ? error.message : String(error)}`;
+			if ((error as NodeJS.ErrnoException).code === "ENOENT") continue;
+			problem = `${file} could not be read: ${error instanceof Error ? error.message : String(error)}`;
+			break;
 		}
 	}
 
-	const judge = env.KYRN_JUDGE?.trim();
+	const judge = muEnv("JUDGE", env)?.trim();
 	if (judge === "off") return { config, disabled: true, problem };
 	if (judge) {
 		// "gateway" was the first name of the Jev backend.
 		const tiers = judge.split(",").map((tier) => (tier.trim() === "gateway" ? "jev" : tier.trim()));
 		config = { ...config, tiers: tiers.filter(Boolean) };
 	}
-	const mode = env.KYRN_JUDGE_MODE;
+	const mode = muEnv("JUDGE_MODE", env);
 	if (mode && MODES.includes(mode)) config = { ...config, modes: { ...config.modes, default: mode as DecisionMode } };
-	if (env.KYRN_WRITER) config = { ...config, writer: env.KYRN_WRITER };
+	const writer = muEnv("WRITER", env);
+	if (writer) config = { ...config, writer };
 	return { config, disabled: false, problem };
 }
 

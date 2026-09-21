@@ -5,7 +5,7 @@ import { MAX_ERROR_MESSAGE_LENGTH, messageFromErrorBody, readWarnings } from "./
 export const DEFAULT_LOCAL_JUDGE_URL = "http://127.0.0.1:47823";
 
 export interface LocalJudgeProviderOptions {
-	/** Base URL of the sidecar started by `kyrn/bin/kyrn-judge-local`. */
+	/** Base URL of the sidecar started by `mu judge start`. */
 	baseUrl?: string;
 	/** Request path, default "/evaluate". */
 	path?: string;
@@ -72,7 +72,7 @@ export class LocalJudgeProvider implements JudgeProvider {
 			if (error instanceof Error && error.name === "AbortError") throw error;
 			throw new JudgeError(
 				"unreachable",
-				`Judge server is not reachable at ${this.baseUrl}; the local one starts with kyrn/bin/kyrn-judge-local start`,
+				`Judge server is not reachable at ${this.baseUrl}; the local one starts with: mu judge start`,
 				{ cause: error },
 			);
 		}

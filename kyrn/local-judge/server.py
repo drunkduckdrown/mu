@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""KYRN local judge sidecar.
+"""mu local judge sidecar.
 
 Serves a Laya Core ML checkpoint (https://github.com/mizorewww/laya-coreml) over
 the same wire contract as the AI Gateway `evaluation-model` endpoint, so the
-KYRN kernel can swap Jev for a local model without translating anything:
+mu kernel can swap Jev for a local model without translating anything:
 
     POST /evaluate  {"state": ..., "questions": {id: {type, instructions, criteria?}}}
                  -> {"answers": {...}, "usage": {...}, "warnings": [...], "providerMetadata": {"laya": {...}}}
@@ -35,6 +35,11 @@ DEFAULT_MODEL_DIR = Path(__file__).resolve().parent / "models" / "laya-multiling
 
 class BadRequest(ValueError):
     pass
+
+
+def setting(name, default):
+    """`MU_<name>`, or the `KYRN_<name>` spelling from before the rename."""
+    return os.environ.get(f"MU_{name}") or os.environ.get(f"KYRN_{name}") or default
 
 
 def _text(value):
@@ -231,7 +236,7 @@ class LocalJudge:
 
 def make_handler(judge):
     class Handler(BaseHTTPRequestHandler):
-        server_version = "kyrn-local-judge/0.1"
+        server_version = "mu-local-judge/0.1"
 
         def log_message(self, *_args):
             pass
@@ -285,16 +290,16 @@ def make_handler(judge):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="KYRN local judge sidecar (Laya on Core ML)")
-    parser.add_argument("--model-dir", default=os.environ.get("KYRN_LOCAL_JUDGE_MODEL", str(DEFAULT_MODEL_DIR)))
+    parser = argparse.ArgumentParser(description="mu local judge sidecar (Laya on Core ML)")
+    parser.add_argument("--model-dir", default=setting("LOCAL_JUDGE_MODEL", str(DEFAULT_MODEL_DIR)))
     parser.add_argument("--host", default=DEFAULT_HOST)
-    parser.add_argument("--port", type=int, default=int(os.environ.get("KYRN_LOCAL_JUDGE_PORT", DEFAULT_PORT)))
+    parser.add_argument("--port", type=int, default=int(setting("LOCAL_JUDGE_PORT", DEFAULT_PORT)))
     parser.add_argument("--compute-units", choices=["all", "cpu", "cpu_gpu", "cpu_ne"])
     parser.add_argument("--no-warmup", action="store_true")
     parser.add_argument(
         "--min-length",
         type=int,
-        default=int(os.environ.get("KYRN_LOCAL_JUDGE_MIN_LENGTH", DEFAULT_MIN_LENGTH)),
+        default=int(setting("LOCAL_JUDGE_MIN_LENGTH", DEFAULT_MIN_LENGTH)),
         help="Smallest input length to pad to. A floor above the usual request size avoids shape switches between requests.",
     )
     args = parser.parse_args()
@@ -306,7 +311,7 @@ def main():
     server = ThreadingHTTPServer((args.host, args.port), make_handler(judge))
     server.daemon_threads = True
     print(
-        f"kyrn local judge: {judge.model_id} loaded in {judge.load_seconds:.1f}s, "
+        f"mu local judge: {judge.model_id} loaded in {judge.load_seconds:.1f}s, "
         f"listening on http://{args.host}:{args.port}",
         file=sys.stderr,
         flush=True,

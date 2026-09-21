@@ -588,7 +588,7 @@ export function renderTestLog(
 			parts.push(`identical to lines ${list} of the full output, kept above`);
 		}
 		const lines = run.reduce((sum, unit) => sum + unit.lines, 0);
-		const marker = `[kyrn: omitted ${lines} lines: ${parts.join("; ")}]${eol}`;
+		const marker = `[mu: omitted ${lines} lines: ${parts.join("; ")}]${eol}`;
 		const original = run.map((unit) => unit.text).join("");
 		// A run shorter than its own marker stays: omitting it would add characters.
 		if (original.length > marker.length) {
@@ -608,7 +608,7 @@ export function renderTestLog(
 	flush();
 	if (omittedLines === 0) return untouched;
 	if (!text.endsWith("\n")) text += eol;
-	text += `[kyrn: ${omittedLines} lines omitted above as not needed for this step; full output: ${archivePath}]${eol}`;
+	text += `[mu: ${omittedLines} lines omitted above as not needed for this step; full output: ${archivePath}]${eol}`;
 
 	const netSavedChars = plan.output.length - text.length;
 	const floor = Math.max(options.minNetChars ?? 300, plan.output.length * (options.minNetShare ?? 0.1));

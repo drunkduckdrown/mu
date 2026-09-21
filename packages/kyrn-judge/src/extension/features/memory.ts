@@ -54,7 +54,7 @@ export function registerMemory(runtime: KyrnRuntime): void {
 	const options = runtime.options("memory", { enabled: true, path: "", maxCandidates: 24, maxInjected: 5 });
 	if (!options.enabled) return;
 	const { pi } = runtime;
-	const path = options.path || join(getAgentDir(), "kyrn", "lessons.jsonl");
+	const path = options.path || join(getAgentDir(), "mu", "lessons.jsonl");
 
 	const store = async (userMessage: string, previousAssistantMessage: string, cwd: string): Promise<void> => {
 		let trigger = clip(userMessage, 200);

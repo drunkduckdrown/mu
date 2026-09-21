@@ -205,7 +205,7 @@ describe.skipIf(!findChrome())("runBrowserTask (real Chrome, local fixture)", ()
 		await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
 		const address = server.address();
 		url = `http://127.0.0.1:${typeof address === "object" && address ? address.port : 0}/`;
-		// A throwaway profile: the test never touches ~/.kyrn/browser-profile, let alone a personal one.
+		// A throwaway profile: the test never touches ~/.mu/browser-profile, let alone a personal one.
 		profileDir = mkdtempSync(join(tmpdir(), "kyrn-browser-test-"));
 		chrome = await launchChrome({ profileDir });
 		cdp = await CdpConnection.connect(chrome.endpoint);
