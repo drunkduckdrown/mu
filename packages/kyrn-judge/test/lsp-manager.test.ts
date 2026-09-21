@@ -31,11 +31,19 @@ describe("lsp manager", () => {
 				{
 					origin: "user",
 					servers: {
-						fake: { command: process.execPath, args: [FAKE_SERVER, "{}"], extensions: [".fake"], rootMarkers: ["root.marker"] },
+						fake: {
+							command: process.execPath,
+							args: [FAKE_SERVER, "{}"],
+							extensions: [".fake"],
+							rootMarkers: ["root.marker"],
+						},
 						absent: { command: join(cwd, "not-installed"), extensions: [".absent"] },
 					},
 				},
-				{ origin: "project", servers: { theirs: { command: process.execPath, args: [FAKE_SERVER, "{}"], extensions: [".proj"] } } },
+				{
+					origin: "project",
+					servers: { theirs: { command: process.execPath, args: [FAKE_SERVER, "{}"], extensions: [".proj"] } },
+				},
 			],
 			[],
 		);
@@ -143,7 +151,10 @@ describe("diagnostics.delivery", () => {
 	});
 
 	it("tells a model that keeps breaking the file it keeps editing, whatever it says comes next", async () => {
-		const { decision } = await decide({ more_edits_coming: yes, warnings_are_style: no }, { sameFileEditedRepeatedly: true });
+		const { decision } = await decide(
+			{ more_edits_coming: yes, warnings_are_style: no },
+			{ sameFileEditedRepeatedly: true },
+		);
 		expect(decision.outcome).toEqual({ errors: "now", warnings: "now" });
 		const elsewhere = await decide(
 			{ more_edits_coming: yes, warnings_are_style: no },
@@ -154,7 +165,11 @@ describe("diagnostics.delivery", () => {
 
 	it("falls back to holding errors and not telling warnings when the judge is unsure", async () => {
 		const { decision } = await decide({ more_edits_coming: unsure, warnings_are_style: no });
-		expect(decision).toMatchObject({ source: "fallback", reason: "abstain", outcome: { errors: "hold", warnings: "drop" } });
+		expect(decision).toMatchObject({
+			source: "fallback",
+			reason: "abstain",
+			outcome: { errors: "hold", warnings: "drop" },
+		});
 	});
 
 	it("asks about warnings only when there are some, and sends summaries, not files", async () => {

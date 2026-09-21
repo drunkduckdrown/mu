@@ -29,7 +29,10 @@ describe("finding a server on PATH", () => {
 		// Windows file names compare without case: PATHEXT says .CMD, the file is .cmd.
 		const onDisk = ["c:\\users\\me\\appdata\\roaming\\npm\\typescript-language-server.cmd", "c:\\go\\bin\\gopls.exe"];
 		const isExecutable = (path: string) => onDisk.includes(path.toLowerCase());
-		const env = { Path: "C:\\Windows;C:\\Users\\me\\AppData\\Roaming\\npm;C:\\Go\\bin", PATHEXT: ".COM;.EXE;.BAT;.CMD" };
+		const env = {
+			Path: "C:\\Windows;C:\\Users\\me\\AppData\\Roaming\\npm;C:\\Go\\bin",
+			PATHEXT: ".COM;.EXE;.BAT;.CMD",
+		};
 		const options = { env, platform: "win32", isExecutable };
 		expect(findOnPath("typescript-language-server", options)).toBe(
 			"C:\\Users\\me\\AppData\\Roaming\\npm\\typescript-language-server.CMD",
@@ -94,7 +97,11 @@ describe("the server table", () => {
 		]);
 		expect(problems).toHaveLength(2);
 		expect(servers.find((spec) => spec.id === "gopls")).toBeUndefined();
-		expect(servers.find((spec) => spec.id === "zls")).toMatchObject({ extensions: [".zig"], origin: "user", args: [] });
+		expect(servers.find((spec) => spec.id === "zls")).toMatchObject({
+			extensions: [".zig"],
+			origin: "user",
+			args: [],
+		});
 		expect(servers.find((spec) => spec.id === "pylsp")).toMatchObject({
 			command: "/opt/venv/bin/pylsp",
 			args: ["-v"],
@@ -179,7 +186,12 @@ describe("starting a server without a shell", () => {
 		);
 		expect(plan).toEqual({
 			command: "C:\\Windows\\System32\\cmd.exe",
-			args: ["/d", "/s", "/c", '""C:\\Users\\my name\\npm\\typescript-language-server.cmd" --stdio "--log level=4""'],
+			args: [
+				"/d",
+				"/s",
+				"/c",
+				'""C:\\Users\\my name\\npm\\typescript-language-server.cmd" --stdio "--log level=4""',
+			],
 			windowsVerbatimArguments: true,
 		});
 		expect(spawnPlan("C:\\x\\s.CMD", [], "win32").command).toBe("cmd.exe");

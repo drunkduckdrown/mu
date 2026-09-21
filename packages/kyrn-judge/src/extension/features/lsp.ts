@@ -27,7 +27,10 @@ export const PROJECT_SERVERS_FILE = "lsp.json";
  * nothing pi knows about. So pi's word only counts when it actually had to
  * ask; otherwise a saved decision for this folder (`/trust`) is required.
  */
-export function projectServersTrusted(ctx: Pick<ExtensionContext, "cwd" | "isProjectTrusted">, agentDir: string): boolean {
+export function projectServersTrusted(
+	ctx: Pick<ExtensionContext, "cwd" | "isProjectTrusted">,
+	agentDir: string,
+): boolean {
 	if (!ctx.isProjectTrusted()) return false;
 	if (hasTrustRequiringProjectResources(ctx.cwd)) return true;
 	try {
@@ -101,7 +104,9 @@ export function registerLsp(runtime: KyrnRuntime): void {
 	let edited = new Set<string>();
 	let recentEdits: string[] = [];
 	let toldAtTurnEnd = false;
-	let table: { trusted: boolean; cwd: string; servers: ServerSpec[]; problems: string[]; ignoredProjectFile: boolean } | undefined;
+	let table:
+		| { trusted: boolean; cwd: string; servers: ServerSpec[]; problems: string[]; ignoredProjectFile: boolean }
+		| undefined;
 
 	const servers = (ctx: ExtensionContext, refresh = false) => {
 		if (table && table.cwd === ctx.cwd && !refresh) return table;
@@ -148,7 +153,12 @@ export function registerLsp(runtime: KyrnRuntime): void {
 	};
 
 	const local = (ctx: ExtensionContext, path: string) => relative(ctx.cwd, path) || path;
-	const present = (kind: "delivered" | "held" | "dropped", items: readonly Tracked[], ctx: ExtensionContext, extra: object) => {
+	const present = (
+		kind: "delivered" | "held" | "dropped",
+		items: readonly Tracked[],
+		ctx: ExtensionContext,
+		extra: object,
+	) => {
 		if (items.length === 0) return;
 		runtime.present(`diagnostics.${kind}`, {
 			errors: items.filter((item) => item.diagnostic.severity === 1).length,
@@ -161,7 +171,12 @@ export function registerLsp(runtime: KyrnRuntime): void {
 		for (const item of items) runtime.savings.diagnosticsWithheldChars += weight(item);
 	};
 	const asReport = (items: readonly Tracked[]): ReportItem[] =>
-		items.map((item) => ({ path: item.path, diagnostic: item.diagnostic, elsewhere: item.elsewhere, unchecked: !item.checked }));
+		items.map((item) => ({
+			path: item.path,
+			diagnostic: item.diagnostic,
+			elsewhere: item.elsewhere,
+			unchecked: !item.checked,
+		}));
 
 	/** Takes in what the servers call new, and lets go of what they no longer report. */
 	const collect = () => {
@@ -217,7 +232,10 @@ export function registerLsp(runtime: KyrnRuntime): void {
 			const raw = (event.input as { path?: unknown }).path;
 			if (typeof raw !== "string" || !raw.trim()) return undefined;
 			const named = raw.startsWith("@") ? raw.slice(1) : raw;
-			const file = resolve(ctx.cwd, named === "~" || named.startsWith("~/") ? join(homedir(), named.slice(1)) : named);
+			const file = resolve(
+				ctx.cwd,
+				named === "~" || named.startsWith("~/") ? join(homedir(), named.slice(1)) : named,
+			);
 			const { servers: specs, trusted } = servers(ctx);
 			const serving = manager.serving(file, specs, trusted);
 			if (serving.length === 0) return undefined;
@@ -254,9 +272,14 @@ export function registerLsp(runtime: KyrnRuntime): void {
 			const errors = unjudged.filter((item) => item.diagnostic.severity === 1);
 			const warnings = unjudged.filter((item) => item.diagnostic.severity === 2);
 			const brief = (items: readonly Tracked[]) =>
-				items.slice(0, 6).map((item) =>
-					clip(`${local(ctx, item.path)}:${item.diagnostic.line + 1} ${item.diagnostic.code ?? ""} ${item.diagnostic.message}`, 160),
-				);
+				items
+					.slice(0, 6)
+					.map((item) =>
+						clip(
+							`${local(ctx, item.path)}:${item.diagnostic.line + 1} ${item.diagnostic.code ?? ""} ${item.diagnostic.message}`,
+							160,
+						),
+					);
 			const decision = await Promise.race([
 				runtime.engine.decide(
 					diagnosticsDelivery,

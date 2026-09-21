@@ -8,8 +8,8 @@
  * edit into a process spawn.
  */
 import { accessSync, constants, existsSync, statSync } from "node:fs";
-import type { Diagnostic } from "./diagnostics.ts";
 import { type ClientState, LspClient } from "./client.ts";
+import type { Diagnostic } from "./diagnostics.ts";
 import {
 	type DetectedServer,
 	detectServers,
@@ -219,7 +219,14 @@ export class LspManager {
 			this.launch(instance);
 		}
 		if (!instance) {
-			instance = { spec: server.spec, root, client: this.createClient(server, root), starts: 1, lastUsed: 0, lastError: undefined };
+			instance = {
+				spec: server.spec,
+				root,
+				client: this.createClient(server, root),
+				starts: 1,
+				lastUsed: 0,
+				lastError: undefined,
+			};
 			this.instances.set(key, instance);
 			this.launch(instance);
 			this.evict(key);
@@ -263,7 +270,9 @@ export class LspManager {
 	}
 
 	private evict(keep: string): void {
-		const running = [...this.instances.entries()].filter(([key, instance]) => key !== keep && this.alive().includes(instance));
+		const running = [...this.instances.entries()].filter(
+			([key, instance]) => key !== keep && this.alive().includes(instance),
+		);
 		if (running.length < this.options.maxServers) return;
 		running.sort(([, a], [, b]) => a.lastUsed - b.lastUsed);
 		for (const [key, instance] of running.slice(0, running.length - this.options.maxServers + 1)) {

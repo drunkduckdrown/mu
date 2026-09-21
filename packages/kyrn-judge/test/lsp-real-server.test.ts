@@ -32,7 +32,10 @@ describe.skipIf(!executable || process.env.MU_LSP_REAL !== "1")("typescript-lang
 
 	it("reports the type error an edit introduced, and not the one that was there before", async () => {
 		root = mkdtempSync(join(tmpdir(), "mu-lsp-real-"));
-		writeFileSync(join(root, "tsconfig.json"), JSON.stringify({ compilerOptions: { strict: true }, include: ["*.ts"] }));
+		writeFileSync(
+			join(root, "tsconfig.json"),
+			JSON.stringify({ compilerOptions: { strict: true }, include: ["*.ts"] }),
+		);
 		const file = join(root, "a.ts");
 		const before = 'export const old: number = "already wrong";\nexport const fine = 1;\n';
 		const after = `// a new first line\n${before}export const added: string = 42;\n`;

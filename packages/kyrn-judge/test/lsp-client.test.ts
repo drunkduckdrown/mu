@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import { LspClient, type LspClientOptions } from "../src/lsp/client.ts";
 
-export const FAKE_SERVER = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "fake-lsp-server.mjs");
+const FAKE_SERVER = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "fake-lsp-server.mjs");
 
 const body = (count: number, marks: Record<number, string> = {}) =>
 	Array.from({ length: count }, (_, index) => `line ${index} ${marks[index] ?? ""}`.trimEnd()).join("\n");
@@ -168,7 +168,10 @@ describe("lsp client against the fake server", () => {
 	});
 
 	it("fails the start when the server never answers, and says why", async () => {
-		const { client } = setup({ hang: "initialize", stderr: "loading plugins\nfatal: no licence\n" }, { startTimeoutMs: 300 });
+		const { client } = setup(
+			{ hang: "initialize", stderr: "loading plugins\nfatal: no licence\n" },
+			{ startTimeoutMs: 300 },
+		);
 		await expect(client.start()).rejects.toThrow("initialize was not answered in time");
 		expect(client.state).toBe("failed");
 		expect(client.lastError).toContain("fatal: no licence");
@@ -190,7 +193,14 @@ describe("lsp client against the fake server", () => {
 
 	it("notices a crash at once, releases whoever was waiting, and reports the exit", async () => {
 		let exit = "";
-		const { client, file } = setup({}, { onExit: (reason) => (exit = reason) });
+		const { client, file } = setup(
+			{},
+			{
+				onExit: (reason) => {
+					exit = reason;
+				},
+			},
+		);
 		await client.start();
 		client.setText(file("a.fake"), "fine", true);
 		expect(await client.waitSettled(3000)).toBe(true);

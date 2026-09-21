@@ -21,7 +21,7 @@ const no: Answer = { type: "boolean", probability: 0.04 };
 
 const verdict =
 	(moreEditsComing: Answer, warningsAreStyle: Answer = no): MockResponder =>
-	(request) =>
+	(request): Record<string, Answer> =>
 		"more_edits_coming" in request.questions
 			? { more_edits_coming: moreEditsComing, warnings_are_style: warningsAreStyle }
 			: {};
@@ -82,19 +82,38 @@ describe("lsp diagnostics feature", () => {
 			],
 		});
 		harnesses.push(harness);
-		const starts = () => (existsSync(log) ? readFileSync(log, "utf8").split("\n").filter((line) => line.startsWith("start")).length : 0);
+		const starts = () =>
+			existsSync(log)
+				? readFileSync(log, "utf8")
+						.split("\n")
+						.filter((line) => line.startsWith("start")).length
+				: 0;
 		const toolResults = () =>
-			harness.session.messages.filter((message) => message.role === "toolResult").map((message) => JSON.stringify(message));
+			harness.session.messages
+				.filter((message) => message.role === "toolResult")
+				.map((message) => JSON.stringify(message));
 		const told = () =>
 			harness.session.messages
-				.filter((message) => message.role === "custom" && (message as { customType?: string }).customType === DIAGNOSTICS_MESSAGE)
+				.filter(
+					(message) =>
+						message.role === "custom" && (message as { customType?: string }).customType === DIAGNOSTICS_MESSAGE,
+				)
 				.map((message) => String((message as { content?: unknown }).content));
 		const kinds = () => events.filter((event) => event.kind.startsWith("diagnostics.")).map((event) => event.kind);
 		const run = async (prompt: string, responses: FauxResponseStep[]) => {
 			harness.setResponses(responses);
 			await harness.session.prompt(prompt);
 		};
-		return { harness, starts, toolResults, told, kinds, events, run, file: (name: string) => join(harness.tempDir, name) };
+		return {
+			harness,
+			starts,
+			toolResults,
+			told,
+			kinds,
+			events,
+			run,
+			file: (name: string) => join(harness.tempDir, name),
+		};
 	}
 
 	it("starts nothing until a matching file is edited, and then tells only what the edit introduced", async () => {
@@ -182,7 +201,11 @@ describe("lsp diagnostics feature", () => {
 	it("caps the list and says how many were left out", async () => {
 		const { toolResults, run } = await start(verdict(no), { lsp: { maxItems: 2 } });
 		const broken = Array.from({ length: 5 }, (_, index) => `line !error E${index} problem ${index}`).join("\n");
-		await run("Write it.", [write("a.fake", broken), fauxAssistantMessage("Done."), fauxAssistantMessage("Looked at them.")]);
+		await run("Write it.", [
+			write("a.fake", broken),
+			fauxAssistantMessage("Done."),
+			fauxAssistantMessage("Looked at them."),
+		]);
 		const result = toolResults()[0];
 		expect(result).toContain("5 errors that your edits introduced");
 		expect(result).toContain("[mu diagnostics end: 3 more not shown]");
@@ -304,7 +327,13 @@ describe("lsp diagnostics feature", () => {
 			writeFileSync(
 				join(cwd, ".pi", "lsp.json"),
 				JSON.stringify({
-					servers: { mine: { command: process.execPath, args: [FAKE_SERVER, JSON.stringify({ log })], extensions: [".proj"] } },
+					servers: {
+						mine: {
+							command: process.execPath,
+							args: [FAKE_SERVER, JSON.stringify({ log })],
+							extensions: [".proj"],
+						},
+					},
 				}),
 			);
 		};

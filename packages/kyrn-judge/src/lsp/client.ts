@@ -228,7 +228,8 @@ export class LspClient {
 		const sync = capabilities.textDocumentSync;
 		const save = typeof sync === "object" && sync !== null ? (sync as { save?: unknown }).save : undefined;
 		this.wantsSave = Boolean(save);
-		this.saveWithText = typeof save === "object" && save !== null && (save as { includeText?: unknown }).includeText === true;
+		this.saveWithText =
+			typeof save === "object" && save !== null && (save as { includeText?: unknown }).includeText === true;
 		if (this.state !== "starting") throw new Error("stopped while starting");
 		this.notify("initialized", {});
 		this.state = "running";
@@ -288,7 +289,10 @@ export class LspClient {
 			return;
 		}
 		doc.lastUsed = Date.now();
-		if (text === undefined) return this.close(doc);
+		if (text === undefined) {
+			this.close(doc);
+			return;
+		}
 		if (!doc.opened) {
 			// Registered while the server was starting, or a file that did not exist: the first text stays what is opened.
 			doc.wanted = doc.base === undefined && text === doc.text ? undefined : text;
@@ -465,7 +469,8 @@ export class LspClient {
 	/** New content is with the server: ask for its diagnostics, and for those of every other open document it may affect. */
 	private afterContent(doc: Doc): void {
 		if (!this.pull) return;
-		for (const other of this.docs.values()) if (other.opened && (other === doc || other.confirmed)) this.requestPull(other, true);
+		for (const other of this.docs.values())
+			if (other.opened && (other === doc || other.confirmed)) this.requestPull(other, true);
 	}
 
 	private close(doc: Doc): void {
@@ -596,11 +601,14 @@ export class LspClient {
 	private request(method: string, params: unknown, timeoutMs?: number): Promise<unknown> {
 		const id = this.nextId++;
 		return new Promise((resolve, reject) => {
-			const timer = setTimeout(() => {
-				this.pending.delete(id);
-				this.notify("$/cancelRequest", { id });
-				reject(new Error(`${method} was not answered in time`));
-			}, timeoutMs ?? this.options.requestTimeoutMs ?? 10000);
+			const timer = setTimeout(
+				() => {
+					this.pending.delete(id);
+					this.notify("$/cancelRequest", { id });
+					reject(new Error(`${method} was not answered in time`));
+				},
+				timeoutMs ?? this.options.requestTimeoutMs ?? 10000,
+			);
 			this.pending.set(id, { resolve, reject, timer });
 			this.send({ id, method, params });
 		});
@@ -615,15 +623,25 @@ export class LspClient {
 			this.pending.delete(id);
 			clearTimeout(waiting.timer);
 			if (error) {
-				const failure = Object.assign(new Error(String((error as { message?: unknown }).message ?? "failed")), error);
+				const failure = Object.assign(
+					new Error(String((error as { message?: unknown }).message ?? "failed")),
+					error,
+				);
 				waiting.reject(failure);
 			} else waiting.resolve(result);
 			return;
 		}
-		if (id === undefined || id === null) return this.notified(method, params);
+		if (id === undefined || id === null) {
+			this.notified(method, params);
+			return;
+		}
 		// A request from the server. Some of them block it until they are answered.
 		const answer = this.answer(method, params);
-		this.send(answer === NOT_FOUND ? { id, error: { code: -32601, message: `Unhandled: ${method}` } } : { id, result: answer });
+		this.send(
+			answer === NOT_FOUND
+				? { id, error: { code: -32601, message: `Unhandled: ${method}` } }
+				: { id, result: answer },
+		);
 	}
 
 	private notified(method: string, params: unknown): void {

@@ -79,9 +79,9 @@ describe("baseline subtraction", () => {
 	it("calls the same message new when it shows up somewhere the old one was not", () => {
 		const text = lines(40);
 		// The old one at line 5 was fixed, and the same mistake was made at line 30.
-		expect(subtract([error(30, "Cannot find name 'x'.")], [error(5, "Cannot find name 'x'.")], lineMap(text, text))).toEqual([
-			error(30, "Cannot find name 'x'."),
-		]);
+		expect(
+			subtract([error(30, "Cannot find name 'x'.")], [error(5, "Cannot find name 'x'.")], lineMap(text, text)),
+		).toEqual([error(30, "Cannot find name 'x'.")]);
 	});
 
 	it("counts duplicates: two before and three after is one new", () => {
@@ -96,7 +96,9 @@ describe("baseline subtraction", () => {
 
 	it("tells problems apart by severity and code, not only by message", () => {
 		const text = lines(5);
-		expect(subtract([error(1, "m", "E2"), warning(1, "m")], [error(1, "m", "E1")], lineMap(text, text))).toHaveLength(2);
+		expect(subtract([error(1, "m", "E2"), warning(1, "m")], [error(1, "m", "E1")], lineMap(text, text))).toHaveLength(
+			2,
+		);
 	});
 });
 

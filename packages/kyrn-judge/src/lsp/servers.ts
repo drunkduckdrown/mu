@@ -136,7 +136,9 @@ export function mergeServers(
 				group: typeof entry.group === "string" ? entry.group : known?.group,
 				origin,
 				env: env
-					? Object.fromEntries(Object.entries(env).filter((pair): pair is [string, string] => typeof pair[1] === "string"))
+					? Object.fromEntries(
+							Object.entries(env).filter((pair): pair is [string, string] => typeof pair[1] === "string"),
+						)
 					: known?.env,
 				initializationOptions: entry.initializationOptions ?? known?.initializationOptions,
 				settings: record(entry.settings) ?? known?.settings,
