@@ -101,6 +101,8 @@ export class KyrnRuntime {
 	lastAssistantText = "";
 	/** The task frame as the frame feature keeps it. Undefined while that feature is off: the stand-in answers then. */
 	frameState: FrameState | undefined;
+	/** A goal is set and running: deciding whether the agent may stop is the goal feature's job, nobody else's. */
+	goalActive = false;
 	/**
 	 * Whoever keeps the task frame sets this. It hears of a message the moment its turn is counted,
 	 * so the frame's judge runs alongside preflight's instead of after its wait.

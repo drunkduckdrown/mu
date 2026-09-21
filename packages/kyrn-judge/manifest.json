@@ -293,6 +293,19 @@
 			}
 		},
 		{
+			"id": "goal.met",
+			"group": "turn",
+			"feature": "goal",
+			"title": {
+				"zh": "目标是否达成",
+				"en": "Goal reached"
+			},
+			"summary": {
+				"zh": "用 /goal 定下目标后，模型每次想停下来，都判断一次目标是否已经达成：没达成就让它继续干，需要你拿主意就停下来等你。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
+				"en": "With a goal set by /goal, each time the model wants to stop the judge reads whether the goal holds: if not, the agent is sent back to work; if it needs you, it waits. An open acceptance item or an unverified edit always means not yet."
+			}
+		},
+		{
 			"id": "notify.routing",
 			"group": "turn",
 			"feature": "notify",
@@ -995,6 +1008,65 @@
 					"label": {
 						"zh": "观察窗口",
 						"en": "Window"
+					}
+				}
+			]
+		},
+		{
+			"name": "goal",
+			"title": {
+				"zh": "目标模式",
+				"en": "Goal mode"
+			},
+			"summary": {
+				"zh": "/goal <条件> 之后，代理会一直干到条件成立为止。被你打断、模型调用失败、连续空转、用完续跑次数或时间，都会自己停下；你再发一条消息就接着干。",
+				"en": "After /goal <condition> the agent keeps working until the condition holds. It stops by itself when you interrupt, a model call fails, it idles, or its allowance runs out; your next message picks it up again."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "maxContinuations",
+					"kind": "number",
+					"default": 20,
+					"min": 1,
+					"max": 200,
+					"label": {
+						"zh": "最多自动续跑次数",
+						"en": "Continuations at most"
+					},
+					"help": {
+						"zh": "从你上一次发言算起。",
+						"en": "Counted from your last message."
+					}
+				},
+				{
+					"key": "maxMinutes",
+					"kind": "number",
+					"default": 180,
+					"min": 5,
+					"max": 1440,
+					"label": {
+						"zh": "最长自动运行（分钟）",
+						"en": "Minutes at most"
+					},
+					"help": {
+						"zh": "从你上一次发言算起。",
+						"en": "Counted from your last message."
+					}
+				},
+				{
+					"key": "idleLimit",
+					"kind": "number",
+					"default": 2,
+					"min": 1,
+					"max": 10,
+					"label": {
+						"zh": "连续空转几次就停",
+						"en": "Idle runs before it stops"
+					},
+					"help": {
+						"zh": "模型连续几次什么工具都没用就结束，说明它在原地打转。",
+						"en": "Runs in a row that ended without a single tool call: the agent is going nowhere."
 					}
 				}
 			]

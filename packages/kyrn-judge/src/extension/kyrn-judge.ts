@@ -29,6 +29,7 @@ import { registerCompletion } from "./features/completion.ts";
 import { registerConstraints } from "./features/constraints.ts";
 import { registerForgetting } from "./features/forgetting.ts";
 import { registerFrame } from "./features/frame.ts";
+import { registerGoal } from "./features/goal.ts";
 import { registerGuard } from "./features/guard.ts";
 import { registerHive } from "./features/hive.ts";
 import { registerInterjection } from "./features/interjection.ts";
@@ -73,6 +74,7 @@ export type FeatureName =
 	| "catalog"
 	| "guard"
 	| "constraints"
+	| "goal"
 	| "admission"
 	| "forgetting"
 	| "compaction"
@@ -142,6 +144,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["forgetting", registerForgetting],
 		["compaction", registerCompaction],
 		["monitor", registerMonitor],
+		["goal", registerGoal],
 		["completion", registerCompletion],
 		["notify", registerNotify],
 		["warming", registerWarming],
