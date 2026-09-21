@@ -27,8 +27,6 @@ export interface Tracked {
  */
 export class DiagnosticsTracker {
 	private items: Tracked[] = [];
-	/** Diagnostics that were seen and then fixed, or left out of a report: what stayed out of the context. */
-	resolved = 0;
 
 	reset(): void {
 		this.items = [];
@@ -65,10 +63,13 @@ export class DiagnosticsTracker {
 		}
 	}
 
-	/** The server's current word on a file: what it no longer reports is gone, what it still reports gets its line updated. */
-	revalidate(path: string, latest: readonly Diagnostic[]): void {
+	/**
+	 * The server's current word on a file: what it no longer reports is gone, what it
+	 * still reports gets its line updated. Returns what went away without the model ever hearing of it.
+	 */
+	revalidate(path: string, latest: readonly Diagnostic[]): Tracked[] {
 		const mine = this.items.filter((item) => item.path === path);
-		if (mine.length === 0) return;
+		if (mine.length === 0) return [];
 		// Tracked items are the anchors here, so the pairing runs from the server's list towards them.
 		const paired = pair(latest, mine, LINE_SLACK);
 		const alive = new Map<Tracked, Diagnostic>();
@@ -83,8 +84,8 @@ export class DiagnosticsTracker {
 			item.checked = true;
 		}
 		const gone = mine.filter((item) => !alive.has(item));
-		this.resolved += gone.filter((item) => item.status !== "delivered").length;
 		this.items = this.items.filter((item) => !gone.includes(item));
+		return gone.filter((item) => item.status !== "delivered");
 	}
 
 	/** The file is gone, and its problems with it. */

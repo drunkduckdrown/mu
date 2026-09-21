@@ -74,6 +74,8 @@ export interface Savings {
 	forgottenChars: number;
 	/** Characters of tool output pruned by summary-free compaction. */
 	compactedChars: number;
+	/** Characters of new diagnostics that were never told: style noise, fixed before the model paused, or over the cap. */
+	diagnosticsWithheldChars: number;
 }
 
 /**
@@ -89,7 +91,13 @@ export class KyrnRuntime {
 	/** Everything installed that the judge may open per task: packs, MCP servers, language servers. */
 	readonly catalog = new CapabilityCatalog();
 	readonly problems: string[] = [];
-	readonly savings: Savings = { admissionOmittedChars: 0, skillsHiddenChars: 0, forgottenChars: 0, compactedChars: 0 };
+	readonly savings: Savings = {
+		admissionOmittedChars: 0,
+		skillsHiddenChars: 0,
+		forgottenChars: 0,
+		compactedChars: 0,
+		diagnosticsWithheldChars: 0,
+	};
 	readonly sessionId = randomUUID();
 	/** False when the judge is switched off (MU_JUDGE=off): the CLI stays, the judgment layer asks nothing. */
 	enabled = true;

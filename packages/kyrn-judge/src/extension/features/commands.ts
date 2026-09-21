@@ -94,7 +94,7 @@ export function registerCommands(runtime: KyrnRuntime): void {
 			...[...engine.routes()].map(([specId, judge]) => `  ${specId} -> ${judge.id}`),
 			`mode: default=${engine.getMode("*")}${modes ? ` ${modes}` : ""}`,
 			`calls: ${stats.calls} | failures: ${stats.failures} | abstentions: ${stats.abstentions} | input tokens: ${stats.inputTokens}`,
-			`kept out of context: tool output ${savings.admissionOmittedChars} chars, skills ${savings.skillsHiddenChars} chars, forgotten ${savings.forgottenChars} chars, compacted ${savings.compactedChars} chars`,
+			`kept out of context: tool output ${savings.admissionOmittedChars} chars, skills ${savings.skillsHiddenChars} chars, forgotten ${savings.forgottenChars} chars, compacted ${savings.compactedChars} chars, diagnostics ${savings.diagnosticsWithheldChars} chars`,
 		];
 		if (stats.lastError) lines.push(`last error: ${stats.lastError.kind} - ${stats.lastError.message}`);
 		for (const problem of runtime.problems) lines.push(`problem: ${problem}`);

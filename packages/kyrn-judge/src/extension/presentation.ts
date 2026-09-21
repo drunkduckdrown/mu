@@ -17,6 +17,9 @@ export interface KyrnPresentationEvent {
 		| "constraint.blocked"
 		| "browser.run"
 		| "browser.step"
+		| "diagnostics.delivered"
+		| "diagnostics.held"
+		| "diagnostics.dropped"
 		| "context.policy"
 		| "compaction.plan";
 	payload: unknown;

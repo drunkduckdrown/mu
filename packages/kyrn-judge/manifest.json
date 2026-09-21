@@ -280,6 +280,19 @@
 			}
 		},
 		{
+			"id": "diagnostics.delivery",
+			"group": "tools",
+			"feature": "lsp",
+			"title": {
+				"zh": "诊断何时告知",
+				"en": "When to tell diagnostics"
+			},
+			"summary": {
+				"zh": "改完文件后语言服务器新报的错：现在就说、等模型停下再说，还是不说（风格类警告）。回合结束时仍在的新错误一定会说。",
+				"en": "New language-server diagnostics after an edit: tell now, when the model pauses, or never (style warnings). New errors still there when the turn ends are always told."
+			}
+		},
+		{
 			"id": "turn.completion",
 			"group": "turn",
 			"feature": "completion",
@@ -995,6 +1008,150 @@
 					"label": {
 						"zh": "观察窗口",
 						"en": "Window"
+					}
+				}
+			]
+		},
+		{
+			"name": "lsp",
+			"title": {
+				"zh": "语言服务器诊断",
+				"en": "Language server diagnostics"
+			},
+			"summary": {
+				"zh": "接本机已装的语言服务器（不代装），只留这次改动新引入的报错，由判定器决定何时告诉模型。",
+				"en": "Uses the language servers already installed here (installs none), keeps only what an edit newly introduced, and lets the judge pick the moment to tell the model."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "builtin",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "使用内置的常见服务器表",
+						"en": "Use the built-in table of well-known servers"
+					},
+					"help": {
+						"zh": "TypeScript、Python、Go、Rust、C/C++ 的常见服务器，只在 PATH 上查找。自定义的写在 mu.json 的 features.lsp.servers。",
+						"en": "Well-known servers for TypeScript, Python, Go, Rust and C/C++, looked up on PATH only. Your own go under features.lsp.servers in mu.json."
+					}
+				},
+				{
+					"key": "editTools",
+					"kind": "list",
+					"default": [
+						"edit",
+						"write"
+					],
+					"label": {
+						"zh": "算作改文件的工具",
+						"en": "Tools that count as editing a file"
+					}
+				},
+				{
+					"key": "settleMs",
+					"kind": "number",
+					"default": 1500,
+					"min": 0,
+					"max": 10000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "改完后最多等服务器多久",
+						"en": "Wait for the server after an edit, at most"
+					},
+					"help": {
+						"zh": "超时不再等：晚到的诊断在下一次改动或回合结束时处理。",
+						"en": "Past this nothing waits: late diagnostics are handled at the next edit or when the turn ends."
+					}
+				},
+				{
+					"key": "turnEndSettleMs",
+					"kind": "number",
+					"default": 3000,
+					"min": 0,
+					"max": 30000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "回合结束时最多等多久",
+						"en": "Wait at the end of a turn, at most"
+					}
+				},
+				{
+					"key": "quietMs",
+					"kind": "number",
+					"default": 250,
+					"min": 20,
+					"max": 5000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "服务器安静多久算说完",
+						"en": "Silence that counts as the server being done"
+					}
+				},
+				{
+					"key": "baselineMs",
+					"kind": "number",
+					"default": 5000,
+					"min": 100,
+					"max": 60000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "等改动前诊断的上限",
+						"en": "Wait for the pre-edit diagnostics, at most"
+					},
+					"help": {
+						"zh": "在后台等，不挡工具调用。过了上限就不把首份诊断当成新问题。",
+						"en": "Waited for in the background, never blocking a tool. Past it, the first report is not called new."
+					}
+				},
+				{
+					"key": "maxItems",
+					"kind": "number",
+					"default": 10,
+					"min": 1,
+					"max": 100,
+					"label": {
+						"zh": "一次最多告知几条",
+						"en": "Diagnostics told at once, at most"
+					}
+				},
+				{
+					"key": "maxServers",
+					"kind": "number",
+					"default": 4,
+					"min": 1,
+					"max": 16,
+					"label": {
+						"zh": "同时运行的服务器上限",
+						"en": "Servers running at once, at most"
+					}
+				},
+				{
+					"key": "waitMs",
+					"kind": "number",
+					"default": 4000,
+					"min": 500,
+					"max": 30000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "等判定最多多久",
+						"en": "Wait for the judge, at most"
 					}
 				}
 			]

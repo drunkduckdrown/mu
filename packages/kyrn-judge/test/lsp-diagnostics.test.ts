@@ -111,11 +111,11 @@ describe("tracker", () => {
 		const before = lines(10);
 		tracker.remap("/p/a.ts", lineMap(before, `x\ny\nz\n${before}`));
 		expect(tracker.all().every((item) => !item.checked)).toBe(true);
-		tracker.revalidate("/p/a.ts", [warning(11, "two")]);
+		const unheard = tracker.revalidate("/p/a.ts", [warning(11, "two")]);
 
 		expect(tracker.all()).toHaveLength(1);
 		expect(tracker.all()[0]).toMatchObject({ status: "held", checked: true, diagnostic: warning(11, "two") });
-		expect(tracker.resolved).toBe(1);
+		expect(unheard.map((item) => item.diagnostic.message)).toEqual(["one"]);
 	});
 
 	it("does not mistake an old problem elsewhere in the file for the one it holds", () => {
