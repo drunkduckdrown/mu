@@ -726,7 +726,7 @@ export function findBusy({ platform, old, run, self }) {
  * and the login files keep their permissions. The old path stays behind as a link (a junction on Windows),
  * because the desktop app's session mappings store absolute paths into it.
  *
- * `fs` is { isLink, isDir, exists, readlink, readFile, rename, link }. Returns the exit code.
+ * `fs` is { isLink, isDir, exists, readlink, readFile, rename, link(target, at, kind) }. Returns the exit code.
  */
 export function migrate({ platform, home, argv, fs, run, alive, self, out, err }) {
 	const path = pathFor(platform);
@@ -781,7 +781,8 @@ export function migrate({ platform, home, argv, fs, run, alive, self, out, err }
 		return 0;
 	}
 	fs.rename(old, next);
-	fs.link(next, old);
+	// A junction needs no privilege on Windows; elsewhere the kind of link is ignored.
+	fs.link(next, old, platform === "win32" ? "junction" : "dir");
 	out(`moved    ${old} -> ${next}`);
 	if (renameConfig) {
 		fs.rename(path.join(next, config), path.join(next, "agent", "mu.json"));
@@ -929,7 +930,7 @@ export async function main(argv = process.argv.slice(2)) {
 				readlink: readlinkSync,
 				readFile: readText,
 				rename: renameSync,
-				link: (target, at) => symlinkSync(target, at, platform === "win32" ? "junction" : undefined),
+				link: (target, at, kind) => symlinkSync(target, at, kind),
 			},
 		});
 	}
