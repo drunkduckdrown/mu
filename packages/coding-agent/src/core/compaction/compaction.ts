@@ -142,6 +142,8 @@ export interface CompactionSettings {
 	enabled: boolean;
 	reserveTokens: number;
 	keepRecentTokens: number;
+	/** Early trigger, not a hard truncation of the current tool result. */
+	maxContextTokens?: number;
 }
 
 export const DEFAULT_COMPACTION_SETTINGS: CompactionSettings = {
@@ -249,7 +251,9 @@ export function estimateContextTokens(messages: AgentMessage[]): ContextUsageEst
  */
 export function shouldCompact(contextTokens: number, contextWindow: number, settings: CompactionSettings): boolean {
 	if (!settings.enabled) return false;
-	return contextTokens > contextWindow - settings.reserveTokens;
+	const modelLimit = Math.max(0, contextWindow - settings.reserveTokens);
+	const cap = settings.maxContextTokens;
+	return (cap !== undefined && cap > 0 && contextTokens >= Math.min(cap, modelLimit)) || contextTokens > modelLimit;
 }
 
 // ============================================================================

@@ -1,0 +1,196 @@
+import { readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { keyText, VERSION as PI_VERSION, type Theme } from "@earendil-works/pi-coding-agent";
+import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { failOpen, type KyrnRuntime } from "../runtime.ts";
+
+const WORDMARK = ["█▄▀ █▄█ █▀█ █▄ █", "█ █  █  █▀▄ █ ▀█"];
+const MAX_BOX_WIDTH = 78;
+const MIN_BOX_WIDTH = 44;
+
+/** Resolves to `<package>/package.json` from both `src/` and `dist/`. */
+function readVersion(): string {
+	try {
+		const raw = readFileSync(new URL("../../../package.json", import.meta.url), "utf8");
+		const version = (JSON.parse(raw) as { version?: unknown }).version;
+		return typeof version === "string" ? version : "0.0.0";
+	} catch {
+		return "0.0.0";
+	}
+}
+
+export const KYRN_VERSION = readVersion();
+
+export type JudgeHealth = "checking" | { ok: boolean; latencyMs: number; error?: string };
+
+export interface WelcomeView {
+	version: string;
+	piVersion: string;
+	judge: string;
+	health: JudgeHealth;
+	mode: string;
+	model: string | undefined;
+	thinking: string | undefined;
+	cwd: string;
+	expanded: boolean;
+	/** "ctrl+o" and friends, as the user has them bound. */
+	keys: { expand: string; model: string; thinking: string };
+}
+
+/** The part of pi's Theme the welcome screen needs, so it can be rendered without one in tests. */
+export type Paint = Pick<Theme, "fg" | "bold">;
+
+function healthText(view: WelcomeView, paint: Paint): string {
+	if (view.judge === "off") return paint.fg("muted", "off · pi's stock behaviour everywhere");
+	if (view.health === "checking") return `${view.judge} ${paint.fg("dim", "· checking…")}`;
+	if (view.health.ok) {
+		return `${view.judge} ${paint.fg("success", `· answering in ${view.health.latencyMs} ms`)} ${paint.fg("dim", `· decisions ${view.mode}`)}`;
+	}
+	const why = view.health.error === "unreachable" ? "not reachable" : `failing (${view.health.error ?? "error"})`;
+	return `${view.judge} ${paint.fg("warning", `· ${why}, falling back to stock behaviour`)}`;
+}
+
+/**
+ * The welcome screen as lines no wider than `width`. Values are read at render
+ * time, so switching the judge or the model shows up without any bookkeeping.
+ */
+export function renderWelcome(view: WelcomeView, width: number, paint: Paint): string[] {
+	const home = homedir();
+	const cwd = view.cwd.startsWith(home) ? `~${view.cwd.slice(home.length)}` : view.cwd;
+	const model = view.model
+		? `${view.model}${view.thinking ? paint.fg("dim", ` · thinking ${view.thinking}`) : ""}`
+		: paint.fg("warning", "none yet · /login, then /model");
+	const rows: [string, string][] = [
+		["judge", healthText(view, paint)],
+		["model", model],
+		["cwd", cwd],
+	];
+	const title = [
+		`${paint.bold(paint.fg("accent", WORDMARK[0]))}   ${paint.fg("text", "judgment-first coding agent")}`,
+		`${paint.bold(paint.fg("accent", WORDMARK[1]))}   ${paint.fg("dim", `v${view.version} · built on pi ${view.piVersion}`)}`,
+	];
+	const body = [
+		"",
+		...title,
+		"",
+		...rows.map(([label, value]) => `${paint.fg("muted", label.padEnd(8))}${value}`),
+		"",
+	];
+
+	const dot = paint.fg("muted", " · ");
+	const hints = [
+		`${paint.fg("dim", "/")} commands`,
+		`${paint.fg("dim", "!")} bash`,
+		`${paint.fg("dim", view.keys.model)} model`,
+		`${paint.fg("dim", view.keys.thinking)} thinking`,
+		`${paint.fg("dim", view.keys.expand)} ${view.expanded ? "less" : "more"}`,
+	].join(dot);
+	const tryLine = `${paint.fg("dim", "Try")} /help${dot}/status${dot}/agents${dot}/browse <url> <goal>${dot}/init`;
+	const more = view.expanded
+		? [
+				"",
+				paint.fg("muted", "What the judge does here"),
+				"  reads every message first and sets the turn's gear (thinking level, hints)",
+				"  keeps noisy tool output, stale results and irrelevant skills out of the context",
+				'  vouches for risky commands, notices drift, loops and unverified "done"',
+				"  drives the browser click by click and routes sub-agents to a role and a model",
+				paint.fg("muted", "Switch it"),
+				"  /kyrn judge laya,jev     which models answer, in order",
+				"  /kyrn mode default shadow     record verdicts without acting on them",
+			]
+		: [];
+
+	if (width < MIN_BOX_WIDTH) {
+		// Too narrow for a frame: plain lines, cut to fit.
+		return ["", ...body.slice(1, -1), "", hints, tryLine, ...more, ""].map((line) => truncateToWidth(line, width));
+	}
+	const boxWidth = Math.min(width, MAX_BOX_WIDTH);
+	const inner = boxWidth - 6;
+	const border = (text: string) => paint.fg("borderAccent", text);
+	const framed = body.map((line) => {
+		const cut = truncateToWidth(line, inner);
+		return `${border("│")}  ${cut}${" ".repeat(Math.max(0, inner - visibleWidth(cut)))}  ${border("│")}`;
+	});
+	return [
+		"",
+		border(`╭${"─".repeat(boxWidth - 2)}╮`),
+		...framed,
+		border(`╰${"─".repeat(boxWidth - 2)}╯`),
+		...[hints, tryLine, ...more].map((line) => truncateToWidth(`  ${line}`, width)),
+		"",
+	];
+}
+
+/** Who the model is told it is. Constant for the whole session, so it costs the prompt cache nothing. */
+export const IDENTITY = `This harness is KYRN, a judgment-first coding agent built on pi. If asked what you are or where you run, say KYRN.
+A small judgment model works beside you. It may replace noisy tool output with a one-line pointer to the full text, add one-line hints or lessons before a turn, and it performs every click of the \`browse\` tool.
+Commands the user can type: /help, /status, /doctor.`;
+
+/**
+ * The first thing the user sees: what KYRN is, which judge is answering and
+ * how fast, which model is thinking, and the handful of commands worth knowing.
+ */
+export function registerWelcome(runtime: KyrnRuntime): void {
+	const options = runtime.options("welcome", { enabled: true });
+	if (!options.enabled) return;
+	let health: JudgeHealth = "checking";
+
+	runtime.pi.on(
+		"before_agent_start",
+		failOpen((event) => {
+			event.systemPromptOptions.sections = { ...event.systemPromptOptions.sections, kyrn: IDENTITY };
+			return undefined;
+		}),
+	);
+
+	runtime.pi.on(
+		"session_start",
+		failOpen((_event, ctx) => {
+			runtime.touch(ctx);
+			if (ctx.mode !== "tui") return undefined;
+			let redraw: (() => void) | undefined;
+			ctx.ui.setTitle(`kyrn - ${ctx.cwd.split("/").pop() ?? ""}`);
+			ctx.ui.setHeader((tui, theme) => {
+				let expanded = false;
+				redraw = () => tui.requestRender();
+				return {
+					setExpanded(value: boolean) {
+						expanded = value;
+					},
+					invalidate() {},
+					render(width: number): string[] {
+						const current = runtime.ctx;
+						const model = current?.model;
+						return renderWelcome(
+							{
+								version: KYRN_VERSION,
+								piVersion: PI_VERSION,
+								judge: runtime.judgeLabel,
+								health,
+								mode: runtime.mode("*"),
+								model: model ? `${model.provider}/${model.id}` : undefined,
+								thinking: current?.thinkingLevel ?? runtime.pi.getThinkingLevel(),
+								cwd: current?.cwd ?? ctx.cwd,
+								expanded,
+								keys: {
+									expand: keyText("app.tools.expand"),
+									model: keyText("app.model.select"),
+									thinking: keyText("app.thinking.cycle"),
+								},
+							},
+							width,
+							theme,
+						);
+					},
+				};
+			});
+			// Asked once per session start: a judge that is down is the first thing worth knowing.
+			health = "checking";
+			void runtime.engine.probe().then((result) => {
+				health = result;
+				redraw?.();
+			});
+			return undefined;
+		}),
+	);
+}

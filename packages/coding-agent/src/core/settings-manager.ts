@@ -22,6 +22,8 @@ const DEFAULT_COMPACTION_TOKEN_SETTINGS: Required<CompactionModelOverride> = {
 
 export interface CompactionSettings {
 	enabled?: boolean; // default: true
+	/** Optional early-compaction threshold. Zero/unset follows the model's normal window budget. */
+	maxContextTokens?: number;
 	reserveTokens?: number; // default: 16384
 	keepRecentTokens?: number; // default: 20000
 	modelOverrides?: Record<string, CompactionModelOverride>; // exact "provider/modelId" keys
@@ -897,11 +899,16 @@ export class SettingsManager {
 		enabled: boolean;
 		reserveTokens: number;
 		keepRecentTokens: number;
+		maxContextTokens?: number;
 	} {
+		const max = this.settings.compaction?.maxContextTokens ?? 0;
+		if (!Number.isSafeInteger(max) || max < 0) throw new Error("Invalid compaction.maxContextTokens setting");
+		const recent = this.getCompactionKeepRecentTokens(model);
 		return {
 			enabled: this.getCompactionEnabled(),
 			reserveTokens: this.getCompactionReserveTokens(model),
-			keepRecentTokens: this.getCompactionKeepRecentTokens(model),
+			keepRecentTokens: max > 0 ? Math.min(recent, Math.floor(max / 2)) : recent,
+			...(max > 0 ? { maxContextTokens: max } : {}),
 		};
 	}
 

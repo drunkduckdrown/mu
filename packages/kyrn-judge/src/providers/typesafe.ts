@@ -1,0 +1,134 @@
+import { JudgeError, type JudgeErrorKind } from "../errors.ts";
+import type { Answer, JudgeProvider, JudgeRequest, ProviderResponse, Question } from "../types.ts";
+import type { ApiKeyResolver } from "./gateway.ts";
+import { MAX_ERROR_MESSAGE_LENGTH, messageFromErrorBody, readWarnings } from "./http.ts";
+
+export const TYPESAFE_BASE_URL = "https://api.typesafe.ai/v1/systemone";
+export const TYPESAFE_DEFAULT_MODEL = "jev-latest";
+
+export interface TypeSafeJudgeProviderOptions {
+	/** A key, or a resolver called per request so the host owns credential storage. */
+	apiKey: string | ApiKeyResolver;
+	model?: string;
+	baseUrl?: string;
+	fetch?: typeof fetch;
+}
+
+interface SystemOneBody {
+	model?: unknown;
+	answers?: Record<string, Record<string, unknown>>;
+	usage?: { input_tokens?: unknown; output_tokens?: unknown };
+	warnings?: unknown;
+}
+
+function errorKindForStatus(status: number, message: string): JudgeErrorKind {
+	if (status === 401) return "auth";
+	if (status === 402) return "payment_required";
+	if (status === 403) return /credit|payment|billing|quota/i.test(message) ? "payment_required" : "auth";
+	if (status === 429) return "rate_limited";
+	if (status >= 500) return "server";
+	return "bad_request";
+}
+
+/** System One calls a yes/no question `noul`; everything else has the kernel's own shape. */
+function toWire(question: Question): Record<string, unknown> {
+	if (question.type !== "boolean") return { ...question };
+	return question.criteria
+		? { type: "noul", instructions: question.instructions, criteria: question.criteria }
+		: { type: "noul", instructions: question.instructions };
+}
+
+const numberOr = (value: unknown): number | undefined =>
+	typeof value === "number" && Number.isFinite(value) ? value : undefined;
+
+function probabilitiesOf(value: unknown): Record<string, number> | undefined {
+	if (typeof value !== "object" || value === null) return undefined;
+	const entries = Object.entries(value).filter((entry): entry is [string, number] => typeof entry[1] === "number");
+	return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
+function fromWire(question: Question, raw: Record<string, unknown> | undefined): Answer | undefined {
+	if (!raw) return undefined;
+	const confidence = numberOr(raw.confidence);
+	if (question.type === "boolean") {
+		const probability = numberOr(raw.noul);
+		return probability === undefined ? undefined : { type: "boolean", probability, confidence };
+	}
+	if (question.type === "score") {
+		const score = numberOr(raw.score);
+		return score === undefined ? undefined : { type: "score", score, confidence };
+	}
+	if (typeof raw.choice !== "string" || !(raw.choice in question.criteria)) return undefined;
+	return { type: "choice", choice: raw.choice, probabilities: probabilitiesOf(raw.probabilities), confidence };
+}
+
+/**
+ * Jev straight from TypeSafe's System One endpoint, for an account with its
+ * own TypeSafe key. (`GatewayJudgeProvider` reaches the same model through the
+ * Vercel AI Gateway.) Uses `fetch` directly; error messages never contain the
+ * key or the submitted state.
+ */
+export class TypeSafeJudgeProvider implements JudgeProvider {
+	readonly id: string;
+	private readonly apiKey: string | ApiKeyResolver;
+	private readonly model: string;
+	private readonly baseUrl: string;
+	private readonly fetchImpl: typeof fetch;
+
+	constructor(options: TypeSafeJudgeProviderOptions) {
+		this.apiKey = options.apiKey;
+		this.model = options.model ?? TYPESAFE_DEFAULT_MODEL;
+		this.baseUrl = (options.baseUrl ?? TYPESAFE_BASE_URL).replace(/\/+$/, "");
+		this.fetchImpl = options.fetch ?? fetch;
+		this.id = `typesafe:${this.model}`;
+	}
+
+	async evaluate(request: JudgeRequest): Promise<ProviderResponse> {
+		const apiKey = typeof this.apiKey === "string" ? this.apiKey : await this.apiKey();
+		if (!apiKey) throw new JudgeError("auth", "No TypeSafe API key is configured (TYPESAFE_API_KEY)");
+
+		const questions = Object.fromEntries(
+			Object.entries(request.questions).map(([id, question]) => [id, toWire(question)]),
+		);
+		let response: Response;
+		try {
+			response = await this.fetchImpl(this.baseUrl, {
+				method: "POST",
+				headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+				body: JSON.stringify({ model: this.model, state: request.state, questions }),
+				signal: request.signal,
+			});
+		} catch (error) {
+			// Aborts are classified by the kernel, which knows whether its timeout or the caller fired.
+			if (error instanceof Error && error.name === "AbortError") throw error;
+			throw new JudgeError("unreachable", "Could not reach TypeSafe", { cause: error });
+		}
+
+		if (!response.ok) {
+			const body: unknown = await response.json().catch(() => undefined);
+			const message = messageFromErrorBody(body).slice(0, MAX_ERROR_MESSAGE_LENGTH);
+			throw new JudgeError(
+				errorKindForStatus(response.status, message),
+				message || `TypeSafe responded with HTTP ${response.status}`,
+				{ status: response.status },
+			);
+		}
+
+		const body = (await response.json().catch(() => undefined)) as SystemOneBody | undefined;
+		if (!body || typeof body.answers !== "object" || body.answers === null) {
+			throw new JudgeError("invalid_response", "TypeSafe response has no answers", { status: response.status });
+		}
+		const answers: Record<string, Answer> = {};
+		for (const [id, question] of Object.entries(request.questions)) {
+			const answer = fromWire(question, body.answers[id]);
+			if (!answer) throw new JudgeError("invalid_response", `TypeSafe gave no usable answer for "${id}"`);
+			answers[id] = answer;
+		}
+		return {
+			answers,
+			usage: { inputTokens: numberOr(body.usage?.input_tokens), outputTokens: numberOr(body.usage?.output_tokens) },
+			modelId: typeof body.model === "string" ? body.model : this.model,
+			warnings: readWarnings(body.warnings),
+		};
+	}
+}

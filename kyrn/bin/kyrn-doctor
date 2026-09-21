@@ -1,0 +1,114 @@
+#!/usr/bin/env node
+// `kyrn doctor`: is this installation able to run, and what is it configured to do?
+//
+// Reads configuration, never credentials: for the login it only checks that the
+// file exists, and for the Jev key only that the variable is set.
+import { existsSync, readFileSync, readlinkSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+
+const [root, link] = process.argv.slice(2);
+const agentDir = process.env.KYRN_AGENT_DIR ?? process.env.KYRN_CODING_AGENT_DIR ?? join(homedir(), ".kyrn", "agent");
+const rows = [];
+const row = (state, name, text) => rows.push([state, name, text]);
+const tilde = (path) => (path.startsWith(homedir()) ? `~${path.slice(homedir().length)}` : path);
+
+function readJson(path) {
+	try {
+		return JSON.parse(readFileSync(path, "utf8"));
+	} catch {
+		return undefined;
+	}
+}
+
+const [major, minor] = process.versions.node.split(".").map(Number);
+row(major > 22 || (major === 22 && minor >= 19) ? "ok" : "fix", "node", `v${process.versions.node} (needs >= 22.19)`);
+
+row(
+	existsSync(join(root, "node_modules/.bin/tsx")) ? "ok" : "fix",
+	"dependencies",
+	existsSync(join(root, "node_modules/.bin/tsx"))
+		? "installed"
+		: `missing: cd ${root} && npm ci --ignore-scripts && npm run hydrate:model-data`,
+);
+
+let linked;
+try {
+	linked = readlinkSync(link);
+} catch {}
+row(linked ? "ok" : "--", "command", linked ? `${tilde(link)} -> ${tilde(linked)}` : `not on PATH yet: ${join(root, "kyrn/bin/kyrn")} link`);
+
+row("--", "home", tilde(agentDir));
+row(
+	existsSync(join(agentDir, "auth.json")) ? "ok" : "fix",
+	"login",
+	existsSync(join(agentDir, "auth.json")) ? "credentials stored (not read here)" : "none yet: start kyrn and run /login",
+);
+
+const settings = readJson(join(agentDir, "settings.json")) ?? {};
+row(
+	settings.defaultModel ? "ok" : "--",
+	"model",
+	settings.defaultModel
+		? `${settings.defaultProvider ?? "?"}/${settings.defaultModel}${settings.defaultThinkingLevel ? ` · thinking ${settings.defaultThinkingLevel}` : ""}`
+		: "no default: the first provider with credentials is used. Pick one with /model, save with ctrl+s",
+);
+
+const config = readJson(join(agentDir, "kyrn.json"));
+const tiers = (process.env.KYRN_JUDGE ? process.env.KYRN_JUDGE.split(",") : (config?.tiers ?? ["jev"])).map((tier) => tier.trim());
+const mode = process.env.KYRN_JUDGE_MODE ?? config?.modes?.default ?? "shadow";
+row("--", "judges", `${tiers.join(" > ")} · decisions ${mode}${process.env.KYRN_JUDGE ? " (from KYRN_JUDGE)" : ""}`);
+const overrides = Object.entries(config?.modes ?? {}).filter(([id]) => id !== "default");
+if (overrides.length > 0) row("--", "modes", overrides.map(([id, value]) => `${id}=${value}`).join(" "));
+const ladder = config?.features?.swarm?.models ?? [];
+row("--", "sub-agents", ladder.length > 0 ? `model ladder ${ladder.join(" < ")}` : "use the session's model (no ladder configured)");
+
+if (tiers.some((tier) => tier.startsWith("laya"))) {
+	const base = process.env.KYRN_LOCAL_JUDGE_URL ?? `http://127.0.0.1:${process.env.KYRN_LOCAL_JUDGE_PORT ?? 47823}`;
+	const startedAt = performance.now();
+	try {
+		const response = await fetch(`${base}/health`, { signal: AbortSignal.timeout(2000) });
+		const health = await response.json();
+		const ms = Math.round(performance.now() - startedAt);
+		row(health.status === "ok" ? "ok" : "--", "local judge", `${base} · ${health.status} · ${health.model ?? "laya"} · ${ms} ms`);
+	} catch {
+		row("fix", "local judge", `${base} does not answer: kyrn judge start   (first time: kyrn judge setup)`);
+	}
+}
+if (tiers.some((tier) => tier.startsWith("jev") || tier === "gateway")) {
+	const env = existsSync(join(root, ".env")) ? readFileSync(join(root, ".env"), "utf8") : "";
+	const has = (name) => Boolean(process.env[name]) || new RegExp(`^${name}=.+`, "m").test(env);
+	const direct = has("TYPESAFE_API_KEY");
+	const gateway = has("AI_GATEWAY_API_KEY");
+	row(
+		direct || gateway ? "ok" : "fix",
+		"jev key",
+		direct
+			? "TYPESAFE_API_KEY is set: Jev is called directly at api.typesafe.ai (value not shown)"
+			: gateway
+				? "AI_GATEWAY_API_KEY is set: Jev is called through the Vercel AI Gateway (value not shown)"
+				: `missing: add TYPESAFE_API_KEY (or AI_GATEWAY_API_KEY) to ${join(root, ".env")}`,
+	);
+}
+
+const { findChrome } = await import(join(root, "packages/kyrn-judge/src/browser/chrome.ts"));
+const chrome = findChrome();
+row(chrome ? "ok" : "fix", "browser", chrome ?? "no Chrome or Chromium found: install one or set KYRN_CHROME");
+const canRelate = (tier) => tier.startsWith("jev") || tier === "gateway" || tier.startsWith("llm:") || config?.judges?.[tier]?.type === "llm";
+const browseTiers = config?.routes?.["browser.step"] ?? tiers;
+const routed = Object.entries(config?.routes ?? {});
+if (routed.length > 0) row("--", "routes", routed.map(([id, value]) => `${id} -> ${[value].flat().join(" > ")}`).join(" · "));
+row(
+	[browseTiers].flat().some(canRelate) ? "ok" : "--",
+	"browse",
+	[browseTiers].flat().some(canRelate)
+		? `driven by ${[browseTiers].flat().join(" > ")}`
+		: 'needs a judge that can relate a goal to a page. In kyrn.json: "routes": { "browser.step": ["luna"] }',
+);
+
+const marks = { ok: "\x1b[32m ok\x1b[0m", fix: "\x1b[33mfix\x1b[0m", "--": "\x1b[2m  ·\x1b[0m" };
+const plain = !process.stdout.isTTY;
+for (const [state, name, text] of rows) {
+	console.log(`${plain ? state.padStart(3) : marks[state]}  ${name.padEnd(13)}${text}`);
+}
+process.exit(rows.some(([state]) => state === "fix") ? 1 : 0);

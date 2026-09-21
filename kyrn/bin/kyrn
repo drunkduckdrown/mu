@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+# KYRN command line.
+#
+#   kyrn                       interactive session in the current directory
+#   kyrn "prompt"              interactive, starting with this prompt
+#   kyrn -p "prompt"           one-shot: print the answer and exit
+#   kyrn -c | -r               continue the last session | pick one to resume
+#   kyrn judge <cmd>           the local judge (Laya): setup | start | stop | status | run
+#   kyrn ledger [n] [--json]   what the judge decided in the last n sessions
+#   kyrn doctor                check the installation
+#   kyrn link | unlink         put the `kyrn` command on your PATH (~/.local/bin) | remove it
+#   kyrn help | version
+#
+# Everything else goes to the agent unchanged: `kyrn --help` lists every flag,
+# and `kyrn install|remove|update|list|config` manage pi packages.
+#
+# What this launcher sets up:
+# - a Node >= 22.19 (pi's minimum), taken from nvm when the default one is older
+# - KYRN's own home, ~/.kyrn/agent (auth, sessions, settings), apart from a stock pi in ~/.pi
+# - KYRN's name on the agent: PI_PACKAGE_DIR points at ~/.kyrn/app, a view of packages/coding-agent
+#   whose package.json carries piConfig {name: kyrn, configDir: .kyrn}. No upstream file is edited.
+# - the judgment layer (packages/kyrn-judge), with judges from ~/.kyrn/agent/kyrn.json or KYRN_JUDGE
+#   (e.g. "laya", "laya,luna", "laya,jev", "off"). When "laya" is among them the sidecar is started.
+# - the repo-root .env (AI_GATEWAY_API_KEY for Jev), exported without printing it
+set -euo pipefail
+
+# The command is usually a symlink in ~/.local/bin: follow it back to the repository.
+SOURCE="${BASH_SOURCE[0]}"
+while [[ -L "$SOURCE" ]]; do
+  DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+ROOT="$(cd -P "$(dirname "$SOURCE")/../.." && pwd)"
+BIN="$ROOT/kyrn/bin"
+LINK="${KYRN_LINK_DIR:-$HOME/.local/bin}/kyrn"
+
+usage() { sed -n '2,15p' "$BIN/kyrn" | sed 's/^# \{0,1\}//'; }
+
+node_major() { node -p 'process.versions.node.split(".")[0]' 2>/dev/null || echo 0; }
+
+pick_node() {
+  if [[ "$(node_major)" -lt 22 ]]; then
+    for dir in $(ls -d "$HOME"/.nvm/versions/node/v* 2>/dev/null | sort -rV); do
+      major="${dir##*/v}"
+      major="${major%%.*}"
+      if [[ "$major" -ge 22 ]]; then
+        export PATH="$dir/bin:$PATH"
+        break
+      fi
+    done
+  fi
+  if [[ "$(node_major)" -lt 22 ]]; then
+    echo "KYRN needs Node >= 22.19 (found $(node --version 2>/dev/null || echo none)). Try: nvm install 24" >&2
+    exit 1
+  fi
+}
+
+# ~/.kyrn/app is packages/coding-agent seen through symlinks, plus a package.json that names the app.
+# It lives outside the repository on purpose: a symlinked source tree inside it makes biome skip the real one.
+ensure_app_dir() {
+  local app="${KYRN_APP_DIR:-$HOME/.kyrn/app}" upstream="$ROOT/packages/coding-agent" name
+  mkdir -p "$app"
+  for name in src docs examples README.md CHANGELOG.md; do
+    [[ "$(readlink "$app/$name" 2>/dev/null)" == "$upstream/$name" ]] || ln -sfn "$upstream/$name" "$app/$name"
+  done
+  if [[ ! -f "$app/package.json" || "$upstream/package.json" -nt "$app/package.json" ]]; then
+    node -e '
+      const fs = require("node:fs");
+      const pkg = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
+      pkg.piConfig = { name: "kyrn", configDir: ".kyrn" };
+      fs.writeFileSync(process.argv[2], `${JSON.stringify(pkg, null, "\t")}\n`);
+    ' "$upstream/package.json" "$app/package.json"
+  fi
+  export PI_PACKAGE_DIR="$app"
+}
+
+case "${1:-}" in
+  help)
+    usage
+    exit 0
+    ;;
+  judge)
+    shift
+    exec "$BIN/kyrn-judge-local" "${@:-status}"
+    ;;
+  ledger)
+    shift
+    pick_node
+    exec "$BIN/kyrn-ledger" "$@"
+    ;;
+  doctor)
+    shift
+    pick_node
+    exec node "$BIN/kyrn-doctor" "$ROOT" "$LINK" "$@"
+    ;;
+  link)
+    mkdir -p "$(dirname "$LINK")"
+    ln -sfn "$BIN/kyrn" "$LINK"
+    echo "kyrn -> $BIN/kyrn"
+    case ":$PATH:" in
+      *":$(dirname "$LINK"):"*) ;;
+      *) echo "Note: $(dirname "$LINK") is not on your PATH yet." >&2 ;;
+    esac
+    exit 0
+    ;;
+  unlink)
+    if [[ -L "$LINK" ]]; then rm "$LINK" && echo "removed $LINK"; else echo "$LINK is not a link; nothing removed"; fi
+    exit 0
+    ;;
+esac
+
+pick_node
+
+if [[ ! -x "$ROOT/node_modules/.bin/tsx" ]]; then
+  echo "KYRN's dependencies are not installed. Run:  cd $ROOT && npm ci --ignore-scripts && npm run hydrate:model-data" >&2
+  exit 1
+fi
+
+if [[ "${1:-}" == "version" ]]; then
+  node -e '
+    const read = (path) => JSON.parse(require("node:fs").readFileSync(path, "utf8")).version;
+    console.log(`kyrn ${read(process.argv[1])} (pi ${read(process.argv[2])})`);
+  ' "$ROOT/packages/kyrn-judge/package.json" "$ROOT/packages/coding-agent/package.json"
+  exit 0
+fi
+
+ensure_app_dir
+# With the app named kyrn, its home variable is KYRN_CODING_AGENT_DIR; the pi spelling is kept for older scripts.
+export KYRN_CODING_AGENT_DIR="${KYRN_AGENT_DIR:-${KYRN_CODING_AGENT_DIR:-$HOME/.kyrn/agent}}"
+export PI_CODING_AGENT_DIR="$KYRN_CODING_AGENT_DIR"
+mkdir -p "$KYRN_CODING_AGENT_DIR"
+# A fork run from source follows upstream through git, not through pi's release check.
+export PI_SKIP_VERSION_CHECK="${PI_SKIP_VERSION_CHECK:-1}"
+
+if [[ -f "$ROOT/.env" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  . "$ROOT/.env"
+  set +a
+fi
+
+# The local judge is one shared sidecar; starting it is idempotent and must never block KYRN.
+wants_laya() {
+  if [[ -n "${KYRN_JUDGE:-}" ]]; then [[ ",${KYRN_JUDGE}," == *",laya"* ]]; return; fi
+  [[ ! -f "$KYRN_CODING_AGENT_DIR/kyrn.json" ]] && return 1
+  /usr/bin/grep -q '"laya' "$KYRN_CODING_AGENT_DIR/kyrn.json"
+}
+if wants_laya; then
+  "$BIN/kyrn-judge-local" start >/dev/null 2>&1 || echo "kyrn: the local judge did not start (kyrn judge status); decisions fall back to pi's behaviour" >&2
+fi
+
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  echo
+  echo "Agent flags:"
+  echo
+fi
+
+exec "$ROOT/node_modules/.bin/tsx" --tsconfig "$ROOT/tsconfig.json" \
+  "$ROOT/packages/coding-agent/src/experimental/cli.ts" \
+  -e "$ROOT/packages/kyrn-judge/src/extension/kyrn-judge.ts" "$@"

@@ -459,6 +459,8 @@ export async function runRpcMode(runtimeHost: AgentSessionRuntime): Promise<neve
 					sessionId: session.sessionId,
 					sessionName: session.sessionName,
 					autoCompactionEnabled: session.autoCompactionEnabled,
+					contextUsage: session.getContextUsage(),
+					compactionSettings: session.settingsManager.getCompactionSettings(session.model),
 					messageCount: session.messages.length,
 					pendingMessageCount: session.pendingMessageCount,
 				};
