@@ -1305,6 +1305,198 @@
 			},
 			"defaultEnabled": true,
 			"options": []
+		},
+		{
+			"name": "inherit",
+			"title": {
+				"zh": "沿用已有配置",
+				"en": "Inherit existing setup"
+			},
+			"summary": {
+				"zh": "首次运行就沿用你给 Claude Code、Cursor、Codex 配好的规则、技能和 MCP 服务器，只读不写。常驻规则进提示词；按文件匹配的规则只在碰到匹配文件时随工具结果交给模型一次；其余规则只列描述。项目里的内容只在项目受信任时才用。",
+				"en": "Uses the rules, skills and MCP servers you already set up for Claude Code, Cursor and Codex, read-only. Always-on rules join the prompt; a rule scoped to file patterns is handed over once, with the result of the first tool that touches a matching file; the rest are listed by description. Project content is only used for a trusted project."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "claude",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "来自 Claude Code",
+						"en": "From Claude Code"
+					}
+				},
+				{
+					"key": "cursor",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "来自 Cursor",
+						"en": "From Cursor"
+					}
+				},
+				{
+					"key": "codex",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "来自 Codex",
+						"en": "From Codex"
+					}
+				},
+				{
+					"key": "rules",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "沿用规则",
+						"en": "Inherit rules"
+					}
+				},
+				{
+					"key": "skills",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "沿用技能",
+						"en": "Inherit skills"
+					}
+				},
+				{
+					"key": "mcp",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "沿用 MCP 服务器",
+						"en": "Inherit MCP servers"
+					},
+					"help": {
+						"zh": "关掉后只用 mu.json 里 mcp.servers 自己定义的服务器。",
+						"en": "When off, only the servers under mcp.servers in mu.json are used."
+					}
+				},
+				{
+					"key": "maxRuleChars",
+					"kind": "number",
+					"default": 4000,
+					"min": 500,
+					"max": 20000,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "单条按文件规则最多交给模型",
+						"en": "Most of one file-scoped rule handed over"
+					},
+					"help": {
+						"zh": "超出的部分留在文件里，模型可以自己去读。",
+						"en": "The rest stays in the file for the model to read."
+					}
+				},
+				{
+					"key": "maxAlwaysChars",
+					"kind": "number",
+					"default": 16000,
+					"min": 0,
+					"max": 100000,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "常驻规则总量上限",
+						"en": "Budget for always-on rules"
+					},
+					"help": {
+						"zh": "放不下的常驻规则改为只列描述，避免提示词被规则撑大。",
+						"en": "Always-on rules that do not fit are listed by description instead, so rules cannot bloat the prompt."
+					}
+				}
+			]
+		},
+		{
+			"name": "mcp",
+			"title": {
+				"zh": "MCP 服务器",
+				"en": "MCP servers"
+			},
+			"summary": {
+				"zh": "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：Jev 认定任务需要，或模型用 find_capability 要，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 Jev 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在 mu.json 的 mcp.servers 里给服务器写 \"exposure\": \"always\" 可以让它常开。",
+				"en": "A built-in MCP client (stdio and Streamable HTTP). Each server is a catalog entry that stays hidden: its process starts and its tools register only when the judge finds the task needs it or the model asks through find_capability. Tool lists are cached, so the judge has a description before a server ever ran. A server defined by a project asks before its first start, and again when its definition changes. \"exposure\": \"always\" under mcp.servers in mu.json keeps a server open."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "startTimeoutMs",
+					"kind": "number",
+					"default": 45000,
+					"min": 1000,
+					"max": 300000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "启动最多等待",
+						"en": "Start timeout"
+					},
+					"help": {
+						"zh": "npx 一类的服务器第一次要先下载自己。",
+						"en": "An npx-style server downloads itself first."
+					}
+				},
+				{
+					"key": "requestTimeoutMs",
+					"kind": "number",
+					"default": 120000,
+					"min": 1000,
+					"max": 3600000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "单次调用最多等待",
+						"en": "Call timeout"
+					}
+				},
+				{
+					"key": "waitMs",
+					"kind": "number",
+					"default": 8000,
+					"min": 0,
+					"max": 60000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "回合开始前最多等常开服务器",
+						"en": "Wait for pinned servers before a turn"
+					}
+				},
+				{
+					"key": "maxResultChars",
+					"kind": "number",
+					"default": 60000,
+					"min": 2000,
+					"max": 1000000,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "单个结果最多进上下文",
+						"en": "Most of one result kept in context"
+					},
+					"help": {
+						"zh": "超出的部分截掉，完整结果存到文件。",
+						"en": "The rest is cut and the whole result saved to a file."
+					}
+				}
+			]
 		}
 	]
 }

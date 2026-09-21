@@ -94,6 +94,8 @@ export interface SendOptions {
 	readonly signal?: AbortSignal;
 	/** The response is a stream that stays open (`subscriptions/listen`). */
 	readonly longLived?: boolean;
+	/** Extra HTTP headers for this one message. Ignored by stdio. */
+	readonly headers?: Readonly<Record<string, string>>;
 }
 
 /** One channel to one server. Everything the server says arrives through `onMessage`, whatever the transport. */
