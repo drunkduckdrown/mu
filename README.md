@@ -73,6 +73,15 @@ mu is built on [pi](https://github.com/earendil-works/pi), a minimal, extensible
 
 *KYRN* was the project's earlier name. It survives in folder and package names.
 
+## Install
+
+```bash
+npm i -g mu-agent
+mu
+```
+
+You need Node.js 22.19 or newer. The package is called `mu-agent`; the command is `mu`. It runs on macOS, Linux, Windows and WSL. `npm i -g mu-agent@latest` updates it. Everything below works the same way, except that the JeV key goes in your environment or in `~/.mu/.env`, not in `kyrn/.env`.
+
 ## Get started from source
 
 You need Node.js 22.19 or newer (24 recommended), npm and git.
@@ -121,7 +130,7 @@ These are **preview builds**:
 - They are not code-signed yet. macOS asks you to confirm the first start in *System Settings → Privacy & Security*, and Windows SmartScreen shows a warning.
 - The app does not carry mu inside it yet. It runs mu from a checkout of this repository on the same machine, so set `KYRN_ROOT` to that checkout.
 
-The `mu` command line runs from source on Node, on all of these platforms (see above).
+The `mu` command line comes from npm (`npm i -g mu-agent`, see above) on all of these platforms, or runs from source.
 
 ## What we are working on
 

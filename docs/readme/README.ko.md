@@ -73,6 +73,15 @@ mu는 미니멀하고 확장 가능한 터미널 코딩 에이전트인 [pi](htt
 
 *KYRN*은 이 프로젝트의 이전 이름입니다. 폴더와 패키지 이름에는 아직 이 이름이 남아 있습니다.
 
+## 설치
+
+```bash
+npm i -g mu-agent
+mu
+```
+
+Node.js 22.19 이상이 필요합니다. 패키지 이름은 `mu-agent`, 명령은 `mu`이며 macOS, Linux, Windows, WSL에서 동작합니다. `npm i -g mu-agent@latest`로 업데이트합니다. 아래 내용은 그대로 적용되며, 한 가지만 다릅니다. JeV 키는 `kyrn/.env`가 아니라 환경 변수나 `~/.mu/.env`에 넣습니다.
+
 ## 소스에서 시작하기
 
 Node.js 22.19 이상(24 권장), npm, git이 필요합니다.
@@ -121,7 +130,7 @@ KYRN_ROOT="$(cd .. && pwd)" bun run start     # Windows (PowerShell): $env:KYRN_
 - 아직 코드 서명이 되어 있지 않습니다. macOS는 처음 실행할 때 *시스템 설정 → 개인정보 보호 및 보안*에서 실행을 확인하도록 요구하고, Windows에서는 SmartScreen 경고가 표시됩니다.
 - 앱에는 아직 mu가 들어 있지 않습니다. 같은 기기에 있는 이 저장소의 체크아웃에서 mu를 실행하므로, `KYRN_ROOT`를 그 체크아웃 경로로 설정하세요.
 
-`mu` 명령줄 도구는 이 모든 플랫폼에서 Node를 이용해 소스에서 바로 실행됩니다(위 참고).
+`mu` 명령줄 도구는 이 모든 플랫폼에서 npm으로 설치할 수 있고(`npm i -g mu-agent`, 위 참고), 소스에서 실행할 수도 있습니다.
 
 ## 진행 중인 작업
 

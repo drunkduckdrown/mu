@@ -265,7 +265,7 @@ jobs:
             echo "- **Desktop app**: macOS (.dmg, .zip), Windows (.exe), Linux (.deb), each for x64 and arm64."
             echo "- Not code-signed yet: macOS asks you to confirm the first start in System Settings → Privacy & Security; Windows SmartScreen shows a warning."
             echo "- The app does not carry mu inside it yet: it runs mu from a checkout of this repository on the same machine (set KYRN_ROOT to it). See the README."
-            echo "- The \`mu\` command line runs from source on Node (the source archive below, or a clone)."
+            echo "- The \`mu\` command line: \`npm i -g mu-agent\` (Node.js 22.19 or newer), or from source (the archive below, or a clone)."
             if [ "$BUILD_RESULT" != "success" ]; then
               echo
               echo "⚠️ Not every platform built for this tag; the missing installers are not attached. See the workflow run."

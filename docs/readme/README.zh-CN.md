@@ -73,6 +73,15 @@ mu 基于 [pi](https://github.com/earendil-works/pi) 构建，pi 是一个极简
 
 *KYRN* 是这个项目以前的名字，目录名和包名里还保留着它。
 
+## 安装
+
+```bash
+npm i -g mu-agent
+mu
+```
+
+需要 Node.js 22.19 或更新版本。包名是 `mu-agent`，命令是 `mu`，支持 macOS、Linux、Windows 和 WSL。运行 `npm i -g mu-agent@latest` 即可更新。下文的内容同样适用，只有一处不同：JeV 密钥写在环境变量或 `~/.mu/.env` 里，而不是 `kyrn/.env`。
+
 ## 从源码开始
 
 需要 Node.js 22.19 或更新版本（推荐 24）、npm 和 git。
@@ -121,7 +130,7 @@ KYRN_ROOT="$(cd .. && pwd)" bun run start     # Windows (PowerShell): $env:KYRN_
 - 它们还没有代码签名。macOS 首次启动时会要求你在*系统设置 → 隐私与安全性*里确认，Windows SmartScreen 会显示警告。
 - 应用内部还没有带上 mu。它运行的是同一台机器上本仓库某个检出目录里的 mu，所以要把 `KYRN_ROOT` 设为那个检出目录。
 
-`mu` 命令行在上述所有平台上都通过 Node 从源码运行（见上文）。
+`mu` 命令行在上述所有平台上都可以从 npm 安装（`npm i -g mu-agent`，见上文），也可以从源码运行。
 
 ## 我们正在做的
 
