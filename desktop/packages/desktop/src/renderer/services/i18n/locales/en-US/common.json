@@ -249,7 +249,50 @@
       "recordedAt": "Recorded at {{time}}",
       "beeMissing": "This bee is not in the recorded snapshot.",
       "snapshot": "Last reported state",
-      "updated": "Last update {{time}}"
+      "updated": "Last update {{time}}",
+      "runTitle": {
+        "tasks": "{{count}} tasks",
+        "tasks_one": "{{count}} task",
+        "tasks_other": "{{count}} tasks",
+        "chain": "a chain of {{count}} steps",
+        "chain_one": "a chain of {{count}} step",
+        "chain_other": "a chain of {{count}} steps"
+      },
+      "choosingRoles": "choosing a role, a model and a thinking level for {{count}} sub-agents…",
+      "choosingRoles_one": "choosing a role, a model and a thinking level for {{count}} sub-agent…",
+      "choosingRoles_other": "choosing a role, a model and a thinking level for {{count}} sub-agents…",
+      "activity": {
+        "notesReceived": "← {{count}} notes from the others",
+        "notesReceived_one": "← {{count}} note from the others",
+        "notesReceived_other": "← {{count}} notes from the others",
+        "lateNotes": "← last call: {{count}} late notes",
+        "lateNotes_one": "← last call: {{count}} late note",
+        "lateNotes_other": "← last call: {{count}} late notes",
+        "askedFindings": "← asked what it has found so far",
+        "toldWrapUp": "← told to wrap up and report",
+        "toolFailed": "{{tool}} failed",
+        "retry": "retry {{attempt}}/{{maxAttempts}}: {{message}}",
+        "modelError": "model error: {{message}}",
+        "compacting": "compacting its context"
+      },
+      "errors": {
+        "cancelled": "the run was cancelled",
+        "stoppedByUser": "stopped by the user",
+        "endedByUser": "ended by the user",
+        "stalledModel": "no sign of life from the model for {{duration}}",
+        "stalledTool": "no sign of life from its {{tool}} call for {{duration}}",
+        "timeBudget": "time budget of {{duration}} reached",
+        "timeBudgetReached": "time budget reached",
+        "noReportInTime": "{{reason}}; no report within {{duration}} of being asked",
+        "modelFailed": "the model request failed",
+        "modelAborted": "the model request was aborted",
+        "retriesExhausted": "the model request kept failing",
+        "exitedCode": "sub-agent exited with code {{exitCode}} before it finished",
+        "exitedSignal": "sub-agent was ended by {{signal}} before it finished",
+        "exitedKilled": "sub-agent was ended by a signal before it finished",
+        "chainBroken": "not started: the step before it (\"{{step}}\") did not finish",
+        "detail": "{{reason}}: {{detail}}"
+      }
     },
     "judgeView": {
       "title": "Judgments and their effect",
@@ -445,13 +488,34 @@
         "rate_limited": "Judge rate limited",
         "bad_request": "Judge rejected the request",
         "server": "Judge server error",
-        "invalid_response": "Unreadable judge answer"
+        "invalid_response": "Unreadable judge answer",
+        "verdict": "The judge answered"
       },
       "probabilityValue": "Probability of yes: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
       "reasonValue": "Reason: {{reason}}",
       "fieldValue": "{{field}}: {{value}}",
-      "errorValue": "Error · {{kind}}"
+      "errorValue": "Error · {{kind}}",
+      "noAnswerAfter": "No answer after {{duration}}",
+      "hints": {
+        "clarify": "The request looks under-specified: ask one focused question first.",
+        "side_question": "This is a side question: answer it briefly, then carry on with the main task.",
+        "plan_first": "This looks large or risky: write a short plan and confirm it before editing.",
+        "try_hive": "This looks hard: if the cause is unknown or a direct attempt fails, use the Hive.",
+        "try_delegate": "This splits into independent parts: consider handing them to sub-agents in parallel."
+      },
+      "answerIds": {
+        "turn_type": "Task type",
+        "is_side_question": "Side question",
+        "needs_clarification": "Too vague to act on",
+        "needs_files_changed": "Needs a code change",
+        "needs_memory": "Past notes would help",
+        "swarm_worthy": "Independent parts",
+        "plan_first": "Large or risky",
+        "task_complexity": "Scope",
+        "reasoning_depth": "Reasoning depth",
+        "tool_complexity": "Tool use"
+      }
     },
     "decisions": "Jev",
     "memory": "Experience",
@@ -646,7 +710,33 @@
         "stuck": "Seems stuck"
       },
       "checks_one": "{{done}} of {{total}} check done",
-      "checks_other": "{{done}} of {{total}} checks done"
+      "checks_other": "{{done}} of {{total}} checks done",
+      "codes": {
+        "progress": {
+          "none": "No checklist yet.",
+          "all": "All {{total}} things on the checklist are done.",
+          "all_one": "The {{total}} thing on the checklist is done.",
+          "all_other": "All {{total}} things on the checklist are done.",
+          "some": "{{done}} of {{total}} things on the checklist are done.",
+          "some_one": "{{done}} of {{total}} thing on the checklist is done.",
+          "some_other": "{{done}} of {{total}} things on the checklist are done."
+        },
+        "now": {
+          "understanding": "Reading the code and notes to work out what to do.",
+          "planning": "Working out how to do it; nothing is changed yet.",
+          "changing": "Changing the code.",
+          "checking": "Running the tests or checks to see whether the change works.",
+          "fixing": "A check found a problem; fixing it.",
+          "waiting": "Stopped, waiting for your reply.",
+          "wrapping_up": "The work is done; wrapping up.",
+          "stuck": "Seems to be going in circles; it may need a hint from you.",
+          "unclear": "Working.",
+          "focus": "{{now}} (On: {{focus}})"
+        },
+        "confirm": {
+          "waiting_reply": "It waits for your reply."
+        }
+      }
     },
     "activityLoadFailed": "Could not load the collaboration activity. Retrying…",
     "beeFailed": "This bee reported an error.",
@@ -681,6 +771,100 @@
       "shadow": "{{line}} (watching only, not applied)",
       "late": "{{line}} (too late for this turn)",
       "fallback": "No class from Jev this time; going on as usual"
+    },
+    "eventLine": {
+      "detail": "Details: {{detail}}",
+      "progress": {
+        "frame": "Updating the task frame",
+        "lessons": "Checking lessons from earlier sessions",
+        "skills": "Choosing which skills this session needs",
+        "capabilities": "Choosing which capabilities this task needs",
+        "permissionReview": "JeV is reviewing: {{summary}}"
+      },
+      "goal": {
+        "paused": "Paused: {{reason}}",
+        "reason": {
+          "interrupted": "you interrupted the run",
+          "modelCallFailed": "a model call failed",
+          "needsUser": "the agent needs something from you",
+          "needsUserDetail": "the agent needs something from you: {{detail}}",
+          "unjudged": "no judge could read whether the goal holds, and nothing is provably unfinished",
+          "idle": "the agent ended {{count}} runs in a row without doing anything",
+          "idle_one": "the agent ended {{count}} run without doing anything",
+          "idle_other": "the agent ended {{count}} runs in a row without doing anything",
+          "noProgress": "no progress in {{count}} runs in a row; say how to go on",
+          "noProgress_one": "no progress in {{count}} run; say how to go on",
+          "noProgress_other": "no progress in {{count}} runs in a row; say how to go on",
+          "noProgressDetail": "no progress in {{count}} runs in a row ({{detail}}); say how to go on",
+          "noProgressDetail_one": "no progress in {{count}} run ({{detail}}); say how to go on",
+          "noProgressDetail_other": "no progress in {{count}} runs in a row ({{detail}}); say how to go on",
+          "continuationsUsedUp": "the allowance of {{count}} continuations is used up",
+          "continuationsUsedUp_one": "the allowance of {{count}} continuation is used up",
+          "continuationsUsedUp_other": "the allowance of {{count}} continuations is used up",
+          "minutesUsedUp": "the allowance of {{duration}} is used up",
+          "sessionReopened": "the session was reopened"
+        }
+      },
+      "frame": {
+        "unclearChange": "How does this change the task: “{{message}}”?"
+      },
+      "search": {
+        "notConfigured": "“{{source}}” is not a search source (features.web.search)",
+        "failed": "{{source}} failed: {{message}}",
+        "robotPage": "{{source}} answered with a verification page: it takes this client for a robot",
+        "httpError": "{{source}} answered with HTTP {{status}}",
+        "noResults": "{{source}} returned a page without results (none found, or its markup changed)",
+        "unrelated": "{{source}} returned results that have nothing to do with the query, as engines do for clients they take for robots"
+      },
+      "mcp": {
+        "line": "{{name}}: {{reason}}",
+        "projectUntrusted": "the project is not trusted, and this server is defined by the project",
+        "needsApproval": "it is defined by the project ({{source}}) and has not been approved; open this folder in mu and allow it once, or define it in mu.json",
+        "denied": "you did not allow this project's server to start",
+        "unreachable": "it could not be started or reached",
+        "closed": "its connection closed while mu was still waiting for an answer",
+        "timeout": "it did not answer in time",
+        "aborted": "the start was cancelled",
+        "rpc": "it answered with an error",
+        "protocol": "it answered with something that is not the MCP protocol",
+        "startFailed": "it could not be started",
+        "crashedRestarting": "it crashed while running; mu restarts it once",
+        "crashedAgain": "it crashed again and is not restarted",
+        "restartFailed": "it crashed, and the restart failed too",
+        "restartFailedCause": "it crashed, and the restart failed too: {{cause}}"
+      },
+      "rewind": {
+        "sameCommandFailed": "The same failing command ran {{count}} times: {{command}}",
+        "sameCommandFailed_one": "The same failing command ran {{count}} time: {{command}}",
+        "sameCommandFailed_other": "The same failing command ran {{count}} times: {{command}}",
+        "monitorTrouble": "The monitor spoke up {{count}} times in this turn ({{kind}}: {{detail}})",
+        "monitorTrouble_one": "The monitor spoke up {{count}} time in this turn ({{kind}}: {{detail}})",
+        "monitorTrouble_other": "The monitor spoke up {{count}} times in this turn ({{kind}}: {{detail}})",
+        "trouble": {
+          "loop": "going in circles",
+          "drift": "drifting from the task"
+        }
+      },
+      "browser": {
+        "finished": "{{status}}: {{reason}}",
+        "openFailed": "The page could not be opened in the browser.",
+        "openFailedPanel": "The page could not be opened in the app's browser panel.",
+        "launch": {
+          "noBrowser": {
+            "mac": "No Chrome, Chromium, Edge or Brave was found in /Applications. Install one, or set MU_CHROME to a Chromium-based browser's executable.",
+            "windows": "No Chrome, Chromium, Edge or Brave was found under Program Files or %LOCALAPPDATA%. Install one, or set MU_CHROME to its .exe.",
+            "wsl": "No browser was found inside WSL. Install one inside WSL, or turn on WSL's mirrored networking; the steps are in the reason field below.",
+            "other": "No Chrome, Chromium, Edge or Brave was found. Install one, or set MU_CHROME to its executable; the install commands are in the reason field below."
+          },
+          "windowsBrowserUnusable": "{{executable}} cannot be used: a browser on the Windows side can only be reached from WSL with mirrored networking.",
+          "profileNoWindowsPath": "The profile folder {{profileDir}} has no Windows path (WSL_DISTRO_NAME is not set).",
+          "browserSpawnFailed": "{{command}} could not be started.",
+          "browserExitedOnStart": "The browser exited during startup (code {{exitCode}}).",
+          "devtoolsPortTimeout": "The browser did not open its DevTools port in time.",
+          "cdpConnectTimeout": "Timed out connecting to the browser.",
+          "cdpConnectFailed": "Could not connect to the browser."
+        }
+      }
     }
   },
   "menu": {

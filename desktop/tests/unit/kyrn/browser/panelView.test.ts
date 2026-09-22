@@ -1,12 +1,18 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { createInstance, type TFunction } from 'i18next';
 import type { BrowserRunState } from '@/common/kyrn/browserRun';
+import enPreview from '@/renderer/services/i18n/locales/en-US/preview.json';
+import zhPreview from '@/renderer/services/i18n/locales/zh-CN/preview.json';
+import twPreview from '@/renderer/services/i18n/locales/zh-TW/preview.json';
 import {
   barTone,
   clock,
   confidencePercent,
   elapsedMs,
+  judgeReasonKey,
   permissionKey,
   reasonLine,
+  reasonText,
   secondsLeft,
   statusKey,
   verbKey,
@@ -130,5 +136,138 @@ describe('what the step bar says about the end of a run and what the app refused
     expect(permissionKey('media')).toBe('preview.muBrowser.permission.media');
     expect(permissionKey('constructor')).toBeUndefined();
     expect(permissionKey('brand-new')).toBeUndefined();
+  });
+});
+
+describe('the harness’s end codes on the unfolded bar', () => {
+  const ended = (patch: Partial<BrowserRunState>) =>
+    reasonLine(run({ phase: 'finished', status: 'blocked', ...patch }));
+
+  it('says a coded ending as a sentence with its params, whatever English came with it', () => {
+    expect(ended({ code: 'max_steps', params: { maxSteps: 40 }, reason: 'stopped after 40 actions' })).toEqual({
+      labelKey: 'preview.muBrowser.reason',
+      key: 'preview.muBrowser.end.max_steps',
+      values: { count: 40 },
+    });
+    expect(ended({ code: 'stuck', params: { actions: 3 } })).toMatchObject({ values: { count: 3 } });
+    expect(ended({ code: 'not_confirmed', params: { label: 'Delete account' } })).toMatchObject({
+      key: 'preview.muBrowser.end.not_confirmed',
+      values: { label: 'Delete account' },
+    });
+    expect(ended({ code: 'no_value', params: { label: 'Email' } })).toMatchObject({ values: { label: 'Email' } });
+    expect(ended({ code: 'stopped_by_user' })).toMatchObject({ key: 'preview.muBrowser.end.stopped_by_user' });
+    expect(ended({ code: 'no_progress' })).toMatchObject({ key: 'preview.muBrowser.end.no_progress' });
+    expect(ended({ code: 'no_judge', params: { judgeReason: 'abstain' } })).toEqual({
+      labelKey: 'preview.muBrowser.reason',
+      key: 'preview.muBrowser.end.no_judge',
+      terms: { judgeReason: 'preview.muBrowser.judgeReason.abstain' },
+    });
+  });
+
+  it('keeps the harness’s words for an unknown code, a code without its params, or no code at all', () => {
+    const english = { labelKey: 'preview.muBrowser.reason', text: 'stopped after 40 actions' };
+    expect(ended({ code: 'brand_new', reason: 'stopped after 40 actions' })).toEqual(english);
+    expect(ended({ code: 'max_steps', reason: 'stopped after 40 actions' })).toEqual(english);
+    expect(ended({ code: 'max_steps', params: { maxSteps: 'forty' }, reason: 'stopped after 40 actions' })).toEqual(
+      english
+    );
+    expect(ended({ code: 'not_confirmed', params: { label: '' }, reason: 'stopped after 40 actions' })).toEqual(
+      english
+    );
+    expect(
+      ended({ code: 'no_judge', params: { judgeReason: 'something new' }, reason: 'stopped after 40 actions' })
+    ).toEqual(english);
+    expect(ended({ reason: 'stopped after 40 actions' })).toEqual(english);
+    // Endings that come without a sentence stay without a line.
+    expect(ended({ code: 'done' })).toBeUndefined();
+    expect(ended({ code: 'read' })).toBeUndefined();
+    expect(ended({ code: 'cancelled' })).toBeUndefined();
+  });
+
+  it('offers the message of a run that threw as a technical detail, keeping its code', () => {
+    expect(ended({ status: 'failed', code: 'error', errorCode: 'mystery', reason: 'socket hang up' })).toEqual({
+      labelKey: 'common.technical_details',
+      text: 'socket hang up',
+    });
+  });
+
+  it('names the judge’s own reason, and a failure of a kind it does not know as a failed judge call', () => {
+    expect(judgeReasonKey('shadow')).toBe('preview.muBrowser.judgeReason.shadow');
+    expect(judgeReasonKey('abstain')).toBe('preview.muBrowser.judgeReason.abstain');
+    // browser.step switched off while the run was going.
+    expect(judgeReasonKey('off')).toBe('preview.muBrowser.judgeReason.off');
+    expect(judgeReasonKey('no verdict')).toBe('preview.muBrowser.judgeReason.noVerdict');
+    for (const kind of [
+      'timeout',
+      'aborted',
+      'unreachable',
+      'auth',
+      'payment_required',
+      'rate_limited',
+      'bad_request',
+      'server',
+      'invalid_response',
+      'unexpected',
+      'all',
+    ]) {
+      expect(judgeReasonKey(`error:${kind}`)).toBe(`preview.muBrowser.judgeReason.error.${kind}`);
+    }
+    expect(judgeReasonKey('error:quota_melted')).toBe('preview.muBrowser.judgeReason.error.other');
+    expect(judgeReasonKey('error:constructor')).toBe('preview.muBrowser.judgeReason.error.other');
+    expect(judgeReasonKey('Off')).toBeUndefined();
+    expect(judgeReasonKey('constructor')).toBeUndefined();
+  });
+
+  describe('in words', () => {
+    const tIn = {} as Record<string, TFunction>;
+    beforeAll(async () => {
+      const i18n = createInstance();
+      await i18n.init({
+        lng: 'en-US',
+        resources: {
+          'en-US': { translation: { preview: enPreview } },
+          'zh-CN': { translation: { preview: zhPreview } },
+          'zh-TW': { translation: { preview: twPreview } },
+        },
+        interpolation: { escapeValue: false },
+      });
+      for (const language of ['en-US', 'zh-CN', 'zh-TW']) tIn[language] = i18n.getFixedT(language);
+    });
+    const say = (language: string, patch: Partial<BrowserRunState>) => {
+      const line = ended(patch);
+      return line ? reasonText(line, tIn[language]) : undefined;
+    };
+
+    it('translates the judge’s reason inside the sentence', () => {
+      const noJudge = { code: 'no_judge', params: { judgeReason: 'error:timeout' } };
+      expect(say('en-US', noJudge)).toBe('No judge could choose an action (the judge timed out).');
+      expect(say('zh-CN', noJudge)).toBe('没有判定器能选出下一步操作（判定器超时）。');
+      expect(say('zh-TW', noJudge)).toBe('沒有判定器能選出下一步操作（判定器逾時）。');
+      expect(say('zh-CN', { code: 'no_judge', params: { judgeReason: 'error:all' } })).toBe(
+        '没有判定器能选出下一步操作（所有判定请求都失败了）。'
+      );
+      expect(say('zh-TW', { code: 'no_judge', params: { judgeReason: 'off' } })).toBe(
+        '沒有判定器能選出下一步操作（判定器未啟用）。'
+      );
+      expect(say('zh-CN', { code: 'stopped_by_user', status: 'stopped' })).toBe('你叫停了这次运行。');
+    });
+
+    it('counts in the language’s plural forms and keeps a page’s label as it came', () => {
+      expect(say('en-US', { code: 'max_steps', params: { maxSteps: 1 } })).toBe('Stopped after 1 action.');
+      expect(say('en-US', { code: 'max_steps', params: { maxSteps: 40 } })).toBe('Stopped after 40 actions.');
+      expect(say('zh-CN', { code: 'max_steps', params: { maxSteps: 40 } })).toBe('执行 40 个操作后停止了。');
+      expect(say('en-US', { code: 'stuck', params: { actions: 3 } })).toBe('3 actions in a row changed nothing.');
+      const label = { code: 'not_confirmed', params: { label: '<b>删除</b> {{x}} $t(preview.muBrowser.stop)' } };
+      expect(say('zh-CN', label)).toBe(
+        '“<b>删除</b> {{x}} $t(preview.muBrowser.stop)”看起来无法撤销，且没有得到确认。'
+      );
+      expect(say('zh-TW', label)).toBe(
+        '「<b>删除</b> {{x}} $t(preview.muBrowser.stop)」看起來無法復原，且沒有得到確認。'
+      );
+    });
+
+    it('gives the text of a line that has no sentence as it is', () => {
+      expect(say('zh-CN', { reason: 'No search box' })).toBe('No search box');
+    });
   });
 });

@@ -10,8 +10,8 @@
     "specifyWorkspace": "プロジェクトを選択",
     "currentWorkspace": "現在のプロジェクト",
     "clearWorkspace": "プロジェクトを解除",
-    "openFolder": "Open Folder",
-    "none": "None",
+    "openFolder": "フォルダーを開く",
+    "none": "なし",
     "quickActionsTitle": "AionUi で何ができる？",
     "quickActionFeedback": "問題を報告",
     "quickActionStar": "気に入った？スターをください！",
@@ -39,38 +39,38 @@
     "renamePlaceholder": "新しい名前を入力してください",
     "renameSuccess": "名前を変更しました",
     "renameFailed": "名前の変更に失敗しました",
-    "batchManage": "Batch Manage",
-    "batchModeExit": "Exit Batch Mode",
-    "selectAll": "Select All",
-    "selectedCount": "{{count}} selected",
-    "batchExport": "Batch Export",
-    "batchExportConfirm": "Export {{count}} selected topics?",
-    "batchDelete": "Batch Delete",
-    "batchDeleteConfirm": "Delete {{count}} selected topics?",
+    "batchManage": "一括管理",
+    "batchModeExit": "一括管理を終了",
+    "selectAll": "すべて選択",
+    "selectedCount": "{{count}} 件選択中",
+    "batchExport": "一括エクスポート",
+    "batchExportConfirm": "選択した {{count}} 件の会話をエクスポートしますか？",
+    "batchDelete": "一括削除",
+    "batchDeleteConfirm": "選択した {{count}} 件の会話を削除しますか？",
     "batchDeleteConfirm_one": "Delete {{count}} selected topics?",
-    "batchDeleteConfirm_other": "Delete {{count}} selected topics?",
-    "batchDeleteSuccess": "{{count}} topics deleted",
+    "batchDeleteConfirm_other": "選択した {{count}} 件の会話を削除しますか？",
+    "batchDeleteSuccess": "{{count}} 件の会話を削除しました",
     "batchDeleteSuccess_one": "{{count}} topics deleted",
-    "batchDeleteSuccess_other": "{{count}} topics deleted",
-    "batchNoSelection": "Please select topics first",
-    "export": "Export",
-    "exportDialogTitle": "Export Topics",
-    "exportDialogSingleDescription": "Export current topic conversation records (JSON + Markdown) and project files into a ZIP package.",
-    "exportDialogBatchDescription": "Export {{count}} selected topics' conversation records (JSON + Markdown) and project files into one ZIP package.",
-    "exportTargetFolder": "Export To Folder",
-    "exportSelectFolder": "Please select an export folder",
-    "exportDialogHint": "Folder selection follows the same interaction as changing the project.",
-    "exporting": "Exporting...",
-    "exportSuccess": "Export succeeded",
-    "exportCanceled": "Export canceled",
-    "exportFailed": "Export failed",
-    "pin": "Pin",
-    "unpin": "Unpin",
+    "batchDeleteSuccess_other": "{{count}} 件の会話を削除しました",
+    "batchNoSelection": "先に会話を選択してください",
+    "export": "エクスポート",
+    "exportDialogTitle": "会話をエクスポート",
+    "exportDialogSingleDescription": "現在の会話の記録（JSON + Markdown）とプロジェクトファイルを、ZIP ファイルにまとめてエクスポートします。",
+    "exportDialogBatchDescription": "選択した {{count}} 件の会話の記録（JSON + Markdown）とプロジェクトファイルを、1 つの ZIP ファイルにまとめてエクスポートします。",
+    "exportTargetFolder": "エクスポート先フォルダー",
+    "exportSelectFolder": "エクスポート先のフォルダーを選択してください",
+    "exportDialogHint": "フォルダーの選択方法は、プロジェクトを変更するときと同じです。",
+    "exporting": "エクスポート中...",
+    "exportSuccess": "エクスポートしました",
+    "exportCanceled": "エクスポートをキャンセルしました",
+    "exportFailed": "エクスポートに失敗しました",
+    "pin": "ピン留め",
+    "unpin": "ピン留め解除",
     "markAsUnread": "未読にする",
     "markAsRead": "既読にする",
-    "pinned": "Pinned",
-    "pinFailed": "Pin operation failed",
-    "pinnedSection": "Pinned",
+    "pinned": "ピン留め済み",
+    "pinFailed": "ピン留めに失敗しました",
+    "pinnedSection": "ピン留め",
     "deleteSuccess": "削除しました",
     "deleteFailed": "削除に失敗しました",
     "projectsSection": "プロジェクト",
@@ -83,13 +83,20 @@
     "archive": "アーカイブ",
     "archiveSuccess": "アーカイブしました",
     "archiveFailed": "アーカイブに失敗しました",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "一括アーカイブ",
+    "batchArchiveConfirm": "選択した {{count}} 件の会話をアーカイブしますか？設定の「アーカイブ済みの会話」から復元または削除できます。",
+    "batchArchiveSuccess": "{{count}} 件の会話をアーカイブしました",
+    "archiveProject": "プロジェクトをアーカイブ",
+    "archiveProjectTitle": "プロジェクトをアーカイブ",
+    "archiveProjectConfirm": "プロジェクト「{{name}}」をアーカイブしますか？含まれる {{count}} 件の会話もアーカイブされます。設定の「アーカイブ済みの会話」から復元または削除できます。",
+    "archiving": "アーカイブ中...",
+    "batchArchiveConfirm_one": "選択した {{count}} 件の会話をアーカイブしますか？設定の「アーカイブ済みの会話」から復元または削除できます。",
+    "batchArchiveConfirm_other": "選択した {{count}} 件の会話をアーカイブしますか？設定の「アーカイブ済みの会話」から復元または削除できます。",
+    "batchArchiveSuccess_one": "{{count}} 件の会話をアーカイブしました",
+    "batchArchiveSuccess_other": "{{count}} 件の会話をアーカイブしました",
+    "archiveProjectConfirm_one": "プロジェクト「{{name}}」をアーカイブしますか？含まれる {{count}} 件の会話もアーカイブされます。設定の「アーカイブ済みの会話」から復元または削除できます。",
+    "archiveProjectConfirm_other": "プロジェクト「{{name}}」をアーカイブしますか？含まれる {{count}} 件の会話もアーカイブされます。設定の「アーカイブ済みの会話」から復元または削除できます。",
+    "projectActions": "プロジェクトの操作"
   },
   "historySearch": {
     "tooltip": "メッセージを検索",
@@ -103,7 +110,7 @@
     "untitled": "無題の会話"
   },
   "dropdown": {
-    "cliAgents": "CLI Agents",
+    "cliAgents": "CLI エージェント",
     "presetAssistants": "プリセットアシスタント"
   },
   "noAgentsAvailable": "利用可能なエージェントはありません",
@@ -114,9 +121,10 @@
       "WORKSPACE_PATH_UNAVAILABLE": "選択したワークスペースパスは利用できません。ワークスペースパス「{{workspacePath}}」が実在し、アクセス可能であることを確認してください。"
     },
     "codes": {
-      "TEAM_ASSISTANT_ID_REQUIRED": "Please select an assistant before creating the team.",
-      "TEAM_ASSISTANT_NOT_FOUND": "Assistant {{assistantId}} is no longer available. Refresh the assistant list and choose another one.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Use assistant_id instead of {{field}}."
+      "TEAM_ASSISTANT_ID_REQUIRED": "チームを作成する前にアシスタントを選択してください。",
+      "TEAM_ASSISTANT_NOT_FOUND": "アシスタント {{assistantId}} は利用できなくなりました。アシスタント一覧を更新して、別のアシスタントを選択してください。",
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "{{field}} ではなく assistant_id を使用してください。",
+      "WORKSPACE_PATH_UNAVAILABLE": "選択したワークスペースパスは利用できません。存在し、アクセス可能であることを確認してください。"
     }
   },
   "agentError": {
@@ -317,38 +325,39 @@
         "body": "アプリは上流エラーを受け取りましたが、エージェント、プロバイダー、ネットワーク、ローカル環境のどこから来たかを判定できませんでした。"
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
-        "title": "Failed to read the team helper response",
-        "body": "AionUi could not read the local team helper response. Retry once, and if it keeps happening, restart the app."
+        "title": "チーム補助プロセスの応答を読み取れませんでした",
+        "body": "AionUi はローカルのチーム補助プロセスの応答を読み取れませんでした。一度再試行し、繰り返し発生する場合はアプリを再起動してください。"
       },
       "MCP_TOOL_REMOTE_ERROR": {
-        "title": "The local team helper rejected the request",
-        "body": "The local team helper returned an error while processing this request. Review the details below and retry after adjusting the team action."
+        "title": "ローカルのチーム補助プロセスがリクエストを拒否しました",
+        "body": "ローカルのチーム補助プロセスがこのリクエストの処理中にエラーを返しました。下の詳細を確認し、チームの操作を調整してから再試行してください。"
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
-        "title": "The team helper returned an unexpected response",
-        "body": "AionUi received an unexpected response from the local team helper. Retry once, and report it if the problem persists."
+        "title": "チーム補助プロセスが予期しない応答を返しました",
+        "body": "AionUi はローカルのチーム補助プロセスから予期しない応答を受け取りました。一度再試行し、問題が続く場合は報告してください。"
       },
       "MCP_TCP_READ_FAILED": {
-        "title": "Failed to read from the local team helper",
-        "body": "AionUi could not read the local team helper TCP response. Retry once, and restart the app if it keeps failing."
+        "title": "ローカルのチーム補助プロセスから読み取れませんでした",
+        "body": "AionUi はローカルのチーム補助プロセスの TCP 応答を読み取れませんでした。一度再試行し、失敗が続く場合はアプリを再起動してください。"
       },
       "TEAM_SERVICE_UNAVAILABLE": {
-        "title": "Team service is not ready yet",
-        "body": "The local team session is still starting or has been interrupted. Wait a moment and retry."
+        "title": "チームサービスはまだ準備できていません",
+        "body": "ローカルのチームセッションはまだ起動中か、中断されました。少し待ってから再試行してください。"
       },
       "TEAM_ASSISTANT_ID_REQUIRED": {
-        "title": "A teammate assistant must be selected",
-        "body": "Choose a real assistant from the available assistant catalog before creating or spawning a teammate."
+        "title": "チームメンバーのアシスタントを選択する必要があります",
+        "body": "チームメンバーを作成または起動する前に、利用可能なアシスタント一覧から実在するアシスタントを選択してください。"
       },
       "TEAM_ASSISTANT_NOT_FOUND": {
-        "title": "The selected assistant is no longer available",
-        "body": "Refresh the assistant catalog, then choose another assistant for this teammate."
+        "title": "選択したアシスタントは利用できなくなりました",
+        "body": "アシスタント一覧を更新してから、このチームメンバーに別のアシスタントを選択してください。"
       },
       "TEAM_ASSISTANT_FIELD_UNSUPPORTED": {
-        "title": "The request used a legacy team identity field",
-        "body": "This team action must use assistant_id instead of legacy backend or agent fields."
+        "title": "リクエストで旧式のチーム識別フィールドが使われました",
+        "body": "このチーム操作では、旧式の backend または agent フィールドではなく assistant_id を使用する必要があります。"
       }
-    }
+    },
+    "errorCodeValue": "エラーコード: {{code}}"
   },
   "workspace": {
     "title": "プロジェクト",
@@ -432,7 +441,10 @@
       "terminal": "ターミナル",
       "explorer": "エクスプローラー",
       "browser": "ブラウザ"
-    }
+    },
+    "collapsePanel": "プロジェクトパネルを非表示",
+    "togglePanel": "プロジェクトパネルの表示/非表示を切り替え",
+    "expandPanel": "プロジェクトパネルを表示"
   },
   "minimap": {
     "searchAria": "会話を検索",
@@ -441,7 +453,9 @@
     "noMatch": "一致する内容が見つかりません",
     "count": "{{count}} 件",
     "count_one": "{{count}} 件",
-    "count_other": "{{count}} 件"
+    "count_other": "{{count}} 件",
+    "questionLabel": "Q:",
+    "answerLabel": "A:"
   },
   "chat": {
     "noModelSelected": "現在のセッションでモデルが選択されていないため、メッセージを送信できません",
@@ -475,8 +489,11 @@
       "permissionDenied": "マイク権限が拒否されました",
       "recordingUnsupported": "この環境では直接録音できません。音声ファイルをアップロードしてください",
       "transcriptionFailed": "音声の文字起こしに失敗しました",
-      "genericError": "音声入力に失敗しました。もう一度お試しください"
-    }
+      "genericError": "音声入力に失敗しました。もう一度お試しください",
+      "transcriptionFailedStatus": "文字起こしに失敗しました（HTTP {{status}}）"
+    },
+    "archivedCannotSend": "この会話はアーカイブ済みのため、新しいメッセージを送信できません。",
+    "awaitingConfirmation": "確認待ち"
   },
   "sideQuestion": {
     "title": "ちょっと質問",
@@ -530,9 +547,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "このエージェントが応答中は割り込みができません。「下書きボックスに追加」をご利用ください。",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "送信方法を選択",
+    "midturnBlockedSendHint": "このエージェントはまだ作業中のため、メッセージを直接送信できません。下書きボックスに保存して、後で送信してください。",
+    "addToQueueBusyHint": "下書きボックスに保存して、後で送信できます。"
   },
   "contextUsage": {
     "tokensUsed": "{{tokens}} トークン使用済み",
@@ -546,30 +563,33 @@
     "thoughtTokens": "思考 {{tokens}}"
   },
   "skill_generator": {
-    "title": "Generate Skill/Rule",
-    "generate": "Generate",
-    "description": "Analyze conversation history to generate:",
-    "type_skill": "Skill (Python)",
-    "type_rule": "Rule (JSON/MD)",
-    "name_label": "Agent Name:",
-    "name_placeholder": "e.g. Excel Translator",
-    "menu_generate": "Generate from History",
-    "menu_load": "Load Rule/Skill",
-    "load_title": "Load Rule/Skill",
-    "load_error": "Failed to load files",
+    "title": "スキル/ルールを生成",
+    "generate": "生成",
+    "description": "会話履歴を分析して、次のものを生成します：",
+    "type_skill": "スキル（Python）",
+    "type_rule": "ルール（JSON/MD）",
+    "name_label": "エージェント名：",
+    "name_placeholder": "例：Excel 翻訳ツール",
+    "menu_generate": "履歴から生成",
+    "menu_load": "ルール/スキルを読み込む",
+    "load_title": "ルール/スキルを読み込む",
+    "load_error": "ファイルの読み込みに失敗しました",
     "no_files": "プロジェクトに該当するファイルがありません",
-    "read_error": "Failed to read file",
-    "rule_loaded": "Rule loaded successfully",
+    "read_error": "ファイルの読み込みに失敗しました",
+    "rule_loaded": "ルールを読み込みました",
     "no_workspace": "プロジェクトが設定されていません",
-    "name_required": "Please enter a name for the preset",
-    "no_history": "No conversation history found",
-    "request_sent": "Request sent to agent",
-    "failed": "Failed to generate",
-    "preset_registered": "Agent preset registered successfully!"
+    "name_required": "プリセットの名前を入力してください",
+    "no_history": "会話履歴が見つかりません",
+    "request_sent": "エージェントにリクエストを送信しました",
+    "failed": "生成に失敗しました",
+    "preset_registered": "エージェントのプリセットを登録しました"
   },
   "thinking": {
     "label": "思考中...",
-    "history": "思考履歴"
+    "history": "思考履歴",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "思考完了 · {{time}}",
+    "elapsed": "（{{time}}）"
   },
   "skills": {
     "loaded": "ロード済みスキル",
@@ -584,7 +604,9 @@
       "failed": "失敗",
       "unsupported": "非対応"
     },
-    "selected": "選択済み MCP"
+    "selected": "選択済み MCP",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "選択済み MCP · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "実行環境を準備しています。初回起動は少し時間がかかる場合があります。"
@@ -630,15 +652,15 @@
   },
   "notFound": "会話が存在しないか、削除されました",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "プロジェクトにフォルダーを追加",
     "refreshFiles": "ファイルを更新",
     "refreshChanges": "変更を更新",
     "collapseAll": "すべて折りたたむ",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "プロジェクトから外す",
+    "attachDuplicate": "このフォルダーはすでにプロジェクトに含まれています",
+    "attachOverlap": "このフォルダーはプロジェクト内の既存のフォルダーと重なっています",
+    "attachFailed": "フォルダーを追加できませんでした",
+    "removeFailed": "フォルダーを外せませんでした",
     "contextMenu": {
       "rename": "名前を変更",
       "addToChat": "チャットに追加",
@@ -657,7 +679,7 @@
       "changes": "変更"
     },
     "addedToChat": "{{name}} をチャットに追加しました",
-    "imported": "{{count}} 件のファイルをインポートしました",
+    "imported": "{{count}} 個のファイルをインポートしました",
     "importPartialFailed": "{{copied}} 件コピー、{{failed}} 件失敗（名前の重複または非対応）",
     "importFailed": "ファイルのインポートに失敗しました",
     "copyNodeFailed": "コピーに失敗しました",
@@ -727,7 +749,7 @@
         "confirmDiscardTitle": "変更を破棄しますか？",
         "confirmDiscardTracked": "{{count}} 個のファイルの編集は失われ、元に戻せません。",
         "confirmDiscardUntracked": "{{count}} 個の新規ファイルがゴミ箱に移動されます。",
-        "confirmDiscardMixed": "{{tracked}} 個のファイルの編集は失われ元に戻せません。{{untracked}} 個の新規ファイルはゴミ箱に移動されます。",
+        "confirmDiscardMixed": "{{tracked}} 個の変更済みファイルの編集内容は完全に失われます。{{untracked}} 個の新規ファイルはゴミ箱に移動されます。",
         "discardConfirmButton": "破棄",
         "okStage": "{{count}} 個のファイルをステージしました",
         "okStage_one": "{{count}} 個のファイルをステージしました",
@@ -748,11 +770,17 @@
         "outcomeUnknown": "応答が届く前に接続がリセットされました——この操作は完了した可能性も、していない可能性もあります。再試行の前に更新してファイル一覧を確認してください。",
         "allFailed": "{{count}} 個のファイルはいずれも処理できませんでした",
         "allFailed_one": "{{count}} 個のファイルはいずれも処理できませんでした",
-        "allFailed_other": "{{count}} 個のファイルはいずれも処理できませんでした"
+        "allFailed_other": "{{count}} 個のファイルはいずれも処理できませんでした",
+        "confirmDiscardTracked_one": "{{count}} 個のファイルの編集内容が失われます。この操作は取り消せません。",
+        "confirmDiscardTracked_other": "{{count}} 個のファイルの編集内容が失われます。この操作は取り消せません。",
+        "confirmDiscardUntracked_one": "{{count}} 個の新規ファイルがゴミ箱に移動されます。",
+        "confirmDiscardUntracked_other": "{{count}} 個の新規ファイルがゴミ箱に移動されます。"
       }
     },
     "pathCopied": "パスをコピーしました",
-    "copyFailed": "パスのコピーに失敗しました"
+    "copyFailed": "パスのコピーに失敗しました",
+    "imported_one": "{{count}} 個のファイルをインポートしました",
+    "imported_other": "{{count}} 個のファイルをインポートしました"
   },
   "terminal": {
     "running": "実行中",
@@ -781,5 +809,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "プランを展開",
     "collapse": "プランを折りたたむ"
-  }
+  },
+  "createFailedWithDetail": "会話を作成できませんでした: {{error}}",
+  "agentStartFailedWithDetail": "エージェントを起動できませんでした: {{error}}"
 }

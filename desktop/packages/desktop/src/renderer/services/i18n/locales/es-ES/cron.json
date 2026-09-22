@@ -44,7 +44,8 @@
     "notFound": "Tarea no encontrada",
     "executionModeDescriptionNew": "Cada ejecución inicia una conversación nueva, por lo que el contexto anterior no se lleva. Ideal para informes o verificaciones periódicas que deben ser independientes.",
     "executionModeDescriptionExisting": "Cada ejecución continúa en la misma conversación, por lo que el contexto y los resultados anteriores están disponibles. Ideal para tareas de seguimiento que se basan en ejecuciones previas.",
-    "assistant": "Assistant"
+    "lastRunFailed": "La última ejecución falló",
+    "assistant": "Asistente"
   },
   "notification": {
     "taskComplete": "Tarea completada",
@@ -110,11 +111,11 @@
       "model": "Modelo",
       "aionrsModelRequired": "Por favor selecciona un modelo para Aion CLI",
       "aionrsNoProvider": "No hay modelos disponibles",
-      "assistant": "Assistant",
-      "assistantRequired": "Please select an assistant",
-      "assistantPlaceholder": "Select the assistant to execute this task",
-      "assistantLockedExistingConversation": "Ongoing conversation tasks must keep their original assistant. Create a new task to use another assistant.",
-      "teamTaskExecutionModeLockedReason": "Team scheduled tasks must keep running in the owning team conversation, so the execution mode cannot be changed."
+      "assistant": "Asistente",
+      "assistantRequired": "Selecciona un asistente",
+      "assistantPlaceholder": "Selecciona el asistente que ejecutará esta tarea",
+      "assistantLockedExistingConversation": "Las tareas de conversación continua deben conservar su asistente original. Crea una tarea nueva para usar otro asistente.",
+      "teamTaskExecutionModeLockedReason": "Las tareas programadas de un equipo deben seguir ejecutándose en la conversación de ese equipo, así que el modo de ejecución no se puede cambiar."
     },
     "freq": {
       "manual": "Manual",
@@ -129,10 +130,22 @@
       "hourly": "Cada hora",
       "dailyAt": "Todos los días a las {{time}}",
       "weekdaysAt": "Días hábiles a las {{time}}",
-      "weeklyAt": "Cada {{day}} a las {{time}}"
+      "weeklyAt": "Cada {{day}} a las {{time}}",
+      "everyMinute": "Cada minuto",
+      "everyNMinutes": "Cada {{count}} minutos",
+      "everyNMinutes_one": "Cada {{count}} minuto",
+      "everyNMinutes_other": "Cada {{count}} minutos",
+      "everyNHours": "Cada {{count}} horas",
+      "everyNHours_one": "Cada {{count}} hora",
+      "everyNHours_other": "Cada {{count}} horas",
+      "weeklyOnDaysAt": "Cada {{days}} a las {{time}}",
+      "monthlyAt": "El día {{day}} de cada mes a las {{time}}",
+      "everyInterval": "Cada {{interval}}",
+      "onceAt": "Una vez, el {{time}}",
+      "customExpr": "Programación personalizada ({{expr}})"
     },
-    "createViaChat": "Create via chat",
-    "createManually": "Create manually",
+    "createViaChat": "Crear desde el chat",
+    "createManually": "Crear manualmente",
     "custom": {
       "modeLabel": "Patrón de repetición",
       "interval": "Cada intervalo",
@@ -147,6 +160,8 @@
       "monthDay": "Día del mes",
       "preview": "Cron generado"
     },
+    "createFailed": "No se pudo crear la tarea: {{error}}",
+    "updateFailed": "No se pudo guardar la tarea: {{error}}",
     "searchPlaceholder": "Buscar tareas...",
     "noSearchResults": "No hay tareas programadas coincidentes."
   },
@@ -168,5 +183,11 @@
     "conversationNotFound": "Conversación no encontrada",
     "scheduledTimePassed": "La hora programada ya pasó",
     "conversationBusy": "Conversación ocupada después de {{count}} reintentos"
-  }
+  },
+  "nextRunAt": "Próxima ejecución: {{time}}",
+  "keepAwakeFailed": "No se pudo cambiar el ajuste «Mantener activa»: {{error}}",
+  "pauseFailed": "No se pudo pausar la tarea: {{error}}",
+  "resumeFailed": "No se pudo reanudar la tarea: {{error}}",
+  "deleteFailed": "No se pudo eliminar la tarea: {{error}}",
+  "runNowFailed": "No se pudo ejecutar la tarea: {{error}}"
 }

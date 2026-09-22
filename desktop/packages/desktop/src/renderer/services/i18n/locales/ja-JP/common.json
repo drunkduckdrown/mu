@@ -20,7 +20,7 @@
   "website": "公式サイト",
   "version": "バージョン",
   "contact": "お問い合わせ",
-  "github": "Github",
+  "github": "GitHub",
   "loading": "お待ちください...",
   "copy": "コピー",
   "reply": "引用",
@@ -92,16 +92,16 @@
       "runtimeComponentDescription": "このインストールには必要な組み込み実行コンポーネントが不足しているため、{{resource}} を起動できません。最新版の AionUi パッケージを再インストールしてください。再インストール後も続く場合は、セキュリティソフトまたはウイルス対策ソフトが AionUi コンポーネントを隔離していないか確認してください。"
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi package architecture mismatch",
-      "description": "This AionUi package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "AionUi パッケージのアーキテクチャが一致しません",
+      "description": "この AionUi パッケージは {{packageArch}} 用ですが、この Mac は {{deviceArch}} です。誤ったパッケージをダウンロードした可能性があります。{{expectedArch}} 用のパッケージをダウンロードしてインストールしてください。"
     },
     "dataMigration": {
-      "title": "Local data migration failed",
-      "description": "AionUi opened, but AionCore stopped while initializing local data. Reinstalling AionUi may not fix this. Send a diagnostics report or contact support so the local database migration can be inspected.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "title": "ローカルデータの移行に失敗しました",
+      "description": "AionUi は開きましたが、AionCore がローカルデータの初期化中に停止しました。AionUi を再インストールしても解決しない可能性があります。ローカルデータベースの移行状態を確認できるよう、診断レポートを送信するかサポートに連絡してください。",
+      "sendDiagnostics": "診断レポートを送信",
+      "diagnosticsSent": "診断レポートを送信済み",
+      "diagnosticsReportSuccess": "診断レポートを送信しました",
+      "diagnosticsReportFailed": "診断レポートの送信に失敗しました"
     },
     "databaseNewerThanApp": {
       "title": "新しいバージョンの AionUi が必要です",
@@ -109,20 +109,20 @@
       "descriptionWithVersion": "ローカルデータは現在のバージョン v{{currentVersion}} より新しい AionUi で作成されたため、このバージョンでは開けません。AionUi を最新バージョンに更新すれば続行できます。データは保持され、再インストールやリセットは不要です。"
     },
     "localDataRepair": {
-      "title": "Local data repair failed",
+      "title": "ローカルデータの修復に失敗しました",
       "description": "AionUi は開きましたが、AionCore は assistant またはエージェントのレコードなどのローカル起動データを準備中に停止しました。AionUi を再インストールしても解決しない可能性があります。ローカルデータベースを確認できるよう、診断レポートを送信するかサポートに連絡してください。",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "sendDiagnostics": "診断レポートを送信",
+      "diagnosticsSent": "診断レポートを送信済み",
+      "diagnosticsReportSuccess": "診断レポートを送信しました",
+      "diagnosticsReportFailed": "診断レポートの送信に失敗しました"
     },
     "startupDirectory": {
-      "title": "Startup directory is unavailable",
-      "description": "AionUi opened, but AionCore could not start because the configured work or log directory is missing, unavailable, or blocked by permissions. Check that the configured directories exist and are writable, then restart AionUi.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "title": "起動ディレクトリを利用できません",
+      "description": "AionUi は開きましたが、設定された作業ディレクトリまたはログディレクトリが存在しない、利用できない、または権限でブロックされているため、AionCore を起動できませんでした。設定したディレクトリが存在し、書き込み可能であることを確認してから、AionUi を再起動してください。",
+      "sendDiagnostics": "診断レポートを送信",
+      "diagnosticsSent": "診断レポートを送信済み",
+      "diagnosticsReportSuccess": "診断レポートを送信しました",
+      "diagnosticsReportFailed": "診断レポートの送信に失敗しました"
     },
     "recoverableDatabaseCorruption": {
       "title": "ローカルデータが破損しています",
@@ -144,10 +144,10 @@
     "transientConcurrentStartup": {
       "title": "AionUi を起動しています",
       "description": "このウィンドウを開いたとき、別の AionUi の起動処理がまだローカルデータを使用していました。これは一時的なもので、データは安全です。再インストールの必要はありません。少し待ってから再試行するか、AionUi を再起動してください。",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report",
+      "sendDiagnostics": "診断レポートを送信",
+      "diagnosticsSent": "診断レポートを送信済み",
+      "diagnosticsReportSuccess": "診断レポートを送信しました",
+      "diagnosticsReportFailed": "診断レポートの送信に失敗しました",
       "diagnosticsHint": "この現象が繰り返し発生する場合は、診断レポートを送信できます。"
     },
     "pendingSlow": {
@@ -244,18 +244,61 @@
       "noteMissing": "発見は記録されていません。",
       "allFlow": "すべての配信",
       "beeFlow": "{{name}} の配信",
-      "audit": "Jev の判断",
+      "audit": "Jev の判定",
       "waitingRun": "この Hive の記録済みイベントを待機中です。",
       "recordedAt": "記録時刻: {{time}}",
       "beeMissing": "このビーは記録済みスナップショットにありません。",
       "snapshot": "最後に報告された状態",
-      "updated": "最終更新 {{time}}"
+      "updated": "最終更新 {{time}}",
+      "runTitle": {
+        "tasks": "{{count}} 件のタスク",
+        "tasks_one": "{{count}} 件のタスク",
+        "tasks_other": "{{count}} 件のタスク",
+        "chain": "{{count}} ステップのチェーン",
+        "chain_one": "{{count}} ステップのチェーン",
+        "chain_other": "{{count}} ステップのチェーン"
+      },
+      "choosingRoles": "{{count}} 個のサブエージェントの役割、モデル、思考レベルを選んでいます…",
+      "choosingRoles_one": "{{count}} 個のサブエージェントの役割、モデル、思考レベルを選んでいます…",
+      "choosingRoles_other": "{{count}} 個のサブエージェントの役割、モデル、思考レベルを選んでいます…",
+      "activity": {
+        "notesReceived": "← ほかのビーからの発見 {{count}} 件",
+        "notesReceived_one": "← ほかのビーからの発見 {{count}} 件",
+        "notesReceived_other": "← ほかのビーからの発見 {{count}} 件",
+        "askedFindings": "← これまでの発見を尋ねられました",
+        "toldWrapUp": "← 作業をまとめてレポートを出すよう指示されました",
+        "toolFailed": "{{tool}} が失敗しました",
+        "retry": "再試行 {{attempt}}/{{maxAttempts}}: {{message}}",
+        "modelError": "モデルエラー: {{message}}",
+        "compacting": "コンテキストを圧縮中",
+        "lateNotes": "← 最終配信: 遅れて届いた発見 {{count}} 件",
+        "lateNotes_one": "← 最終配信: 遅れて届いた発見 {{count}} 件",
+        "lateNotes_other": "← 最終配信: 遅れて届いた発見 {{count}} 件"
+      },
+      "errors": {
+        "cancelled": "実行がキャンセルされました",
+        "stoppedByUser": "ユーザーが停止しました",
+        "endedByUser": "ユーザーが終了しました",
+        "stalledModel": "{{duration}} の間、モデルから反応がありませんでした",
+        "stalledTool": "{{duration}} の間、{{tool}} の呼び出しから反応がありませんでした",
+        "timeBudget": "制限時間 {{duration}} に達しました",
+        "timeBudgetReached": "制限時間に達しました",
+        "noReportInTime": "{{reason}}（依頼から {{duration}} 以内にレポートなし）",
+        "modelFailed": "モデルへのリクエストが失敗しました",
+        "modelAborted": "モデルへのリクエストが中断されました",
+        "retriesExhausted": "モデルへのリクエストが繰り返し失敗しました",
+        "exitedCode": "サブエージェントが完了前に終了コード {{exitCode}} で終了しました",
+        "exitedSignal": "サブエージェントが完了前に {{signal}} で終了しました",
+        "exitedKilled": "サブエージェントが完了前にシグナルで終了しました",
+        "chainBroken": "未開始: 前のステップ（「{{step}}」）が完了しませんでした",
+        "detail": "{{reason}}: {{detail}}"
+      }
     },
     "judgeView": {
       "title": "判定と影響",
-      "description": "判断レイヤーが何を評価し、実際に何が起きたかを確認できます。提案と確認済みの動作は分けて表示されます。",
+      "description": "判定器が何を評価し、実際に何が起きたかを確認できます。提案と確認済みの動作は分けて表示されます。",
       "empty": "このセッションにはまだ判定の記録がありません。",
-      "question": "判断の内容",
+      "question": "質問",
       "result": "判定結果",
       "action": "実行への影響",
       "details": "回答と証拠",
@@ -267,8 +310,8 @@
       "returnedCount": "実行レイヤーへ引き渡し",
       "receiptCount": "確認済みの配信",
       "runtimeEvents": "その他のランタイムイベント",
-      "filter": "判断の内容で絞り込む",
-      "allQuestions": "すべての判断",
+      "filter": "質問で絞り込む",
+      "allQuestions": "すべての質問",
       "scoreValue": "スコア: {{value}}",
       "latency": "{{ms}} ミリ秒",
       "more": "ほか {{count}} 件",
@@ -291,8 +334,8 @@
       },
       "actions": {
         "toRuntime": "判定は実行レイヤーに引き渡されました。操作が完了したことを示すものではありません。",
-        "observeOnly": "比較のために記録されただけで、この判断によって実行は変わっていません。",
-        "useDefault": "この判断ポイントの既定の方針で処理しました。既定の方針は許可を意味しません。リスク確認と Hive のゲートは慎重側が既定です。",
+        "observeOnly": "シャドーモード: 比較のために記録しただけで、この判定によって実行は変わっていません。",
+        "useDefault": "この判定ポイントの既定の方針で処理しました。既定の方針は許可を意味しません。リスク確認と Hive のゲートは慎重側が既定です。",
         "lateIgnored": "ターンはすでに始まっており、遅れて届いたこの判定は反映されませんでした。",
         "waiting": "判定結果を待っています。",
         "waitEnded": "待機またはタスクが終了し、最終的な判定は記録されていません。",
@@ -323,7 +366,17 @@
         "completion": "この変更にはまだ検証が必要か？",
         "notify": "この通知はいつモデルに届けるべきか？",
         "cache": "セッションキャッシュを保温し続けるべきか？",
-        "other": "記録された判断"
+        "other": "記録された判定",
+        "rewind": "この方針は巻き戻すべき行き止まりか？",
+        "goalMet": "目標は達成されたか？",
+        "outputDrift": "出力は設定したルールに違反しているか？",
+        "taskFrame": "このメッセージはタスクフレームを変えるか？",
+        "constraint": "この呼び出しは設定した制約に違反するか？",
+        "capabilities": "このタスクに必要なケイパビリティはどれか？",
+        "diagnostics": "これらの診断はいつモデルに届けるべきか？",
+        "patch": "サブエージェントのパッチはタスクの範囲内に収まっているか？",
+        "review": "各指摘の重大度はどの程度か？",
+        "board": "作業はどこまで進んでいるか？"
       },
       "fields": {
         "turnType": "タスクの種類",
@@ -344,7 +397,19 @@
         "result": "結果",
         "reason": "理由",
         "keepResult": "結果を保持",
-        "keepCall": "呼び出しを保持"
+        "keepCall": "呼び出しを保持",
+        "broken": "違反したルール",
+        "open": "開くケイパビリティ",
+        "errors": "エラー",
+        "warnings": "警告",
+        "withinTask": "タスクの範囲内",
+        "unrelated": "無関係なファイル",
+        "judged": "判定したファイル",
+        "priorities": "優先度",
+        "phase": "フェーズ",
+        "focus": "対応中の項目",
+        "needsUser": "ユーザー対応が必要",
+        "update": "ボードを書き直す"
       },
       "values": {
         "true": "はい",
@@ -396,20 +461,67 @@
         "dead_end": "行き止まり",
         "decision": "決定",
         "blocker": "ブロッカー",
-        "abstain": "判断モデルが棄権",
+        "abstain": "判定器が棄権",
         "shadow": "シャドーモード",
         "skipped": "ユーザーがスキップ",
         "timeout": "タイムアウト",
         "all": "すべての候補が失敗",
-        "unreachable": "判断モデルに接続できません",
+        "unreachable": "判定器に接続できません",
         "unexpected": "予期しないエラー",
-        "off": "オフ"
+        "off": "オフ",
+        "continue": "続行",
+        "propose": "巻き戻しを提案",
+        "met": "達成",
+        "ask": "ユーザーに確認",
+        "unjudged": "未判定",
+        "none": "なし",
+        "new_task": "新しいタスク",
+        "constraint": "新しい制約",
+        "correction": "訂正",
+        "subgoal": "新しいサブ目標",
+        "unclear": "不明確な変更",
+        "hold": "保留",
+        "no_answer": "時間内に回答なし",
+        "aborted": "キャンセル済み",
+        "auth": "判定器のキーが拒否されました",
+        "payment_required": "判定器に支払い方法が必要です",
+        "rate_limited": "判定器がレート制限中",
+        "bad_request": "判定器がリクエストを拒否しました",
+        "server": "判定器のサーバーエラー",
+        "invalid_response": "判定器の回答を読み取れません",
+        "verdict": "判定器が回答"
+      },
+      "probabilityValue": "「はい」の確率: {{percent}}",
+      "optionProbability": "{{option}} {{percent}}",
+      "reasonValue": "理由: {{reason}}",
+      "fieldValue": "{{field}}: {{value}}",
+      "errorValue": "エラー · {{kind}}",
+      "noAnswerAfter": "{{duration}} 経過しても回答なし",
+      "hints": {
+        "clarify": "リクエストの内容が不十分なようです。まず的を絞った質問を 1 つしてください。",
+        "side_question": "脇道の質問です。手短に答えてから、メインのタスクを続けてください。",
+        "plan_first": "規模が大きいか、リスクが高いようです。編集する前に短い計画を書き、確認を取ってください。",
+        "try_hive": "難しいタスクのようです。原因がわからない場合や、直接の試みがうまくいかない場合は Hive を使ってください。",
+        "try_delegate": "独立した部分に分けられます。サブエージェントに並行して任せることを検討してください。"
+      },
+      "answerIds": {
+        "turn_type": "タスクの種類",
+        "is_side_question": "脇道の質問",
+        "needs_clarification": "曖昧で着手できない",
+        "needs_files_changed": "コードの変更が必要",
+        "needs_memory": "過去の経験が役立つ",
+        "swarm_worthy": "独立した部分に分けられる",
+        "plan_first": "大規模またはリスクが高い",
+        "task_complexity": "作業範囲",
+        "reasoning_depth": "推論の深さ",
+        "tool_complexity": "ツールの使用量"
       }
     },
     "decisions": "Jev",
     "memory": "経験",
     "images": "画像",
     "empty": "このセッションにはまだイベントが記録されていません。",
+    "quiet": "アクティビティなし（{{duration}}）",
     "passed": "通過",
     "filtered": "除外",
     "image": "ツールが返した画像",
@@ -447,8 +559,73 @@
       "compaction_start": "コンテキストを圧縮中…",
       "compaction_end": "圧縮が終了しました",
       "context.usage": "コンテキスト使用量",
-      "context.policy": "自動圧縮のしきい値（トークン）",
-      "compaction.plan": "ベータ版圧縮プラン"
+      "context.policy": "ベータ版圧縮モード",
+      "compaction.plan": "ベータ版圧縮プラン",
+      "goal": {
+        "state": "目標の状態"
+      },
+      "board": {
+        "update": "ボードを更新しました",
+        "switched": "ボードのオン/オフを切り替えました"
+      },
+      "checkpoint": {
+        "taken": "チェックポイントを保存しました"
+      },
+      "rewind": {
+        "proposed": "巻き戻しを提案",
+        "done": "巻き戻しました",
+        "undone": "巻き戻しを取り消しました"
+      },
+      "ttsr": {
+        "interrupted": "ルールにより出力を停止しました"
+      },
+      "frame": {
+        "updated": "タスクフレームを更新しました"
+      },
+      "capability": {
+        "opened": "ケイパビリティを開きました"
+      },
+      "inherit": {
+        "found": "継承できる設定が見つかりました",
+        "rule": "継承したルールを使用しました"
+      },
+      "mcp": {
+        "started": "MCP サーバーを起動しました",
+        "failed": "MCP サーバーでエラーが発生しました",
+        "tools_changed": "MCP ツールが変更されました"
+      },
+      "constraint": {
+        "blocked": "設定した制約によりブロック"
+      },
+      "browser": {
+        "run": "ブラウザータスク",
+        "step": "ブラウザーのステップ"
+      },
+      "diagnostics": {
+        "delivered": "診断をモデルに渡しました",
+        "held": "診断を保留しました",
+        "dropped": "診断を破棄しました"
+      },
+      "background": {
+        "start": "バックグラウンドジョブを開始しました",
+        "exit": "バックグラウンドジョブが終了しました",
+        "stop": "バックグラウンドジョブを停止しました",
+        "match": "バックグラウンド出力が一致しました"
+      },
+      "web": {
+        "fetch": "ページを取得しました",
+        "search": "Web 検索"
+      },
+      "swarm": {
+        "worktree": {
+          "created": "ワークツリーを作成しました",
+          "removed": "ワークツリーを削除しました"
+        },
+        "patch": {
+          "ready": "パッチの準備ができました",
+          "applied": "パッチを適用しました"
+        }
+      }
     },
     "contextUsage": "コンテキスト使用量",
     "contextPending": "新しいコンテキスト計測を待っています",
@@ -465,6 +642,7 @@
     "summaryApplied": "要約による圧縮を適用",
     "compactionAborted": "圧縮をキャンセルしました",
     "compactionFailed": "圧縮に失敗しました",
+    "compactionSavings": "コンテキストを約 {{saved}} 削減",
     "compactionEstimate": "圧縮後のトークン数は推定値です。次のモデル応答で使用量が更新されます。",
     "cacheHit": "キャッシュヒット",
     "cachePending": "キャッシュ使用量はまだ報告されていません",
@@ -530,8 +708,62 @@
         "waiting": "あなたを待っています",
         "wrapping_up": "仕上げ中",
         "stuck": "行き詰まっているようです"
+      },
+      "checks_one": "チェック {{done}}/{{total}} 完了",
+      "checks_other": "チェック {{done}}/{{total}} 完了",
+      "codes": {
+        "progress": {
+          "none": "チェックリストはまだありません。",
+          "all": "チェックリストの {{total}} 項目はすべて完了しました。",
+          "all_one": "チェックリストの {{total}} 項目が完了しました。",
+          "all_other": "チェックリストの {{total}} 項目はすべて完了しました。",
+          "some": "チェックリストの {{total}} 項目のうち、{{done}} 項目が完了しました。",
+          "some_one": "チェックリストの {{total}} 項目のうち、{{done}} 項目が完了しました。",
+          "some_other": "チェックリストの {{total}} 項目のうち、{{done}} 項目が完了しました。"
+        },
+        "confirm": {
+          "waiting_reply": "あなたの返事を待っています。"
+        },
+        "now": {
+          "understanding": "コードや資料を読んで、やるべきことを把握しています。",
+          "changing": "コードを変更しています。",
+          "checking": "変更がうまくいくか、テストやチェックを実行して確かめています。",
+          "fixing": "チェックで問題が見つかったので、修正しています。",
+          "waiting": "手を止めて、あなたの返事を待っています。",
+          "wrapping_up": "作業が終わったので、仕上げをしています。",
+          "stuck": "堂々巡りしているようです。あなたからのヒントが必要かもしれません。",
+          "unclear": "作業しています。",
+          "focus": "{{now}}（取り組み中: {{focus}}）",
+          "planning": "進め方を考えています。まだ何も変更していません。"
+        }
       }
     },
+    "activityLoadFailed": "コラボレーションのアクティビティを読み込めませんでした。再試行しています…",
+    "beeFailed": "このビーがエラーを報告しました。",
+    "beeCounts": {
+      "turns": "{{count}} ターン",
+      "turns_one": "{{count}} ターン",
+      "turns_other": "{{count}} ターン",
+      "received": "{{count}} 件受信",
+      "received_one": "{{count}} 件受信",
+      "received_other": "{{count}} 件受信",
+      "shared": "{{count}} 件共有",
+      "shared_one": "{{count}} 件共有",
+      "shared_other": "{{count}} 件共有",
+      "tools": "ツール呼び出し {{count}} 回",
+      "tools_one": "ツール呼び出し {{count}} 回",
+      "tools_other": "ツール呼び出し {{count}} 回"
+    },
+    "compactionTokens": "{{before}} → 約 {{after}} トークン",
+    "compactionKept": "{{count}} 件の結果を保持",
+    "compactionKept_one": "{{count}} 件の結果を保持",
+    "compactionKept_other": "{{count}} 件の結果を保持",
+    "compactionPruned": "{{count}} 件を削除",
+    "compactionPruned_one": "{{count}} 件を削除",
+    "compactionPruned_other": "{{count}} 件を削除",
+    "compactionDropped": "{{count}} 件の呼び出しを削除",
+    "compactionDropped_one": "{{count}} 件の呼び出しを削除",
+    "compactionDropped_other": "{{count}} 件の呼び出しを削除",
     "jevLine": {
       "classifying": "Jev がメッセージを分類中…",
       "classified": "Jev の分類: {{type}}",
@@ -539,6 +771,140 @@
       "shadow": "{{line}}（観察のみ、適用なし）",
       "late": "{{line}}（このターンには間に合いませんでした）",
       "fallback": "今回は Jev の分類がないため、通常どおり続けます"
+    },
+    "eventLine": {
+      "detail": "詳細: {{detail}}",
+      "progress": {
+        "frame": "タスクフレームを更新しています",
+        "lessons": "過去のセッションの教訓を確認しています",
+        "skills": "このセッションに必要なスキルを選んでいます",
+        "capabilities": "このタスクに必要なケイパビリティを選んでいます",
+        "permissionReview": "JeV が審査しています: {{summary}}"
+      },
+      "goal": {
+        "paused": "一時停止中: {{reason}}",
+        "reason": {
+          "interrupted": "あなたが実行を中断しました",
+          "modelCallFailed": "モデルの呼び出しに失敗しました",
+          "needsUser": "エージェントがあなたの対応を必要としています",
+          "needsUserDetail": "エージェントがあなたの対応を必要としています: {{detail}}",
+          "unjudged": "目標を達成したかをどの判定器も判定できず、未完了だと確かめられる項目もありません",
+          "continuationsUsedUp": "続行回数の上限 {{count}} 回に達しました",
+          "continuationsUsedUp_one": "続行回数の上限 {{count}} 回に達しました",
+          "continuationsUsedUp_other": "続行回数の上限 {{count}} 回に達しました",
+          "minutesUsedUp": "制限時間 {{duration}} に達しました",
+          "sessionReopened": "セッションが再び開かれました",
+          "idle": "エージェントが {{count}} 回連続で、何もせずに実行を終えました",
+          "idle_one": "エージェントが {{count}} 回の実行を何もせずに終えました",
+          "idle_other": "エージェントが {{count}} 回連続で、何もせずに実行を終えました",
+          "noProgress": "{{count}} 回連続で進捗がありません。どう進めるか指示してください",
+          "noProgress_one": "{{count}} 回の実行で進捗がありません。どう進めるか指示してください",
+          "noProgress_other": "{{count}} 回連続で進捗がありません。どう進めるか指示してください",
+          "noProgressDetail": "{{count}} 回連続で進捗がありません（{{detail}}）。どう進めるか指示してください",
+          "noProgressDetail_one": "{{count}} 回の実行で進捗がありません（{{detail}}）。どう進めるか指示してください",
+          "noProgressDetail_other": "{{count}} 回連続で進捗がありません（{{detail}}）。どう進めるか指示してください"
+        }
+      },
+      "frame": {
+        "unclearChange": "「{{message}}」はタスクをどう変えるか？"
+      },
+      "search": {
+        "notConfigured": "「{{source}}」は検索ソースではありません（features.web.search）",
+        "failed": "{{source}} でエラーが発生しました: {{message}}",
+        "robotPage": "{{source}} が確認ページを返しました。このクライアントをロボットと見なしています",
+        "httpError": "{{source}} が HTTP {{status}} を返しました",
+        "noResults": "{{source}} が結果のないページを返しました（該当なし、またはページ構造の変更）",
+        "unrelated": "{{source}} が検索内容と無関係な結果を返しました。ロボットと見なしたクライアントに検索エンジンがよく返すものです"
+      },
+      "mcp": {
+        "line": "{{name}}: {{reason}}",
+        "projectUntrusted": "プロジェクトが信頼されておらず、このサーバーはプロジェクトで定義されています",
+        "needsApproval": "プロジェクト（{{source}}）で定義されており、まだ承認されていません。mu でこのフォルダーを開いて一度許可するか、mu.json で定義してください",
+        "aborted": "起動がキャンセルされました",
+        "rpc": "エラーが返されました",
+        "protocol": "MCP プロトコルに沿わない応答が返されました",
+        "startFailed": "起動できませんでした",
+        "crashedRestarting": "実行中にクラッシュしました。mu が 1 回だけ再起動します",
+        "crashedAgain": "再びクラッシュしたため、再起動しません",
+        "restartFailed": "クラッシュし、再起動にも失敗しました",
+        "restartFailedCause": "クラッシュし、再起動にも失敗しました: {{cause}}",
+        "closed": "mu が応答を待っている間に接続が閉じられました",
+        "timeout": "時間内に応答がありませんでした",
+        "denied": "このプロジェクトのサーバーの起動をあなたが許可しませんでした",
+        "unreachable": "起動も接続もできませんでした"
+      },
+      "rewind": {
+        "sameCommandFailed": "同じコマンドを {{count}} 回実行し、毎回失敗しました: {{command}}",
+        "sameCommandFailed_one": "失敗するコマンドを {{count}} 回実行しました: {{command}}",
+        "sameCommandFailed_other": "同じコマンドを {{count}} 回実行し、毎回失敗しました: {{command}}",
+        "monitorTrouble": "このターンで逸脱検知が {{count}} 回警告しました（{{kind}}: {{detail}}）",
+        "monitorTrouble_one": "このターンで逸脱検知が {{count}} 回警告しました（{{kind}}: {{detail}}）",
+        "monitorTrouble_other": "このターンで逸脱検知が {{count}} 回警告しました（{{kind}}: {{detail}}）",
+        "trouble": {
+          "loop": "堂々巡り",
+          "drift": "タスクから逸脱"
+        }
+      },
+      "browser": {
+        "finished": "{{status}}: {{reason}}",
+        "openFailed": "ページをブラウザーで開けませんでした。",
+        "openFailedPanel": "ページをアプリのブラウザーパネルで開けませんでした。",
+        "launch": {
+          "noBrowser": {
+            "mac": "/Applications に Chrome、Chromium、Edge、Brave のいずれも見つかりませんでした。いずれかをインストールするか、MU_CHROME に Chromium ベースのブラウザーの実行ファイルを設定してください。",
+            "windows": "Program Files と %LOCALAPPDATA% に Chrome、Chromium、Edge、Brave のいずれも見つかりませんでした。いずれかをインストールするか、MU_CHROME にその .exe を設定してください。",
+            "wsl": "WSL 内にブラウザーが見つかりませんでした。WSL 内にインストールするか、WSL のミラーモードのネットワークをオンにしてください。手順は下の reason フィールドにあります。",
+            "other": "Chrome、Chromium、Edge、Brave のいずれも見つかりませんでした。いずれかをインストールするか、MU_CHROME にその実行ファイルを設定してください。インストールコマンドは下の reason フィールドにあります。"
+          },
+          "windowsBrowserUnusable": "{{executable}} は使用できません。Windows 側のブラウザーには、WSL からはミラーモードのネットワークでしか接続できません。",
+          "profileNoWindowsPath": "プロファイルフォルダー {{profileDir}} に対応する Windows パスがありません（WSL_DISTRO_NAME が設定されていません）。",
+          "browserExitedOnStart": "ブラウザーが起動中に終了しました（終了コード {{exitCode}}）。",
+          "devtoolsPortTimeout": "ブラウザーが時間内に DevTools ポートを開きませんでした。",
+          "cdpConnectTimeout": "ブラウザーへの接続がタイムアウトしました。",
+          "cdpConnectFailed": "ブラウザーに接続できませんでした。",
+          "browserSpawnFailed": "{{command}} を起動できませんでした。"
+        }
+      }
     }
-  }
+  },
+  "menu": {
+    "about": "{{name}} について",
+    "services": "サービス",
+    "hide": "{{name}} を非表示",
+    "hideOthers": "ほかを非表示",
+    "unhide": "すべてを表示",
+    "quit": "{{name}} を終了",
+    "edit": "編集",
+    "undo": "元に戻す",
+    "redo": "やり直す",
+    "cut": "切り取り",
+    "copy": "コピー",
+    "paste": "貼り付け",
+    "pasteAndMatchStyle": "貼り付けてスタイルを合わせる",
+    "delete": "削除",
+    "selectAll": "すべて選択",
+    "view": "表示",
+    "reload": "再読み込み",
+    "forceReload": "強制再読み込み",
+    "toggleDevTools": "開発者ツールを切り替え",
+    "resetZoom": "実際のサイズ",
+    "zoomIn": "拡大",
+    "zoomOut": "縮小",
+    "toggleFullScreen": "フルスクリーンを切り替え",
+    "help": "ヘルプ",
+    "checkForUpdates": "更新を確認…"
+  },
+  "trayMenu": {
+    "runningTasks": "実行中のタスク: {{count}}"
+  },
+  "noData": "データがありません",
+  "labelWithSelectedCount": "{{label}}（{{selected}}/{{total}}）",
+  "selectedSkillsWithCount": "選択済みスキル · {{count}}",
+  "window": {
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "restore": "元のサイズに戻す"
+  },
+  "collapseSidebar": "サイドバーを折りたたむ",
+  "expandSidebar": "サイドバーを展開"
 }

@@ -59,7 +59,8 @@
     "exit_code": "خروج: {{code}}",
     "duration": "مدت زمان: {{seconds}}",
     "auto_approved": "تأیید خودکار",
-    "manual_approval": "تأیید دستی"
+    "manual_approval": "تأیید دستی",
+    "toolCallId": "شناسهٔ فراخوانی ابزار: {{id}}"
   },
   "actions": {
     "create": "ایجاد",
@@ -76,6 +77,11 @@
     "output": "خروجی",
     "loading": "در حال بارگیری خروجی کامل…",
     "loadError": "خروجی کامل بارگیری نشد.",
-    "retry": "تلاش دوباره"
+    "retry": "تلاش دوباره",
+    "callAria": "{{name}} · {{status}}"
+  },
+  "kind": {
+    "edit": "ویرایش فایل",
+    "read": "خواندن فایل"
   }
 }

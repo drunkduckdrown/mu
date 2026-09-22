@@ -19,7 +19,7 @@
   "website": "Sitio web",
   "version": "Versión",
   "contact": "Contacto",
-  "github": "Github",
+  "github": "GitHub",
   "loading": "Por favor espera...",
   "copy": "Copiar",
   "reply": "Responder",
@@ -95,12 +95,12 @@
       "description": "Este paquete de AionUi es para {{packageArch}}, pero esta Mac es {{deviceArch}}. Es posible que hayas descargado el paquete incorrecto. Descarga e instala el paquete {{expectedArch}}."
     },
     "dataMigration": {
-      "title": "Local data migration failed",
-      "description": "AionUi opened, but AionCore stopped while initializing local data. Reinstalling AionUi may not fix this. Send a diagnostics report or contact support so the local database migration can be inspected.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "title": "Error al migrar los datos locales",
+      "description": "AionUi se abrió, pero AionCore se detuvo al inicializar los datos locales. Reinstalar AionUi puede no solucionar este problema. Envía un informe de diagnóstico o contacta con soporte para que se pueda inspeccionar la migración de la base de datos local.",
+      "sendDiagnostics": "Enviar diagnóstico",
+      "diagnosticsSent": "Diagnóstico enviado",
+      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
+      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico"
     },
     "databaseNewerThanApp": {
       "title": "Se requiere una versión más reciente de AionUi",
@@ -108,31 +108,31 @@
       "descriptionWithVersion": "Tus datos locales fueron creados por una versión de AionUi más reciente que la instalada ahora (v{{currentVersion}}), por lo que esta versión no puede abrirlos. Actualiza AionUi a la última versión para continuar; tus datos están intactos y no es necesario reinstalar ni restablecer nada."
     },
     "localDataRepair": {
-      "title": "Local data repair failed",
+      "title": "Error al reparar los datos locales",
       "description": "AionUi se abrió, pero AionCore se detuvo al preparar datos locales de inicio, como registros de asistentes o agentes. Reinstalar AionUi puede no solucionar este problema. Envía un informe de diagnóstico o contacta con soporte para que se pueda inspeccionar la base de datos local.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "sendDiagnostics": "Enviar diagnóstico",
+      "diagnosticsSent": "Diagnóstico enviado",
+      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
+      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico"
     },
     "startupDirectory": {
-      "title": "Startup directory is unavailable",
-      "description": "AionUi opened, but AionCore could not start because the configured work or log directory is missing, unavailable, or blocked by permissions. Check that the configured directories exist and are writable, then restart AionUi.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "title": "El directorio de inicio no está disponible",
+      "description": "AionUi se abrió, pero AionCore no pudo iniciarse porque el directorio de trabajo o de registros configurado no existe, no está disponible o está bloqueado por permisos. Comprueba que los directorios configurados existen y admiten escritura, y reinicia AionUi.",
+      "sendDiagnostics": "Enviar diagnóstico",
+      "diagnosticsSent": "Diagnóstico enviado",
+      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
+      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico"
     },
     "recoverableDatabaseCorruption": {
-      "title": "Local data is corrupted",
+      "title": "Los datos locales están dañados",
       "description": "AionUi detectó que la base de datos local está dañada y no puede continuar el inicio. Tras la confirmación, AionUi hará una copia de seguridad de la base de datos antigua y creará una nueva base de datos local para continuar el inicio. Las conversaciones anteriores ya no se mostrarán y la base de datos antigua se conservará como archivo de copia de seguridad.",
-      "confirmRebuild": "Back up old DB and rebuild new DB",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsHint": "Sending diagnostics will not modify the local database.",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report",
-      "rebuildFailed": "Failed to back up old DB and rebuild new DB",
+      "confirmRebuild": "Hacer copia de seguridad y reconstruir la base de datos",
+      "sendDiagnostics": "Enviar diagnóstico",
+      "diagnosticsHint": "Enviar el diagnóstico no modificará la base de datos local.",
+      "diagnosticsSent": "Diagnóstico enviado",
+      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
+      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico",
+      "rebuildFailed": "No se pudo hacer la copia de seguridad ni reconstruir la base de datos",
       "confirmDialog": {
         "title": "¿Reconstruir la base de datos?",
         "content": "Esta acción hará una copia de seguridad de la base de datos dañada actual y creará una totalmente nueva y vacía. Las conversaciones anteriores ya no se mostrarán (la base de datos antigua se conserva como archivo de copia de seguridad). ¿Desea continuar?",
@@ -143,10 +143,10 @@
     "transientConcurrentStartup": {
       "title": "AionUi se está iniciando",
       "description": "Cuando se abrió esta ventana, otro proceso de inicio de AionUi todavía estaba usando los datos locales. Esto es temporal y tus datos están seguros: no es necesario reinstalar. Espera un momento e inténtalo de nuevo, o reinicia AionUi.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report",
+      "sendDiagnostics": "Enviar diagnóstico",
+      "diagnosticsSent": "Diagnóstico enviado",
+      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
+      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico",
       "diagnosticsHint": "Si esto sigue ocurriendo, puedes enviar un informe de diagnóstico."
     },
     "pendingSlow": {
@@ -194,12 +194,12 @@
   "processing": "Procesando...",
   "optional": "(opcional)",
   "clear": "Limpiar",
-  "goBack": "Back",
+  "goBack": "Volver",
   "selectedCount": "{{count}} seleccionado(s)",
   "selectedSkills": "Habilidades seleccionadas",
   "aiAssistant": "Asistente de IA",
   "kyrn": {
-    "settings": "Ajustes de mu",
+    "settings": "Configuración de mu",
     "judge": "Configuración del juez",
     "reload": "Recargar",
     "starting": "Iniciando mu…",
@@ -212,7 +212,7 @@
       "title": "Hive",
       "open": "Abrir Hive",
       "inspect": "Inspeccionar {{name}}",
-      "summary": "{{active}} activos · {{done}} completados / {{total}}",
+      "summary": "{{active}} activas · {{done}} completadas / {{total}}",
       "pending": "Esperando el estado de la abeja",
       "unknown": "Estado no disponible",
       "runs": "Ejecuciones de Hive",
@@ -228,7 +228,7 @@
       "missingFocus": "No se registró la asignación para esta ejecución.",
       "current": "Actividad actual",
       "records": "Registros de ejecución",
-      "noRecords": "Aún no se recibieron registros de ejecución.",
+      "noRecords": "Aún no se han recibido registros de ejecución.",
       "raw": "Evidencia sin procesar",
       "input": "Entrada",
       "output": "Salida",
@@ -244,27 +244,70 @@
       "noteMissing": "Hallazgo no registrado.",
       "allFlow": "Todas las entregas",
       "beeFlow": "Entregas para {{name}}",
-      "audit": "Decisiones de Jev",
+      "audit": "Veredictos de Jev",
       "waitingRun": "Esperando los eventos registrados de este Hive.",
       "recordedAt": "Registrado a las {{time}}",
       "beeMissing": "Esta abeja no está en la instantánea registrada.",
       "snapshot": "Último estado informado",
-      "updated": "Última actualización {{time}}"
+      "updated": "Última actualización {{time}}",
+      "runTitle": {
+        "tasks": "{{count}} tareas",
+        "tasks_one": "{{count}} tarea",
+        "tasks_other": "{{count}} tareas",
+        "chain": "una cadena de {{count}} pasos",
+        "chain_one": "una cadena de {{count}} paso",
+        "chain_other": "una cadena de {{count}} pasos"
+      },
+      "choosingRoles": "eligiendo un rol, un modelo y un nivel de razonamiento para {{count}} subagentes…",
+      "choosingRoles_one": "eligiendo un rol, un modelo y un nivel de razonamiento para {{count}} subagente…",
+      "choosingRoles_other": "eligiendo un rol, un modelo y un nivel de razonamiento para {{count}} subagentes…",
+      "activity": {
+        "notesReceived": "← {{count}} hallazgos de las otras abejas",
+        "notesReceived_one": "← {{count}} hallazgo de las otras abejas",
+        "notesReceived_other": "← {{count}} hallazgos de las otras abejas",
+        "askedFindings": "← se le ha preguntado qué ha encontrado hasta ahora",
+        "toldWrapUp": "← se le ha pedido que termine y entregue su informe",
+        "toolFailed": "{{tool}} ha fallado",
+        "retry": "reintento {{attempt}}/{{maxAttempts}}: {{message}}",
+        "modelError": "error del modelo: {{message}}",
+        "compacting": "compactando su contexto",
+        "lateNotes": "← última llamada: {{count}} hallazgos tardíos",
+        "lateNotes_one": "← última llamada: {{count}} hallazgo tardío",
+        "lateNotes_other": "← última llamada: {{count}} hallazgos tardíos"
+      },
+      "errors": {
+        "cancelled": "se canceló la ejecución",
+        "stoppedByUser": "detenido por el usuario",
+        "endedByUser": "finalizado por el usuario",
+        "stalledModel": "sin señales de vida del modelo durante {{duration}}",
+        "stalledTool": "sin señales de vida de su llamada a {{tool}} durante {{duration}}",
+        "timeBudget": "se agotó el tiempo asignado ({{duration}})",
+        "timeBudgetReached": "se agotó el tiempo asignado",
+        "noReportInTime": "{{reason}}; sin informe {{duration}} después de pedírselo",
+        "modelFailed": "falló la solicitud al modelo",
+        "modelAborted": "se interrumpió la solicitud al modelo",
+        "retriesExhausted": "la solicitud al modelo siguió fallando",
+        "exitedCode": "el subagente se cerró con el código {{exitCode}} antes de terminar",
+        "exitedSignal": "el subagente recibió {{signal}} y se detuvo antes de terminar",
+        "exitedKilled": "el subagente recibió una señal y se detuvo antes de terminar",
+        "chainBroken": "no iniciado: el paso anterior («{{step}}») no terminó",
+        "detail": "{{reason}}: {{detail}}"
+      }
     },
     "judgeView": {
-      "title": "Decisiones e impacto",
-      "description": "Consulta qué evaluó la capa de juicio y qué ocurrió realmente. Las sugerencias y las acciones confirmadas se muestran por separado.",
-      "empty": "Aún no hay juicios registrados en esta sesión.",
-      "question": "Qué se juzgó",
-      "result": "Resultado de la decisión",
-      "action": "Impacto en la ejecución",
+      "title": "Veredictos y su efecto",
+      "description": "Consulta qué evaluó el juez y qué ocurrió realmente. Las sugerencias y las acciones confirmadas se muestran por separado.",
+      "empty": "Aún no hay veredictos registrados en esta sesión.",
+      "question": "Pregunta",
+      "result": "Veredicto",
+      "action": "Efecto en la ejecución",
       "details": "Respuestas y evidencias",
       "raw": "Registros originales",
       "answers": "Respuestas del modelo",
       "noResult": "No se registró ningún resultado legible",
       "unreported": "No registrado",
       "records": "Registros",
-      "returnedCount": "Entregados a la capa de ejecución",
+      "returnedCount": "Pasados a la capa de ejecución",
       "receiptCount": "Entregas confirmadas",
       "runtimeEvents": "Otros eventos de ejecución",
       "filter": "Filtrar por pregunta",
@@ -273,14 +316,14 @@
       "latency": "{{ms}} ms",
       "more": "+{{count}} más",
       "batch": "Candidatos cubiertos por este registro: {{count}}.",
-      "batchFailures": "Sin respuesta, con la estrategia predeterminada aplicada: {{count}}.",
+      "batchFailures": "Sin respuesta; se usó la estrategia predeterminada: {{count}}.",
       "changedThinking": "Nivel de razonamiento: {{from}} → {{to}}",
       "sentHints": "Indicaciones enviadas al modelo principal",
       "unlinked": "Registro independiente",
       "unlinkedHint": "Se registró sin correlación de turno. Se muestra por separado y no se combina con registros cercanos en el tiempo.",
       "state": {
         "pending": "En espera",
-        "returned": "Decisión devuelta",
+        "returned": "Veredicto devuelto",
         "confirmed": "Efecto confirmado",
         "shadow": "Modo sombra",
         "fallback": "Estrategia predeterminada",
@@ -290,12 +333,12 @@
         "unknown": "Resultado desconocido"
       },
       "actions": {
-        "toRuntime": "La decisión se entregó a la capa de ejecución; eso no demuestra que la operación se haya completado.",
-        "observeOnly": "Se registró solo para comparar; la ejecución no cambió a partir de este juicio.",
-        "useDefault": "Se usó la estrategia predeterminada de este punto de decisión. Lo predeterminado no es un permiso: las comprobaciones de riesgo y las compuertas de Hive son prudentes por defecto.",
-        "lateIgnored": "El turno ya había empezado; este juicio tardío no lo cambió.",
-        "waiting": "Esperando el resultado del juicio.",
-        "waitEnded": "La espera o la tarea terminó sin un juicio final registrado.",
+        "toRuntime": "El veredicto se pasó a la capa de ejecución; eso no demuestra que la operación se haya completado.",
+        "observeOnly": "Modo sombra: se registró para comparar, sin cambiar la ejecución según este veredicto.",
+        "useDefault": "Se usó la estrategia predeterminada de este punto de decisión. Eso no es un permiso para continuar: las comprobaciones de riesgo y las compuertas de Hive optan por la opción prudente.",
+        "lateIgnored": "El turno ya había empezado; este veredicto tardío no lo cambió.",
+        "waiting": "Esperando el veredicto.",
+        "waitEnded": "La espera o la tarea terminó sin un veredicto final registrado.",
         "recordedOnly": "Hay un registro, pero no se confirmó ningún efecto en la ejecución.",
         "mainGiven": "El ajuste o las indicaciones registrados abajo se aplicaron al modelo principal.",
         "allowPublish": "Publicación permitida. Consulta el tablero compartido para ver qué se publicó realmente.",
@@ -323,7 +366,17 @@
         "completion": "¿Este cambio todavía necesita verificación?",
         "notify": "¿Cuándo debe llegar esta notificación al modelo?",
         "cache": "¿Debe mantenerse caliente la caché de la sesión?",
-        "other": "Juicio registrado"
+        "other": "Veredicto registrado",
+        "rewind": "¿Este enfoque es un callejón sin salida y conviene retroceder?",
+        "goalMet": "¿Se ha alcanzado el objetivo?",
+        "outputDrift": "¿La salida incumple alguna de tus reglas?",
+        "taskFrame": "¿Este mensaje cambia el marco de la tarea?",
+        "constraint": "¿Esta llamada incumple alguna de tus restricciones?",
+        "capabilities": "¿Qué capacidades necesita esta tarea?",
+        "diagnostics": "¿Cuándo deben llegar estos diagnósticos al modelo?",
+        "patch": "¿El parche del subagente se ciñe a su tarea?",
+        "review": "¿Qué gravedad tiene cada hallazgo de la revisión?",
+        "board": "¿En qué punto está el trabajo?"
       },
       "fields": {
         "turnType": "Tipo de tarea",
@@ -344,7 +397,19 @@
         "result": "Resultado",
         "reason": "Motivo",
         "keepResult": "Conservar resultado",
-        "keepCall": "Conservar llamada"
+        "keepCall": "Conservar llamada",
+        "broken": "Reglas incumplidas",
+        "open": "Capacidades por abrir",
+        "errors": "Errores",
+        "warnings": "Advertencias",
+        "withinTask": "Dentro de la tarea",
+        "unrelated": "Archivos no relacionados",
+        "judged": "Archivos evaluados",
+        "priorities": "Prioridades",
+        "phase": "Fase",
+        "focus": "Criterio en curso",
+        "needsUser": "Necesita al usuario",
+        "update": "Reescribir el tablero"
       },
       "values": {
         "true": "Sí",
@@ -396,20 +461,67 @@
         "dead_end": "Callejón sin salida",
         "decision": "Decisión",
         "blocker": "Bloqueo",
-        "abstain": "El modelo de juicio se abstuvo",
+        "abstain": "El juez se abstuvo",
         "shadow": "Modo sombra",
         "skipped": "Omitido por el usuario",
         "timeout": "Tiempo agotado",
         "all": "Fallaron todos los candidatos",
-        "unreachable": "Modelo de juicio inaccesible",
+        "unreachable": "Juez inaccesible",
         "unexpected": "Error inesperado",
-        "off": "Desactivado"
+        "off": "Desactivado",
+        "continue": "Continuar",
+        "propose": "Proponer retroceder",
+        "met": "Alcanzado",
+        "ask": "Preguntar al usuario",
+        "unjudged": "Sin evaluar",
+        "none": "Ninguno",
+        "new_task": "Nueva tarea",
+        "constraint": "Nueva restricción",
+        "correction": "Corrección",
+        "subgoal": "Nuevo subobjetivo",
+        "unclear": "Cambio poco claro",
+        "hold": "Retener",
+        "no_answer": "Sin respuesta a tiempo",
+        "aborted": "Cancelado",
+        "auth": "Clave del juez rechazada",
+        "payment_required": "El juez necesita un método de pago",
+        "rate_limited": "Límite de solicitudes del juez alcanzado",
+        "bad_request": "El juez rechazó la solicitud",
+        "server": "Error del servidor del juez",
+        "invalid_response": "Respuesta del juez ilegible",
+        "verdict": "El juez respondió"
+      },
+      "probabilityValue": "Probabilidad de «sí»: {{percent}}",
+      "optionProbability": "{{option}} {{percent}}",
+      "reasonValue": "Motivo: {{reason}}",
+      "fieldValue": "{{field}}: {{value}}",
+      "errorValue": "Error · {{kind}}",
+      "noAnswerAfter": "Sin respuesta tras {{duration}}",
+      "hints": {
+        "clarify": "La solicitud parece poco definida: haz primero una pregunta concreta.",
+        "side_question": "Es una pregunta aparte: respóndela brevemente y sigue con la tarea principal.",
+        "plan_first": "Parece grande o arriesgado: escribe un plan breve y confírmalo antes de editar.",
+        "try_hive": "Parece difícil: si no se conoce la causa o un intento directo falla, recurre a Hive.",
+        "try_delegate": "Se divide en partes independientes: plantéate encargarlas a subagentes en paralelo."
+      },
+      "answerIds": {
+        "turn_type": "Tipo de tarea",
+        "is_side_question": "Pregunta aparte",
+        "needs_clarification": "Demasiado impreciso para actuar",
+        "needs_files_changed": "Requiere cambiar código",
+        "needs_memory": "Ayudarían notas anteriores",
+        "swarm_worthy": "Partes independientes",
+        "plan_first": "Grande o arriesgado",
+        "task_complexity": "Alcance",
+        "reasoning_depth": "Profundidad de razonamiento",
+        "tool_complexity": "Uso de herramientas"
       }
     },
     "decisions": "Jev",
     "memory": "Experiencia",
     "images": "Imágenes",
     "empty": "Todavía no hay eventos registrados en esta sesión.",
+    "quiet": "Sin actividad desde hace {{duration}}",
     "passed": "Aceptado",
     "filtered": "Filtrado",
     "image": "Imagen devuelta por una herramienta",
@@ -429,13 +541,13 @@
       "preflight.pending": "Clasificando",
       "preflight.verdict": "Clasificación",
       "preflight.wait_end": "Fin de la espera de clasificación",
-      "decision": "Juicio",
+      "decision": "Veredicto",
       "progress": "Progreso",
       "agent_start": "Tarea iniciada",
       "agent_settled": "Tarea finalizada",
       "kyrn_rpc_closed": "Entorno de ejecución cerrado",
-      "auto_compaction_start": "Comprimiendo el contexto",
-      "auto_compaction_end": "Compresión finalizada",
+      "auto_compaction_start": "Compactando el contexto",
+      "auto_compaction_end": "Compactación terminada",
       "hive.note": "Hallazgo compartido",
       "hive.delivery": "Entrega confirmada",
       "hive.gate": "Compuerta de Jev",
@@ -447,8 +559,73 @@
       "compaction_start": "Compactando el contexto…",
       "compaction_end": "Compactación finalizada",
       "context.usage": "Uso del contexto",
-      "context.policy": "Umbral de compactación automática (tokens)",
-      "compaction.plan": "Plan de compactación beta"
+      "context.policy": "Modo de compactación beta",
+      "compaction.plan": "Plan de compactación beta",
+      "goal": {
+        "state": "Estado del objetivo"
+      },
+      "board": {
+        "update": "Tablero actualizado",
+        "switched": "Tablero activado o desactivado"
+      },
+      "checkpoint": {
+        "taken": "Punto de control guardado"
+      },
+      "rewind": {
+        "proposed": "Retroceso propuesto",
+        "done": "Retroceso aplicado",
+        "undone": "Retroceso deshecho"
+      },
+      "ttsr": {
+        "interrupted": "Salida detenida por una regla"
+      },
+      "frame": {
+        "updated": "Marco de la tarea actualizado"
+      },
+      "capability": {
+        "opened": "Capacidad abierta"
+      },
+      "inherit": {
+        "found": "Configuración heredable encontrada",
+        "rule": "Regla heredada aplicada"
+      },
+      "mcp": {
+        "started": "Servidor MCP iniciado",
+        "failed": "Error del servidor MCP",
+        "tools_changed": "Cambios en las herramientas MCP"
+      },
+      "constraint": {
+        "blocked": "Bloqueado por tu restricción"
+      },
+      "browser": {
+        "run": "Tarea del navegador",
+        "step": "Paso del navegador"
+      },
+      "diagnostics": {
+        "delivered": "Diagnósticos entregados",
+        "held": "Diagnósticos retenidos",
+        "dropped": "Diagnósticos descartados"
+      },
+      "background": {
+        "start": "Tarea en segundo plano iniciada",
+        "exit": "Tarea en segundo plano finalizada",
+        "stop": "Tarea en segundo plano detenida",
+        "match": "Coincidencia en la salida en segundo plano"
+      },
+      "web": {
+        "fetch": "Página obtenida",
+        "search": "Búsqueda web"
+      },
+      "swarm": {
+        "worktree": {
+          "created": "Árbol de trabajo creado",
+          "removed": "Árbol de trabajo eliminado"
+        },
+        "patch": {
+          "ready": "Parche listo",
+          "applied": "Parche aplicado"
+        }
+      }
     },
     "contextUsage": "Uso del contexto",
     "contextPending": "Esperando una nueva medición del contexto",
@@ -465,6 +642,7 @@
     "summaryApplied": "Compactación por resumen aplicada",
     "compactionAborted": "Compactación cancelada",
     "compactionFailed": "La compactación ha fallado",
+    "compactionSavings": "Reducción del contexto ≈{{saved}}",
     "compactionEstimate": "Los tokens tras la compactación son una estimación; la siguiente respuesta del modelo actualizará el uso.",
     "cacheHit": "Aciertos de caché",
     "cachePending": "Aún no se ha informado del uso de caché",
@@ -530,15 +708,203 @@
         "waiting": "Esperándote",
         "wrapping_up": "Terminando",
         "stuck": "Parece atascado"
+      },
+      "checks_one": "{{done}} de {{total}} comprobación hecha",
+      "checks_other": "{{done}} de {{total}} comprobaciones hechas",
+      "codes": {
+        "progress": {
+          "none": "Aún no hay lista de tareas.",
+          "all": "Las {{total}} tareas de la lista están hechas.",
+          "all_one": "La lista tiene {{total}} tarea y ya está hecha.",
+          "all_other": "Las {{total}} tareas de la lista están hechas.",
+          "some": "{{done}} de {{total}} tareas de la lista están hechas.",
+          "some_one": "{{done}} de {{total}} tarea de la lista está hecha.",
+          "some_other": "{{done}} de {{total}} tareas de la lista están hechas."
+        },
+        "confirm": {
+          "waiting_reply": "Espera tu respuesta."
+        },
+        "now": {
+          "understanding": "Está leyendo el código y las notas para averiguar qué hay que hacer.",
+          "changing": "Está cambiando el código.",
+          "checking": "Está ejecutando las pruebas o comprobaciones para ver si el cambio funciona.",
+          "fixing": "Una comprobación ha encontrado un problema; lo está corrigiendo.",
+          "waiting": "Se ha detenido y espera tu respuesta.",
+          "wrapping_up": "El trabajo está hecho; está dando los últimos retoques.",
+          "stuck": "Parece que está dando vueltas en círculos; quizá necesite que le des una pista.",
+          "unclear": "Está trabajando.",
+          "focus": "{{now}} (En curso: {{focus}})",
+          "planning": "Está pensando cómo hacerlo; aún no ha cambiado nada."
+        }
       }
     },
+    "activityLoadFailed": "No se pudo cargar la actividad de colaboración. Reintentando…",
+    "beeFailed": "Esta abeja informó de un error.",
+    "beeCounts": {
+      "turns": "{{count}} turnos",
+      "turns_one": "{{count}} turno",
+      "turns_other": "{{count}} turnos",
+      "received": "{{count}} recibidos",
+      "received_one": "{{count}} recibido",
+      "received_other": "{{count}} recibidos",
+      "shared": "{{count}} compartidos",
+      "shared_one": "{{count}} compartido",
+      "shared_other": "{{count}} compartidos",
+      "tools": "{{count}} llamadas a herramientas",
+      "tools_one": "{{count}} llamada a herramienta",
+      "tools_other": "{{count}} llamadas a herramientas"
+    },
+    "compactionTokens": "{{before}} → ≈{{after}} tokens",
+    "compactionKept": "{{count}} resultados conservados",
+    "compactionKept_one": "{{count}} resultado conservado",
+    "compactionKept_other": "{{count}} resultados conservados",
+    "compactionPruned": "{{count}} podados",
+    "compactionPruned_one": "{{count}} podado",
+    "compactionPruned_other": "{{count}} podados",
+    "compactionDropped": "{{count}} llamadas eliminadas",
+    "compactionDropped_one": "{{count}} llamada eliminada",
+    "compactionDropped_other": "{{count}} llamadas eliminadas",
     "jevLine": {
       "classifying": "Jev está clasificando el mensaje…",
       "classified": "Clasificado por Jev: {{type}}",
       "byRule": "Clasificado por regla: {{type}}",
-      "shadow": "{{line}} (solo observando, no aplicado)",
+      "shadow": "{{line}} (solo se registra, no se aplica)",
       "late": "{{line}} (llegó tarde para este turno)",
-      "fallback": "Esta vez Jev no dio una clase; se sigue como siempre"
+      "fallback": "Esta vez Jev no clasificó el mensaje; se sigue como de costumbre"
+    },
+    "eventLine": {
+      "detail": "Detalles: {{detail}}",
+      "progress": {
+        "frame": "Actualizando el marco de la tarea",
+        "lessons": "Revisando lecciones de sesiones anteriores",
+        "skills": "Eligiendo las habilidades que necesita esta sesión",
+        "capabilities": "Eligiendo las capacidades que necesita esta tarea",
+        "permissionReview": "JeV está revisando: {{summary}}"
+      },
+      "goal": {
+        "paused": "En pausa: {{reason}}",
+        "reason": {
+          "interrupted": "interrumpiste la ejecución",
+          "modelCallFailed": "falló una llamada al modelo",
+          "needsUser": "el agente necesita algo de ti",
+          "needsUserDetail": "el agente necesita algo de ti: {{detail}}",
+          "unjudged": "ningún juez pudo determinar si se cumple el objetivo, y no se puede demostrar que quede nada pendiente",
+          "continuationsUsedUp": "se agotó el cupo de {{count}} continuaciones",
+          "continuationsUsedUp_one": "se agotó el cupo de {{count}} continuación",
+          "continuationsUsedUp_other": "se agotó el cupo de {{count}} continuaciones",
+          "minutesUsedUp": "se agotó el tiempo asignado ({{duration}})",
+          "sessionReopened": "se volvió a abrir la sesión",
+          "idle": "el agente terminó {{count}} ejecuciones seguidas sin hacer nada",
+          "idle_one": "el agente terminó {{count}} ejecución sin hacer nada",
+          "idle_other": "el agente terminó {{count}} ejecuciones seguidas sin hacer nada",
+          "noProgress": "sin avances en {{count}} ejecuciones seguidas; indica cómo seguir",
+          "noProgress_one": "sin avances en {{count}} ejecución; indica cómo seguir",
+          "noProgress_other": "sin avances en {{count}} ejecuciones seguidas; indica cómo seguir",
+          "noProgressDetail": "sin avances en {{count}} ejecuciones seguidas ({{detail}}); indica cómo seguir",
+          "noProgressDetail_one": "sin avances en {{count}} ejecución ({{detail}}); indica cómo seguir",
+          "noProgressDetail_other": "sin avances en {{count}} ejecuciones seguidas ({{detail}}); indica cómo seguir"
+        }
+      },
+      "frame": {
+        "unclearChange": "¿Cómo cambia esto la tarea: «{{message}}»?"
+      },
+      "search": {
+        "notConfigured": "«{{source}}» no es una fuente de búsqueda (features.web.search)",
+        "failed": "{{source}} falló: {{message}}",
+        "robotPage": "{{source}} respondió con una página de verificación: toma este cliente por un robot",
+        "httpError": "{{source}} respondió con HTTP {{status}}",
+        "noResults": "{{source}} devolvió una página sin resultados (no encontró ninguno o cambió su marcado)",
+        "unrelated": "{{source}} devolvió resultados que no tienen nada que ver con la búsqueda, como hacen los buscadores con los clientes que toman por robots"
+      },
+      "mcp": {
+        "line": "{{name}}: {{reason}}",
+        "projectUntrusted": "el proyecto no es de confianza y este servidor lo define el proyecto",
+        "needsApproval": "lo define el proyecto ({{source}}) y no se ha aprobado; abre esta carpeta en mu y permítelo una vez, o defínelo en mu.json",
+        "aborted": "se canceló el inicio",
+        "rpc": "respondió con un error",
+        "protocol": "respondió con algo que no sigue el protocolo MCP",
+        "startFailed": "no se pudo iniciar",
+        "crashedRestarting": "se cerró de forma inesperada mientras se ejecutaba; mu lo reinicia una vez",
+        "crashedAgain": "volvió a cerrarse de forma inesperada y ya no se reinicia",
+        "restartFailed": "se cerró de forma inesperada y el reinicio también falló",
+        "restartFailedCause": "se cerró de forma inesperada y el reinicio también falló: {{cause}}",
+        "closed": "su conexión se cerró mientras mu aún esperaba una respuesta",
+        "timeout": "no respondió a tiempo",
+        "denied": "no permitiste que se iniciara el servidor de este proyecto",
+        "unreachable": "no se pudo iniciar ni conectar con él"
+      },
+      "rewind": {
+        "sameCommandFailed": "El mismo comando fallido se ejecutó {{count}} veces: {{command}}",
+        "sameCommandFailed_one": "El mismo comando fallido se ejecutó {{count}} vez: {{command}}",
+        "sameCommandFailed_other": "El mismo comando fallido se ejecutó {{count}} veces: {{command}}",
+        "monitorTrouble": "El monitor avisó {{count}} veces en este turno ({{kind}}: {{detail}})",
+        "monitorTrouble_one": "El monitor avisó {{count}} vez en este turno ({{kind}}: {{detail}})",
+        "monitorTrouble_other": "El monitor avisó {{count}} veces en este turno ({{kind}}: {{detail}})",
+        "trouble": {
+          "loop": "dando vueltas en círculos",
+          "drift": "desviándose de la tarea"
+        }
+      },
+      "browser": {
+        "finished": "{{status}}: {{reason}}",
+        "openFailed": "No se pudo abrir la página en el navegador.",
+        "openFailedPanel": "No se pudo abrir la página en el panel del navegador de la aplicación.",
+        "launch": {
+          "noBrowser": {
+            "mac": "No se encontró Chrome, Chromium, Edge ni Brave en /Applications. Instala uno o haz que MU_CHROME apunte al ejecutable de un navegador basado en Chromium.",
+            "windows": "No se encontró Chrome, Chromium, Edge ni Brave en Program Files ni en %LOCALAPPDATA%. Instala uno o haz que MU_CHROME apunte a su .exe.",
+            "wsl": "No se encontró ningún navegador dentro de WSL. Instala uno dentro de WSL o activa el modo de red reflejado de WSL; los pasos están en el campo reason de abajo.",
+            "other": "No se encontró Chrome, Chromium, Edge ni Brave. Instala uno o haz que MU_CHROME apunte a su ejecutable; los comandos de instalación están en el campo reason de abajo."
+          },
+          "windowsBrowserUnusable": "No se puede usar {{executable}}: desde WSL solo se puede acceder a un navegador de Windows con el modo de red reflejado.",
+          "profileNoWindowsPath": "La carpeta de perfil {{profileDir}} no tiene ruta de Windows (WSL_DISTRO_NAME no está definida).",
+          "browserExitedOnStart": "El navegador se cerró durante el inicio (código {{exitCode}}).",
+          "devtoolsPortTimeout": "El navegador no abrió su puerto de DevTools a tiempo.",
+          "cdpConnectTimeout": "Tiempo agotado al conectar con el navegador.",
+          "cdpConnectFailed": "No se pudo conectar con el navegador.",
+          "browserSpawnFailed": "No se pudo iniciar {{command}}."
+        }
+      }
     }
-  }
+  },
+  "menu": {
+    "about": "Acerca de {{name}}",
+    "services": "Servicios",
+    "hide": "Ocultar {{name}}",
+    "hideOthers": "Ocultar otros",
+    "unhide": "Mostrar todo",
+    "quit": "Salir de {{name}}",
+    "edit": "Edición",
+    "undo": "Deshacer",
+    "redo": "Rehacer",
+    "cut": "Cortar",
+    "copy": "Copiar",
+    "paste": "Pegar",
+    "pasteAndMatchStyle": "Pegar y adaptar estilo",
+    "delete": "Eliminar",
+    "selectAll": "Seleccionar todo",
+    "view": "Ver",
+    "reload": "Recargar",
+    "forceReload": "Forzar recarga",
+    "toggleDevTools": "Mostrar u ocultar herramientas de desarrollo",
+    "resetZoom": "Tamaño real",
+    "zoomIn": "Ampliar",
+    "zoomOut": "Reducir",
+    "toggleFullScreen": "Activar o desactivar pantalla completa",
+    "help": "Ayuda",
+    "checkForUpdates": "Buscar actualizaciones…"
+  },
+  "trayMenu": {
+    "runningTasks": "Tareas en ejecución: {{count}}"
+  },
+  "noData": "No hay datos",
+  "labelWithSelectedCount": "{{label}} ({{selected}}/{{total}})",
+  "selectedSkillsWithCount": "Habilidades seleccionadas · {{count}}",
+  "window": {
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "restore": "Restaurar"
+  },
+  "collapseSidebar": "Contraer barra lateral",
+  "expandSidebar": "Expandir barra lateral"
 }

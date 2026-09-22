@@ -16,7 +16,7 @@ import { resolveConversationLeadingMark } from '@/renderer/pages/conversation/ut
 import { blockMobileInputFocus, blurActiveElement } from '@/renderer/utils/ui/focus';
 import { isPrimaryApplicationShortcut } from '@/renderer/utils/ui/keyboardShortcuts';
 import { Empty, Spin, Typography } from '@arco-design/web-react';
-import { Close, MessageOne, Robot, Search } from '@icon-park/react';
+import { Close, Search } from '@icon-park/react';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -123,11 +123,8 @@ const ConversationAgentMark: React.FC<{ conversation: IMessageSearchItem['conver
       />
     );
   }
-  if (leadingMark.kind === 'assistant_fallback') {
-    return <Robot theme='outline' size='18' className='line-height-0 flex-shrink-0 text-t-secondary' />;
-  }
-
-  return <MessageOne theme='outline' size='18' className='line-height-0 flex-shrink-0 text-t-secondary' />;
+  // Without an avatar the title stands alone, as in the sidebar: no stand-in robot or chat bubble.
+  return null;
 };
 
 const ConversationSearchPopover: React.FC<ConversationSearchPopoverProps> = ({

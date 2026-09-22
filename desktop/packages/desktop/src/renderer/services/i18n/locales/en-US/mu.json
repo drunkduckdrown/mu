@@ -116,7 +116,6 @@
     "custom": "The first judge right now is a custom one: see and change it under Advanced.",
     "advanced": "Advanced",
     "keyPlaceholder": "Paste a TypeSafe or Vercel AI Gateway key",
-    "localHow": "Needs the Laya judge service running on this machine: run mu judge start in a terminal (macOS for now). One-click setup in the app is coming.",
     "choices": {
       "jev": {
         "title": "Jev",
@@ -194,8 +193,42 @@
       }
     }
   },
+  "permissionsCard": {
+    "kind": {
+      "edit": "mu wants to edit a file",
+      "shell": "mu wants to run a command",
+      "run": "mu wants to run a program",
+      "outside": "mu wants to change a file outside the project",
+      "delegate": "mu wants to start sub-agents",
+      "other": "mu wants to act outside"
+    },
+    "reason": {
+      "ask": "Minimal permissions: every step asks you first.",
+      "unsure": "JeV is not sure this step is what you want.",
+      "beyond": "JeV thinks this goes beyond what you asked for.",
+      "unrelated": "JeV thinks this is not part of the task.",
+      "protected": "This touches mu’s own settings; only you can allow it."
+    },
+    "flagged": "Risky: {{flag}}.",
+    "flag": {
+      "recursive_or_forced_delete": "recursive or forced delete",
+      "discards_git_work": "discards git work",
+      "force_push": "force push",
+      "drops_database_objects": "drops database objects",
+      "overwrites_device": "overwrites a device",
+      "opens_permissions_recursively": "opens permissions recursively",
+      "runs_downloaded_script": "runs a downloaded script",
+      "runs_as_administrator": "runs as administrator",
+      "runs_as_root": "runs as root"
+    },
+    "answer": {
+      "once": "Allow once",
+      "session": "Allow for this conversation",
+      "sessionFor": "Allow for this conversation ({{grant}})",
+      "deny": "Don’t allow"
+    }
+  },
   "providers": {
-    "description": "Which model a new session starts with, and the providers behind the models.",
     "lead": "Where the models come from: subscriptions and endpoints, plus the model that writes the plain-language board. A conversation’s model and thinking level are picked in its send box.",
     "title": "Providers",
     "custom": "Custom providers",
@@ -326,19 +359,6 @@
     "detail": "The endpoint said: {{detail}}",
     "okModels_one": "Connected ({{ms}} ms). The endpoint lists {{count, number}} model.",
     "okModels_other": "Connected ({{ms}} ms). The endpoint lists {{count, number}} models."
-  },
-  "defaults": {
-    "title": "Default model",
-    "summary": "What a new session starts with. You can still switch inside a conversation.",
-    "provider": "Provider",
-    "model": "Model",
-    "level": "Thinking level",
-    "levelUnset": "Not set",
-    "levelHelp": "Levels this model does not take are disabled.",
-    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
-    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
-    "notSet": "Not set",
-    "pickProvider": "Choose a provider first."
   },
   "boardModel": {
     "title": "Plain-language model",

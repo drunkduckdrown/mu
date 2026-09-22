@@ -96,5 +96,22 @@
   "requestDetails": "Détails de la demande :",
   "delivery": {
     "pending": "Non lu"
-  }
+  },
+  "permissionOption": {
+    "allow_once": "Autoriser",
+    "allow_always": "Toujours autoriser",
+    "reject_once": "Refuser",
+    "reject_always": "Toujours refuser"
+  },
+  "permissionKind": {
+    "execute": "Exécuter une commande",
+    "edit": "Modifier",
+    "read": "Lire",
+    "fetch": "Récupérer en ligne",
+    "tool": "Outil"
+  },
+  "optionNumber": "Option {{number}}",
+  "copyFilesHeader": "Fichiers :",
+  "exportHeaderLine": "{{label}} : {{value}}",
+  "exportSpeakerLine": "{{speaker}} :"
 }

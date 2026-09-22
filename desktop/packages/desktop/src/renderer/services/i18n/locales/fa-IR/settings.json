@@ -120,7 +120,18 @@
     "noSearchResults": "هیچ مهارت منطبقی وجود ندارد.",
     "customHint": "یک پوشه مهارت، پوشه والد یا zip را وارد کنید؛ حداکثر {{maxFileSize}} برای هر فایل و {{maxTotalSize}} برای هر مهارت؛ وارد کردن نام تکراری مهارت موجود را بازنویسی می‌کند.",
     "officialHint": "مهارت‌های رسمی همراه AionUi — آماده استفاده، فقط‌خواندنی و با هر نسخه به‌روزرسانی می‌شوند.",
-    "deleteAffectsNewOnlyHint": "Deleting only affects new conversations. Skills already selected in existing conversations keep working."
+    "deleteAffectsNewOnlyHint": "حذف فقط بر گفتگوهای جدید اثر دارد. مهارت‌هایی که در گفتگوهای موجود انتخاب شده‌اند همچنان کار می‌کنند.",
+    "importFilterName": "پوشه‌های مهارت یا فایل‌های zip",
+    "importFailureItem": "{{name}}: {{message}}",
+    "importFailureItemWithDetail": "{{name}}: {{message}} ({{detail}})",
+    "importPartialSuccess_one": "{{count}} مهارت وارد شد، {{failureCount}} مورد ناموفق بود: {{failures}}",
+    "importPartialSuccess_other": "{{count}} مهارت وارد شد، {{failureCount}} مورد ناموفق بود: {{failures}}",
+    "importAllFailed_one": "وارد کردن {{count}} مهارت ناموفق بود: {{failures}}",
+    "importAllFailed_other": "وارد کردن {{count}} مهارت ناموفق بود: {{failures}}",
+    "detailUsedByTitleWithCount": "دستیارهای استفاده‌کننده ({{count}})",
+    "importFailureSeparator": "؛ ",
+    "batchDeletePartial_one": "{{count}} مهارت حذف شد، {{failedCount}} مورد ناموفق",
+    "batchDeletePartial_other": "{{count}} مهارت حذف شد، {{failedCount}} مورد ناموفق"
   },
   "authMethod": "احراز هویت",
   "geminiApiKey": "کلید API جمینای",
@@ -308,7 +319,8 @@
     "applied": "تم اعمال شد: {{name}}",
     "applyFailed": "اعمال تم ناموفق بود",
     "cleared": "به استایل پیش‌فرض بازگشت",
-    "deleteConfirm": "آیا مطمئن هستید که می‌خواهید این تم را حذف کنید؟ این عمل غیرقابل بازگشت است."
+    "deleteConfirm": "آیا مطمئن هستید که می‌خواهید این تم را حذف کنید؟ این عمل غیرقابل بازگشت است.",
+    "imageFilter": "تصاویر"
   },
   "geminiBaseUrl": "آدرس پایه API جمینای",
   "cacheDir": "پوشه کش",
@@ -604,8 +616,8 @@
   "speechToTextBaseUrl": "آدرس پایه",
   "speechToTextModel": "مدل",
   "speechToTextLanguage": "زبان پیش‌فرض",
-  "speechToTextRequired": "الزامی",
-  "speechToTextOptional": "اختیاری",
+  "speechToTextRequired": "(الزامی)",
+  "speechToTextOptional": "(اختیاری)",
   "speechToTextSource": "سرویس",
   "speechToTextSourceOpenAI": "OpenAI (رسمی)",
   "speechToTextSourceDeepgram": "Deepgram (رسمی)",
@@ -685,7 +697,7 @@
   "mcpCheckFailedSummary": "بررسی دستی ناموفق",
   "mcpInlineConfigHint": "پیکربندی ممکن است نادرست باشد. JSON MCP را بررسی کنید و دوباره آزمایش کنید.",
   "mcpInlineCommandHint": "{{command}} روی این سیستم موجود نیست. آن را نصب کنید و دوباره آزمایش کنید.",
-  "mcpTestConnectionFailedWithHint": "{{name}}: {{error}}. لطفاً پیکربندی JSON MCP را بررسی کنید و دوباره آزمایش کنید.",
+  "mcpTestConnectionFailedWithHint": "اتصال به {{name}} ناموفق بود: {{error}}. پیکربندی JSON سرور MCP را بررسی کنید و دوباره آزمایش کنید.",
   "mcpLocalCommandUnavailable": "نیاز به {{command}} روی این سیستم",
   "mcpTesting": "در حال آزمایش",
   "mcpOneKeyImport": "وارد کردن یک‌کلیکی",
@@ -863,7 +875,7 @@
   "argsPlaceholder": "مثلاً --acp --verbose",
   "argsHelp": "آرگومان‌های جداشده با فاصله که به دستور ارسال می‌شوند",
   "envLabel": "متغیرهای محیطی",
-  "envKeyPlaceholder": "KEY",
+  "envKeyPlaceholder": "نام متغیر",
   "envValuePlaceholder": "مقدار",
   "addEnvVar": "افزودن متغیر",
   "testConnectionBtn": "آزمایش اتصال",
@@ -978,7 +990,7 @@
     "slackStep3": "یک درخواست جفت‌سازی در زیر ظاهر می‌شود. برای مجاز کردن کاربر روی «تأیید» کلیک کنید.",
     "slackStep4": "پس از تأیید، می‌توانید در Slack با دستیار گفتگو کنید!",
     "unknownUser": "کاربر ناشناس",
-    "discordBotToken": "Bot Token",
+    "discordBotToken": "توکن ربات",
     "discordBotTokenDesc": "یک برنامه Discord بسازید، یک Bot اضافه کنید، intent مربوط به MESSAGE CONTENT را فعال کنید و Bot Token را کپی کنید.",
     "discordPluginEnabled": "ربات Discord فعال شد",
     "discordPluginDisabled": "ربات Discord غیرفعال شد",
@@ -987,7 +999,18 @@
     "discordStep1": "Discord را باز کنید و در یک کانال ربات خود را mention کنید یا به آن پیام خصوصی بدهید",
     "discordStep2": "برای شروع اتصال، هر پیامی بفرستید یا @mention کنید",
     "discordStep3": "یک درخواست اتصال در پایین نمایش داده می‌شود. برای احراز هویت کاربر روی «تأیید» کلیک کنید.",
-    "discordStep4": "پس از تأیید، می‌توانید در Discord با دستیار گفتگو را شروع کنید!"
+    "discordStep4": "پس از تأیید، می‌توانید در Discord با دستیار گفتگو را شروع کنید!",
+    "enableFailedWithDetail": "فعال‌سازی کانال ناموفق بود: {{error}}",
+    "disableFailedWithDetail": "غیرفعال‌سازی کانال ناموفق بود: {{error}}",
+    "connectionFailedWithDetail": "اتصال ناموفق بود: {{error}}",
+    "approveFailedWithDetail": "تأیید جفت‌شدن ناموفق بود: {{error}}",
+    "rejectFailedWithDetail": "رد جفت‌شدن ناموفق بود: {{error}}",
+    "revokeFailedWithDetail": "لغو دسترسی ناموفق بود: {{error}}",
+    "nextStepsLabel": "مراحل بعدی:",
+    "pairingCodeLabel": "کد:",
+    "platformValue": "پلتفرم: {{platform}}",
+    "authorizedAtValue": "مجاز شده: {{time}}",
+    "tokenLocked": "پیش از تغییر پیکربندی، کانال را غیرفعال کنید و همهٔ کاربران مجاز را حذف کنید."
   },
   "lark": {
     "appId": "شناسه برنامه",
@@ -1019,7 +1042,9 @@
     "hideOptionalFields": "مخفی کردن تنظیمات اختیاری",
     "agent": "ایجنت",
     "agentDesc": "برای مکالمات لارک استفاده می‌شود",
-    "autoFollowCliModel": "به‌صورت خودکار از مدل هنگام اجرای CLI پیروی کنید"
+    "autoFollowCliModel": "به‌صورت خودکار از مدل هنگام اجرای CLI پیروی کنید",
+    "appIdDesc": "شناسهٔ برنامه را از <0>کنسول توسعه‌دهندگان Feishu</0> دریافت کنید.",
+    "appSecretDesc": "رمز برنامه را از <0>کنسول توسعه‌دهندگان Feishu</0> دریافت کنید."
   },
   "dingtalk": {
     "clientId": "شناسه کلاینت",
@@ -1044,7 +1069,9 @@
     "step4": "پس از تأیید، می‌توانید از طریق دینگ‌تاک با دستیار هوش مصنوعی چت کنید!",
     "waitingConnection": "اتصال در حال برقراری است. لطفاً صبر کنید...",
     "agent": "ایجنت",
-    "agentDesc": "برای مکالمات دینگ‌تاک استفاده می‌شود"
+    "agentDesc": "برای مکالمات دینگ‌تاک استفاده می‌شود",
+    "clientIdDesc": "برای دریافت شناسهٔ کلاینت، <0>راهنما را دنبال کنید</0>.",
+    "clientSecretDesc": "برای دریافت رمز کلاینت، <0>راهنما را دنبال کنید</0>."
   },
   "weixin": {
     "accountId": "شناسه حساب",
@@ -1102,7 +1129,10 @@
     "botIdDesc": "شناسه ربات هوشمند WeCom (حالت اتصال طولانی)",
     "secret": "رمز",
     "secretDesc": "رمز ربات هوشمند WeCom (حالت اتصال طولانی)",
-    "callbackRecommendation": "پیشنهاد: از پروکسی معکوس با گواهی استفاده کنید، یا این دستگاه را با Cloudflare Tunnel / ngrok نگاشت کنید."
+    "callbackRecommendation": "پیشنهاد: از پروکسی معکوس با گواهی استفاده کنید، یا این دستگاه را با Cloudflare Tunnel / ngrok نگاشت کنید.",
+    "callbackUrlLocal": "آدرس callback این دستگاه: {{url}}",
+    "callbackUrlLan": "آدرس callback شبکهٔ محلی: {{url}}",
+    "callbackUrlPublic": "آدرس callback عمومی: {{url}}"
   },
   "agentManagement": {
     "localAgents": "ایجنت‌های محلی",
@@ -1168,12 +1198,13 @@
       "version_drift_newer": "نسخهٔ نصب‌شدهٔ CLI جدیدتر از نسخهٔ تأییدشده توسط AionUi است. معمولاً کار می‌کند؛ رفتار غیرعادی را گزارش کنید."
     },
     "boundAssistantsTitle": "دستیارهای استفاده‌کننده از این ایجنت",
-    "boundAssistantsCount": "{{count}} دستیار",
+    "boundAssistantsCount": "({{count}})",
     "boundAssistantsTooltip": "{{count}} دستیار: {{names}}",
     "boundAssistantsTooltip_one": "{{count}} دستیار: {{names}}",
     "boundAssistantsTooltip_other": "{{count}} دستیار: {{names}}",
     "boundAssistantsEmpty": "هنوز دستیاری به این ایجنت متصل نیست.",
     "viewAssistant": "مشاهده",
+    "versionDriftWithVersions": "{{explanation}} ({{versions}})",
     "searchPlaceholder": "جستجوی ایجنت‌ها...",
     "noSearchResults": "هیچ ایجنت منطبقی وجود ندارد."
   },
@@ -1254,10 +1285,10 @@
     "failedDownload": "آماده‌سازی {{resource}} ناموفق بود. برنامه را ری‌استارت کنید و دوباره تلاش کنید. اگر ادامه یافت، برنامه را دوباره نصب کنید یا بسته جدیدی دانلود کنید.",
     "failedHttp": "آماده‌سازی {{resource}} ناموفق بود. برنامه را ری‌استارت کنید و دوباره تلاش کنید. اگر ادامه یافت، برنامه را دوباره نصب کنید یا بسته جدیدی دانلود کنید.",
     "failedValidation": "اعتبارسنجی {{resource}} ناموفق بود. برنامه را ری‌استارت کنید و دوباره تلاش کنید. اگر ادامه یافت، برنامه را دوباره نصب کنید یا بسته جدیدی دانلود کنید.",
-    "failedBundled": "آماده‌سازی {{resource}} ناموفق بود زیرا فایل‌هایкомпонنت داخلی نامعتبر هستند. برنامه را دوباره نصب کنید یا بسته جدیدی دانلود کنید.",
+    "failedBundled": "آماده‌سازی {{resource}} ناموفق بود زیرا فایل‌های مؤلفهٔ داخلی نامعتبرند. برنامه را دوباره نصب کنید یا بستهٔ جدیدی دانلود کنید و دوباره تلاش کنید.",
     "failedUnsupported": "{{resource}} در این پلتفرم پشتیبانی نمی‌شود.",
     "failedUnknown": "آماده‌سازی {{resource}} ناموفق بود. برنامه را ری‌استارت کنید و دوباره تلاش کنید. اگر ادامه یافت، برنامه را دوباره نصب کنید یا بسته جدیدی دانلود کنید.",
-    "failedChecksum": "تأیید {{resource}} ناموفق بود زیرا ممکن است فایل‌هایкомпонنت خراب باشند. برنامه را دوباره نصب کنید یا بسته جدیدی دانلود کنید."
+    "failedChecksum": "تأیید {{resource}} ناموفق بود زیرا ممکن است فایل‌های مؤلفه خراب باشند. برنامه را دوباره نصب کنید یا بستهٔ جدیدی دانلود کنید و دوباره تلاش کنید."
   },
   "runtimeResource": {
     "node": "زمان اجرای مدیریت‌شده Node",
@@ -1312,19 +1343,19 @@
     "clearFailed": "پاک کردن داده‌های مرور ناموفق بود"
   },
   "archived": {
-    "navLabel": "Archived conversations",
-    "title": "Archived",
-    "description": "Conversations and teams you archived. Restore them to the sidebar, or batch delete them permanently.",
+    "navLabel": "گفتگوهای بایگانی‌شده",
+    "title": "بایگانی‌شده",
+    "description": "گفتگوها و تیم‌هایی که بایگانی کرده‌اید. آن‌ها را به نوار کناری برگردانید یا با حذف گروهی برای همیشه پاک کنید.",
     "empty": "موردی در بایگانی نیست",
-    "noProject": "No project",
-    "chatCount": "{{count}} chats",
-    "contentSection": "Archived items",
-    "clearAll": "Delete all",
-    "clearConfirmTitle": "Delete all archived items?",
+    "noProject": "بدون پروژه",
+    "chatCount": "{{count}} گفتگو",
+    "contentSection": "موارد بایگانی‌شده",
+    "clearAll": "حذف همه",
+    "clearConfirmTitle": "همه موارد بایگانی‌شده حذف شوند؟",
     "clearConfirmContent": "این کار همه گفتگوها و تیم‌های بایگانی‌شده را برای همیشه حذف می‌کند. این عمل قابل بازگشت نیست.",
-    "clearSuccess": "All archived items deleted",
-    "clearFailed": "Failed to delete all archived items",
-    "restore": "Unarchive",
+    "clearSuccess": "همه موارد بایگانی‌شده حذف شد",
+    "clearFailed": "حذف همه موارد بایگانی‌شده ناموفق بود",
+    "restore": "خروج از بایگانی",
     "restoreSuccess": "بازیابی شد",
     "restoreFailed": "بازیابی ناموفق بود",
     "delete": "حذف",
@@ -1337,20 +1368,59 @@
     "deleteProject": "حذف همه",
     "deleteProjectConfirmTitle": "همه موارد بایگانی‌شده حذف شوند؟",
     "deleteProjectConfirmContent": "همه گفتگوها و تیم‌های بایگانی‌شده زیر «{{name}}» برای همیشه حذف می‌شوند. این عمل قابل بازگشت نیست.",
-    "multiSelect": "Batch manage",
-    "cancelSelect": "Cancel delete",
-    "selectedCount": "{{count}} selected",
-    "deleteSelected": "Batch delete",
-    "deleteSelectedConfirmTitle": "Delete selected archived items?",
-    "deleteSelectedConfirmContent": "This permanently deletes {{count}} selected archived items. This can't be undone.",
-    "deleteSelectedSuccess": "Selected archived items deleted",
-    "selectAll": "Select all",
+    "multiSelect": "مدیریت گروهی",
+    "cancelSelect": "لغو حذف",
+    "selectedCount": "{{count}} مورد انتخاب شد",
+    "deleteSelected": "حذف گروهی",
+    "deleteSelectedConfirmTitle": "موارد بایگانی‌شدهٔ انتخاب‌شده حذف شوند؟",
+    "deleteSelectedConfirmContent": "{{count}} مورد بایگانی‌شدهٔ انتخاب‌شده برای همیشه حذف می‌شود. این عمل قابل بازگشت نیست.",
+    "deleteSelectedSuccess": "موارد بایگانی‌شدهٔ انتخاب‌شده حذف شد",
+    "selectAll": "انتخاب همه",
     "loadMore": "بارگذاری بیشتر",
-    "loadMoreFailed": "بارگذاری موارد بیشتر ناموفق بود"
+    "loadMoreFailed": "بارگذاری موارد بیشتر ناموفق بود",
+    "chatCount_one": "{{count}} گفتگو",
+    "chatCount_other": "{{count}} گفتگو",
+    "deleteSelectedConfirmContent_one": "{{count}} مورد بایگانی‌شدهٔ انتخاب‌شده برای همیشه حذف می‌شود. این عمل قابل بازگشت نیست.",
+    "deleteSelectedConfirmContent_other": "{{count}} مورد بایگانی‌شدهٔ انتخاب‌شده برای همیشه حذف می‌شود. این عمل قابل بازگشت نیست."
   },
   "crossSessionMessage": "پیام‌های بین گفتگوها",
   "crossSessionMessageDesc": "به عامل‌ها اجازه می‌دهد به گفتگوهای دیگر شما پیام بفرستند. با خاموش کردن، منشن @@ در کادر ورودی نیز غیرفعال می‌شود.",
   "crossSessionMessageDisabledBanner": "پیام‌های بین گفتگوها خاموش است، منشن @@ در دسترس نیست.",
   "crossSessionMessageResume": "روشن کردن دوباره",
-  "crossSessionMessageUpdateFailed": "به‌روزرسانی تنظیم پیام‌های بین گفتگوها ناموفق بود"
+  "crossSessionMessageUpdateFailed": "به‌روزرسانی تنظیم پیام‌های بین گفتگوها ناموفق بود",
+  "agentIdleTimeoutUnit": "دقیقه",
+  "dirChangeFailed": "تغییر پوشه ناموفق بود.",
+  "imageGenErrors": {
+    "missingSelection": "ابتدا یک مدل ساخت تصویر انتخاب کنید.",
+    "providerNotFound": "ارائه‌دهندهٔ این مدل ساخت تصویر دیگر وجود ندارد. مدل دیگری انتخاب کنید.",
+    "modelNotFound": "{{provider}} دیگر {{model}} را ارائه نمی‌کند. مدل دیگری انتخاب کنید.",
+    "ambiguousProvider": "چند ارائه‌دهنده {{model}} را دارند. آن را دوباره زیر یکی از ارائه‌دهندگان انتخاب کنید.",
+    "noProviderMatch": "هیچ ارائه‌دهنده‌ای {{model}} را ارائه نمی‌کند. مدل دیگری انتخاب کنید."
+  },
+  "promptTimeoutUnit": "ثانیه",
+  "speechToTextTestResultLine": "نتیجه ({{elapsed}}): {{text}}",
+  "emojiCategories": {
+    "recent": "اخیر",
+    "smileys": "شکلک‌ها",
+    "activities": "فعالیت‌ها",
+    "objects": "اشیا",
+    "symbols": "نمادها",
+    "flags": "پرچم‌ها",
+    "animals": "حیوانات",
+    "food": "غذا"
+  },
+  "webuiAccount": {
+    "passwordChangeFailedWithDetail": "تغییر رمز عبور ناموفق بود: {{error}}",
+    "usernameChangeFailedWithDetail": "به‌روزرسانی نام کاربری ناموفق بود: {{error}}"
+  },
+  "mcpOAuthLoginSuccessNamed": "به {{name}} وارد شدید",
+  "mcpOAuthLoginFailedNamed": "ورود به {{name}} ناموفق بود",
+  "mcpOAuthLoginFailedNamedWithDetail": "ورود به {{name}} ناموفق بود: {{error}}",
+  "extensionTab": {
+    "frameTitle": "تنظیمات افزونه: {{name}}",
+    "notFound": "صفحهٔ تنظیمات «{{id}}» پیدا نشد. ممکن است افزونهٔ آن حذف یا غیرفعال شده باشد.",
+    "noTabId": "هیچ صفحهٔ تنظیماتی مشخص نشده است."
+  },
+  "mcpAuthRequiredNamed": "برای {{name}} باید وارد شوید",
+  "mcpTestConnectionSuccessNamed": "{{name}} متصل شد"
 }

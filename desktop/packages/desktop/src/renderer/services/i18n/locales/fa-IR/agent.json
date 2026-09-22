@@ -31,7 +31,8 @@
     "switchSuccess": "مدل با موفقیت جابه‌جا شد",
     "switchFailed": "جابه‌جایی مدل ناموفق بود",
     "searchPlaceholder": "جستجوی مدل‌ها",
-    "noResults": "مدلی مطابقت ندارد"
+    "noResults": "مدلی مطابقت ندارد",
+    "withThoughtLevel": "{{model}} · {{level}}"
   },
   "config": {
     "setting": "در حال اعمال تنظیم...",

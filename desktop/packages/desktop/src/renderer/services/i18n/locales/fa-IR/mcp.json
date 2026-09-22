@@ -71,5 +71,11 @@
     "normal": "عادی",
     "high": "زیاد",
     "urgent": "فوری"
-  }
+  },
+  "toolCount": "{{count}} ابزار",
+  "toolCount_one": "{{count}} ابزار",
+  "toolCount_other": "{{count}} ابزار",
+  "serverWithToolCount": "{{name}} ({{count}} ابزار)",
+  "serverWithToolCount_one": "{{name}} ({{count}} ابزار)",
+  "serverWithToolCount_other": "{{name}} ({{count}} ابزار)"
 }

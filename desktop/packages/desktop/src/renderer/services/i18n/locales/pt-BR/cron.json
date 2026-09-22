@@ -42,7 +42,8 @@
     "noHistory": "Nenhuma execução ainda",
     "notFound": "Tarefa não encontrada",
     "executionModeDescriptionNew": "Cada execução inicia uma nova conversa, de forma que o contexto anterior não é mantido. Melhor para relatórios ou verificações recorrentes que devem permanecer independentes.",
-    "executionModeDescriptionExisting": "Cada execução continua na mesma conversa, de forma que o contexto anterior e os resultados continuam disponíveis. Melhor para tarefas de acompanhamento que se baseiam em execuções anteriores."
+    "executionModeDescriptionExisting": "Cada execução continua na mesma conversa, de forma que o contexto anterior e os resultados continuam disponíveis. Melhor para tarefas de acompanhamento que se baseiam em execuções anteriores.",
+    "lastRunFailed": "A última execução falhou"
   },
   "notification": {
     "taskComplete": "Tarefa Concluída",
@@ -126,7 +127,19 @@
       "hourly": "A cada hora",
       "dailyAt": "Todos os dias às {{time}}",
       "weekdaysAt": "Dias de semana às {{time}}",
-      "weeklyAt": "Toda {{day}} às {{time}}"
+      "weeklyAt": "Toda {{day}} às {{time}}",
+      "everyMinute": "A cada minuto",
+      "everyNMinutes": "A cada {{count}} minutos",
+      "everyNMinutes_one": "A cada {{count}} minuto",
+      "everyNMinutes_other": "A cada {{count}} minutos",
+      "everyNHours": "A cada {{count}} horas",
+      "everyNHours_one": "A cada {{count}} hora",
+      "everyNHours_other": "A cada {{count}} horas",
+      "weeklyOnDaysAt": "Toda semana: {{days}} às {{time}}",
+      "monthlyAt": "Todo dia {{day}} do mês às {{time}}",
+      "everyInterval": "A cada {{interval}}",
+      "onceAt": "Uma vez, em {{time}}",
+      "customExpr": "Agendamento personalizado ({{expr}})"
     },
     "custom": {
       "modeLabel": "Padrão de repetição",
@@ -142,6 +155,8 @@
       "monthDay": "Dia do mês",
       "preview": "Cron gerado"
     },
+    "createFailed": "Não foi possível criar a tarefa: {{error}}",
+    "updateFailed": "Não foi possível salvar a tarefa: {{error}}",
     "searchPlaceholder": "Pesquisar tarefas...",
     "noSearchResults": "Nenhuma tarefa agendada correspondente."
   },
@@ -163,5 +178,11 @@
     "conversationNotFound": "Conversa não encontrada",
     "scheduledTimePassed": "O tempo agendado já passou",
     "conversationBusy": "Conversa ocupada após {{count}} tentativas"
-  }
+  },
+  "nextRunAt": "Próxima execução: {{time}}",
+  "keepAwakeFailed": "Não foi possível alterar “Manter ativo”: {{error}}",
+  "pauseFailed": "Não foi possível pausar a tarefa: {{error}}",
+  "resumeFailed": "Não foi possível retomar a tarefa: {{error}}",
+  "deleteFailed": "Não foi possível excluir a tarefa: {{error}}",
+  "runNowFailed": "Não foi possível executar a tarefa: {{error}}"
 }

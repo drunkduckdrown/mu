@@ -1,149 +1,156 @@
 {
   "title": "mu ayarları",
-  "description": "Everything mu can be told: judges, decision points, features, models and context. Shared with the mu command line.",
+  "description": "mu'ya verilebilecek tüm ayarlar: hakemler, karar noktaları, özellikler, modeller ve bağlam. mu komut satırıyla ortak kullanılır.",
   "reload": "Yeniden yükle",
   "search": "Karar noktalarında ve özelliklerde ara",
   "noMatch": "Aramayla eşleşen bir şey yok.",
   "modified": "Değiştirildi",
-  "applyNote": "Changes apply to new sessions. A running session keeps the configuration it started with; reconnect it to pick them up.",
+  "applyNote": "Değişiklikler yeni oturumlarda geçerli olur. Çalışan bir oturum başladığı yapılandırmayı korur; değişiklikleri alması için yeniden bağlayın.",
   "apiKey": "API anahtarı",
-  "keyHelp": "Write-only: once saved it is never shown again. Kept in the harness .env on this machine (owner-only).",
-  "keyKeep": "Leave empty to keep the saved key",
-  "endpointRule": "Use HTTPS, or HTTP to this machine only (127.0.0.1, localhost). No user name, password, query or fragment in the address.",
+  "keyHelp": "Yalnızca yazılır: kaydedildikten sonra bir daha gösterilmez. Bu makinede çalışma zamanının .env dosyasında tutulur (yalnızca sahibi okuyabilir).",
+  "keyKeep": "Kayıtlı anahtarı korumak için boş bırakın",
+  "endpointRule": "HTTPS kullanın; HTTP yalnızca bu makine için (127.0.0.1, localhost). Adreste kullanıcı adı, şifre, sorgu veya parça bulunmamalı.",
   "sections": {
-    "judges": "Yargıçlar",
+    "judges": "Hakemler",
     "decisions": "Karar noktaları",
     "features": "Özellikler",
     "models": "Modeller ve sağlayıcılar",
-    "permissions": "Permissions",
+    "permissions": "İzinler",
     "context": "Bağlam"
   },
   "modes": {
     "active": "Etkin",
     "shadow": "Gölge",
     "off": "Kapalı",
-    "activeHelp": "The verdict takes effect.",
-    "shadowHelp": "Asked and recorded, but nothing changes.",
-    "offHelp": "Not asked. Behaves like plain pi."
+    "activeHelp": "Karar uygulanır.",
+    "shadowHelp": "Sorulur ve kaydedilir, ama hiçbir şey değişmez.",
+    "offHelp": "Soru sorulmaz. Sade pi gibi davranır."
   },
   "harness": {
-    "tooOld": "This harness is too old to describe its decision points and features. Update the mu harness to see them here; the basic settings still work.",
-    "unsupported": "The harness describes itself in a format this app does not know (version {{version}}). Update the app to edit decision points and features."
+    "tooOld": "Bu çalışma zamanı, karar noktalarını ve özelliklerini tanımlayamayacak kadar eski. Bunları burada görmek için mu çalışma zamanını güncelleyin; temel ayarlar yine de çalışır.",
+    "unsupported": "Çalışma zamanı kendini bu uygulamanın tanımadığı bir biçimde tanımlıyor (sürüm {{version}}). Karar noktalarını ve özellikleri düzenlemek için uygulamayı güncelleyin."
   },
   "load": {
-    "failed": "The settings could not be loaded"
+    "failed": "Ayarlar yüklenemedi"
   },
   "save": {
-    "saved": "Kaydedildi. Yeni oturumlar bunu kullanır.",
+    "saved": "Kaydedildi. Yeni oturumlar bunu kullanır; çalışan oturumları yeniden bağlayın.",
     "unsaved": "Kaydedilmemiş değişiklikler: {{sections}}",
     "nothing": "Kaydedilmemiş değişiklik yok",
     "unsavedDot": "Kaydedilmemiş değişiklikler",
     "discard": "Vazgeç",
-    "stale": "Another program (the mu command line, or a running session) changed the configuration after it was loaded here, so nothing was saved. Reload to see the current state; your unsaved edits will be lost.",
+    "stale": "Başka bir program (mu komut satırı ya da çalışan bir oturum) yapılandırmayı burada yüklendikten sonra değiştirdi; bu yüzden hiçbir şey kaydedilmedi. Güncel durumu görmek için yeniden yükleyin; kaydedilmemiş düzenlemeleriniz kaybolur.",
     "failed": "Kaydedilemedi: {{reason}}"
   },
   "units": {
     "ms": "ms",
-    "tokens": "tokens"
+    "tokens": "token"
   },
   "options": {
-    "range": "Range {{min}} – {{max}}.",
-    "emptyText": "Empty: use the default",
-    "addItem": "Type and press Enter",
-    "addNumber": "Type a number and press Enter",
+    "range": "Aralık {{min}} – {{max}}.",
+    "emptyText": "Boş: varsayılanı kullan",
+    "addItem": "Yazıp Enter'a basın",
+    "addNumber": "Bir sayı yazıp Enter'a basın",
     "problem": {
-      "type": "This value has the wrong type.",
-      "range": "This value is outside the allowed range.",
-      "choice": "This is not one of the choices.",
-      "length": "Too long, or an entry is empty."
+      "type": "Bu değerin türü yanlış.",
+      "range": "Bu değer izin verilen aralığın dışında.",
+      "choice": "Bu, seçeneklerden biri değil.",
+      "length": "Çok uzun ya da bir öğe boş."
     }
   },
   "decisions": {
-    "description": "Each point where the judge is asked. A point follows the default mode unless you give it one of its own.",
-    "defaultMode": "Varsayılan kip",
-    "defaultModeHelp": "For every decision point without a mode of its own.",
+    "description": "Hakeme soru sorulan her nokta. Bir noktaya kendi modunu vermedikçe varsayılan modu izler.",
+    "defaultMode": "Varsayılan mod",
+    "defaultModeHelp": "Kendi modu olmayan her karar noktası için.",
     "follow": "Varsayılanı izle ({{mode}})",
     "feature": "Özellik: {{name}}",
-    "featureOff": "Feature is off: not asked"
+    "featureOff": "Özellik kapalı: soru sorulmaz",
+    "groups": {
+      "input": "Girdi",
+      "context": "Bağlam",
+      "tools": "Araçlar ve güvenlik",
+      "turn": "Tur",
+      "team": "Ekip çalışması"
+    },
+    "otherGroup": "Diğer"
   },
   "features": {
-    "description": "What the harness does around the model. Values you have not changed keep following the harness defaults.",
+    "description": "mu çalışma zamanının model çevresinde yaptığı işler. Değiştirmediğiniz değerler çalışma zamanının varsayılanlarını izlemeye devam eder.",
     "beta": "Beta",
     "reset": "Varsayılanlara dön",
-    "asks": "Decision points: {{names}}.",
-    "permissionsElsewhere": "The mode of a new conversation is chosen under Permissions.",
-    "boardModelElsewhere": "The model that writes the board is chosen under Models & providers."
+    "asks": "Karar noktaları: {{names}}.",
+    "permissionsElsewhere": "Yeni bir konuşmanın modu İzinler bölümünde seçilir.",
+    "boardModelElsewhere": "Panoyu yazan model, Modeller ve sağlayıcılar bölümünde seçilir."
   },
   "judges": {
-    "tiers": "Katmanlar",
-    "tiersHelp": "Judges are tried in order. A later one only sees what the earlier ones left uncertain.",
+    "tiers": "Kademeler",
+    "tiersHelp": "Hakemler sırayla denenir. Sonraki hakem yalnızca öncekilerin emin olamadığı soruları görür.",
     "order": "Sıra",
-    "judge": "Yargıç",
-    "type": "How it is reached",
-    "model": "Judge model",
-    "modelHelp": "For a general model as judge: provider/model-id.",
+    "judge": "Hakem",
+    "type": "Erişim yolu",
+    "model": "Hakem modeli",
+    "modelHelp": "Hakem olarak genel bir model için: provider/model-id.",
     "endpoint": "Uç nokta",
-    "endpointDefault": "Default address of the service",
+    "endpointDefault": "Hizmetin varsayılan adresi",
     "timeout": "Zaman aşımı",
-    "keyVariable": "Key variable",
-    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY, or a name starting with MU_JUDGE_.",
+    "keyVariable": "Anahtar değişkeni",
+    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY veya MU_JUDGE_ ile başlayan bir ad.",
     "types": {
-      "jev": "Jev (automatic route)",
-      "typesafe": "Jev, direct (TypeSafe)",
-      "gateway": "Jev through Vercel AI Gateway",
-      "local": "Local judge (Laya)",
-      "http": "Your own HTTP judge service",
-      "llm": "A general model as judge",
-      "mock": "Mock (neutral answers)",
-      "jevHelp": "TypeSafe directly when its key is set, otherwise the Vercel AI Gateway.",
-      "typesafeHelp": "Always TypeSafe directly.",
-      "gatewayHelp": "Always through the Vercel AI Gateway.",
-      "localHelp": "The Laya sidecar on this machine.",
-      "httpHelp": "Any endpoint that takes {state, questions} and returns {answers}.",
-      "llmHelp": "A generative model from your providers, prompted to answer as JSON.",
-      "mockHelp": "For tests and offline work: nothing is asked."
+      "jev": "Jev (otomatik yol)",
+      "typesafe": "Jev, doğrudan (TypeSafe)",
+      "gateway": "Vercel AI Gateway üzerinden Jev",
+      "local": "Yerel hakem (Laya)",
+      "http": "Kendi HTTP hakem hizmetiniz",
+      "llm": "Hakem olarak genel bir model",
+      "mock": "Sahte (tarafsız yanıtlar)",
+      "jevHelp": "Anahtarı ayarlıysa doğrudan TypeSafe, değilse Vercel AI Gateway.",
+      "typesafeHelp": "Her zaman doğrudan TypeSafe.",
+      "gatewayHelp": "Her zaman Vercel AI Gateway üzerinden.",
+      "localHelp": "Bu makinede çalışan Laya yardımcı hizmeti.",
+      "httpHelp": "{state, questions} alıp {answers} döndüren herhangi bir uç nokta.",
+      "llmHelp": "Sağlayıcılarınızdan, JSON olarak yanıt vermesi istenen üretken bir model.",
+      "mockHelp": "Testler ve çevrimdışı çalışma için: hiçbir şey sorulmaz."
     },
-    "intro": "While it works, mu makes many small calls: how to handle this message, whether this step breaks a rule you set. The judge answers them. Pick one.",
-    "choose": "Choose a judge",
-    "custom": "The first judge right now is a custom one: see and change it under Advanced.",
-    "advanced": "Advanced",
-    "keyPlaceholder": "Paste a TypeSafe or Vercel AI Gateway key",
-    "localHow": "Needs the Laya judge service running on this machine: run mu judge start in a terminal (macOS for now). One-click setup in the app is coming.",
+    "intro": "mu çalışırken pek çok küçük soruyla karşılaşır: bu mesaj nasıl ele alınmalı, bu adım koyduğunuz bir kuralı çiğniyor mu? Bunları hakem yanıtlar. Birini seçin.",
+    "choose": "Bir hakem seçin",
+    "custom": "Şu an ilk sıradaki hakem özel bir hakem: Gelişmiş altında görüp değiştirebilirsiniz.",
+    "advanced": "Gelişmiş",
+    "keyPlaceholder": "TypeSafe veya Vercel AI Gateway anahtarını yapıştırın",
     "choices": {
       "jev": {
         "title": "Jev",
-        "tag": "Recommended",
-        "description": "Fast and accurate, billed per call. Needs a TypeSafe or Vercel AI Gateway key."
+        "tag": "Önerilen",
+        "description": "Hızlı ve isabetli, çağrı başına ücretlendirilir. TypeSafe veya Vercel AI Gateway anahtarı gerekir."
       },
       "local": {
-        "title": "Local Laya",
-        "tag": "Free · offline",
-        "description": "Runs on this computer, no network, no cost. Good at classifying; relating and scoring are less reliable."
+        "title": "Yerel Laya",
+        "tag": "Ücretsiz · çevrimdışı",
+        "description": "Bu bilgisayarda çalışır; ağ yok, ücret yok. Sınıflandırmada iyidir; ilişkilendirme ve puanlama daha az güvenilirdir."
       }
     },
-    "localAddress": "Address: {{address}}",
+    "localAddress": "Adres: {{address}}",
     "laya": {
-      "running": "Running on this machine",
-      "stopped": "Installed, not running. mu starts it when it needs it.",
-      "missing": "Not installed yet.",
-      "platform": "Laya cannot run on this computer: it needs a Mac with Apple Silicon. You can enter the address of a judge service of your own in the advanced view.",
-      "needsUv": "Installing needs uv, a Python package manager. Install it, then come back here.",
-      "uvLink": "How to install uv",
-      "install": "Install Laya",
-      "start": "Start",
-      "stop": "Stop",
-      "confirmTitle": "Download and install Laya?",
-      "confirmText": "This downloads about {{size}} MB from PyPI and Hugging Face (Python packages and the model's weights) into mu's folder, and takes a few minutes. Laya starts once it is installed.",
-      "confirmOk": "Download and install",
+      "running": "Bu makinede çalışıyor",
+      "stopped": "Kurulu, çalışmıyor. mu gerektiğinde onu başlatır.",
+      "missing": "Henüz kurulu değil.",
+      "platform": "Laya bu bilgisayarda çalışamaz: Apple Silicon işlemcili bir Mac gerekir. Gelişmiş bölümünde kendi hakem hizmetinizin adresini girebilirsiniz.",
+      "needsUv": "Kurulum için bir Python paket yöneticisi olan uv gerekiyor. Onu kurun, sonra buraya dönün.",
+      "uvLink": "uv nasıl kurulur",
+      "install": "Laya'yı kur",
+      "start": "Başlat",
+      "stop": "Durdur",
+      "confirmTitle": "Laya indirilip kurulsun mu?",
+      "confirmText": "Bu işlem PyPI ve Hugging Face'ten mu'nun klasörüne yaklaşık {{size}} MB (Python paketleri ve modelin ağırlıkları) indirir ve birkaç dakika sürer. Laya kurulduktan sonra başlar.",
+      "confirmOk": "İndir ve kur",
       "working": {
-        "setup": "Installing Laya…",
-        "start": "Starting Laya…",
-        "stop": "Stopping Laya…"
+        "setup": "Laya kuruluyor…",
+        "start": "Laya başlatılıyor…",
+        "stop": "Laya durduruluyor…"
       },
       "failed": {
-        "setup": "Installing did not finish. You can try again.",
-        "start": "Laya did not start.",
-        "stop": "Laya did not stop."
+        "setup": "Kurulum tamamlanmadı. Yeniden deneyebilirsiniz.",
+        "start": "Laya başlamadı.",
+        "stop": "Laya durmadı."
       }
     }
   },
@@ -156,185 +163,217 @@
     "manual": "Ayarlandı (elle)"
   },
   "context": {
-    "description": "When the conversation is compacted, and how. Shared with pi's settings.json.",
+    "description": "Konuşmanın ne zaman ve nasıl sıkıştırılacağı. pi'nin settings.json dosyasıyla ortaktır.",
     "auto": "Otomatik sıkıştırma",
-    "autoHelp": "Compacts the history when the context is nearly full.",
+    "autoHelp": "Bağlam neredeyse dolduğunda geçmişi sıkıştırır.",
     "limit": "Bağlam sınırı",
-    "beta": "Summary-free compaction",
-    "betaHelp": "Keeps or prunes original passages by judgment instead of writing a summary. The same switch as the compaction feature."
+    "limitHelp": "0 ise modelin penceresi, ayrılan pay düşülerek kullanılır. Aksi hâlde {{min}} ile {{max}} arası. Sonraki model isteğinden önce kontrol edilir; kesin bir sınır değildir.",
+    "limitProblem": "0 ya da {{min}} ile {{max}} arasında bir tam sayı girin.",
+    "beta": "Özetsiz sıkıştırma",
+    "betaHelp": "Özet yazmak yerine özgün bölümleri hakemin kararıyla korur ya da budar. Sıkıştırma özelliğindeki ayarın aynısıdır."
   },
   "permissions": {
-    "description": "Whether mu asks you before it acts. This is the mode every new conversation starts in; each conversation can still be switched from “Permissions” in its send box.",
-    "choose": "Mode of a new conversation",
-    "note": "The “Permissions” picker in a conversation’s send box switches that conversation only; typing /permissions in a conversation also changes the mode new conversations start in. What you said not to do is stopped in every mode, and a step that touches mu’s own settings always asks.",
-    "off": "Permission modes are off in Features: nothing is asked by mode, only the risky command guard works.",
-    "missing": "This version of mu has no permission modes yet. Update mu to choose one here.",
+    "description": "mu'nun bir işlem yapmadan önce size sorup sormayacağını belirler. Her yeni konuşma bu modda başlar; her konuşmanın modu yine de kendi mesaj alanındaki “İzinler” menüsünden değiştirilebilir.",
+    "choose": "Yeni konuşmaların modu",
+    "note": "Bir konuşmanın mesaj alanındaki “İzinler” menüsü yalnızca o konuşmanın modunu değiştirir; konuşmada /permissions yazmak ise yeni konuşmaların başladığı modu da değiştirir. Yapılmamasını söylediğiniz şeyler her modda durdurulur; mu'nun kendi ayarlarına dokunan bir adım için ise her zaman size sorulur.",
+    "off": "İzin modları Özellikler bölümünde kapalı: moda göre hiçbir şey sorulmaz, yalnızca riskli komut koruması çalışır.",
+    "missing": "mu'nun bu sürümünde henüz izin modları yok. Burada bir mod seçebilmek için mu'yu güncelleyin.",
     "modes": {
       "full": {
-        "title": "Full access",
-        "description": "Runs everything without asking, so you are not interrupted."
+        "title": "Tam erişim",
+        "description": "Her şeyi sormadan çalıştırır; böylece işiniz bölünmez."
       },
       "jev": {
-        "title": "JeV approves",
-        "description": "Reads and edits in the project go ahead; JeV approves commands, changes outside the project and outside actions for you, and asks you only when it is not sure."
+        "title": "JeV onaylar",
+        "description": "Proje içindeki okuma ve düzenlemeler doğrudan yapılır; komutları, proje dışındaki değişiklikleri ve dış işlemleri sizin yerinize JeV onaylar ve yalnızca emin olmadığında size sorar."
       },
       "ask": {
-        "title": "Minimal permissions",
-        "description": "Only reading goes ahead; every edit, command and outside action asks you first."
+        "title": "En az izin",
+        "description": "Yalnızca okuma doğrudan yapılır; her düzenleme, komut ve dış işlem için önce size sorulur."
       }
     }
   },
+  "permissionsCard": {
+    "kind": {
+      "edit": "mu bir dosyayı düzenlemek istiyor",
+      "shell": "mu bir komut çalıştırmak istiyor",
+      "run": "mu bir program çalıştırmak istiyor",
+      "outside": "mu proje dışındaki bir dosyayı değiştirmek istiyor",
+      "delegate": "mu alt ajanlar başlatmak istiyor",
+      "other": "mu bir dış işlem yapmak istiyor"
+    },
+    "reason": {
+      "ask": "En az izin: her adımda önce size sorulur.",
+      "unsure": "JeV bu adımın istediğiniz şey olduğundan emin değil.",
+      "beyond": "JeV bunun istediğiniz şeyin ötesine geçtiğini düşünüyor.",
+      "unrelated": "JeV bunun görevin bir parçası olmadığını düşünüyor.",
+      "protected": "Bu, mu'nun kendi ayarlarına dokunuyor; buna yalnızca siz izin verebilirsiniz."
+    },
+    "answer": {
+      "once": "Bir kez izin ver",
+      "session": "Bu konuşma için izin ver",
+      "sessionFor": "Bu konuşma için izin ver ({{grant}})",
+      "deny": "İzin verme"
+    },
+    "flag": {
+      "recursive_or_forced_delete": "özyinelemeli veya zorla silme",
+      "discards_git_work": "git'teki değişiklikleri siler",
+      "force_push": "zorla push",
+      "drops_database_objects": "veritabanı nesnelerini siler",
+      "overwrites_device": "bir cihazın üzerine yazar",
+      "opens_permissions_recursively": "izinleri özyinelemeli olarak açar",
+      "runs_downloaded_script": "indirilen bir betiği çalıştırır",
+      "runs_as_administrator": "yönetici olarak çalışır",
+      "runs_as_root": "root olarak çalışır"
+    },
+    "flagged": "Riskli: {{flag}}."
+  },
   "providers": {
-    "description": "Which model a new session starts with, and the providers behind the models.",
-    "lead": "Where the models come from: subscriptions and endpoints, plus the model that writes the plain-language board. A conversation’s model and thinking level are picked in its send box.",
+    "lead": "Modellerin nereden geldiği: abonelikler ve uç noktalar; ayrıca sade dildeki panoyu yazan model. Bir konuşmanın modeli ve düşünme düzeyi, o konuşmanın mesaj alanında seçilir.",
     "title": "Sağlayıcılar",
-    "custom": "Custom providers",
-    "manualGroup": "Written by hand",
-    "builtinGroup": "Other built-in",
+    "custom": "Özel sağlayıcılar",
+    "manualGroup": "Elle yazılmış",
+    "builtinGroup": "Diğer yerleşik",
     "add": "Sağlayıcı ekle",
     "new": "Yeni sağlayıcı",
     "unsaved": "Kaydedilmedi",
     "remove": "Kaldır",
-    "endpointType": "Uç nokta türü",
+    "endpointType": "API biçimi",
     "name": "Görünen ad",
-    "namePlaceholder": "e.g. My proxy",
+    "namePlaceholder": "örn. Proxy'm",
     "id": "ID",
-    "idHelp": "Lowercase letters, digits and hyphens. Fixed once saved; used as provider/model.",
+    "idHelp": "Küçük harf, rakam ve kısa çizgi. Kaydedildikten sonra değiştirilemez; provider/model biçiminde kullanılır.",
     "idProblem": {
-      "format": "Use lowercase letters, digits and hyphens, starting with a letter or digit (at most 40).",
-      "reserved": "This is the id of a built-in provider. An entry under it would reroute that provider instead of adding one.",
-      "taken": "This id is already in use."
+      "format": "Küçük harf, rakam ve kısa çizgi kullanın; harf ya da rakamla başlasın (en fazla 40).",
+      "reserved": "Bu, yerleşik bir sağlayıcının ID'si. Bunun altındaki bir kayıt yeni bir sağlayıcı eklemek yerine o sağlayıcıyı yeniden yönlendirir.",
+      "taken": "Bu ID zaten kullanılıyor."
     },
     "baseUrl": "Temel URL",
-    "keyEnter": "Paste the API key",
-    "keyReplace": "A key written by hand is in use. Typing one here replaces it.",
-    "keyHelp": "Saved to the harness .env as {{variable}}; models.json only holds the reference. Never shown again.",
-    "authHeader": "Also send Authorization: Bearer (some proxies need it)",
-    "headers": "Extra headers written by hand are kept as they are: {{names}}. Their values are secrets and are edited in models.json.",
-    "pick": "Choose a provider on the left, or add one.",
-    "manual": "Written by hand",
-    "foreignHelp": "This entry reroutes a built-in provider, or uses an interface type this screen does not edit. It can be removed here but not edited: edit it in models.json.",
-    "modelCount": "{{count}} model",
+    "keyEnter": "API anahtarını yapıştırın",
+    "keyReplace": "Elle yazılmış bir anahtar kullanılıyor. Buraya yazdığınız anahtar onun yerini alır.",
+    "keyHelp": "Çalışma zamanının .env dosyasına {{variable}} olarak kaydedilir; models.json yalnızca referansı tutar. Bir daha gösterilmez.",
+    "authHeader": "Authorization: Bearer başlığını da gönder (bazı proxy'ler bunu ister)",
+    "headers": "Elle yazılmış ek başlıklar olduğu gibi korunur: {{names}}. Değerleri gizlidir ve models.json içinde düzenlenir.",
+    "pick": "Soldan bir sağlayıcı seçin ya da yeni bir tane ekleyin.",
+    "manual": "Elle yazılmış",
+    "foreignHelp": "Bu kayıt yerleşik bir sağlayıcıyı yeniden yönlendiriyor ya da bu ekranın düzenlemediği bir API biçimi kullanıyor. Buradan kaldırılabilir ama düzenlenemez: models.json içinde düzenleyin.",
+    "modelCount": "{{count, number}} model",
     "usable": "Kullanılabilir",
-    "builtinHelp": "mu reported it as usable at its last connection, usually because its API key is in the environment. It cannot be removed here: delete that key from the environment, and it is gone after mu connects again.",
-    "noneYet": "None yet",
-    "commented": "models.json contains comments. Saving from here would remove them, so providers are read-only. Remove the comments by hand to edit here.",
-    "summary": "Sign in with a subscription and use it right away, or connect any OpenAI-, Anthropic- or Gemini-compatible endpoint.",
-    "subscriptions": "Subscriptions",
-    "manualShort": "By hand",
-    "needsSetup": "Not set up yet",
-    "more": "More actions",
-    "removeProvider": "Remove provider",
-    "removeTitle": "Remove {{name}}?",
-    "removeSaved": "When you save, it is deleted from models.json, and so is the key stored for it.",
-    "removeUnsaved": "It is not saved yet, so what you filled in here is discarded.",
-    "removeEntry": "When you save, this hand-written entry is deleted from models.json. If it overrides a built-in provider, that provider goes back to its defaults.",
-    "removeDefault": "New sessions start with it, so the startup model is cleared too."
+    "builtinHelp": "mu son bağlantısında bunu kullanılabilir olarak bildirdi; genellikle API anahtarı ortamda olduğu için. Buradan kaldırılamaz: anahtarı ortamdan silin, mu yeniden bağlandıktan sonra kaybolur.",
+    "noneYet": "Henüz yok",
+    "unreadable": "models.json okunamadı; bu yüzden sağlayıcılar ne gösterilir ne kaydedilir. Dosyayı elle onarıp yeniden yükleyin.",
+    "commented": "models.json yorumlar içeriyor. Buradan kaydetmek bunları silerdi, bu yüzden sağlayıcılar salt okunur. Burada düzenlemek için yorumları elle kaldırın.",
+    "modelCount_one": "{{count, number}} model",
+    "modelCount_other": "{{count, number}} model",
+    "summary": "Bir abonelikle giriş yapıp hemen kullanın ya da herhangi bir OpenAI, Anthropic veya Gemini uyumlu uç noktaya bağlanın.",
+    "subscriptions": "Abonelikler",
+    "manualShort": "Elle",
+    "needsSetup": "Henüz kurulmadı",
+    "more": "Diğer işlemler",
+    "removeProvider": "Sağlayıcıyı kaldır",
+    "removeTitle": "{{name}} kaldırılsın mı?",
+    "removeSaved": "Kaydettiğinizde models.json dosyasından silinir; onun için saklanan anahtar da silinir.",
+    "removeUnsaved": "Henüz kaydedilmedi; burada doldurduklarınız atılır.",
+    "removeEntry": "Kaydettiğinizde bu elle yazılmış kayıt models.json dosyasından silinir. Yerleşik bir sağlayıcıyı geçersiz kılıyorsa o sağlayıcı varsayılanlarına döner.",
+    "removeDefault": "Yeni oturumlar bununla başlıyor, bu yüzden varsayılan model de temizlenir."
   },
   "accounts": {
-    "signIn": "Sign in",
-    "signOut": "Sign out",
-    "signOutFailed": "Signing out did not finish. You can try again.",
-    "signOutConfirm": "Sign out of {{name}}? You will need to sign in again to use it.",
-    "signedOut": "Not signed in",
-    "instant": "Signing in and out takes effect at once, without saving.",
-    "models": "Models you can use",
-    "byKey": "Usable (API key)",
-    "byKeyHelp": "No subscription is signed in, but mu reported it as usable at its last connection, usually because its API key is in the environment. Signing in switches it to the subscription.",
-    "otherRunning": "{{name}} is signing in, and one sign-in runs at a time.",
-    "showRunning": "Show it"
+    "signIn": "Giriş yap",
+    "signOut": "Çıkış yap",
+    "signOutFailed": "Çıkış tamamlanmadı. Yeniden deneyebilirsiniz.",
+    "signOutConfirm": "{{name}} hesabından çıkış yapılsın mı? Kullanmak için yeniden giriş yapmanız gerekecek.",
+    "signedOut": "Giriş yapılmadı",
+    "instant": "Giriş ve çıkış, kaydetmeye gerek kalmadan hemen geçerli olur.",
+    "models": "Kullanabileceğiniz modeller",
+    "byKey": "Kullanılabilir (API anahtarı)",
+    "byKeyHelp": "Giriş yapılmış bir abonelik yok, ancak mu son bağlantısında bunu kullanılabilir olarak bildirdi; genellikle API anahtarı ortamda olduğu için. Giriş yaparsanız abonelik kullanılır.",
+    "otherRunning": "{{name}} için giriş yapılıyor; aynı anda yalnızca bir giriş yapılabilir.",
+    "showRunning": "Göster"
   },
   "endpoints": {
     "openaiCompletions": {
-      "name": "OpenAI compatible (Chat Completions)",
-      "hint": "The most widely supported: proxies, Ollama, vLLM, LM Studio, DeepSeek…",
-      "url": "Usually ends in /v1, e.g. https://api.example.com/v1 or http://localhost:11434/v1.",
-      "short": "OpenAI compatible"
+      "name": "OpenAI uyumlu (Chat Completions)",
+      "hint": "En yaygın desteklenen: proxy'ler, Ollama, vLLM, LM Studio, DeepSeek…",
+      "url": "Genellikle /v1 ile biter, örn. https://api.example.com/v1 veya http://localhost:11434/v1.",
+      "short": "OpenAI uyumlu"
     },
     "openaiResponses": {
       "name": "OpenAI Responses",
-      "hint": "OpenAI's newer Responses API, for services that offer it.",
-      "url": "Usually ends in /v1, e.g. https://api.example.com/v1.",
+      "hint": "OpenAI'ın daha yeni Responses API'si; bunu sunan hizmetler için.",
+      "url": "Genellikle /v1 ile biter, örn. https://api.example.com/v1.",
       "short": "OpenAI Responses"
     },
     "anthropicMessages": {
-      "name": "Anthropic compatible (Messages)",
-      "hint": "For Claude and services that speak the Anthropic Messages format.",
-      "url": "Without /v1: the client adds /v1/messages itself, e.g. https://api.example.com.",
-      "short": "Anthropic compatible"
+      "name": "Anthropic uyumlu (Messages)",
+      "hint": "Claude ve Anthropic Messages biçimini kullanan hizmetler için.",
+      "url": "/v1 olmadan: istemci /v1/messages kısmını kendisi ekler, örn. https://api.example.com.",
+      "short": "Anthropic uyumlu"
     },
     "googleGenerativeAi": {
       "name": "Google Generative AI",
-      "hint": "Gemini and Gemma through Google AI Studio.",
-      "url": "e.g. https://generativelanguage.googleapis.com/v1beta.",
+      "hint": "Google AI Studio üzerinden Gemini ve Gemma.",
+      "url": "örn. https://generativelanguage.googleapis.com/v1beta.",
       "short": "Google"
     }
   },
   "models": {
     "title": "Modeller",
-    "id": "Model kimliği",
+    "id": "Model ID",
     "name": "Görünen ad",
     "context": "Bağlam penceresi",
     "maxOutput": "En fazla çıktı",
     "reasoning": "Düşünme",
     "image": "Görseller",
     "add": "Model ekle",
-    "none": "No models yet. Add one, or test the connection to pick from what the endpoint lists.",
+    "none": "Henüz model yok. Bir tane ekleyin ya da bağlantıyı sınayıp uç noktanın listelediklerinden seçin.",
     "problem": {
-      "emptyId": "Every model needs an ID.",
-      "duplicate": "Two models have the same ID."
+      "emptyId": "Her modelin bir ID'si olmalı.",
+      "duplicate": "İki modelin ID'si aynı."
     },
-    "edit": "Edit {{name}}",
-    "removeNamed": "Remove {{name}}",
-    "done": "Done",
-    "contextTag": "Context window {{size}}",
-    "tagReasoning": "Thinking",
-    "tagImage": "Vision",
-    "noId": "New model",
-    "show": "Show {{name}}"
+    "idField": "Model ID · API'nin beklediği biçimde",
+    "rowField": "{{field}} ({{n}}. satır)",
+    "edit": "Düzenle: {{name}}",
+    "removeNamed": "Kaldır: {{name}}",
+    "done": "Tamam",
+    "contextTag": "Bağlam penceresi {{size}}",
+    "tagReasoning": "Düşünme",
+    "tagImage": "Görsel",
+    "noId": "Yeni model",
+    "show": "Göster: {{name}}",
+    "addListed": "Ekle: {{name}}"
   },
   "test": {
     "run": "Bağlantıyı sına",
-    "hint": "One minimal request from this app: the model list, or else a single token with the first model.",
-    "okModels": "Connected ({{ms}} ms). The endpoint lists {{count}} models.",
-    "okCompletion": "Connected ({{ms}} ms). The model answered.",
-    "auth": "The key was rejected (HTTP {{status}}).",
-    "notFound": "Nothing at this address (HTTP 404). Check the base URL and the endpoint type; add a model to test with a request.",
-    "http": "The endpoint answered HTTP {{status}}.",
-    "timeout": "No answer in time.",
-    "network": "Could not connect. Check the address and the network.",
-    "redirect": "The endpoint redirects elsewhere (HTTP {{status}}). Use the final address: a key is not sent along a redirect.",
-    "invalidResponse": "The answer is not what this endpoint type returns. Is the type right?",
-    "keyUnavailable": "The saved key is a command or a composite value, which this app does not evaluate. Type a key to test.",
-    "urlChanged": "The address or type was changed. A saved key is only sent where it was saved for: save first, or type the key again."
-  },
-  "defaults": {
-    "title": "Varsayılan model",
-    "summary": "What a new session starts with. You can still switch inside a conversation.",
-    "provider": "Sağlayıcı",
-    "model": "Model",
-    "level": "Düşünme düzeyi",
-    "levelUnset": "Belirtme",
-    "levelHelp": "Levels this model does not take are disabled.",
-    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
-    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
-    "notSet": "Belirtilmedi",
-    "pickProvider": "Choose a provider first."
+    "hint": "Bu uygulamadan tek bir küçük istek gönderilir: model listesi, o alınamazsa ilk modelle tek bir token.",
+    "okModels": "Bağlandı ({{ms}} ms). Uç nokta {{count, number}} model listeliyor.",
+    "okCompletion": "Bağlandı ({{ms}} ms). Model yanıt verdi.",
+    "auth": "Anahtar reddedildi (HTTP {{status}}).",
+    "notFound": "Bu adreste bir şey yok (HTTP 404). Temel URL'yi ve API biçimini kontrol edin; bir istekle sınamak için bir model ekleyin.",
+    "http": "Uç nokta HTTP {{status}} ile yanıt verdi.",
+    "timeout": "Zamanında yanıt gelmedi.",
+    "network": "Bağlanılamadı. Adresi ve ağı kontrol edin.",
+    "redirect": "Uç nokta başka bir adrese yönlendiriyor (HTTP {{status}}). Son adresi kullanın: anahtar yönlendirmelerde gönderilmez.",
+    "invalidResponse": "Yanıt bu API biçiminde değil. Biçim doğru mu?",
+    "keyUnavailable": "Kayıtlı anahtar bir komut ya da bileşik bir değer; bu uygulama bunu değerlendirmez. Sınamak için bir anahtar yazın.",
+    "urlChanged": "Adres ya da API biçimi değiştirildi. Kayıtlı anahtar yalnızca kaydedildiği yere gönderilir: önce kaydedin ya da anahtarı yeniden yazın.",
+    "detail": "Uç noktanın yanıtı: {{detail}}",
+    "okModels_one": "Bağlandı ({{ms}} ms). Uç nokta {{count, number}} model listeliyor.",
+    "okModels_other": "Bağlandı ({{ms}} ms). Uç nokta {{count, number}} model listeliyor."
   },
   "boardModel": {
-    "title": "Plain-language model",
-    "summary": "Writes the plain-language board: how the work is going, in everyday words. For you only, never in the conversation’s context; each update is one call.",
-    "pick": "A model of your choice",
-    "recommended": "Recommended: Claude Opus 4.6, the most natural and steady; then Gemini 3.8 Flash, faster and cheaper.",
-    "recommendedTag": "recommended",
-    "provider": "Provider",
+    "title": "Sade dil modeli",
+    "summary": "Sade dildeki panoyu yazar: işin nasıl gittiğini gündelik bir dille anlatır. Yalnızca size gösterilir, konuşmanın bağlamına asla girmez; her güncelleme bir model çağrısıdır.",
+    "pick": "Seçtiğiniz bir model",
+    "recommended": "Önerilen: en doğal ve en istikrarlı olan Claude Opus 4.6; ardından daha hızlı ve daha ucuz olan Gemini 3.8 Flash.",
+    "recommendedTag": "önerilen",
+    "provider": "Sağlayıcı",
     "model": "Model",
-    "notSet": "Not set",
-    "pickProvider": "Pick a provider first",
-    "unset": "None yet: mu asks the first time the board is switched on.",
-    "session": "Whatever model the conversation uses",
-    "sessionHelp": "When the conversation switches model, the board follows.",
-    "update": "This version of mu cannot be told here which model writes the board. Update mu first."
+    "notSet": "Seçilmedi",
+    "pickProvider": "Önce bir sağlayıcı seçin",
+    "unset": "Henüz yok: pano ilk kez açıldığında mu size sorar.",
+    "session": "Konuşmanın kullandığı model",
+    "sessionHelp": "Konuşmanın modeli değişince pano da onu izler.",
+    "update": "mu'nun bu sürümünde panoyu yazan model buradan seçilemiyor. Önce mu'yu güncelleyin."
   },
   "levels": {
     "off": "Kapalı",
@@ -346,97 +385,98 @@
     "max": "En yüksek"
   },
   "welcome": {
-    "reopen": "Setup guide",
-    "progress": "Setup progress",
+    "reopen": "Kurulum rehberi",
+    "progress": "Kurulum ilerlemesi",
     "steps": {
       "model": "Model",
-      "judge": "Judge",
-      "done": "Done"
+      "judge": "Hakem",
+      "done": "Bitti"
     },
-    "skipAll": "Skip setup",
-    "skipStep": "Skip for now",
-    "back": "Back",
-    "next": "Next",
-    "start": "Get started",
+    "skipAll": "Kurulumu atla",
+    "skipStep": "Şimdilik atla",
+    "back": "Geri",
+    "next": "İleri",
+    "start": "Başla",
     "model": {
-      "title": "Connect a model",
-      "subtitle": "mu uses it to write code and answer you. Three steps; you can change all of it in Settings later.",
+      "title": "Bir model bağlayın",
+      "subtitle": "mu bunu kod yazmak ve size yanıt vermek için kullanır. Üç adım; hepsini daha sonra Ayarlar'dan değiştirebilirsiniz.",
       "model": "Model",
-      "baseUrl": "Base URL",
-      "key": "API key",
-      "keyPlaceholder": "Paste the key; a service on this machine may need none",
-      "modelId": "Model name",
+      "baseUrl": "Temel URL",
+      "key": "API anahtarı",
+      "keyPlaceholder": "Anahtarı yapıştırın; bu bilgisayardaki bir hizmet anahtar istemeyebilir",
+      "modelId": "Model adı",
       "signedIn": {
-        "title": "Sign in with a subscription",
-        "tag": "No API key",
-        "description": "A ChatGPT, Claude or Grok plan"
+        "title": "Abonelikle giriş yap",
+        "tag": "API anahtarı gerekmez",
+        "description": "ChatGPT, Claude veya Grok aboneliği"
       },
       "openai": {
-        "title": "OpenAI-compatible API",
-        "tag": "Most common",
-        "description": "OpenAI, DeepSeek, Kimi, Qwen, Ollama, and relay services",
-        "modelPlaceholder": "e.g. deepseek-chat"
+        "title": "OpenAI uyumlu API",
+        "tag": "En yaygın",
+        "description": "OpenAI, DeepSeek, Kimi, Qwen, Ollama ve aktarma hizmetleri",
+        "modelPlaceholder": "örn. deepseek-chat"
       },
       "anthropic": {
-        "title": "Anthropic-compatible API",
+        "title": "Anthropic uyumlu API",
         "tag": "Claude",
-        "description": "Claude, and services that speak the Messages format",
-        "modelPlaceholder": "e.g. claude-sonnet-5"
+        "description": "Claude ve Messages biçimini kullanan hizmetler",
+        "modelPlaceholder": "örn. claude-sonnet-5"
       },
       "problems": {
-        "baseUrl": "Enter an address that starts with https:// (http:// only for this machine).",
-        "key": "Enter the API key.",
-        "model": "Enter the model name."
+        "baseUrl": "https:// ile başlayan bir adres girin (http:// yalnızca bu bilgisayar için).",
+        "key": "API anahtarını girin.",
+        "model": "Model adını girin."
       },
       "openaiApi": {
-        "label": "Interface",
+        "label": "API biçimi",
         "openai-completions": "Chat Completions",
         "openai-responses": "Responses",
-        "openai-completionsHint": "Works almost everywhere; most services and relays speak it.",
-        "openai-responsesHint": "OpenAI's newer interface; only some services support it."
+        "openai-completionsHint": "Neredeyse her yerde çalışır; çoğu hizmet ve aktarma hizmeti bunu destekler.",
+        "openai-responsesHint": "OpenAI'ın daha yeni API'si; yalnızca bazı hizmetler destekler."
       }
     },
     "judge": {
-      "title": "Choose a judge",
-      "subtitle": "The judge answers the small calls mu makes while it works. mu runs without one, just without these checks."
+      "title": "Bir hakem seçin",
+      "subtitle": "Hakem, mu'nun çalışırken sorduğu küçük soruları yanıtlar. mu hakemsiz de çalışır, yalnızca bu kontroller olmaz."
     },
     "done": {
-      "title": "All set",
-      "subtitle": "Check it over, then start.",
+      "title": "Her şey hazır",
+      "subtitle": "Bir göz atın, sonra başlayın.",
       "model": "Model",
-      "judge": "Judge",
-      "none": "Not set",
-      "noKey": "No key yet: judgments follow the default rules until there is one",
-      "saveFailed": "Saving did not work: {{reason}}"
+      "judge": "Hakem",
+      "none": "Ayarlanmadı",
+      "noKey": "Henüz anahtar yok: anahtar girilene kadar kararlar varsayılan kurallara göre verilir",
+      "saveFailed": "Kaydedilemedi: {{reason}}",
+      "modelValue": "{{provider}} / {{model}}"
     },
     "intro": {
-      "title": "Welcome to mu",
-      "lead": "mu is a coding assistant that does the work: it reads your project, edits code, runs commands and tests, and keeps going until the job is done.",
+      "title": "mu'ya hoş geldiniz",
+      "lead": "mu işi kendisi yapan bir kodlama asistanıdır: projenizi okur, kodu düzenler, komutları ve testleri çalıştırır, iş bitene kadar devam eder.",
       "points": {
         "judge": {
-          "title": "A check at every step",
-          "text": "A built-in judge watches the key moments: think before acting, keep to the rules you set, never call it done unverified."
+          "title": "Her adımda bir kontrol",
+          "text": "Yerleşik bir hakem kritik anları gözetir: harekete geçmeden önce düşünmek, koyduğunuz kurallara uymak, doğrulamadan asla bitti dememek."
         },
         "control": {
-          "title": "You see it, you steer it",
-          "text": "Any change can be rolled back; every step in the browser is in view, and you can pause or take over."
+          "title": "Görürsünüz, yönetirsiniz",
+          "text": "Her değişiklik geri alınabilir; tarayıcıdaki her adım gözünüzün önündedir, duraklatabilir ya da devralabilirsiniz."
         },
         "ready": {
-          "title": "Ready out of the box",
-          "text": "It picks up the rules, skills and MCP servers you already set up in Claude Code, Cursor and Codex."
+          "title": "Hemen kullanıma hazır",
+          "text": "Claude Code, Cursor ve Codex'te zaten kurduğunuz kuralları, becerileri ve MCP sunucularını aktarır."
         }
       },
-      "start": "Set up"
+      "start": "Kuruluma başla"
     },
     "login": {
       "providers": {
         "openai-codex": {
           "name": "ChatGPT",
-          "plan": "Plus / Pro plan"
+          "plan": "Plus / Pro planı"
         },
         "anthropic": {
           "name": "Claude",
-          "plan": "Pro / Max plan"
+          "plan": "Pro / Max planı"
         },
         "xai": {
           "name": "Grok",
@@ -444,37 +484,75 @@
         },
         "google-gemini-cli": {
           "name": "Gemini CLI",
-          "plan": "Google account"
+          "plan": "Google hesabı"
         },
         "google-antigravity": {
           "name": "Antigravity",
-          "plan": "Google account"
+          "plan": "Google hesabı"
         }
       },
-      "signedIn": "Signed in",
-      "inProgress": "Signing in…",
-      "waiting": "The {{name}} sign-in page is open in your browser. Sign in and allow access; this continues by itself.",
-      "deviceCode": "Code",
-      "code": "Authorization code",
-      "codePlaceholder": "Paste the code the browser shows, or the address it ended on",
-      "submit": "Submit",
-      "openAgain": "Open the page again",
-      "pasteCode": "Paste a code instead",
-      "cancel": "Cancel",
-      "failed": "Signing in did not finish. You can try again.",
-      "asks": "{{name}} asks (in its own words):",
-      "needAccount": "Sign in to an account first, then pick a model.",
-      "experimental": "Experimental",
-      "starting": "Getting the {{name}} sign-in ready…",
-      "waitingDevice": "The {{name}} verification page is open in your browser. Check that the code there matches this one (type it in if it is not filled in), approve, and this continues by itself.",
+      "signedIn": "Giriş yapıldı",
+      "inProgress": "Giriş yapılıyor…",
+      "waiting": "{{name}} giriş sayfası tarayıcınızda açıldı. Giriş yapıp erişime izin verin; burası kendiliğinden devam eder.",
+      "deviceCode": "Kod",
+      "code": "Yetkilendirme kodu",
+      "codePlaceholder": "Tarayıcıda görünen kodu ya da en son açılan sayfanın adresini yapıştırın",
+      "submit": "Gönder",
+      "openAgain": "Sayfayı yeniden aç",
+      "pasteCode": "Bunun yerine kod yapıştır",
+      "cancel": "İptal",
+      "failed": "Giriş tamamlanmadı. Yeniden deneyebilirsiniz.",
+      "asks": "{{name}} soruyor (kendi ifadesiyle):",
+      "needAccount": "Önce bir hesapla giriş yapın, ardından bir model seçin.",
+      "experimental": "Deneysel",
+      "starting": "{{name}} girişi hazırlanıyor…",
+      "waitingDevice": "{{name}} doğrulama sayfası tarayıcınızda açıldı. Oradaki kodun bununla aynı olduğunu kontrol edin (doldurulmamışsa kendiniz yazın) ve onaylayın; burası kendiliğinden devam eder.",
       "risk": {
-        "title": "Know the risk before you sign in",
-        "text": "This signs in through the login Google made for {{tool}} itself, not one Google provides for mu. Google may treat that as against its terms and limit or suspend the account.",
-        "instead": "Use an account you can afford to lose access to. The official ways are a Gemini API key, or Vertex AI signed in with gcloud.",
-        "continue": "I understand the risk, sign in",
-        "cancel": "Don't sign in"
+        "title": "Giriş yapmadan önce riski bilin",
+        "text": "Bu giriş, Google'ın mu için sunduğu bir yöntemi değil, doğrudan {{tool}} için hazırladığı girişi kullanır. Google bunu koşullarına aykırı sayıp hesabı kısıtlayabilir veya askıya alabilir.",
+        "instead": "Erişimini kaybetmeyi göze alabileceğiniz bir hesap kullanın. Resmî yollar: bir Gemini API anahtarı ya da gcloud ile giriş yapılmış Vertex AI.",
+        "continue": "Riski anlıyorum, giriş yap",
+        "cancel": "Giriş yapma"
       },
-      "readingModels": "Signed in to {{name}}. Reading the models this account can use…"
+      "readingModels": "{{name}} ile giriş yapıldı. Bu hesabın kullanabileceği modeller okunuyor…"
     }
+  },
+  "turnErrors": {
+    "processExited": "mu turun ortasında durdu. Yeniden başlatmak için mesajı tekrar gönderin.",
+    "busyConfig": "Modeli veya düşünme düzeyini değiştirmeden önce geçerli turun bitmesini bekleyin.",
+    "unsupportedValue": "mu bu modeli, düşünme düzeyini veya izin modunu sunmuyor.",
+    "permissionsNotSwitched": "mu izin modunu değiştirmedi. Yeniden deneyin ya da konuşmada /permissions yazın.",
+    "imageUnsupported": "Yalnızca en fazla 12 MB boyutunda PNG, JPEG, WebP veya GIF görseller gönderilebilir.",
+    "contentUnsupported": "mu yalnızca metin, görsel ve metin dosyası kabul eder.",
+    "wrongProject": "Bu konuşma başka bir proje klasörüne ait.",
+    "notPersisted": "mu bu konuşmayı kaydedemedi.",
+    "startFailed": "mu başlatılamadı.",
+    "timeout": "mu zamanında yanıt vermedi.",
+    "processClosed": "mu durdu. Yeniden başlatmak için mesajı tekrar gönderin.",
+    "modelFailed": "Model isteği başarısız oldu.",
+    "turnRunning": "mu hâlâ önceki mesaj üzerinde çalışıyor. Bekleyin ya da önce durdurun."
+  },
+  "errors": {
+    "credential": "Anahtar, bir anahtarda bulunamayacak karakterler (boşluk, tırnak işareti veya satır sonu gibi) içeriyor. Yeniden yapıştırın.",
+    "keyVariable": "{{name}} bir hakem anahtarı tutamaz. TYPESAFE_API_KEY, AI_GATEWAY_API_KEY veya MU_JUDGE_ ile başlayan bir ad kullanın.",
+    "sharedKey": "{{providers}} aynı anahtar değişkenini paylaşacak. ID'lerden birini değiştirin.",
+    "pickBoth": "Sağlayıcıyı ve modeli birlikte seçin.",
+    "modelsUnreadable": "models.json okunamadı. Sağlayıcıları kaydetmeden önce dosyayı elle onarın.",
+    "modelsCommented": "models.json yorumlar içeriyor; buradan kaydetmek bunları siler. Sağlayıcıları elle düzenleyin.",
+    "option": {
+      "type": "“{{name}}” yanlış türde bir değer içeriyor.",
+      "choice": "“{{name}}” değeri seçeneklerden biri değil.",
+      "length": "“{{name}}” çok uzun ya da boş bir öğe içeriyor.",
+      "range": "“{{name}}” izin verilen aralığın dışında."
+    },
+    "invalidJson": "{{file}} geçerli bir JSON değil. Elle düzeltip yeniden yükleyin.",
+    "unreadable": "{{file}} okunamadı.",
+    "runtimeOffline": "mu çalışma zamanı çevrimiçi değil. Yerel başlatıcıyı ve giriş durumunu kontrol edin.",
+    "otherRegistration": "Uygulamada zaten başka bir mu komutu kayıtlı.",
+    "backend": "Yerel hizmet beklendiği gibi yanıt vermedi (HTTP {{status}}).",
+    "invalid": "Değerlerden biri geçerli değil.",
+    "unknown": "mu'da bir sorun oluştu.",
+    "unwritable": "{{file}} yazılamadı.",
+    "contextLimit": "Bağlam sınırı 0 ya da {{min}} ile {{max}} arasında bir tam sayı olmalıdır."
   }
 }

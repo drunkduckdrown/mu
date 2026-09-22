@@ -138,7 +138,8 @@
     "printedToConsole": "요소 정보가 콘솔에 기록되었습니다",
     "inspectElement": "요소 검사",
     "inspectElementEnable": "요소 검사기 활성화",
-    "inspectElementDisable": "요소 검사기 비활성화"
+    "inspectElementDisable": "요소 검사기 비활성화",
+    "frameTitle": "HTML 미리보기"
   },
   "ppt": {
     "loading": "PPT 미리보기 시작 중...",
@@ -241,6 +242,79 @@
       "deny": "거부",
       "countdown": "{{seconds}}초 후 자동으로 거부됩니다",
       "untrusted": "위 문구는 웹 페이지에서 온 것입니다. 실제 페이지 내용을 기준으로 판단하세요."
+    },
+    "detachCause": "원인",
+    "detachReason": {
+      "tab_closed": "탭이 닫혔습니다.",
+      "connection": "실행이 끝나기 전에 mu의 브라우징 세션이 종료되었습니다.",
+      "devtools": "이 페이지에서 개발자 도구가 열렸습니다.",
+      "crashed": "페이지가 비정상 종료되었습니다."
+    },
+    "permission": {
+      "location": "위치",
+      "media": "카메라 또는 마이크",
+      "notifications": "알림",
+      "clipboard": "클립보드",
+      "screen": "화면 캡처",
+      "midi": "MIDI 기기",
+      "fullscreen": "전체 화면",
+      "pointerLock": "마우스 잠금",
+      "devices": "USB, 시리얼 또는 HID 기기",
+      "storage": "저장소 접근",
+      "openExternal": "다른 앱 열기",
+      "protectedContent": "보호된 콘텐츠 재생",
+      "windows": "창 관리"
+    },
+    "end": {
+      "stopped_by_user": "지켜보던 사용자가 중지했습니다.",
+      "max_steps": "{{count}}번 조작한 뒤 중지했습니다.",
+      "max_steps_one": "{{count}}번 조작한 뒤 중지했습니다.",
+      "max_steps_other": "{{count}}번 조작한 뒤 중지했습니다.",
+      "no_judge": "조작을 고를 수 있는 판정기가 없었습니다({{judgeReason}}).",
+      "no_progress": "판정기가 목표에 다가갈 수 있는 조작을 찾지 못했습니다.",
+      "not_confirmed": "“{{label}}” 작업은 되돌릴 수 없어 보이는데 확인을 받지 못했습니다.",
+      "no_value": "“{{label}}”에 넣을 값을 만들 수 없었습니다.",
+      "stuck": "{{count}}번 연속 조작했지만 아무것도 바뀌지 않았습니다.",
+      "stuck_one": "{{count}}번 조작했지만 아무것도 바뀌지 않았습니다.",
+      "stuck_other": "{{count}}번 연속 조작했지만 아무것도 바뀌지 않았습니다."
+    },
+    "judgeReason": {
+      "shadow": "섀도 모드: 답변은 기록만 됨",
+      "abstain": "판정기 기권",
+      "off": "판정기 꺼짐",
+      "noVerdict": "판정 없음",
+      "error": {
+        "timeout": "판정기 시간 초과",
+        "aborted": "판정기 호출 취소됨",
+        "unreachable": "판정기에 연결할 수 없음",
+        "auth": "판정기 키 거부됨",
+        "payment_required": "판정기 결제 수단 필요",
+        "rate_limited": "판정기 요청 한도 초과",
+        "bad_request": "판정기가 요청을 거부함",
+        "server": "판정기 서버 오류",
+        "invalid_response": "판정기 답변을 읽을 수 없음",
+        "unexpected": "예기치 않은 오류",
+        "all": "모든 판정기 호출 실패",
+        "other": "판정기 호출 실패"
+      }
     }
-  }
+  },
+  "tabTitle": {
+    "image": "이미지",
+    "diff": "차이"
+  },
+  "sideBySide": "나란히 보기",
+  "diffTag": {
+    "changed": "변경됨",
+    "added": "추가됨",
+    "deleted": "삭제됨",
+    "renamed": "이름 변경됨"
+  },
+  "diffEmpty": "이 파일에는 변경 사항이 없습니다",
+  "mermaidTitleWithSummary": "Mermaid 다이어그램: {{summary}}",
+  "wavedromTitleWithSummary": "WaveDrom 파형도: {{summary}}",
+  "saveFailedWithDetail": "저장하지 못했습니다: {{detail}}",
+  "zoomActualSize": "확대/축소 초기화",
+  "zoomFit": "너비 맞춤",
+  "zoomFitTooltip": "패널 너비에 맞춤"
 }

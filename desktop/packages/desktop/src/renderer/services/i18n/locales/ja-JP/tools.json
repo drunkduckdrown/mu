@@ -59,7 +59,8 @@
     "exit_code": "終了コード：{{code}}",
     "duration": "実行時間：{{seconds}}",
     "auto_approved": "自動承認",
-    "manual_approval": "手動承認"
+    "manual_approval": "手動承認",
+    "toolCallId": "ツール呼び出し ID：{{id}}"
   },
   "actions": {
     "create": "作成",
@@ -76,6 +77,11 @@
     "output": "出力",
     "loading": "完全な出力を読み込み中…",
     "loadError": "完全な出力を読み込めませんでした。",
-    "retry": "再試行"
+    "retry": "再試行",
+    "callAria": "{{name}} · {{status}}"
+  },
+  "kind": {
+    "edit": "ファイル編集",
+    "read": "ファイル読み取り"
   }
 }

@@ -1,6 +1,6 @@
 import type { IMessageAcpToolCall, IMessageToolCall, IMessageToolGroup } from './chatLib';
 import { getAcpImagePath } from './acpToolCallOutput';
-import { parseHiveTool, type HiveToolData } from '@/common/kyrn/hive';
+import { parseHiveTool, parseSwarmProgress, type Coded, type HiveToolData } from '@/common/kyrn/hive';
 
 export type NormalizedToolStatus = 'pending' | 'running' | 'completed' | 'error' | 'canceled';
 
@@ -16,6 +16,8 @@ export interface NormalizedToolCall {
   conversationId?: string;
   imagePath?: string;
   hive?: HiveToolData;
+  /** Delegate/hive: `output` said as a code before the first snapshot, so it can be shown in the app language. */
+  swarmProgress?: Coded;
 }
 
 const formatValue = (value: unknown): string => {
@@ -182,6 +184,7 @@ export function normalizeAcpToolCall(message: IMessageAcpToolCall): NormalizedTo
     conversationId: message.conversation_id,
     imagePath: getAcpImagePath(update),
     hive: parseHiveTool(update.title, rawInput, update.rawOutput ?? update.raw_output),
+    swarmProgress: parseSwarmProgress(update.rawOutput ?? update.raw_output),
   };
 }
 

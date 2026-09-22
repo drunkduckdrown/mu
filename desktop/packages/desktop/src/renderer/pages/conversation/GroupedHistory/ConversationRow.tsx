@@ -13,18 +13,7 @@ import { resolveConversationLeadingMark } from '@/renderer/pages/conversation/ut
 import { cleanupSiderTooltips, getSiderTooltipProps } from '@/renderer/utils/ui/siderTooltip';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { Checkbox, Dropdown, Menu, Spin, Tooltip } from '@arco-design/web-react';
-import {
-  Attention,
-  EditOne,
-  Export,
-  FolderClose,
-  Inbox,
-  MessageOne,
-  MoreOne,
-  Pushpin,
-  Robot,
-  Timer,
-} from '@icon-park/react';
+import { Attention, EditOne, Export, FolderClose, Inbox, MoreOne, Pushpin, Timer } from '@icon-park/react';
 import ForkBranchIcon from '@renderer/components/base/ForkBranchIcon';
 import classNames from 'classnames';
 import React from 'react';
@@ -78,6 +67,40 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
   const cronStatus = getJobStatus(conversation.id);
   const siderTooltipProps = getSiderTooltipProps(tooltipEnabled);
   const inlineNameTooltipEnabled = !collapsed && !isMobile && !!conversation.name;
+  const leadingMark = resolveConversationLeadingMark(conversation, assistantInfo, logos);
+  // Only a real avatar leads a row. An assistant without one goes by its title alone: no stand-in robot or chat
+  // bubble in front of every conversation.
+  const hasAvatar = leadingMark.kind === 'emoji' || leadingMark.kind === 'image';
+  // Waiting on the user takes visual precedence over the generating spinner: a
+  // paused turn still streams frames that mark it "generating", so without this
+  // the distinct icon would never win.
+  const liveStatus = batchMode ? 'none' : isWaitingConfirmation ? 'waiting' : isGenerating ? 'generating' : 'none';
+  const showsUnreadDot = !batchMode && hasUnread && !isGenerating && !isWaitingConfirmation;
+  // Collapsed, the leading slot is all a row shows; pinned, it is where the drag handle appears.
+  const hasLeadingSlot = collapsed || hasAvatar || isPinned;
+  // A row without a leading slot shows its state at its end, where the unread dot is: a live turn, else its scheduled
+  // task. So the title does not move when a turn starts or ends, nor when the scheduled tasks load after the list.
+  const trailing = hasLeadingSlot
+    ? 'none'
+    : liveStatus !== 'none'
+      ? 'status'
+      : cronStatus !== 'none' && !showsUnreadDot
+        ? 'cron'
+        : 'none';
+  // On mobile the row's menu always shows at the end, so the state sits left of it.
+  const trailingBesideMenu = isMobile && !batchMode;
+
+  const renderLiveStatus = (size: number) =>
+    liveStatus === 'waiting' ? (
+      <Attention
+        theme='filled'
+        size={size}
+        className='line-height-0 flex-shrink-0 text-warning animate-wiggle'
+        data-testid={`conversation-waiting-confirmation-${conversation.id}`}
+      />
+    ) : (
+      <Spin size={size} />
+    );
 
   const renderLeadingIcon = () => {
     if (cronStatus !== 'none') {
@@ -90,7 +113,6 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
     const pinnedHoverFade = isPinned ? 'group-hover:opacity-0 transition-opacity' : '';
     const composedClass = classNames(pinnedHoverFade);
 
-    const leadingMark = resolveConversationLeadingMark(conversation, assistantInfo, logos);
     if (leadingMark.kind === 'emoji') {
       return (
         <span className={classNames('text-16px leading-none flex-shrink-0', composedClass)}>{leadingMark.value}</span>
@@ -105,22 +127,28 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
         />
       );
     }
-    if (leadingMark.kind === 'assistant_fallback') {
+    // No avatar. A pinned row keeps a pin where its drag handle appears.
+    if (!collapsed) {
       return (
-        <Robot
+        <Pushpin
           theme='outline'
-          size='16'
-          className={classNames('line-height-0 flex-shrink-0 text-t-secondary', composedClass)}
+          size='14'
+          className={classNames('line-height-0 flex-shrink-0 text-t-tertiary', composedClass)}
         />
       );
     }
-
+    // Collapsed, the title is hidden, so its first character stands in for it.
+    const initial = Array.from(conversation.name?.trim() ?? '')[0]?.toUpperCase() ?? '·';
     return (
-      <MessageOne
-        theme='outline'
-        size='16'
-        className={classNames('line-height-0 flex-shrink-0 text-t-secondary', composedClass)}
-      />
+      <span
+        className={classNames(
+          'size-18px rd-5px flex-center shrink-0 bg-fill-2 text-11px font-[600] leading-none text-t-secondary select-none',
+          composedClass
+        )}
+        data-testid={`conversation-initial-${conversation.id}`}
+      >
+        {initial}
+      </span>
     );
   };
 
@@ -143,13 +171,8 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
     onOpenMenu(conversation);
   };
 
-  // Waiting on the user takes visual precedence over the generating spinner: a
-  // paused turn still streams frames that mark it "generating", so without this
-  // the distinct icon would never win.
-  const showWaitingConfirmation = isWaitingConfirmation && !batchMode;
-
   const renderCompletionUnreadDot = () => {
-    if (batchMode || !hasUnread || isGenerating || isWaitingConfirmation) {
+    if (!showsUnreadDot) {
       return null;
     }
 
@@ -171,9 +194,11 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
         id={'c-' + conversation.id}
         className={classNames(
           'chat-history__item h-34px rd-8px flex items-center group cursor-pointer relative overflow-hidden shrink-0 conversation-item [&.conversation-item+&.conversation-item]:mt-2px min-w-0 transition-colors',
-          collapsed ? 'justify-center px-0' : 'justify-start gap-8px pe-16px',
-          // dimIcon means this row sits inside a project/cron parent — visually indent the row content while keeping the bg full-width
-          !collapsed && (dimIcon ? 'ps-34px' : 'ps-10px'),
+          collapsed ? 'justify-center px-0' : 'justify-start gap-8px',
+          !collapsed && (trailing !== 'none' ? (trailingBesideMenu ? 'pe-56px' : 'pe-32px') : 'pe-16px'),
+          // dimIcon means this row sits inside a project/cron parent — visually indent the row content while keeping the bg full-width.
+          // A title without an icon lines up with the section label, or inside a project with the project's name.
+          !collapsed && (hasLeadingSlot ? (dimIcon ? 'ps-34px' : 'ps-10px') : dimIcon ? 'ps-40px' : 'ps-12px'),
           {
             'hover:bg-fill-3': !batchMode && !selected,
             '!bg-fill-3': selected,
@@ -195,34 +220,28 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
             <Checkbox checked={checked} />
           </span>
         )}
-        <span className='size-22px flex items-center justify-center shrink-0 relative'>
-          {showWaitingConfirmation ? (
-            <Attention
-              theme='filled'
-              size='16'
-              className='line-height-0 flex-shrink-0 text-warning animate-wiggle'
-              data-testid={`conversation-waiting-confirmation-${conversation.id}`}
-            />
-          ) : isGenerating && !batchMode ? (
-            <Spin size={16} />
-          ) : (
-            renderLeadingIcon()
-          )}
-          {/* Hover overlay on the leading icon: drag handle for sortable pinned rows, pushpin marker otherwise */}
-          {!batchMode &&
-            isPinned &&
-            !isMobile &&
-            !isGenerating &&
-            !isWaitingConfirmation &&
-            (dragHandle ?? (
-              <span
-                className='absolute inset-0 flex-center text-t-secondary pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity'
-                style={{ lineHeight: 0 }}
-              >
-                <Pushpin theme='outline' size='14' />
-              </span>
-            ))}
-        </span>
+        {hasLeadingSlot && (
+          <span
+            className='size-22px flex items-center justify-center shrink-0 relative'
+            data-testid={`conversation-leading-${conversation.id}`}
+          >
+            {liveStatus !== 'none' ? renderLiveStatus(16) : renderLeadingIcon()}
+            {/* Hover overlay on the leading icon: drag handle for sortable pinned rows, pushpin marker otherwise */}
+            {!batchMode &&
+              isPinned &&
+              !isMobile &&
+              !isGenerating &&
+              !isWaitingConfirmation &&
+              (dragHandle ?? (
+                <span
+                  className='absolute inset-0 flex-center text-t-secondary pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity'
+                  style={{ lineHeight: 0 }}
+                >
+                  <Pushpin theme='outline' size='14' />
+                </span>
+              ))}
+          </span>
+        )}
         <FlexFullContainer className='h-24px min-w-0 flex-1 collapsed-hidden'>
           <Tooltip
             content={conversation.name}
@@ -254,6 +273,24 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
         </FlexFullContainer>
 
         {renderCompletionUnreadDot()}
+        {trailing !== 'none' && (trailingBesideMenu || batchMode || !menuVisible) && (
+          // Gives way to the row's menu, which opens in the same place (on mobile the menu always shows, so it moves left).
+          <span
+            className={classNames(
+              'absolute top-1/2 -translate-y-1/2 flex items-center justify-center size-16px',
+              trailingBesideMenu ? 'end-32px' : 'end-8px',
+              !batchMode && !isMobile && 'group-hover:hidden'
+            )}
+            style={{ lineHeight: 0 }}
+            data-testid={`conversation-status-${conversation.id}`}
+          >
+            {trailing === 'status' ? (
+              renderLiveStatus(14)
+            ) : (
+              <CronJobIndicator status={cronStatus} size={14} className='flex-shrink-0' />
+            )}
+          </span>
+        )}
         {!batchMode && (
           <div
             className={classNames(

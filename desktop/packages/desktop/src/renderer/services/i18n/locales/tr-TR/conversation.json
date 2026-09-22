@@ -39,38 +39,38 @@
     "renamePlaceholder": "Lütfen yeni bir isim girin",
     "renameSuccess": "Başarıyla yeniden adlandırıldı",
     "renameFailed": "Yeniden adlandırma başarısız oldu",
-    "batchManage": "Batch Manage",
-    "batchModeExit": "Exit Batch Mode",
-    "selectAll": "Select All",
-    "selectedCount": "{{count}} selected",
-    "batchExport": "Batch Export",
-    "batchExportConfirm": "Export {{count}} selected topics?",
-    "batchDelete": "Batch Delete",
-    "batchDeleteConfirm": "Delete {{count}} selected topics?",
+    "batchManage": "Toplu yönetim",
+    "batchModeExit": "Toplu yönetimden çık",
+    "selectAll": "Tümünü seç",
+    "selectedCount": "{{count}} seçili",
+    "batchExport": "Toplu dışa aktar",
+    "batchExportConfirm": "Seçili {{count}} konuşma dışa aktarılsın mı?",
+    "batchDelete": "Toplu sil",
+    "batchDeleteConfirm": "Seçili {{count}} konuşma silinsin mi?",
     "batchDeleteConfirm_one": "Delete {{count}} selected topics?",
-    "batchDeleteConfirm_other": "Delete {{count}} selected topics?",
-    "batchDeleteSuccess": "{{count}} topics deleted",
+    "batchDeleteConfirm_other": "Seçili {{count}} konuşma silinsin mi?",
+    "batchDeleteSuccess": "{{count}} konuşma silindi",
     "batchDeleteSuccess_one": "{{count}} topics deleted",
-    "batchDeleteSuccess_other": "{{count}} topics deleted",
-    "batchNoSelection": "Please select topics first",
-    "export": "Export",
-    "exportDialogTitle": "Export Topics",
-    "exportDialogSingleDescription": "Export current topic conversation records (JSON + Markdown) and project files into a ZIP package.",
-    "exportDialogBatchDescription": "Export {{count}} selected topics' conversation records (JSON + Markdown) and project files into one ZIP package.",
-    "exportTargetFolder": "Export To Folder",
-    "exportSelectFolder": "Please select an export folder",
-    "exportDialogHint": "Folder selection follows the same interaction as changing the project.",
-    "exporting": "Exporting...",
-    "exportSuccess": "Export succeeded",
-    "exportCanceled": "Export canceled",
-    "exportFailed": "Export failed",
-    "pin": "Pin",
-    "unpin": "Unpin",
+    "batchDeleteSuccess_other": "{{count}} konuşma silindi",
+    "batchNoSelection": "Lütfen önce konuşmaları seçin",
+    "export": "Dışa aktar",
+    "exportDialogTitle": "Konuşmaları dışa aktar",
+    "exportDialogSingleDescription": "Geçerli konuşmanın kayıtları (JSON + Markdown) ve proje dosyaları bir ZIP paketi olarak dışa aktarılır.",
+    "exportDialogBatchDescription": "Seçili {{count}} konuşmanın kayıtları (JSON + Markdown) ve proje dosyaları tek bir ZIP paketi olarak dışa aktarılır.",
+    "exportTargetFolder": "Hedef klasör",
+    "exportSelectFolder": "Lütfen bir dışa aktarma klasörü seçin",
+    "exportDialogHint": "Klasör seçimi, proje değiştirirken olduğu gibi çalışır.",
+    "exporting": "Dışa aktarılıyor…",
+    "exportSuccess": "Dışa aktarma başarılı",
+    "exportCanceled": "Dışa aktarma iptal edildi",
+    "exportFailed": "Dışa aktarma başarısız",
+    "pin": "Sabitle",
+    "unpin": "Sabitlemeyi kaldır",
     "markAsUnread": "Okunmadı olarak işaretle",
     "markAsRead": "Okundu olarak işaretle",
-    "pinned": "Pinned",
-    "pinFailed": "Pin operation failed",
-    "pinnedSection": "Pinned",
+    "pinned": "Sabitlendi",
+    "pinFailed": "Sabitleme başarısız",
+    "pinnedSection": "Sabitlenenler",
     "deleteSuccess": "Başarıyla silindi",
     "deleteFailed": "Silme başarısız oldu",
     "projectsSection": "Projeler",
@@ -83,13 +83,20 @@
     "archive": "Arşivle",
     "archiveSuccess": "Arşivlendi",
     "archiveFailed": "Arşivleme başarısız",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "Toplu arşivle",
+    "batchArchiveConfirm": "Seçili {{count}} konuşma arşivlensin mi? Ayarlar'daki Arşiv bölümünden geri yükleyebilir veya silebilirsiniz.",
+    "batchArchiveSuccess": "{{count}} konuşma arşivlendi",
+    "archiveProject": "Projeyi arşivle",
+    "archiveProjectTitle": "Projeyi arşivle",
+    "archiveProjectConfirm": "“{{name}}” projesi arşivlensin mi? İçindeki {{count}} konuşma da arşivlenecek. Ayarlar'daki Arşiv bölümünden geri yükleyebilir veya silebilirsiniz.",
+    "archiving": "Arşivleniyor…",
+    "batchArchiveConfirm_one": "Seçili {{count}} konuşma arşivlensin mi? Ayarlar'daki Arşiv bölümünden geri yükleyebilir veya silebilirsiniz.",
+    "batchArchiveConfirm_other": "Seçili {{count}} konuşma arşivlensin mi? Ayarlar'daki Arşiv bölümünden geri yükleyebilir veya silebilirsiniz.",
+    "batchArchiveSuccess_one": "{{count}} konuşma arşivlendi",
+    "batchArchiveSuccess_other": "{{count}} konuşma arşivlendi",
+    "archiveProjectConfirm_one": "“{{name}}” projesi arşivlensin mi? İçindeki {{count}} konuşma da arşivlenecek. Ayarlar'daki Arşiv bölümünden geri yükleyebilir veya silebilirsiniz.",
+    "archiveProjectConfirm_other": "“{{name}}” projesi arşivlensin mi? İçindeki {{count}} konuşma da arşivlenecek. Ayarlar'daki Arşiv bölümünden geri yükleyebilir veya silebilirsiniz.",
+    "projectActions": "Proje işlemleri"
   },
   "historySearch": {
     "tooltip": "Mesajları ara",
@@ -300,38 +307,39 @@
         "body": "Uygulama bir üst hata aldı ancak bunun ajandan, sağlayıcıdan, ağdan veya yerel ortamdan gelip gelmediğini belirleyemedi."
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
-        "title": "Failed to read the team helper response",
-        "body": "AionUi could not read the local team helper response. Retry once, and if it keeps happening, restart the app."
+        "title": "Takım yardımcı işleminin yanıtı okunamadı",
+        "body": "AionUi, yerel takım yardımcı işleminin yanıtını okuyamadı. Bir kez yeniden deneyin; sorun sürerse uygulamayı yeniden başlatın."
       },
       "MCP_TOOL_REMOTE_ERROR": {
-        "title": "The local team helper rejected the request",
-        "body": "The local team helper returned an error while processing this request. Review the details below and retry after adjusting the team action."
+        "title": "Yerel takım yardımcı işlemi isteği reddetti",
+        "body": "Yerel takım yardımcı işlemi bu isteği işlerken bir hata döndürdü. Aşağıdaki ayrıntıları inceleyin ve takım eylemini düzenledikten sonra yeniden deneyin."
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
-        "title": "The team helper returned an unexpected response",
-        "body": "AionUi received an unexpected response from the local team helper. Retry once, and report it if the problem persists."
+        "title": "Takım yardımcı işlemi beklenmeyen bir yanıt döndürdü",
+        "body": "AionUi, yerel takım yardımcı işleminden beklenmeyen bir yanıt aldı. Bir kez yeniden deneyin; sorun sürerse bildirin."
       },
       "MCP_TCP_READ_FAILED": {
-        "title": "Failed to read from the local team helper",
-        "body": "AionUi could not read the local team helper TCP response. Retry once, and restart the app if it keeps failing."
+        "title": "Yerel takım yardımcı işleminden okunamadı",
+        "body": "AionUi, yerel takım yardımcı işleminin TCP yanıtını okuyamadı. Bir kez yeniden deneyin; hata sürerse uygulamayı yeniden başlatın."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
-        "title": "Team service is not ready yet",
-        "body": "The local team session is still starting or has been interrupted. Wait a moment and retry."
+        "title": "Takım hizmeti henüz hazır değil",
+        "body": "Yerel takım oturumu hâlâ başlıyor veya kesintiye uğradı. Biraz bekleyip yeniden deneyin."
       },
       "TEAM_ASSISTANT_ID_REQUIRED": {
-        "title": "A teammate assistant must be selected",
-        "body": "Choose a real assistant from the available assistant catalog before creating or spawning a teammate."
+        "title": "Bir takım üyesi asistanı seçilmelidir",
+        "body": "Bir takım üyesi oluşturmadan veya başlatmadan önce kullanılabilir asistan kataloğundan gerçek bir asistan seçin."
       },
       "TEAM_ASSISTANT_NOT_FOUND": {
-        "title": "The selected assistant is no longer available",
-        "body": "Refresh the assistant catalog, then choose another assistant for this teammate."
+        "title": "Seçilen asistan artık kullanılamıyor",
+        "body": "Asistan kataloğunu yenileyin, ardından bu takım üyesi için başka bir asistan seçin."
       },
       "TEAM_ASSISTANT_FIELD_UNSUPPORTED": {
-        "title": "The request used a legacy team identity field",
-        "body": "This team action must use assistant_id instead of legacy backend or agent fields."
+        "title": "İstek eski bir takım kimliği alanı kullandı",
+        "body": "Bu takım eylemi, eski backend veya agent alanları yerine assistant_id kullanmalıdır."
       }
-    }
+    },
+    "errorCodeValue": "Hata kodu: {{code}}"
   },
   "workspace": {
     "title": "Proje",
@@ -417,7 +425,10 @@
       "terminal": "Terminal",
       "explorer": "Dosya Gezgini",
       "browser": "Tarayıcı"
-    }
+    },
+    "collapsePanel": "Proje panelini gizle",
+    "togglePanel": "Proje panelini göster veya gizle",
+    "expandPanel": "Proje panelini göster"
   },
   "minimap": {
     "searchAria": "Sohbeti ara",
@@ -426,7 +437,9 @@
     "noMatch": "Eşleşen içerik bulunamadı",
     "count": "{{count}} dönüş",
     "count_one": "{{count}} dönüş",
-    "count_other": "{{count}} dönüş"
+    "count_other": "{{count}} dönüş",
+    "questionLabel": "S:",
+    "answerLabel": "C:"
   },
   "chat": {
     "noModelSelected": "Mevcut oturum için model seçilmedi, mesaj gönderilemiyor",
@@ -436,11 +449,11 @@
     "quotaExceededBody": "Mevcut model kotası tükendi. Devam etmek için {{model}} modeline geçilsin mi?",
     "quotaExceededNoFallback": "Model kotasına ulaşıldı. Lütfen başka bir uygun modele geçin.",
     "quotaSwitched": "{{model}} modeline geçildi.",
-    "apiErrorNoCli": "API error occurred. No CLI agent available for fallback.",
-    "apiErrorSwitchFailed": "Failed to create fallback conversation.",
-    "apiErrorSwitched": "API error, auto-switched to {{cli}} CLI",
+    "apiErrorNoCli": "API hatası oluştu. Geçiş yapılabilecek bir CLI ajanı yok.",
+    "apiErrorSwitchFailed": "Geçiş için yeni konuşma oluşturulamadı.",
+    "apiErrorSwitched": "API hatası; otomatik olarak {{cli}} CLI ajanına geçildi",
     "confirmationLoadError": "Onay penceresi yüklenemedi",
-    "tryAnotherAgent": "Try another agent:",
+    "tryAnotherAgent": "Başka bir ajan deneyin:",
     "switchAgentFailed": "Ajan değiştirilemedi",
     "speech": {
       "recordTooltip": "Sesli girişi başlat",
@@ -460,8 +473,11 @@
       "permissionDenied": "Mikrofon izni reddedildi",
       "recordingUnsupported": "Bu ortamda doğrudan kayıt desteklenmiyor. Lütfen bir ses dosyası yükleyin",
       "transcriptionFailed": "Ses yazıya dönüştürülemedi",
-      "genericError": "Sesli giriş başarısız oldu. Lütfen tekrar deneyin"
-    }
+      "genericError": "Sesli giriş başarısız oldu. Lütfen tekrar deneyin",
+      "transcriptionFailedStatus": "Ses yazıya dönüştürülemedi (HTTP {{status}})"
+    },
+    "archivedCannotSend": "Bu konuşma arşivlendi ve yeni mesaj alamaz.",
+    "awaitingConfirmation": "Onay bekleniyor"
   },
   "sideQuestion": {
     "title": "Kısa Soru",
@@ -515,9 +531,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "Bu aracı yanıt verirken araya girmek desteklenmiyor. Bunun yerine Taslak kutusuna ekle'yi kullanın.",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "Gönderim işlemini seçin",
+    "midturnBlockedSendHint": "Bu ajan hâlâ çalışıyor, bu yüzden mesaj doğrudan gönderilemiyor. Taslak kutusuna kaydedip daha sonra gönderin.",
+    "addToQueueBusyHint": "Taslak kutusuna kaydedip daha sonra gönderin."
   },
   "contextUsage": {
     "tokensUsed": "{{tokens}} jeton kullanıldı",
@@ -553,25 +569,29 @@
     "preset_registered": "Ajan hazır ayarı başarıyla kaydedildi!"
   },
   "dropdown": {
-    "cliAgents": "CLI Agents",
-    "presetAssistants": "Preset Assistants"
+    "cliAgents": "CLI ajanları",
+    "presetAssistants": "Hazır asistanlar"
   },
-  "noAgentsAvailable": "No agents available",
-  "noModelConfigured": "No model configured. Please configure in settings.",
-  "createFailed": "Failed to create conversation",
+  "noAgentsAvailable": "Kullanılabilir ajan yok",
+  "noModelConfigured": "Yapılandırılmış model yok. Lütfen ayarlardan yapılandırın.",
+  "createFailed": "Konuşma oluşturulamadı",
   "createError": {
     "pathVariants": {
       "WORKSPACE_PATH_UNAVAILABLE": "Seçilen çalışma alanı yolu kullanılamıyor. Çalışma alanı yolu \"{{workspacePath}}\" gerçekten var ve erişilebilir olduğundan emin olun."
     },
     "codes": {
-      "TEAM_ASSISTANT_ID_REQUIRED": "Please select an assistant before creating the team.",
-      "TEAM_ASSISTANT_NOT_FOUND": "Assistant {{assistantId}} is no longer available. Refresh the assistant list and choose another one.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Use assistant_id instead of {{field}}."
+      "TEAM_ASSISTANT_ID_REQUIRED": "Takımı oluşturmadan önce lütfen bir asistan seçin.",
+      "TEAM_ASSISTANT_NOT_FOUND": "{{assistantId}} asistanı artık kullanılamıyor. Asistan listesini yenileyip başka bir asistan seçin.",
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "{{field}} yerine assistant_id kullanın.",
+      "WORKSPACE_PATH_UNAVAILABLE": "Seçilen çalışma alanı yolu kullanılamıyor. Var olduğundan ve erişilebilir olduğundan emin olun."
     }
   },
   "thinking": {
     "label": "Düşünüyor...",
-    "history": "Düşünme geçmişi"
+    "history": "Düşünme geçmişi",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "Düşünme tamamlandı · {{time}}",
+    "elapsed": "({{time}})"
   },
   "skills": {
     "loaded": "Yüklenen Beceriler",
@@ -586,7 +606,9 @@
       "failed": "Başarısız",
       "unsupported": "Desteklenmiyor"
     },
-    "selected": "Seçili MCP"
+    "selected": "Seçili MCP",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "Seçili MCP · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "Çalışma ortamı hazırlanıyor. İlk başlatma biraz daha uzun sürebilir."
@@ -632,15 +654,15 @@
   },
   "notFound": "Konuşma bulunamadı veya silinmiş",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "Projeye klasör ekle",
     "refreshFiles": "Dosyaları yenile",
     "refreshChanges": "Değişiklikleri yenile",
     "collapseAll": "Tümünü daralt",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "Projeden kaldır",
+    "attachDuplicate": "Bu klasör zaten projede",
+    "attachOverlap": "Bu klasör, projedeki bir klasörle çakışıyor",
+    "attachFailed": "Klasör eklenemedi",
+    "removeFailed": "Klasör kaldırılamadı",
     "contextMenu": {
       "rename": "Yeniden adlandır",
       "addToChat": "Sohbete ekle",
@@ -729,7 +751,7 @@
         "confirmDiscardTitle": "Değişiklikler silinsin mi?",
         "confirmDiscardTracked": "{{count}} dosyadaki düzenlemeler kaybolacak. Bu geri alınamaz.",
         "confirmDiscardUntracked": "{{count}} yeni dosya çöp kutusuna taşınacak.",
-        "confirmDiscardMixed": "{{tracked}} dosyadaki düzenlemeler geri alınamaz şekilde kaybolacak; {{untracked}} yeni dosya çöp kutusuna gidecek.",
+        "confirmDiscardMixed": "Düzenlemeleri kalıcı olarak kaybolacak dosyalar: {{tracked}}. Çöp kutusuna taşınacak yeni dosyalar: {{untracked}}.",
         "discardConfirmButton": "Sil",
         "okStage": "{{count}} dosya hazırlandı",
         "okStage_one": "{{count}} dosya hazırlandı",
@@ -750,11 +772,17 @@
         "outcomeUnknown": "Yanıt gelmeden bağlantı sıfırlandı — bu işlem tamamlanmış da olabilir, olmamış da. Yeniden denemeden önce yenileyip dosya listesini kontrol edin.",
         "allFailed": "{{count}} dosyanın hiçbiri işlenemedi",
         "allFailed_one": "{{count}} dosyanın hiçbiri işlenemedi",
-        "allFailed_other": "{{count}} dosyanın hiçbiri işlenemedi"
+        "allFailed_other": "{{count}} dosyanın hiçbiri işlenemedi",
+        "confirmDiscardTracked_one": "{{count}} dosyadaki düzenlemeler kaybolacak. Bu geri alınamaz.",
+        "confirmDiscardTracked_other": "{{count}} dosyadaki düzenlemeler kaybolacak. Bu geri alınamaz.",
+        "confirmDiscardUntracked_one": "{{count}} yeni dosya çöp kutusuna taşınacak.",
+        "confirmDiscardUntracked_other": "{{count}} yeni dosya çöp kutusuna taşınacak."
       }
     },
     "pathCopied": "Yol kopyalandı",
-    "copyFailed": "Yol kopyalanamadı"
+    "copyFailed": "Yol kopyalanamadı",
+    "imported_one": "{{count}} dosya içe aktarıldı",
+    "imported_other": "{{count}} dosya içe aktarıldı"
   },
   "terminal": {
     "running": "Çalışıyor",
@@ -783,5 +811,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "Planı genişlet",
     "collapse": "Planı daralt"
-  }
+  },
+  "createFailedWithDetail": "Konuşma oluşturulamadı: {{error}}",
+  "agentStartFailedWithDetail": "Ajan başlatılamadı: {{error}}"
 }

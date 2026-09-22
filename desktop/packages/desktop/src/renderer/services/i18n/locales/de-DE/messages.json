@@ -96,5 +96,22 @@
   "requestDetails": "Anfragedetails:",
   "delivery": {
     "pending": "Ungelesen"
-  }
+  },
+  "permissionOption": {
+    "allow_once": "Erlauben",
+    "allow_always": "Immer erlauben",
+    "reject_once": "Ablehnen",
+    "reject_always": "Immer ablehnen"
+  },
+  "permissionKind": {
+    "execute": "Befehl ausführen",
+    "edit": "Bearbeiten",
+    "read": "Lesen",
+    "fetch": "Abrufen",
+    "tool": "Tool"
+  },
+  "optionNumber": "Option {{number}}",
+  "copyFilesHeader": "Dateien:",
+  "exportHeaderLine": "{{label}}: {{value}}",
+  "exportSpeakerLine": "{{speaker}}:"
 }

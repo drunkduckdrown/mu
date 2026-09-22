@@ -9,10 +9,14 @@ import { thinkingLevelLabel } from '@/renderer/utils/model/thinkingLevel';
 import { mergeActivity, list, record, str } from './activity';
 import ContextPanel from './ContextPanel';
 import Hive from './Hive';
+import BeeActivityList from './Hive/BeeActivity';
+import { beeErrorText, swarmTitleText } from './Hive/codes';
+import { parseBeeActivity, parseBeeError, parseSwarmTitle } from '@/common/kyrn/hive';
 import Board from './Board';
 import { boardView } from './Board/board';
 import Judge, { runtimeEvents } from './Judge';
 import { stageOf } from './Judge/activity';
+import { eventLines } from './Judge/eventLine';
 import type { HiveFocusRequest } from './focus';
 import { useClock } from './clock';
 import { beeCounters, ErrorNotice, quietLabel } from './text';
@@ -182,7 +186,7 @@ export default function KyrnPanel({ conversationId, focus }: { conversationId: s
               ref={run.run === scopedFocus?.runId ? focusedRun : undefined}
               className='mb-16px'
             >
-              <div className='font-500 mb-8px break-words'>{str(run.payload.title)}</div>
+              <div className='font-500 mb-8px break-words'>{swarmTitleText(t, parseSwarmTitle(run.payload))}</div>
               <Collapse
                 bordered={false}
                 activeKey={expandedBees[run.run ?? ''] ?? []}
@@ -208,11 +212,16 @@ export default function KyrnPanel({ conversationId, focus }: { conversationId: s
                     {bee.quietMs ? (
                       <Alert type='warning' content={quietLabel(t, Number(bee.quietMs), i18n.language)} />
                     ) : null}
-                    {bee.error ? <ErrorNotice title={t('common.kyrn.beeFailed')} detail={str(bee.error)} /> : null}
+                    {bee.error ? (
+                      <ErrorNotice
+                        title={t('common.kyrn.beeFailed')}
+                        detail={beeErrorText(t, parseBeeError(bee), i18n.language)}
+                      />
+                    ) : null}
                     <div className='whitespace-pre-wrap break-words'>
                       {str(record(bee.tool).summary) || str(bee.said)}
                     </div>
-                    <Payload value={bee.recent} />
+                    <BeeActivityList entries={parseBeeActivity(bee.recent)} />
                   </Collapse.Item>
                 ))}
               </Collapse>
@@ -244,6 +253,8 @@ export default function KyrnPanel({ conversationId, focus }: { conversationId: s
                   ? `${str(p.bee) || str(p.from)}${p.to ? ` → ${str(p.to)}` : ''}`
                   : str(p.bee) || event.bee || '';
             const allowed = p.publish ?? p.deliver;
+            // What the event says in the app language, by the harness's codes; other kinds keep the generic summary.
+            const lines = eventLines(t, event.kind, p, i18n.language);
             return (
               <Collapse.Item
                 key={event.id}
@@ -276,7 +287,14 @@ export default function KyrnPanel({ conversationId, focus }: { conversationId: s
                 ) : (
                   <>
                     <div className='whitespace-pre-wrap break-words mb-8px'>
-                      {str(p.text) || str(p.lesson) || str(note?.text) || str(p.head)}
+                      {lines?.length
+                        ? lines.map((line, index) => (
+                            // A line may be data (a command, a server's words) in any script.
+                            <div key={index} dir='auto'>
+                              {line}
+                            </div>
+                          ))
+                        : str(p.text) || str(p.lesson) || str(note?.text) || str(p.head)}
                     </div>
                     <Payload value={p} />
                   </>

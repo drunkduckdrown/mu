@@ -42,7 +42,8 @@
     "noHistory": "هنوز اجرایی وجود ندارد",
     "notFound": "کار یافت نشد",
     "executionModeDescriptionNew": "هر اجرا یک مکالمه تازه شروع می‌کند، بنابراین زمینه قبلی منتقل نمی‌شود. مناسب برای گزارش‌ها یا بررسی‌های دوره‌ای که باید مستقل باشند.",
-    "executionModeDescriptionExisting": "هر اجرا در همان مکالمه ادامه می‌یابد، بنابراین زمینه و نتایج قبلی در دسترس باقی می‌مانند. مناسب برای کارهای پیگیری که بر اساس اجراهای قبلی ساخته می‌شوند."
+    "executionModeDescriptionExisting": "هر اجرا در همان مکالمه ادامه می‌یابد، بنابراین زمینه و نتایج قبلی در دسترس باقی می‌مانند. مناسب برای کارهای پیگیری که بر اساس اجراهای قبلی ساخته می‌شوند.",
+    "lastRunFailed": "آخرین اجرا ناموفق بود"
   },
   "notification": {
     "taskComplete": "کار تکمیل شد",
@@ -126,7 +127,19 @@
       "hourly": "هر ساعت",
       "dailyAt": "هر روز ساعت {{time}}",
       "weekdaysAt": "روزهای کاری ساعت {{time}}",
-      "weeklyAt": "هر {{day}} ساعت {{time}}"
+      "weeklyAt": "هر {{day}} ساعت {{time}}",
+      "everyMinute": "هر دقیقه",
+      "everyNMinutes": "هر {{count}} دقیقه",
+      "everyNMinutes_one": "هر {{count}} دقیقه",
+      "everyNMinutes_other": "هر {{count}} دقیقه",
+      "everyNHours": "هر {{count}} ساعت",
+      "everyNHours_one": "هر {{count}} ساعت",
+      "everyNHours_other": "هر {{count}} ساعت",
+      "weeklyOnDaysAt": "هر {{days}} ساعت {{time}}",
+      "monthlyAt": "روز {{day}} هر ماه ساعت {{time}}",
+      "everyInterval": "هر {{interval}}",
+      "onceAt": "یک بار در {{time}}",
+      "customExpr": "زمان‌بندی سفارشی ({{expr}})"
     },
     "custom": {
       "modeLabel": "الگوی تکرار",
@@ -142,6 +155,8 @@
       "monthDay": "روز ماه",
       "preview": "Cron تولیدشده"
     },
+    "createFailed": "ایجاد کار ناموفق بود: {{error}}",
+    "updateFailed": "ذخیرهٔ کار ناموفق بود: {{error}}",
     "searchPlaceholder": "جستجوی وظایف...",
     "noSearchResults": "هیچ وظیفه زمان‌بندی‌شده منطبقی وجود ندارد."
   },
@@ -158,10 +173,16 @@
   },
   "error": {
     "alreadyExists": "این مکالمه از قبل یک کار زمان‌بندی‌شده «{{name}}» (شناسه: {{id}}) دارد. لطفاً به‌جای ایجاد کار جدید، کار موجود را به‌روزرسانی کنید.",
-    "missedJob": "⏰ کار زمان‌بندی‌شده «{{name}}» در طول خواب سیستم اجرا نشد.\nزمان‌بندی‌شده: {{time}}\nタイマー ری‌استارت شده و در زمان‌بندی بعدی اجرا خواهد شد.",
+    "missedJob": "⏰ کار زمان‌بندی‌شدهٔ «{{name}}» هنگام خواب سیستم اجرا نشد.\nزمان تعیین‌شده: {{time}}\nزمان‌سنج دوباره راه‌اندازی شد و کار در نوبت زمان‌بندی‌شدهٔ بعدی اجرا می‌شود.",
     "jobNotFound": "کار یافت نشد: {{id}}",
     "conversationNotFound": "مکالمه یافت نشد",
     "scheduledTimePassed": "زمان‌بندی گذشته است",
     "conversationBusy": "مکالمه پس از {{count}} تلاش مشغول است"
-  }
+  },
+  "nextRunAt": "اجرای بعدی: {{time}}",
+  "keepAwakeFailed": "تغییر تنظیم بیدار نگه داشتن ناموفق بود: {{error}}",
+  "pauseFailed": "توقف کار ناموفق بود: {{error}}",
+  "resumeFailed": "از سرگیری کار ناموفق بود: {{error}}",
+  "deleteFailed": "حذف کار ناموفق بود: {{error}}",
+  "runNowFailed": "اجرای کار ناموفق بود: {{error}}"
 }

@@ -31,7 +31,8 @@
     "switchSuccess": "Modelo alterado com sucesso",
     "switchFailed": "Falha ao alternar o modelo",
     "searchPlaceholder": "Buscar modelos",
-    "noResults": "Nenhum modelo correspondente"
+    "noResults": "Nenhum modelo correspondente",
+    "withThoughtLevel": "{{model}} · {{level}}"
   },
   "config": {
     "setting": "Aplicando configuração...",

@@ -171,6 +171,56 @@ describe('the step bar above a page mu is driving', () => {
   });
 });
 
+describe('the step bar after the harness said how the run ended', () => {
+  const ended = (patch: Partial<BrowserRunState>) =>
+    run({ phase: 'finished', status: 'blocked', finishedAt: Date.now(), ...patch });
+
+  it('says the harness’s code in the person’s language, the judge’s own reason included', () => {
+    show(
+      <StepBar
+        run={ended({
+          reason: 'no judge could choose an action (error:rate_limited)',
+          code: 'no_judge',
+          params: { judgeReason: 'error:rate_limited' },
+        })}
+      />
+    );
+    fireEvent.click(screen.getByText('步骤 3'));
+    expect(screen.getByText('mu 的说明')).toBeTruthy();
+    expect(screen.getByText('没有判定器能选出下一步操作（判定器请求过于频繁）。')).toBeTruthy();
+    expect(screen.queryByText(/no judge could choose/)).toBeNull();
+  });
+
+  it('puts a page’s label into the sentence as text, never as markup', () => {
+    show(
+      <StepBar
+        run={ended({
+          status: 'needs_confirmation',
+          reason: '"<img src=x onerror=alert(1)>" looks irreversible and was not confirmed',
+          code: 'not_confirmed',
+          params: { label: '<img src=x onerror=alert(1)>' },
+        })}
+      />
+    );
+    fireEvent.click(screen.getByText('步骤 3'));
+    expect(screen.getByText('“<img src=x onerror=alert(1)>”看起来无法撤销，且没有得到确认。')).toBeTruthy();
+    expect(document.querySelector('img')).toBeNull();
+  });
+
+  it('falls back to the harness’s English for a code it does not know, and calls an exception a technical detail', () => {
+    const view = show(<StepBar run={ended({ code: 'brand_new', reason: 'the judge went fishing' })} />);
+    fireEvent.click(screen.getByText('步骤 3'));
+    expect(screen.getByText('mu 的说明')).toBeTruthy();
+    expect(screen.getByText('the judge went fishing')).toBeTruthy();
+    view.unmount();
+
+    show(<StepBar run={ended({ status: 'failed', code: 'error', reason: 'Target page crashed' })} />);
+    fireEvent.click(screen.getByText('步骤 3'));
+    expect(screen.getByText('技术详情')).toBeTruthy();
+    expect(screen.getByText('Target page crashed')).toBeTruthy();
+  });
+});
+
 describe('the confirmation dialog', () => {
   const asking = (seconds: number) =>
     run({

@@ -59,7 +59,8 @@
     "exit_code": "Beendet: {{code}}",
     "duration": "Dauer: {{seconds}}",
     "auto_approved": "Automatisch genehmigt",
-    "manual_approval": "Manuelle Genehmigung"
+    "manual_approval": "Manuelle Genehmigung",
+    "toolCallId": "Tool-Aufruf-ID: {{id}}"
   },
   "actions": {
     "create": "erstellen",
@@ -76,6 +77,11 @@
     "output": "Ausgabe",
     "loading": "Vollständige Ausgabe wird geladen…",
     "loadError": "Vollständige Ausgabe konnte nicht geladen werden.",
-    "retry": "Erneut versuchen"
+    "retry": "Erneut versuchen",
+    "callAria": "{{name}} · {{status}}"
+  },
+  "kind": {
+    "edit": "Datei bearbeiten",
+    "read": "Datei lesen"
   }
 }

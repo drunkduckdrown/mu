@@ -14,7 +14,7 @@
   "bypassPermissions": "YOLO",
   "smart": "Intelligent",
   "build": "Mode Construction",
-  "permission": "Permission",
+  "permission": "Autorisations",
   "switchMode": "Changer de mode",
   "switchSuccess": "Mode changé avec succès",
   "switchPendingNextTurn": "Prend effet au prochain tour",

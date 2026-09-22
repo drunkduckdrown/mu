@@ -27,7 +27,9 @@ import { Telemetry } from './telemetry.ts';
 import { slashCommands } from './commands.ts';
 import { UNOFFERED_PROVIDER_IDS } from '../../../common/kyrn/models.ts';
 import {
+  answerIndex,
   answerKind,
+  answerOptionId,
   asks,
   isModeId,
   modeOption,
@@ -601,7 +603,7 @@ export class KyrnAgent implements Agent {
       options: confirm
         ? [...CONFIRM_OPTIONS]
         : choices.map((name, i) => ({
-            optionId: String(i),
+            optionId: answerOptionId(request, i),
             name,
             kind: request ? answerKind(i, choices.length) : ('allow_once' as const),
           })),
@@ -617,9 +619,8 @@ export class KyrnAgent implements Agent {
       else session.rpc.respond({ id: event.id, cancelled: true });
       return;
     }
-    const index = Number(optionId);
-    if (!Number.isInteger(index) || index < 0 || index >= choices.length)
-      session.rpc.respond({ id: event.id, cancelled: true });
+    const index = answerIndex(request, optionId, choices.length);
+    if (index < 0) session.rpc.respond({ id: event.id, cancelled: true });
     else session.rpc.respond({ id: event.id, value: choices[index] });
   }
   close(): void {

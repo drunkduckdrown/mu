@@ -27,7 +27,7 @@
   "deleteSuccess": "작업이 삭제되었습니다",
   "pauseSuccess": "작업이 일시 중지되었습니다",
   "resumeSuccess": "작업이 재개되었습니다",
-  "message.badge": "Scheduled",
+  "message.badge": "예약 작업",
   "allScheduledTasks": "모든 예약 작업",
   "noTasks": "예약 작업 없음",
   "runNowSuccess": "작업 실행이 트리거되었습니다",
@@ -43,7 +43,8 @@
     "noHistory": "실행 기록 없음",
     "notFound": "작업을 찾을 수 없음",
     "executionModeDescriptionNew": "실행할 때마다 새 대화를 시작하므로 이전 문맥이 다음 실행으로 이어지지 않습니다. 매번 독립적으로 처리해야 하는 리포트나 점검 작업에 적합합니다.",
-    "executionModeDescriptionExisting": "실행할 때마다 같은 대화에서 이어서 작업하므로 이전 문맥과 결과가 유지됩니다. 이전 실행을 바탕으로 계속 추적해야 하는 작업에 적합합니다."
+    "executionModeDescriptionExisting": "실행할 때마다 같은 대화에서 이어서 작업하므로 이전 문맥과 결과가 유지됩니다. 이전 실행을 바탕으로 계속 추적해야 하는 작업에 적합합니다.",
+    "lastRunFailed": "마지막 실행이 실패했습니다"
   },
   "notification": {
     "taskComplete": "작업 완료",
@@ -127,7 +128,19 @@
       "hourly": "매시간 실행",
       "dailyAt": "매일 {{time}}에 실행",
       "weekdaysAt": "평일 {{time}}에 실행",
-      "weeklyAt": "매주 {{day}} {{time}}에 실행"
+      "weeklyAt": "매주 {{day}} {{time}}에 실행",
+      "everyMinute": "매분 실행",
+      "everyNMinutes": "{{count}}분마다 실행",
+      "everyNMinutes_one": "{{count}}분마다 실행",
+      "everyNMinutes_other": "{{count}}분마다 실행",
+      "everyNHours": "{{count}}시간마다 실행",
+      "everyNHours_one": "{{count}}시간마다 실행",
+      "everyNHours_other": "{{count}}시간마다 실행",
+      "weeklyOnDaysAt": "매주 {{days}} {{time}}에 실행",
+      "monthlyAt": "매월 {{day}}일 {{time}}에 실행",
+      "everyInterval": "{{interval}}마다 실행",
+      "onceAt": "{{time}}에 한 번 실행",
+      "customExpr": "사용자 정의 일정({{expr}})"
     },
     "custom": {
       "modeLabel": "반복 방식",
@@ -143,6 +156,8 @@
       "monthDay": "매월 날짜",
       "preview": "생성된 Cron"
     },
+    "createFailed": "작업을 만들지 못했습니다: {{error}}",
+    "updateFailed": "작업을 저장하지 못했습니다: {{error}}",
     "searchPlaceholder": "작업 검색...",
     "noSearchResults": "일치하는 예약 작업이 없습니다."
   },
@@ -164,5 +179,11 @@
     "conversationNotFound": "대화를 찾을 수 없음",
     "scheduledTimePassed": "예약 시간이 지났습니다",
     "conversationBusy": "대화가 사용 중이며 {{count}}번 시도 후 건너뜁니다"
-  }
+  },
+  "nextRunAt": "다음 실행: {{time}}",
+  "keepAwakeFailed": "절전 방지 설정을 변경하지 못했습니다: {{error}}",
+  "pauseFailed": "작업을 일시 중지하지 못했습니다: {{error}}",
+  "resumeFailed": "작업을 재개하지 못했습니다: {{error}}",
+  "deleteFailed": "작업을 삭제하지 못했습니다: {{error}}",
+  "runNowFailed": "작업을 실행하지 못했습니다: {{error}}"
 }

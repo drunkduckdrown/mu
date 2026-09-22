@@ -96,5 +96,22 @@
   "requestDetails": "جزئیات درخواست:",
   "delivery": {
     "pending": "خوانده‌نشده"
-  }
+  },
+  "permissionOption": {
+    "allow_once": "اجازه دادن",
+    "allow_always": "همیشه اجازه دادن",
+    "reject_once": "رد کردن",
+    "reject_always": "همیشه رد کردن"
+  },
+  "permissionKind": {
+    "execute": "اجرای دستور",
+    "edit": "ویرایش",
+    "read": "خواندن",
+    "fetch": "دریافت از وب",
+    "tool": "ابزار"
+  },
+  "optionNumber": "گزینهٔ {{number}}",
+  "copyFilesHeader": "فایل‌ها:",
+  "exportHeaderLine": "{{label}}: {{value}}",
+  "exportSpeakerLine": "{{speaker}}:"
 }

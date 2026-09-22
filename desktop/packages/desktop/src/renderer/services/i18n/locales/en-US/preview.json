@@ -264,6 +264,39 @@
       "openExternal": "opening another app",
       "protectedContent": "protected content playback",
       "windows": "window management"
+    },
+    "end": {
+      "stopped_by_user": "Stopped by the person watching.",
+      "max_steps": "Stopped after {{count}} actions.",
+      "max_steps_one": "Stopped after {{count}} action.",
+      "max_steps_other": "Stopped after {{count}} actions.",
+      "no_judge": "No judge could choose an action ({{judgeReason}}).",
+      "no_progress": "The judge found no operation that makes progress.",
+      "not_confirmed": "“{{label}}” looks irreversible and was not confirmed.",
+      "no_value": "No value could be produced for “{{label}}”.",
+      "stuck": "{{count}} actions in a row changed nothing.",
+      "stuck_one": "{{count}} action changed nothing.",
+      "stuck_other": "{{count}} actions in a row changed nothing."
+    },
+    "judgeReason": {
+      "shadow": "shadow mode: its answer is only recorded",
+      "abstain": "the judge abstained",
+      "off": "the judge is off",
+      "noVerdict": "no verdict",
+      "error": {
+        "timeout": "the judge timed out",
+        "aborted": "the judge call was cancelled",
+        "unreachable": "the judge could not be reached",
+        "auth": "the judge’s key was rejected",
+        "payment_required": "the judge needs a payment method",
+        "rate_limited": "the judge is rate limited",
+        "bad_request": "the judge rejected the request",
+        "server": "the judge’s server had an error",
+        "invalid_response": "the judge’s answer could not be read",
+        "unexpected": "an unexpected error",
+        "all": "every judge call failed",
+        "other": "the judge call failed"
+      }
     }
   },
   "tabTitle": {

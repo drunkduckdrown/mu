@@ -28,7 +28,7 @@
   },
   "harness": {
     "tooOld": "当前的 mu harness 版本较旧，还不能描述自己的判定点和功能。更新 harness 后这里才会列出；基础设置仍可正常使用。",
-    "unsupported": "harness 的自述格式（版本 {{version}}）比本应用新，暂时无法编辑判定点和功能，请更新应用。"
+    "unsupported": "harness 用了本应用不认识的自述格式（版本 {{version}}）。请更新应用后再编辑判定点和功能。"
   },
   "load": {
     "failed": "无法读取设置"
@@ -44,7 +44,7 @@
   },
   "units": {
     "ms": "毫秒",
-    "tokens": "tokens"
+    "tokens": "token"
   },
   "options": {
     "range": "范围 {{min}} – {{max}}。",
@@ -59,7 +59,7 @@
     }
   },
   "decisions": {
-    "description": "判定器被提问的每一个环节。每个判定点默认跟随总模式，也可以单独指定。",
+    "description": "判定器被提问的每一个环节。没有单独指定模式的判定点跟随默认模式。",
     "defaultMode": "默认模式",
     "defaultModeHelp": "没有单独指定模式的判定点都用它。",
     "follow": "跟随默认（{{mode}}）",
@@ -69,14 +69,14 @@
       "input": "输入",
       "context": "上下文",
       "tools": "工具与安全",
-      "turn": "回合",
+      "turn": "轮次",
       "team": "协作"
     },
     "otherGroup": "其他"
   },
   "features": {
     "description": "harness 在模型周围做的各项工作。没改过的选项会一直跟随 harness 的默认值。",
-    "beta": "测试版",
+    "beta": "Beta",
     "reset": "恢复默认",
     "asks": "相关判定点：{{names}}。",
     "permissionsElsewhere": "新对话的默认模式在「权限」里设置。",
@@ -84,7 +84,7 @@
   },
   "judges": {
     "tiers": "判定层级",
-    "tiersHelp": "按顺序依次询问；后一级只处理前一级拿不准的问题。",
+    "tiersHelp": "判定器按顺序依次尝试；后一级只处理前面几级拿不准的问题。",
     "order": "顺序",
     "judge": "判定器",
     "type": "接入方式",
@@ -99,7 +99,7 @@
       "jev": "Jev（自动选择通道）",
       "typesafe": "Jev 直连（TypeSafe）",
       "gateway": "Jev（经 Vercel AI Gateway）",
-      "local": "本地判定（Laya）",
+      "local": "本地判定器（Laya）",
       "http": "自建 HTTP 判定服务",
       "llm": "通用大模型充当判定器",
       "mock": "模拟（只给中性回答）",
@@ -109,14 +109,13 @@
       "localHelp": "运行在本机的 Laya 判定服务。",
       "httpHelp": "任何接收 {state, questions} 并返回 {answers} 的接口。",
       "llmHelp": "用你已有的某个生成式模型，按提示以 JSON 作答。",
-      "mockHelp": "用于测试和离线：不会真的提问。"
+      "mockHelp": "用于测试或离线使用：不会真的提问。"
     },
-    "intro": "mu 工作时要做很多小判断：这条消息该怎么处理、这一步会不会违反你的约束……判定器负责回答。选一个就行。",
+    "intro": "mu 工作时要做很多小判断：这条消息该怎么处理、这一步会不会违反你定的规则……判定器负责回答。选一个就行。",
     "choose": "选择判定器",
-    "custom": "现在排在第一位的是自定义的判定器，可以在高级设置里查看和修改。",
+    "custom": "现在排在第一位的是自定义判定器，可以在「高级设置」里查看和修改。",
     "advanced": "高级设置",
     "keyPlaceholder": "粘贴 TypeSafe 或 Vercel AI Gateway 的密钥",
-    "localHow": "需要本机运行着 Laya 判定服务：在终端运行 mu judge start（目前仅 macOS）。应用内一键安装即将加入。",
     "choices": {
       "jev": {
         "title": "Jev",
@@ -168,10 +167,10 @@
     "auto": "自动压缩",
     "autoHelp": "上下文快满时自动压缩历史。",
     "limit": "上下文上限",
-    "limitHelp": "0 表示跟随模型窗口减去保留量；否则为 {{min}} 到 {{max}}。在下一次请求模型之前检查，不是硬性截断。",
+    "limitHelp": "0 表示使用模型的上下文窗口减去预留量；否则填 {{min}} 到 {{max}}。在下一次请求模型之前检查，不是硬性截断。",
     "limitProblem": "请填 0，或 {{min}} 到 {{max}} 之间的整数。",
     "beta": "免摘要压缩",
-    "betaHelp": "压缩时逐段判断保留还是裁掉，不让模型写摘要。与“功能”里的免摘要压缩是同一个开关。"
+    "betaHelp": "压缩时逐段判断保留还是裁剪原文，而不是让模型写摘要。与「功能」里的免摘要压缩是同一个开关。"
   },
   "permissions": {
     "description": "mu 动手之前要不要先问你。这里定的是新对话默认用的模式；每个对话还能在发送框的「权限」里单独切换。",
@@ -194,8 +193,42 @@
       }
     }
   },
+  "permissionsCard": {
+    "kind": {
+      "edit": "mu 想改文件，需要你授权",
+      "shell": "mu 想运行命令，需要你授权",
+      "run": "mu 想运行程序，需要你授权",
+      "outside": "mu 想改动项目外的文件，需要你授权",
+      "delegate": "mu 想派出子代理，需要你授权",
+      "other": "mu 想对外操作，需要你授权"
+    },
+    "reason": {
+      "ask": "最小权限模式：每一步都先问你。",
+      "unsure": "JeV 拿不准这一步是不是你要的。",
+      "beyond": "JeV 认为这一步超出了你的要求。",
+      "unrelated": "JeV 认为这一步和当前任务无关。",
+      "protected": "这会动到 mu 自己的设置，只能由你决定。"
+    },
+    "flagged": "危险操作：{{flag}}。",
+    "flag": {
+      "recursive_or_forced_delete": "递归或强制删除",
+      "discards_git_work": "丢弃 git 里的改动",
+      "force_push": "强制推送",
+      "drops_database_objects": "删除数据库对象",
+      "overwrites_device": "覆盖整个设备",
+      "opens_permissions_recursively": "递归放开权限",
+      "runs_downloaded_script": "运行下载来的脚本",
+      "runs_as_administrator": "以管理员身份运行",
+      "runs_as_root": "以 root 身份运行"
+    },
+    "answer": {
+      "once": "允许这一次",
+      "session": "这次对话都允许",
+      "sessionFor": "这次对话都允许（{{grant}}）",
+      "deny": "不允许"
+    }
+  },
   "providers": {
-    "description": "新会话默认用哪个模型，以及模型背后的提供商。",
     "lead": "模型从哪里来：订阅账号和接口地址；还有写人话看板的模型。对话用哪个模型、思考等级多少，在发送框里选。",
     "title": "提供商",
     "custom": "自定义提供商",
@@ -207,7 +240,7 @@
     "remove": "移除",
     "endpointType": "API 格式",
     "name": "显示名称",
-    "namePlaceholder": "例如：我的中转站",
+    "namePlaceholder": "例如：我的中转服务",
     "id": "ID",
     "idHelp": "小写字母、数字和连字符。保存后不可更改，模型以 provider/model 的形式引用它。",
     "idProblem": {
@@ -217,38 +250,38 @@
     },
     "baseUrl": "接口地址（Base URL）",
     "keyEnter": "粘贴 API 密钥",
-    "keyReplace": "当前用的是手写配置的密钥；在这里输入会替换它",
+    "keyReplace": "当前使用的是手动配置的密钥，在此输入会替换它",
     "keyHelp": "密钥存入 harness 的 .env（变量 {{variable}}），models.json 里只写引用，保存后不再显示。",
     "authHeader": "同时发送 Authorization: Bearer 头（部分中转服务需要）",
-    "headers": "手写的额外请求头会原样保留：{{names}}。它们的值属于机密，请在 models.json 中修改。",
+    "headers": "手动配置的额外请求头会原样保留：{{names}}。它们的值属于机密，请在 models.json 中修改。",
     "pick": "在左侧选择一个提供商，或添加一个。",
     "manual": "手动配置",
     "foreignHelp": "这个条目改写了内置提供商，或用了本页面不支持编辑的 API 格式。这里只能移除它，不能编辑；要修改请直接改 models.json。",
     "modelCount": "{{count, number}} 个模型",
     "usable": "可用",
     "builtinHelp": "mu 上次连接时报告它能用，通常是因为环境里有它的 API 密钥。这里不能移除它：从环境变量里删掉那个密钥，mu 下次连接后它就不会再出现。",
-    "noneYet": "还没有",
+    "noneYet": "暂无",
     "unreadable": "无法解析 models.json，提供商既不会显示也不会保存。请手动修复后重新载入。",
     "commented": "models.json 里有注释，从这里保存会把注释弄丢，所以提供商暂为只读。手动去掉注释后即可在此编辑。",
     "modelCount_one": "{{count, number}} 个模型",
     "modelCount_other": "{{count, number}} 个模型",
-    "summary": "登录订阅账号就能直接用，也可以接入任何 OpenAI、Anthropic 或 Gemini 兼容的端点。",
+    "summary": "登录订阅账号就能直接用，也可以接入任何 OpenAI、Anthropic 或 Gemini 兼容的接口。",
     "subscriptions": "订阅登录",
-    "manualShort": "手写",
-    "needsSetup": "还没配好",
+    "manualShort": "手动",
+    "needsSetup": "待配置",
     "more": "更多操作",
     "removeProvider": "移除提供商",
     "removeTitle": "移除 {{name}}？",
     "removeSaved": "保存后它会从 models.json 里删除，为它存的密钥也会一起删除。",
     "removeUnsaved": "它还没保存，移除后这里填的内容都会丢掉。",
-    "removeEntry": "保存后这个手写条目会从 models.json 里删除。如果它改写的是内置提供商，那个提供商会恢复默认。",
+    "removeEntry": "保存后这个手动配置的条目会从 models.json 里删除。如果它改写的是内置提供商，那个提供商会恢复默认。",
     "removeDefault": "新会话默认用的就是它，所以默认模型也会清空。"
   },
   "accounts": {
     "signIn": "登录",
     "signOut": "退出登录",
     "signOutFailed": "退出登录没有完成，可以再试一次。",
-    "signOutConfirm": "退出 {{name}} 的登录？之后要用它需要重新登录。",
+    "signOutConfirm": "要退出 {{name}} 的登录吗？退出后需要重新登录才能使用。",
     "signedOut": "未登录",
     "instant": "登录和退出立即生效，不用点保存。",
     "models": "可用的模型",
@@ -260,25 +293,25 @@
   "endpoints": {
     "openaiCompletions": {
       "name": "OpenAI 兼容（Chat Completions）",
-      "hint": "兼容性最广：各类中转、Ollama、vLLM、LM Studio、DeepSeek 等",
+      "hint": "兼容性最广：各类中转、Ollama、vLLM、LM Studio、DeepSeek 等。",
       "url": "通常以 /v1 结尾，例如 https://api.example.com/v1 或 http://localhost:11434/v1。",
       "short": "OpenAI 兼容"
     },
     "openaiResponses": {
       "name": "OpenAI Responses",
-      "hint": "OpenAI 较新的 Responses 接口，服务方支持时选用",
+      "hint": "OpenAI 较新的 Responses 接口，服务方支持时选用。",
       "url": "通常以 /v1 结尾，例如 https://api.example.com/v1。",
       "short": "OpenAI Responses"
     },
     "anthropicMessages": {
       "name": "Anthropic 兼容（Messages）",
-      "hint": "用于 Claude，以及提供 Anthropic Messages 格式的服务",
+      "hint": "用于 Claude，以及提供 Anthropic Messages 格式的服务。",
       "url": "不要带 /v1：客户端会自己加上 /v1/messages，例如 https://api.example.com。",
       "short": "Anthropic 兼容"
     },
     "googleGenerativeAi": {
       "name": "Google Generative AI",
-      "hint": "经 Google AI Studio 使用 Gemini、Gemma",
+      "hint": "经 Google AI Studio 使用 Gemini、Gemma。",
       "url": "例如 https://generativelanguage.googleapis.com/v1beta。",
       "short": "Google"
     }
@@ -326,19 +359,6 @@
     "detail": "接口返回：{{detail}}",
     "okModels_one": "连接成功（{{ms}} 毫秒），接口返回了 {{count, number}} 个模型。",
     "okModels_other": "连接成功（{{ms}} 毫秒），接口返回了 {{count, number}} 个模型。"
-  },
-  "defaults": {
-    "title": "默认模型",
-    "summary": "新会话启动时使用。对话中仍可随时切换。",
-    "provider": "提供商",
-    "model": "模型",
-    "level": "思考等级",
-    "levelUnset": "不指定",
-    "levelHelp": "该模型不支持的等级已置灰。",
-    "levelClamped": "不指定时为“中”。模型不支持的等级会自动改用最接近的可用等级。",
-    "noReasoning": "这个模型不支持思考，用它启动的会话思考固定为关闭。",
-    "notSet": "未指定",
-    "pickProvider": "请先选择提供商。"
   },
   "boardModel": {
     "title": "人话模型",
@@ -393,7 +413,7 @@
       "openai": {
         "title": "OpenAI 兼容接口",
         "tag": "最常见",
-        "description": "OpenAI、DeepSeek、Kimi、通义千问、Ollama，以及各种中转服务",
+        "description": "OpenAI、DeepSeek、Kimi、Qwen、Ollama，以及各种中转服务",
         "modelPlaceholder": "例如 deepseek-chat"
       },
       "anthropic": {
@@ -417,7 +437,7 @@
     },
     "judge": {
       "title": "选一个判定器",
-      "subtitle": "判定器回答 mu 工作中的小判断。没有也能用，只是少了这些把关。"
+      "subtitle": "mu 工作时的各种小判断由判定器来回答。没有判定器也能运行，只是少了这些把关。"
     },
     "done": {
       "title": "准备好了",
@@ -425,7 +445,7 @@
       "model": "模型",
       "judge": "判定器",
       "none": "暂未设置",
-      "noKey": "还没有密钥，判定会先按默认规则进行",
+      "noKey": "还没有密钥，配好之前各判定点按默认规则处理",
       "saveFailed": "保存没有成功：{{reason}}",
       "modelValue": "{{provider}} / {{model}}"
     },
@@ -434,16 +454,16 @@
       "lead": "mu 是一个会动手的编程助手：它读你的项目、改代码、跑命令和测试，直到把事情做完。",
       "points": {
         "judge": {
-          "title": "每一步都有判断",
-          "text": "内置的判定器在关键处把关：先想清楚再动手，不越过你定的规矩，没验证不说做完。"
+          "title": "每一步都有把关",
+          "text": "内置的判定器在关键处把关：先想清楚再动手，不越过你定的规则，没验证不说做完。"
         },
         "control": {
           "title": "看得见，管得住",
-          "text": "改动随时可以回退；浏览器里的每一步都在眼前，可以暂停，也可以自己接手。"
+          "text": "改动随时可以回滚；浏览器里的每一步都在眼前，可以暂停，也可以接管。"
         },
         "ready": {
           "title": "开箱即用",
-          "text": "自动沿用你在 Claude Code、Cursor、Codex 里的规则、技能和 MCP 配置。"
+          "text": "自动沿用你在 Claude Code、Cursor、Codex 里配好的规则、技能和 MCP 服务器。"
         }
       },
       "start": "开始设置"
@@ -476,7 +496,7 @@
       "waiting": "已在浏览器打开 {{name}} 的授权页。登录并同意后，这里会自动继续。",
       "deviceCode": "验证码",
       "code": "授权码",
-      "codePlaceholder": "粘贴浏览器显示的授权码，或它最后停在的网址",
+      "codePlaceholder": "粘贴浏览器显示的授权码，或浏览器最后跳转到的网址",
       "submit": "提交",
       "openAgain": "重新打开授权页",
       "pasteCode": "手动粘贴授权码",
@@ -484,9 +504,9 @@
       "failed": "登录没有完成，可以再试一次。",
       "asks": "{{name}} 的登录在问（以下是原文）：",
       "needAccount": "先登录一个账号，再选一个模型。",
-      "experimental": "实验",
+      "experimental": "实验性",
       "starting": "正在准备 {{name}} 的登录…",
-      "waitingDevice": "已在浏览器打开 {{name}} 的验证页。核对页面上的代码和下面这个一致（没有自动填好就输入它），同意后这里会自动继续。",
+      "waitingDevice": "已在浏览器打开 {{name}} 的验证页。核对页面上的验证码与这里的一致（没有自动填好就手动输入），同意后这里会自动继续。",
       "risk": {
         "title": "登录前请先了解风险",
         "text": "这个登录借用的是 Google 给 {{tool}} 自己用的登录方式，不是 Google 为 mu 提供的。Google 可能认为这违反它的条款，限制甚至停用这个账号。",
@@ -506,8 +526,8 @@
     "permissionsNotSwitched": "mu 没有切换权限模式。请重试，或在对话里输入 /permissions。",
     "imageUnsupported": "只能发送 12 MB 以内的 PNG、JPEG、WebP 或 GIF 图片。",
     "contentUnsupported": "mu 只接受文字、图片和文本文件。",
-    "wrongProject": "这个会话属于另一个项目文件夹。",
-    "notPersisted": "mu 没能保存这个会话。",
+    "wrongProject": "这个对话属于另一个项目文件夹。",
+    "notPersisted": "mu 没能保存这个对话。",
     "startFailed": "mu 无法启动。",
     "timeout": "mu 没有及时响应。",
     "processClosed": "mu 已退出，重新发送消息即可重启。"

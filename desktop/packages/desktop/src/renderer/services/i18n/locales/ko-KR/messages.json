@@ -96,5 +96,22 @@
   "requestDetails": "요청 내용:",
   "delivery": {
     "pending": "읽지 않음"
-  }
+  },
+  "permissionOption": {
+    "allow_once": "허용",
+    "allow_always": "항상 허용",
+    "reject_once": "거부",
+    "reject_always": "항상 거부"
+  },
+  "permissionKind": {
+    "execute": "명령 실행",
+    "edit": "편집",
+    "read": "읽기",
+    "fetch": "웹 가져오기",
+    "tool": "도구"
+  },
+  "optionNumber": "옵션 {{number}}",
+  "copyFilesHeader": "파일:",
+  "exportHeaderLine": "{{label}}: {{value}}",
+  "exportSpeakerLine": "{{speaker}}:"
 }

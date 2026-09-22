@@ -1,32 +1,32 @@
 {
-  "scheduledTasks": "Scheduled Tasks",
-  "taskCount": "{{count}} task(s)",
-  "schedule": "Schedule",
-  "nextRun": "Next run",
-  "lastRun": "Last run",
-  "lastError": "Error",
+  "scheduledTasks": "Zamanlanmış görevler",
+  "taskCount": "{{count}} görev",
+  "schedule": "Zamanlama",
+  "nextRun": "Sonraki çalıştırma",
+  "lastRun": "Son çalıştırma",
+  "lastError": "Hata",
   "lastErrorWithDetail": "Son hata: {{error}}",
-  "message": "Message",
-  "goToConversation": "Go to conversation",
+  "message": "Mesaj",
+  "goToConversation": "Konuşmaya git",
   "status": {
-    "active": "Active",
-    "paused": "Paused",
-    "error": "Error",
-    "unread": "New execution",
-    "unconfigured": "No scheduled task",
+    "active": "Etkin",
+    "paused": "Duraklatıldı",
+    "error": "Hata",
+    "unread": "Yeni çalıştırma",
+    "unconfigured": "Zamanlanmış görev yok",
     "defaultPrompt": "Every day at 10am, search for the latest AI news, summarize and output an insight report. (AionUi'de zamanlanmış bir görev oluşturmak için lütfen /cron becerisini kullan.)"
   },
   "actions": {
-    "goTo": "View Chat",
-    "pause": "Pause",
-    "resume": "Resume",
-    "delete": "Delete",
+    "goTo": "Sohbeti görüntüle",
+    "pause": "Duraklat",
+    "resume": "Sürdür",
+    "delete": "Sil",
     "runNow": "Şimdi Çalıştır"
   },
   "confirmDeleteWithConversations": "Bu zamanlanmış görevi silmek istediğinizden emin misiniz? Bu görevdeki tüm konuşmalar da silinecektir.",
-  "deleteSuccess": "Task deleted",
-  "pauseSuccess": "Task paused",
-  "resumeSuccess": "Task resumed",
+  "deleteSuccess": "Görev silindi",
+  "pauseSuccess": "Görev duraklatıldı",
+  "resumeSuccess": "Görev sürdürüldü",
   "drawer.title": "Scheduled Task Details",
   "drawer.name": "Name",
   "drawer.namePlaceholder": "Enter task name",
@@ -39,7 +39,7 @@
   "drawer.nextRun": "Next Run",
   "drawer.save": "Save",
   "drawer.saveSuccess": "Saved successfully",
-  "message.badge": "Scheduled",
+  "message.badge": "Zamanlanmış",
   "allScheduledTasks": "Tüm zamanlanmış görevler",
   "noTasks": "Zamanlanmış görev yok",
   "runNowSuccess": "Görev çalıştırma tetiklendi",
@@ -55,7 +55,8 @@
     "noHistory": "Henüz çalıştırılmadı",
     "notFound": "Görev bulunamadı",
     "executionModeDescriptionNew": "Her çalıştırma yeni bir konuşma başlatır; önceki bağlam sonraki çalıştırmaya taşınmaz. Bağımsız kalması gereken düzenli raporlar ve kontrol görevleri için uygundur.",
-    "executionModeDescriptionExisting": "Her çalıştırma aynı konuşmada devam eder; önceki bağlam ve sonuçlar korunur. Önceki çalıştırmaların üzerine eklenen takip işleri için uygundur."
+    "executionModeDescriptionExisting": "Her çalıştırma aynı konuşmada devam eder; önceki bağlam ve sonuçlar korunur. Önceki çalıştırmaların üzerine eklenen takip işleri için uygundur.",
+    "lastRunFailed": "Son çalıştırma başarısız oldu"
   },
   "notification": {
     "taskComplete": "Görev Tamamlandı",
@@ -139,7 +140,19 @@
       "hourly": "Her saat çalıştır",
       "dailyAt": "Her gün {{time}}'de çalıştır",
       "weekdaysAt": "Hafta içi {{time}}'de çalıştır",
-      "weeklyAt": "Her {{day}} {{time}}'de çalıştır"
+      "weeklyAt": "Her {{day}} {{time}}'de çalıştır",
+      "everyMinute": "Her dakika",
+      "everyNMinutes": "Her {{count}} dakikada bir",
+      "everyNMinutes_one": "Her {{count}} dakikada bir",
+      "everyNMinutes_other": "Her {{count}} dakikada bir",
+      "everyNHours": "Her {{count}} saatte bir",
+      "everyNHours_one": "Her {{count}} saatte bir",
+      "everyNHours_other": "Her {{count}} saatte bir",
+      "weeklyOnDaysAt": "Her {{days}} saat {{time}}",
+      "monthlyAt": "Her ayın {{day}}. günü saat {{time}}",
+      "everyInterval": "Her {{interval}}",
+      "onceAt": "Bir kez, {{time}}",
+      "customExpr": "Özel zamanlama ({{expr}})"
     },
     "custom": {
       "modeLabel": "Tekrar düzeni",
@@ -155,6 +168,8 @@
       "monthDay": "Ayın günü",
       "preview": "Oluşturulan Cron"
     },
+    "createFailed": "Görev oluşturulamadı: {{error}}",
+    "updateFailed": "Görev kaydedilemedi: {{error}}",
     "searchPlaceholder": "Görev ara...",
     "noSearchResults": "Eşleşen zamanlanmış görev yok."
   },
@@ -176,5 +191,11 @@
     "conversationNotFound": "Konuşma bulunamadı",
     "scheduledTimePassed": "Zamanlanmış saat geçti",
     "conversationBusy": "Konuşma meşgul, {{count}} denemeden sonra atlandı"
-  }
+  },
+  "nextRunAt": "Sonraki çalıştırma: {{time}}",
+  "keepAwakeFailed": "Uyanık tutma ayarı değiştirilemedi: {{error}}",
+  "pauseFailed": "Görev duraklatılamadı: {{error}}",
+  "resumeFailed": "Görev sürdürülemedi: {{error}}",
+  "deleteFailed": "Görev silinemedi: {{error}}",
+  "runNowFailed": "Görev çalıştırılamadı: {{error}}"
 }

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { parseHiveSnapshot, parseHiveTool } from '@/common/kyrn/hive';
+import {
+  parseBeeActivity,
+  parseHiveSnapshot,
+  parseHiveTool,
+  parseSwarmProgress,
+  parseSwarmSnapshot,
+} from '@/common/kyrn/hive';
 import { normalizeAcpToolCall } from '@/common/chat/normalizeToolCall';
 import { buildHiveRuns, beeRecords } from '@/renderer/pages/conversation/KyrnPanel/Hive/activity';
 import { mergeActivity } from '@/renderer/pages/conversation/KyrnPanel/activity';
@@ -123,5 +129,71 @@ describe('Native Hive event projection', () => {
   it('does not infer assignments when an old run has no recorded manifest', () => {
     expect(buildHiveRuns(hiveEvents.filter((event) => event.kind !== 'hive.manifest'))[0].assignments).toEqual([]);
     expect(buildHiveRuns([activity('delegate', 'swarm.snapshot', { ...hiveSnapshot, kind: 'delegate' })])).toEqual([]);
+  });
+
+  it('keeps the codes beside the English of a snapshot, typed, for translation at render time', () => {
+    const snapshot = parseSwarmSnapshot({
+      kind: 'delegate',
+      title: '2 tasks',
+      titleCode: { code: 'delegate_tasks', params: { count: 2, junk: { nested: true } } },
+      bees: [
+        {
+          name: 'scan',
+          status: 'timed-out',
+          error: 'time budget of 10 min reached; no report within 90s of being asked',
+          errorCode: 'no_report_in_time',
+          errorParams: { seconds: 90, after: 'time_budget' },
+          wrapUp: { at: 5, reason: 'time budget of 10 min reached', code: 'time_budget', params: { minutes: 10 } },
+          recent: [
+            { at: 3, text: '← 2 notes from the others', code: 'notes_received', params: { count: 2 } },
+            { at: 4, text: 'bash npm test' },
+            null,
+            { at: 5 },
+          ],
+        },
+        { name: 'fix', status: 'queued' },
+      ],
+    });
+    expect(snapshot).toMatchObject({
+      kind: 'delegate',
+      title: '2 tasks',
+      titleCode: { code: 'delegate_tasks', params: { count: 2 } },
+    });
+    expect(snapshot?.titleCode?.params).not.toHaveProperty('junk');
+    expect(snapshot?.bees[0]).toMatchObject({
+      errorCode: 'no_report_in_time',
+      errorParams: { seconds: 90, after: 'time_budget' },
+      wrapUp: { reason: 'time budget of 10 min reached', code: 'time_budget', params: { minutes: 10 } },
+      recent: [
+        { at: 3, text: '← 2 notes from the others', code: 'notes_received', params: { count: 2 } },
+        { at: 4, text: 'bash npm test', params: {} },
+      ],
+    });
+    // An older snapshot carries no codes: the fields are simply absent.
+    expect(snapshot?.bees[1]).toMatchObject({ error: '', errorParams: {}, recent: [] });
+    expect(snapshot?.bees[1].errorCode).toBeUndefined();
+    expect(snapshot?.bees[1].wrapUp).toBeUndefined();
+    expect(parseSwarmSnapshot({ kind: 'future', bees: [] })).toBeUndefined();
+    expect(parseHiveSnapshot({ ...hiveSnapshot, titleCode: { code: 'x' } })?.titleCode).toEqual({
+      code: 'x',
+      params: {},
+    });
+    expect(parseBeeActivity('not a list')).toEqual([]);
+  });
+
+  it('reads the routing step before the first snapshot, and nothing once there is one', () => {
+    const choosing = { details: { code: 'choosing_roles', params: { count: 3 } } };
+    expect(parseSwarmProgress(choosing)).toEqual({ code: 'choosing_roles', params: { count: 3 } });
+    expect(parseSwarmProgress({ details: { snapshot: hiveSnapshot } })).toBeUndefined();
+    expect(parseSwarmProgress({ details: { code: 'done' } })).toBeUndefined();
+    expect(parseSwarmProgress(undefined)).toBeUndefined();
+    const message = hiveMessage();
+    message.content.update.title = 'delegate';
+    message.content.update.rawOutput = choosing;
+    const normalized = normalizeAcpToolCall(message);
+    expect(normalized?.swarmProgress).toEqual({ code: 'choosing_roles', params: { count: 3 } });
+    expect(normalized?.hive).toBeUndefined();
+    // The English output stays the raw evidence it was.
+    expect(normalized?.output).toBe('\u001b[32mOriginal terminal evidence\u001b[0m');
   });
 });

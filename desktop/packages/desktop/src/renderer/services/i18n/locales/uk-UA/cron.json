@@ -42,7 +42,8 @@
     "noHistory": "Запусків ще не було",
     "notFound": "Завдання не знайдено",
     "executionModeDescriptionNew": "Кожен запуск починає новий діалог, тому попередній контекст не зберігається. Найкраще підходить для регулярних звітів або перевірок, які мають залишатися незалежними.",
-    "executionModeDescriptionExisting": "Кожен запуск продовжується в тому самому діалозі, тому попередній контекст і результати залишаються доступними. Найкраще підходить для завдань, що доповнюють попередні результати."
+    "executionModeDescriptionExisting": "Кожен запуск продовжується в тому самому діалозі, тому попередній контекст і результати залишаються доступними. Найкраще підходить для завдань, що доповнюють попередні результати.",
+    "lastRunFailed": "Останній запуск не вдався"
   },
   "notification": {
     "taskComplete": "Завдання завершено",
@@ -125,9 +126,25 @@
       "hourly": "Щогодини",
       "dailyAt": "Щодня о {{time}}",
       "weekdaysAt": "У будні о {{time}}",
-      "weeklyAt": "Що{{day}} о {{time}}"
+      "weeklyAt": "Що{{day}} о {{time}}",
+      "everyMinute": "Щохвилини",
+      "everyNMinutes": "Кожні {{count}} хвилин",
+      "everyNMinutes_one": "Кожну {{count}} хвилину",
+      "everyNMinutes_other": "Кожні {{count}} хвилини",
+      "everyNMinutes_few": "Кожні {{count}} хвилини",
+      "everyNMinutes_many": "Кожні {{count}} хвилин",
+      "everyNHours": "Кожні {{count}} годин",
+      "everyNHours_one": "Кожну {{count}} годину",
+      "everyNHours_other": "Кожні {{count}} години",
+      "weeklyOnDaysAt": "Щотижня ({{days}}) о {{time}}",
+      "monthlyAt": "Щомісяця {{day}}-го числа о {{time}}",
+      "everyNHours_few": "Кожні {{count}} години",
+      "everyNHours_many": "Кожні {{count}} годин",
+      "everyInterval": "Кожні {{interval}}",
+      "onceAt": "Один раз: {{time}}",
+      "customExpr": "Власний розклад ({{expr}})"
     },
-    "customCronWarning": "This task has a custom schedule that can't be edited here. Changing the frequency will replace it.",
+    "customCronWarning": "Це завдання має власний розклад, який тут не можна змінити. Якщо змінити частоту, його буде замінено.",
     "custom": {
       "modeLabel": "Режим повторення",
       "interval": "Через інтервал",
@@ -142,6 +159,8 @@
       "monthDay": "День місяця",
       "preview": "Створений Cron-вираз"
     },
+    "createFailed": "Не вдалося створити завдання: {{error}}",
+    "updateFailed": "Не вдалося зберегти завдання: {{error}}",
     "searchPlaceholder": "Пошук завдань...",
     "noSearchResults": "Немає відповідних запланованих завдань."
   },
@@ -163,5 +182,11 @@
     "conversationNotFound": "Діалог не знайдено",
     "scheduledTimePassed": "Запланований час минув",
     "conversationBusy": "Діалог зайнятий після {{count}} спроб"
-  }
+  },
+  "nextRunAt": "Наступний запуск: {{time}}",
+  "keepAwakeFailed": "Не вдалося змінити налаштування «Не дозволяти засинати»: {{error}}",
+  "pauseFailed": "Не вдалося призупинити завдання: {{error}}",
+  "resumeFailed": "Не вдалося відновити завдання: {{error}}",
+  "deleteFailed": "Не вдалося видалити завдання: {{error}}",
+  "runNowFailed": "Не вдалося запустити завдання: {{error}}"
 }

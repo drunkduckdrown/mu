@@ -62,6 +62,22 @@ export type BrowserRunNotice = {
   at: number;
 };
 
+/** What a coded sentence names (a count, a label, the judge's own reason), by name. */
+export type BrowserRunParams = Readonly<Record<string, string | number>>;
+
+/**
+ * How the harness says a run ended, beside its English `reason` (the harness's presentation codes, `browser.run`
+ * state `finished`; its `Mu.run` report carries the same fields): `code` names the sentence and `params` fills it in,
+ * `errorCode` / `errorParams` say what a run that threw (`code: "error"`) ran into, when the error carries a code.
+ * The step bar translates by code and falls back to `reason` for a code it does not know or a harness that sends none.
+ */
+export type BrowserRunEnding = {
+  code?: string;
+  params?: BrowserRunParams;
+  errorCode?: string;
+  errorParams?: BrowserRunParams;
+};
+
 export type BrowserRunState = {
   tabId: string;
   conversationId: string;
@@ -78,7 +94,7 @@ export type BrowserRunState = {
   notices: BrowserRunNotice[];
   status?: BrowserRunStatus;
   reason?: string;
-};
+} & BrowserRunEnding;
 
 export type BrowserRunEvent =
   | { type: 'started'; tabId: string; conversationId: string; url: string; at: number }
@@ -88,7 +104,7 @@ export type BrowserRunEvent =
   | { type: 'confirm'; tabId: string; confirm: BrowserRunConfirm }
   | { type: 'confirmed'; tabId: string; id: string; allowed: boolean }
   | { type: 'notice'; tabId: string; notice: BrowserRunNotice }
-  | { type: 'finished'; tabId: string; status: BrowserRunStatus; reason?: string; at: number }
+  | ({ type: 'finished'; tabId: string; status: BrowserRunStatus; reason?: string; at: number } & BrowserRunEnding)
   | { type: 'closed'; tabId: string }
   | { type: 'snapshot'; runs: BrowserRunState[] };
 
@@ -111,6 +127,47 @@ export function plainText(value: unknown, limit: number = MAX_TEXT): string {
   }
   const cleaned = line.replace(/\s+/g, ' ').trim();
   return cleaned.length > limit ? `${cleaned.slice(0, limit - 1)}…` : cleaned;
+}
+
+/** A code is a snake_case word (`max_steps`, `no_judge`): it only ever becomes part of an i18n key. */
+const CODE = /^[a-z][a-z0-9_]{0,63}$/;
+const PARAM_NAME = /^[A-Za-z][A-Za-z0-9_]{0,39}$/;
+const MAX_PARAMS = 12;
+
+const codeOf = (value: unknown): string | undefined =>
+  typeof value === 'string' && CODE.test(value) ? value : undefined;
+
+/**
+ * A sentence's params as they may be kept: named by a plain word, each a finite number or one bounded line of plain
+ * text (a label is a web page's own text). Anything else is dropped; nothing at all is undefined.
+ */
+function paramsOf(value: unknown): BrowserRunParams | undefined {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return undefined;
+  const kept: [string, string | number][] = [];
+  for (const [name, entry] of Object.entries(value)) {
+    if (kept.length >= MAX_PARAMS) break;
+    if (!PARAM_NAME.test(name)) continue;
+    if (typeof entry === 'number' && Number.isFinite(entry)) kept.push([name, entry]);
+    else if (typeof entry === 'string') kept.push([name, plainText(entry)]);
+  }
+  return kept.length > 0 ? Object.fromEntries(kept) : undefined;
+}
+
+/**
+ * The coded half of how a run ended, read from the harness's report (`Mu.run` with `state: "finished"`, or a
+ * `finished` event): only the fields that are what they claim to be, and only those that are there.
+ */
+export function runEnding(report: Readonly<Record<string, unknown>>): BrowserRunEnding {
+  const code = codeOf(report.code);
+  const params = paramsOf(report.params);
+  const errorCode = codeOf(report.errorCode);
+  const errorParams = paramsOf(report.errorParams);
+  return {
+    ...(code ? { code } : {}),
+    ...(code && params ? { params } : {}),
+    ...(errorCode ? { errorCode } : {}),
+    ...(errorCode && errorParams ? { errorParams } : {}),
+  };
 }
 
 function change(
@@ -193,6 +250,7 @@ export function reduceBrowserRuns(runs: BrowserRuns, event: BrowserRunEvent): Br
               phase: 'finished',
               status: event.status,
               reason: event.reason ? plainText(event.reason, 600) : undefined,
+              ...runEnding(event),
               finishedAt: event.at,
               paused: false,
               pausedBy: undefined,

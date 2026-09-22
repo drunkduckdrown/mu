@@ -59,7 +59,8 @@
     "exit_code": "Выход: {{code}}",
     "duration": "Длительность: {{seconds}}",
     "auto_approved": "Авто-одобрено",
-    "manual_approval": "Ручное одобрение"
+    "manual_approval": "Ручное одобрение",
+    "toolCallId": "ID вызова инструмента: {{id}}"
   },
   "actions": {
     "create": "создать",
@@ -80,6 +81,11 @@
     "output": "Вывод",
     "loading": "Загрузка полного вывода…",
     "loadError": "Не удалось загрузить полный вывод.",
-    "retry": "Повторить"
+    "retry": "Повторить",
+    "callAria": "{{name}} · {{status}}"
+  },
+  "kind": {
+    "edit": "Правка файла",
+    "read": "Чтение файла"
   }
 }

@@ -59,7 +59,8 @@
     "exit_code": "Salida: {{code}}",
     "duration": "Duración: {{seconds}}",
     "auto_approved": "Aprobado automáticamente",
-    "manual_approval": "Aprobación manual"
+    "manual_approval": "Aprobación manual",
+    "toolCallId": "ID de llamada a herramienta: {{id}}"
   },
   "actions": {
     "create": "crear",
@@ -76,6 +77,11 @@
     "output": "Salida",
     "loading": "Cargando salida completa…",
     "loadError": "No se pudo cargar la salida completa.",
-    "retry": "Reintentar"
+    "retry": "Reintentar",
+    "callAria": "{{name}} · {{status}}"
+  },
+  "kind": {
+    "edit": "Edición de archivo",
+    "read": "Lectura de archivo"
   }
 }

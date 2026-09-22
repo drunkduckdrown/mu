@@ -87,13 +87,26 @@
     "archive": "Архівувати",
     "archiveSuccess": "Заархівовано",
     "archiveFailed": "Не вдалося заархівувати",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "Масове архівування",
+    "batchArchiveConfirm": "Архівувати {{count}} вибраних тем? Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "batchArchiveSuccess": "Архівовано {{count}} тем",
+    "archiveProject": "Архівувати проєкт",
+    "archiveProjectTitle": "Архівувати проєкт",
+    "archiveProjectConfirm": "Архівувати проєкт «{{name}}»? Його розмови ({{count}}) теж буде архівовано. Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "archiving": "Архівування…",
+    "batchArchiveConfirm_one": "Архівувати {{count}} вибрану тему? Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "batchArchiveConfirm_other": "Архівувати {{count}} вибраної теми? Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "batchArchiveSuccess_one": "Архівовано {{count}} тему",
+    "batchArchiveSuccess_other": "Архівовано {{count}} теми",
+    "batchArchiveSuccess_few": "Архівовано {{count}} теми",
+    "batchArchiveSuccess_many": "Архівовано {{count}} тем",
+    "batchArchiveConfirm_few": "Архівувати {{count}} вибрані теми? Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "batchArchiveConfirm_many": "Архівувати {{count}} вибраних тем? Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "archiveProjectConfirm_one": "Архівувати проєкт «{{name}}»? Його {{count}} розмову теж буде архівовано. Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "archiveProjectConfirm_other": "Архівувати проєкт «{{name}}»? Його {{count}} розмови теж буде архівовано. Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "projectActions": "Дії з проєктом",
+    "archiveProjectConfirm_few": "Архівувати проєкт «{{name}}»? Його {{count}} розмови теж буде архівовано. Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях.",
+    "archiveProjectConfirm_many": "Архівувати проєкт «{{name}}»? Його {{count}} розмов теж буде архівовано. Архівоване можна відновити або видалити в розділі «Архів» у налаштуваннях."
   },
   "historySearch": {
     "tooltip": "Пошук повідомлень",
@@ -118,9 +131,10 @@
       "WORKSPACE_PATH_UNAVAILABLE": "Вибраний шлях робочого простору недоступний. Переконайтеся, що шлях робочого простору \"{{workspacePath}}\" справді існує та доступний."
     },
     "codes": {
-      "TEAM_ASSISTANT_ID_REQUIRED": "Please select an assistant before creating the team.",
-      "TEAM_ASSISTANT_NOT_FOUND": "Assistant {{assistantId}} is no longer available. Refresh the assistant list and choose another one.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Use assistant_id instead of {{field}}."
+      "TEAM_ASSISTANT_ID_REQUIRED": "Перед створенням команди виберіть асистента.",
+      "TEAM_ASSISTANT_NOT_FOUND": "Асистент {{assistantId}} більше недоступний. Оновіть список асистентів і виберіть іншого.",
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Використовуйте assistant_id замість {{field}}.",
+      "WORKSPACE_PATH_UNAVAILABLE": "Вибраний шлях робочого простору недоступний. Переконайтеся, що він існує і до нього є доступ."
     }
   },
   "agentError": {
@@ -321,38 +335,39 @@
         "body": "Застосунок отримав зовнішню помилку, але не зміг визначити, чи вона походить від агента, постачальника, мережі або локального середовища."
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
-        "title": "Failed to read the team helper response",
-        "body": "AionUi could not read the local team helper response. Retry once, and if it keeps happening, restart the app."
+        "title": "Не вдалося прочитати відповідь допоміжного процесу команди",
+        "body": "AionUi не зміг прочитати відповідь локального допоміжного процесу команди. Повторіть спробу, а якщо це повторюватиметься, перезапустіть застосунок."
       },
       "MCP_TOOL_REMOTE_ERROR": {
-        "title": "The local team helper rejected the request",
-        "body": "The local team helper returned an error while processing this request. Review the details below and retry after adjusting the team action."
+        "title": "Локальний допоміжний процес команди відхилив запит",
+        "body": "Локальний допоміжний процес команди повернув помилку під час обробки цього запиту. Перегляньте подробиці нижче, змініть дію команди й повторіть спробу."
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
-        "title": "The team helper returned an unexpected response",
-        "body": "AionUi received an unexpected response from the local team helper. Retry once, and report it if the problem persists."
+        "title": "Допоміжний процес команди повернув неочікувану відповідь",
+        "body": "AionUi отримав неочікувану відповідь від локального допоміжного процесу команди. Повторіть спробу, а якщо проблема не зникне, повідомте про неї."
       },
       "MCP_TCP_READ_FAILED": {
-        "title": "Failed to read from the local team helper",
-        "body": "AionUi could not read the local team helper TCP response. Retry once, and restart the app if it keeps failing."
+        "title": "Не вдалося прочитати дані від локального допоміжного процесу команди",
+        "body": "AionUi не зміг прочитати TCP-відповідь локального допоміжного процесу команди. Повторіть спробу, а якщо збій не зникне, перезапустіть застосунок."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
-        "title": "Team service is not ready yet",
-        "body": "The local team session is still starting or has been interrupted. Wait a moment and retry."
+        "title": "Сервіс команди ще не готовий",
+        "body": "Локальний сеанс команди ще запускається або його перервано. Зачекайте трохи й повторіть спробу."
       },
       "TEAM_ASSISTANT_ID_REQUIRED": {
-        "title": "A teammate assistant must be selected",
-        "body": "Choose a real assistant from the available assistant catalog before creating or spawning a teammate."
+        "title": "Потрібно вибрати асистента для учасника команди",
+        "body": "Перш ніж створювати або запускати учасника команди, виберіть справжнього асистента з каталогу доступних асистентів."
       },
       "TEAM_ASSISTANT_NOT_FOUND": {
-        "title": "The selected assistant is no longer available",
-        "body": "Refresh the assistant catalog, then choose another assistant for this teammate."
+        "title": "Вибраний асистент більше недоступний",
+        "body": "Оновіть каталог асистентів, а потім виберіть іншого асистента для цього учасника команди."
       },
       "TEAM_ASSISTANT_FIELD_UNSUPPORTED": {
-        "title": "The request used a legacy team identity field",
-        "body": "This team action must use assistant_id instead of legacy backend or agent fields."
+        "title": "У запиті використано застаріле поле ідентифікації команди",
+        "body": "Ця дія команди має використовувати assistant_id замість застарілих полів backend або agent."
       }
-    }
+    },
+    "errorCodeValue": "Код помилки: {{code}}"
   },
   "workspace": {
     "title": "Проєкт",
@@ -436,7 +451,10 @@
       "terminal": "Термінал",
       "explorer": "Провідник",
       "browser": "Браузер"
-    }
+    },
+    "collapsePanel": "Приховати панель проєкту",
+    "togglePanel": "Показати або приховати панель проєкту",
+    "expandPanel": "Показати панель проєкту"
   },
   "minimap": {
     "searchAria": "Пошук по діалогу",
@@ -446,6 +464,8 @@
     "count": "{{count}} ходів",
     "count_one": "{{count}} хід",
     "count_other": "{{count}} ходів",
+    "questionLabel": "П:",
+    "answerLabel": "В:",
     "count_few": "{{count}} ходи",
     "count_many": "{{count}} ходів"
   },
@@ -481,8 +501,11 @@
       "recordingUnsupported": "Запис у реальному часі не підтримується. Будь ласка, завантажте аудіофайл",
       "transcriptionFailed": "Не вдалося транскрибувати аудіо",
       "genericError": "Помилка голосового введення. Спробуйте ще раз",
-      "emptyTranscript": "No speech was detected"
-    }
+      "transcriptionFailedStatus": "Не вдалося транскрибувати аудіо (HTTP {{status}})",
+      "emptyTranscript": "Мовлення не виявлено"
+    },
+    "archivedCannotSend": "Цю розмову архівовано, тому надсилати нові повідомлення не можна.",
+    "awaitingConfirmation": "Очікує підтвердження"
   },
   "sideQuestion": {
     "title": "Бічне запитання",
@@ -538,9 +561,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "Втручання не підтримується, поки цей агент відповідає. Використайте «Додати до чернеток».",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "Вибрати спосіб надсилання",
+    "midturnBlockedSendHint": "Цей агент ще працює, тому повідомлення не можна надіслати напряму. Додайте його до чернеток і надішліть пізніше.",
+    "addToQueueBusyHint": "Додайте до чернеток і надішліть пізніше."
   },
   "contextUsage": {
     "tokensUsed": "Використано токенів: {{tokens}}",
@@ -577,7 +600,10 @@
   },
   "thinking": {
     "label": "Розмірковує...",
-    "history": "Історія міркувань"
+    "history": "Історія міркувань",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "Міркування завершено · {{time}}",
+    "elapsed": "({{time}})"
   },
   "skills": {
     "loaded": "Завантажені навички",
@@ -592,7 +618,9 @@
       "failed": "Помилка",
       "unsupported": "Не підтримується"
     },
-    "selected": "Вибрані MCP"
+    "selected": "Вибрані MCP",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "Вибрано MCP · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "Готується середовище виконання. Перший запуск може тривати трохи довше."
@@ -638,15 +666,15 @@
   },
   "notFound": "Розмову не знайдено або її видалено",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "Додати папку до проєкту",
     "refreshFiles": "Оновити файли",
     "refreshChanges": "Оновити зміни",
     "collapseAll": "Згорнути все",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "Прибрати з проєкту",
+    "attachDuplicate": "Ця папка вже є в проєкті",
+    "attachOverlap": "Ця папка перетинається з папкою, яка вже є в проєкті",
+    "attachFailed": "Не вдалося додати папку",
+    "removeFailed": "Не вдалося прибрати папку",
     "contextMenu": {
       "rename": "Перейменувати",
       "addToChat": "Додати в чат",
@@ -735,7 +763,7 @@
         "confirmDiscardTitle": "Скасувати зміни?",
         "confirmDiscardTracked": "Правки у {{count}} файлах буде втрачено. Це не можна скасувати.",
         "confirmDiscardUntracked": "{{count}} нових файлів буде переміщено до смітника.",
-        "confirmDiscardMixed": "Правки у {{tracked}} файлі(ах) буде безповоротно втрачено; {{untracked}} нових файлів потраплять до смітника.",
+        "confirmDiscardMixed": "Змінені файли, правки в яких буде безповоротно втрачено: {{tracked}}. Нові файли, які буде переміщено до смітника: {{untracked}}.",
         "discardConfirmButton": "Скасувати",
         "okStage": "Проіндексовано файлів: {{count}}",
         "okStage_one": "Проіндексовано файлів: {{count}}",
@@ -763,12 +791,24 @@
         "allFailed": "Жоден із {{count}} файл(ів) не вдалося обробити",
         "allFailed_one": "Не вдалося обробити {{count}} файл",
         "allFailed_other": "Жоден із {{count}} файлів не вдалося обробити",
+        "confirmDiscardTracked_one": "Правки в {{count}} файлі буде втрачено. Це не можна скасувати.",
+        "confirmDiscardTracked_other": "Правки в {{count}} файлах буде втрачено. Це не можна скасувати.",
+        "confirmDiscardUntracked_one": "{{count}} новий файл буде переміщено до смітника.",
+        "confirmDiscardUntracked_other": "Нових файлів, які буде переміщено до смітника: {{count}}.",
+        "confirmDiscardUntracked_few": "{{count}} нові файли буде переміщено до смітника.",
+        "confirmDiscardUntracked_many": "{{count}} нових файлів буде переміщено до смітника.",
+        "confirmDiscardTracked_few": "Правки в {{count}} файлах буде втрачено. Це не можна скасувати.",
+        "confirmDiscardTracked_many": "Правки в {{count}} файлах буде втрачено. Це не можна скасувати.",
         "allFailed_few": "Жоден із {{count}} файлів не вдалося обробити",
         "allFailed_many": "Жоден із {{count}} файлів не вдалося обробити"
       }
     },
     "pathCopied": "Шлях скопійовано",
-    "copyFailed": "Не вдалося скопіювати шлях"
+    "copyFailed": "Не вдалося скопіювати шлях",
+    "imported_one": "Імпортовано {{count}} файл",
+    "imported_other": "Імпортовано файлів: {{count}}",
+    "imported_few": "Імпортовано {{count}} файли",
+    "imported_many": "Імпортовано {{count}} файлів"
   },
   "terminal": {
     "running": "Виконується",
@@ -797,5 +837,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "Розгорнути план",
     "collapse": "Згорнути план"
-  }
+  },
+  "createFailedWithDetail": "Не вдалося створити розмову: {{error}}",
+  "agentStartFailedWithDetail": "Не вдалося запустити агента: {{error}}"
 }

@@ -138,7 +138,8 @@
     "printedToConsole": "Element-Info in der Konsole ausgegeben",
     "inspectElement": "Element inspizieren",
     "inspectElementEnable": "Element-Inspektor aktivieren",
-    "inspectElementDisable": "Element-Inspektor deaktivieren"
+    "inspectElementDisable": "Element-Inspektor deaktivieren",
+    "frameTitle": "HTML-Vorschau"
   },
   "ppt": {
     "loading": "PPT-Vorschau wird gestartet...",
@@ -155,7 +156,7 @@
     "agentFirstUseContent": "Er kann in diesem Bereich Seiten öffnen, klicken und Inhalte lesen. Deine Anmeldung bleibt erhalten.",
     "agentFirstUseAction": "Einstellungen öffnen"
   },
-  "saveConflict": "Speichern fehlgeschlagen: Diese Datei wurde auf der Festplatte geändert, nachdem Sie sie geöffnet haben. Neu laden, um die anderen Änderungen zu sehen — Ihre Bearbeitungen sind noch da, ungespeichert.",
+  "saveConflict": "Speichern fehlgeschlagen: Diese Datei wurde auf der Festplatte geändert, nachdem du sie geöffnet hast. Lade neu, um die anderen Änderungen zu sehen – deine Bearbeitungen sind noch da, aber nicht gespeichert.",
   "persistQuotaExceeded": "Der lokale Speicher ist voll, offene Tabs dieses Projekts können nicht mehr gemerkt werden. Schließen Sie einige Tabs oder löschen Sie die Websitedaten.",
   "save": {
     "tooltip": "Änderungen speichern (Strg/Cmd+S)",
@@ -181,29 +182,29 @@
     "stepNumber": "Schritt {{step}}",
     "confidence": "{{percent}} % sicher",
     "noChange": "Seite unverändert",
-    "observing": "Seite wird betrachtet …",
+    "observing": "Seite wird betrachtet…",
     "elapsed": "Verstrichene Zeit",
     "steps": "Schritte {{total}}",
     "noSteps": "Noch nichts ausgeführt",
-    "reason": "In mus Worten",
+    "reason": "In den Worten von mu",
     "goal": "Ziel",
-    "pause": "Pause",
+    "pause": "Pausieren",
     "resume": "Fortsetzen",
-    "stop": "Stopp",
+    "stop": "Stoppen",
     "takeover": "Übernehmen",
-    "takeoverTip": "Hält den Lauf an und gibt Ihnen die Tastatur. Danach „Fortsetzen“: mu sieht sich die Seite erneut an, bevor es entscheidet.",
+    "takeoverTip": "Hält den Lauf an und gibt dir die Tastatur. Wenn du fertig bist, drücke „Fortsetzen“: mu sieht sich die Seite erneut an, bevor es entscheidet.",
     "pausedShort": "Pausiert",
-    "stopping": "Wird gestoppt …",
+    "stopping": "Wird gestoppt…",
     "paused": {
       "user": "Pausiert. Beim Fortsetzen sieht sich mu die Seite erneut an, bevor es entscheidet.",
-      "takeover": "Sie haben übernommen und können die Seite selbst bedienen. Danach „Fortsetzen“ drücken.",
-      "interaction": "Sie haben die Seite bedient, deshalb hat mu von selbst pausiert, statt gleichzeitig zu klicken. Beim Fortsetzen sieht es sich die Seite erneut an."
+      "takeover": "Du hast übernommen: Bediene die Seite selbst. Wenn du fertig bist, drücke „Fortsetzen“, dann sieht sich mu die Seite erneut an.",
+      "interaction": "Du hast die Seite bedient, deshalb hat mu von selbst pausiert, statt gleichzeitig zu klicken. Beim Fortsetzen sieht es sich die Seite erneut an."
     },
     "statusHint": {
       "blocked": "mu fand auf der Seite nichts, was dem Ziel näherkommt, und hat angehalten.",
       "needs_confirmation": "Die Aktion sah unumkehrbar aus und wurde nicht erlaubt, deshalb hat mu sie nicht ausgeführt.",
       "budget": "Der Lauf hat sein Schrittlimit aufgebraucht.",
-      "stopped": "Sie haben diesen Lauf gestoppt.",
+      "stopped": "Du hast diesen Lauf gestoppt.",
       "failed": "Beim Browsen ist etwas schiefgegangen; der Lauf wurde nicht abgeschlossen."
     },
     "detachedHint": "mu hat die Verbindung zu dieser Seite verloren; dieser Lauf kann nicht weitergehen.",
@@ -241,6 +242,79 @@
       "deny": "Ablehnen",
       "countdown": "Wird in {{seconds}} s automatisch abgelehnt",
       "untrusted": "Der Text oben stammt von der Webseite. Maßgeblich ist, was die Seite selbst zeigt."
+    },
+    "detachCause": "Ursache",
+    "detachReason": {
+      "tab_closed": "Der Tab wurde geschlossen.",
+      "connection": "Die Browsersitzung von mu endete, bevor der Lauf abgeschlossen war.",
+      "devtools": "Auf dieser Seite wurden die Entwicklertools geöffnet.",
+      "crashed": "Die Seite ist abgestürzt."
+    },
+    "permission": {
+      "location": "Standort",
+      "media": "Kamera oder Mikrofon",
+      "notifications": "Benachrichtigungen",
+      "clipboard": "Zwischenablage",
+      "screen": "Bildschirmaufnahme",
+      "midi": "MIDI-Geräte",
+      "fullscreen": "Vollbild",
+      "pointerLock": "Mauszeigersperre",
+      "devices": "USB-, serielle oder HID-Geräte",
+      "storage": "Speicherzugriff",
+      "openExternal": "Öffnen einer anderen App",
+      "protectedContent": "Wiedergabe geschützter Inhalte",
+      "windows": "Fensterverwaltung"
+    },
+    "end": {
+      "stopped_by_user": "Von der zuschauenden Person gestoppt.",
+      "max_steps": "Nach {{count}} Aktionen gestoppt.",
+      "max_steps_one": "Nach {{count}} Aktion gestoppt.",
+      "max_steps_other": "Nach {{count}} Aktionen gestoppt.",
+      "no_judge": "Kein Judge konnte eine Aktion wählen ({{judgeReason}}).",
+      "no_progress": "Der Judge hat keine Aktion gefunden, die weiterführt.",
+      "not_confirmed": "„{{label}}“ wirkt unumkehrbar und wurde nicht bestätigt.",
+      "no_value": "Für „{{label}}“ konnte kein Wert erzeugt werden.",
+      "stuck": "{{count}} Aktionen in Folge haben nichts verändert.",
+      "stuck_one": "{{count}} Aktion hat nichts verändert.",
+      "stuck_other": "{{count}} Aktionen in Folge haben nichts verändert."
+    },
+    "judgeReason": {
+      "shadow": "Schattenmodus: seine Antwort wird nur aufgezeichnet",
+      "abstain": "der Judge hat sich enthalten",
+      "noVerdict": "kein Urteil",
+      "error": {
+        "timeout": "der Judge hat nicht rechtzeitig geantwortet",
+        "aborted": "der Judge-Aufruf wurde abgebrochen",
+        "unreachable": "der Judge war nicht erreichbar",
+        "auth": "der Judge-Schlüssel wurde abgelehnt",
+        "payment_required": "der Judge braucht eine Zahlungsmethode",
+        "rate_limited": "der Judge hat sein Ratenlimit erreicht",
+        "bad_request": "der Judge hat die Anfrage abgelehnt",
+        "server": "Serverfehler beim Judge",
+        "invalid_response": "die Antwort vom Judge war nicht lesbar",
+        "unexpected": "ein unerwarteter Fehler",
+        "all": "alle Judge-Aufrufe sind fehlgeschlagen",
+        "other": "der Judge-Aufruf ist fehlgeschlagen"
+      },
+      "off": "der Judge ist ausgeschaltet"
     }
-  }
+  },
+  "tabTitle": {
+    "image": "Bild",
+    "diff": "Diff"
+  },
+  "sideBySide": "Nebeneinander",
+  "diffTag": {
+    "changed": "Geändert",
+    "added": "Hinzugefügt",
+    "deleted": "Gelöscht",
+    "renamed": "Umbenannt"
+  },
+  "diffEmpty": "Keine Änderungen in dieser Datei",
+  "mermaidTitleWithSummary": "Mermaid-Diagramm: {{summary}}",
+  "wavedromTitleWithSummary": "WaveDrom-Diagramm: {{summary}}",
+  "saveFailedWithDetail": "Speichern fehlgeschlagen: {{detail}}",
+  "zoomActualSize": "Zoom zurücksetzen",
+  "zoomFit": "Einpassen",
+  "zoomFitTooltip": "An Panelbreite anpassen"
 }

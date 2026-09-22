@@ -71,5 +71,11 @@
     "normal": "Normal",
     "high": "Yüksek",
     "urgent": "Acil"
-  }
+  },
+  "toolCount": "{{count}} araç",
+  "toolCount_one": "{{count}} araç",
+  "toolCount_other": "{{count}} araç",
+  "serverWithToolCount": "{{name}} ({{count}} araç)",
+  "serverWithToolCount_one": "{{name}} ({{count}} araç)",
+  "serverWithToolCount_other": "{{name}} ({{count}} araç)"
 }

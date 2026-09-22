@@ -25,7 +25,7 @@ real config, no credentials, and does not touch the running desktop app, AionCor
 
 ```bash
 export PATH="$HOME/.nvm/versions/node/v24.16.0/bin:$PATH"
-export KYRN_ROOT=/path/to/mu   # the checkout to load pi and kyrn-judge from
+export KYRN_ROOT=/path/to/mu                     # the checkout to load pi and kyrn-judge from
 cd scripts/kyrn/host-spike
 node run-node.mjs                                # baseline
 ../../../kyrn/node_modules/electron/dist/Electron.app/Contents/MacOS/Electron main.mjs   # the real target

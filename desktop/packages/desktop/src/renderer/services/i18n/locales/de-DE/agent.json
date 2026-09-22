@@ -31,7 +31,8 @@
     "switchSuccess": "Modell erfolgreich gewechselt",
     "switchFailed": "Modellwechsel fehlgeschlagen",
     "searchPlaceholder": "Modelle suchen",
-    "noResults": "Keine passenden Modelle"
+    "noResults": "Keine passenden Modelle",
+    "withThoughtLevel": "{{model}} · {{level}}"
   },
   "config": {
     "setting": "Einstellung wird angewendet...",
@@ -41,9 +42,9 @@
     "failed": "Einstellung konnte nicht angewendet werden. Vorheriger Status wird angezeigt."
   },
   "thoughtLevel": {
-    "label": "Denk-Stufe",
-    "switchSuccess": "Denk-Stufe gewechselt",
-    "switchFailed": "Wechsel der Denk-Stufe fehlgeschlagen"
+    "label": "Denkstufe",
+    "switchSuccess": "Denkstufe gewechselt",
+    "switchFailed": "Denkstufe konnte nicht gewechselt werden"
   },
   "warmup": {
     "clickToWake": "Klicken, um dieses Mitglied zu aktivieren"
@@ -53,7 +54,7 @@
     "confirmContent": "Startet den Agentenprozess neu, damit externe CLI-Konfigurationsänderungen (z. B. Kanalwechsel) übernommen werden. Der Chat-Verlauf bleibt erhalten; die Sitzung wird nach Möglichkeit fortgesetzt.",
     "success": "Agent neu verbunden",
     "failed": "Agent konnte nicht neu verbunden werden",
-    "initializingTooltip": "Der Agent wird initialisiert. Verbinden Sie ihn erneut, sobald er bereit ist",
-    "processingTooltip": "Warten Sie auf das Ende der aktuellen Antwort, bevor Sie neu verbinden"
+    "initializingTooltip": "Der Agent wird initialisiert. Verbinde ihn neu, sobald er bereit ist",
+    "processingTooltip": "Warte, bis die aktuelle Antwort fertig ist, bevor du neu verbindest"
   }
 }

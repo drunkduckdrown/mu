@@ -1,7 +1,7 @@
 {
   "sider": {
-    "title": "Teams",
-    "createTeam": "New Team",
+    "title": "團隊",
+    "createTeam": "新建團隊",
     "pin": "置頂",
     "unpin": "取消置頂",
     "rename": "重新命名",
@@ -21,7 +21,7 @@
     "archiveFailed": "歸檔團隊失敗"
   },
   "newAgent": "新助手",
-  "noMessages": "No messages yet.",
+  "noMessages": "還沒有訊息。",
   "agentNotConfigured": "助手尚未設定。",
   "stopAgentFailed": "停止該成員失敗，請稍後再試",
   "work": {
@@ -38,7 +38,7 @@
   },
   "create": {
     "title": "新建團隊",
-    "namePlaceholder": "Team name",
+    "namePlaceholder": "團隊名稱",
     "dispatchAgentPlaceholder": "選擇團隊 Leader 助手",
     "subAgentsPlaceholder": "選擇協作助手",
     "confirm": "確認建立",
@@ -59,7 +59,7 @@
     "chooseDifferentFolder": "選擇其他目錄",
     "error": "建立團隊失敗",
     "selectedMembers": "已選成員",
-    "teamLeader": "Team Leader",
+    "teamLeader": "團隊 Leader",
     "currentLeader": "目前 Leader",
     "setAsLeader": "設為 Leader",
     "teammate": "隊員",

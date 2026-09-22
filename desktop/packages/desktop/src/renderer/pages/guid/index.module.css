@@ -13,7 +13,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 16px;
+  /* Room above the input, which follows directly when there is no assistant picker (mu alone). */
+  margin-bottom: 28px;
   /* The greeting sits over the lower part of the glyph. */
   padding-top: calc(var(--mu-hero-glyph) * 0.7);
 }

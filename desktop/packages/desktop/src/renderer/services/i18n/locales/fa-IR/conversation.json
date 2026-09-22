@@ -83,13 +83,20 @@
     "archive": "بایگانی",
     "archiveSuccess": "بایگانی شد",
     "archiveFailed": "بایگانی ناموفق بود",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "بایگانی گروهی",
+    "batchArchiveConfirm": "{{count}} موضوع انتخاب‌شده بایگانی شود؟ می‌توانید آن‌ها را از «بایگانی» در تنظیمات بازیابی یا حذف کنید.",
+    "batchArchiveSuccess": "{{count}} موضوع بایگانی شد",
+    "archiveProject": "بایگانی پروژه",
+    "archiveProjectTitle": "بایگانی پروژه",
+    "archiveProjectConfirm": "پروژهٔ «{{name}}» بایگانی شود؟ {{count}} گفتگوی آن هم بایگانی می‌شود. می‌توانید آن‌ها را از «بایگانی» در تنظیمات بازیابی یا حذف کنید.",
+    "archiving": "در حال بایگانی…",
+    "batchArchiveConfirm_one": "{{count}} موضوع انتخاب‌شده بایگانی شود؟ می‌توانید آن را از «بایگانی» در تنظیمات بازیابی یا حذف کنید.",
+    "batchArchiveConfirm_other": "{{count}} موضوع انتخاب‌شده بایگانی شود؟ می‌توانید آن‌ها را از «بایگانی» در تنظیمات بازیابی یا حذف کنید.",
+    "batchArchiveSuccess_one": "{{count}} موضوع بایگانی شد",
+    "batchArchiveSuccess_other": "{{count}} موضوع بایگانی شد",
+    "archiveProjectConfirm_one": "پروژهٔ «{{name}}» بایگانی شود؟ {{count}} گفتگوی آن هم بایگانی می‌شود. می‌توانید آن را از «بایگانی» در تنظیمات بازیابی یا حذف کنید.",
+    "archiveProjectConfirm_other": "پروژهٔ «{{name}}» بایگانی شود؟ {{count}} گفتگوی آن هم بایگانی می‌شود. می‌توانید آن‌ها را از «بایگانی» در تنظیمات بازیابی یا حذف کنید.",
+    "projectActions": "عملیات پروژه"
   },
   "historySearch": {
     "tooltip": "جستجوی پیام‌ها",
@@ -116,7 +123,8 @@
     "codes": {
       "TEAM_ASSISTANT_ID_REQUIRED": "لطفاً قبل از ایجاد تیم، یک دستیار انتخاب کنید.",
       "TEAM_ASSISTANT_NOT_FOUND": "دستیار {{assistantId}} دیگر در دسترس نیست. لیست دستیارها را بازخوانی کنید و دستیار دیگری انتخاب کنید.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "به‌جای {{field}} از assistant_id استفاده کنید."
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "به‌جای {{field}} از assistant_id استفاده کنید.",
+      "WORKSPACE_PATH_UNAVAILABLE": "مسیر فضای کاری انتخاب‌شده در دسترس نیست. مطمئن شوید این مسیر وجود دارد و قابل دسترسی است."
     }
   },
   "agentError": {
@@ -348,7 +356,8 @@
         "title": "درخواست از فیلد قدیمی هویت تیم استفاده کرده است",
         "body": "این عمل تیم باید به‌جای فیلدهای قدیمی backend یا agent از assistant_id استفاده کند."
       }
-    }
+    },
+    "errorCodeValue": "کد خطا: {{code}}"
   },
   "workspace": {
     "title": "پروژه",
@@ -432,7 +441,10 @@
       "terminal": "ترمینال",
       "explorer": "فایل اکسپلورر",
       "browser": "مرورگر"
-    }
+    },
+    "collapsePanel": "پنهان کردن پنل پروژه",
+    "togglePanel": "نمایش یا پنهان کردن پنل پروژه",
+    "expandPanel": "نمایش پنل پروژه"
   },
   "minimap": {
     "searchAria": "جستجوی مکالمه",
@@ -441,7 +453,9 @@
     "noMatch": "محتوای منطبقی یافت نشد",
     "count": "{{count}} نوبت",
     "count_one": "{{count}} نوبت",
-    "count_other": "{{count}} نوبت"
+    "count_other": "{{count}} نوبت",
+    "questionLabel": "س:",
+    "answerLabel": "ج:"
   },
   "chat": {
     "noModelSelected": "مدلی برای جلسه فعلی انتخاب نشده، امکان ارسال پیام وجود ندارد",
@@ -475,8 +489,11 @@
       "permissionDenied": "دسترسی میکروفون رد شد",
       "recordingUnsupported": "ضبط زنده در اینجا پشتیبانی نمی‌شود. لطفاً به‌جای آن فایل صوتی آپلود کنید",
       "transcriptionFailed": "رونویسی صوت ناموفق بود",
-      "genericError": "ورودی صوتی ناموفق بود. لطفاً دوباره تلاش کنید"
-    }
+      "genericError": "ورودی صوتی ناموفق بود. لطفاً دوباره تلاش کنید",
+      "transcriptionFailedStatus": "رونویسی ناموفق بود (HTTP {{status}})"
+    },
+    "archivedCannotSend": "این گفتگو بایگانی شده است و پیام تازه نمی‌پذیرد.",
+    "awaitingConfirmation": "در انتظار تأیید"
   },
   "sideQuestion": {
     "title": "سؤال جانبی",
@@ -530,9 +547,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "وقتی این عامل در حال پاسخ‌دهی است، مداخله پشتیبانی نمی‌شود. در عوض از «افزودن به جعبه پیش‌نویس» استفاده کنید.",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "انتخاب نحوهٔ ارسال",
+    "midturnBlockedSendHint": "این عامل هنوز مشغول کار است، پس پیام را نمی‌توان مستقیم فرستاد. آن را در پیش‌نویس‌ها ذخیره کنید و بعداً بفرستید.",
+    "addToQueueBusyHint": "در پیش‌نویس‌ها ذخیره کنید و بعداً بفرستید."
   },
   "contextUsage": {
     "tokensUsed": "{{tokens}} توکن استفاده شده",
@@ -569,7 +586,10 @@
   },
   "thinking": {
     "label": "در حال فکر کردن...",
-    "history": "تاریخچهٔ تفکر"
+    "history": "تاریخچهٔ تفکر",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "تفکر کامل شد · {{time}}",
+    "elapsed": "({{time}})"
   },
   "skills": {
     "loaded": "مهارت‌های لود شده",
@@ -584,7 +604,9 @@
       "failed": "ناموفق",
       "unsupported": "پشتیبانی نمی‌شود"
     },
-    "selected": "MCP انتخاب‌شده"
+    "selected": "MCP انتخاب‌شده",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "MCP انتخاب‌شده · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "در حال آماده‌سازی محیط اجرا. اولین راه‌اندازی ممکن است کمی بیشتر طول بکشد."
@@ -630,15 +652,15 @@
   },
   "notFound": "مکالمه یافت نشد یا حذف شده است",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "افزودن پوشه به پروژه",
     "refreshFiles": "به‌روزرسانی پرونده‌ها",
     "refreshChanges": "به‌روزرسانی تغییرات",
     "collapseAll": "جمع کردن همه",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "حذف از پروژه",
+    "attachDuplicate": "این پوشه از قبل در پروژه هست",
+    "attachOverlap": "این پوشه با پوشه‌ای که در پروژه هست هم‌پوشانی دارد",
+    "attachFailed": "افزودن پوشه ممکن نشد",
+    "removeFailed": "حذف پوشه از پروژه ممکن نشد",
     "contextMenu": {
       "rename": "تغییر نام",
       "addToChat": "افزودن به گفتگو",
@@ -727,7 +749,7 @@
         "confirmDiscardTitle": "تغییرات دور ریخته شود؟",
         "confirmDiscardTracked": "ویرایش {{count}} پرونده از دست می‌رود و بازگردانی‌پذیر نیست.",
         "confirmDiscardUntracked": "{{count}} پرونده تازه به زباله‌دان منتقل می‌شوند.",
-        "confirmDiscardMixed": "ویرایش {{tracked}} پرونده به‌طور برگشت‌ناپذیر از دست می‌رود؛ {{untracked}} پرونده تازه به زباله‌دان می‌رود.",
+        "confirmDiscardMixed": "پرونده‌های تغییریافته‌ای که ویرایش‌هایشان برای همیشه از دست می‌رود: {{tracked}}. پرونده‌های تازه‌ای که به زباله‌دان می‌روند: {{untracked}}.",
         "discardConfirmButton": "دور ریختن",
         "okStage": "{{count}} پرونده آماده شد",
         "okStage_one": "{{count}} پرونده آماده شد",
@@ -748,11 +770,17 @@
         "outcomeUnknown": "پیش از رسیدن پاسخ، اتصال بازنشانی شد — این عمل ممکن است کامل شده باشد یا نه. پیش از تلاش دوباره، بازخوانی کنید و فهرست پرونده‌ها را بررسی کنید.",
         "allFailed": "هیچ‌یک از {{count}} پرونده پردازش نشد",
         "allFailed_one": "هیچ‌یک از {{count}} پرونده پردازش نشد",
-        "allFailed_other": "هیچ‌یک از {{count}} پرونده پردازش نشد"
+        "allFailed_other": "هیچ‌یک از {{count}} پرونده پردازش نشد",
+        "confirmDiscardTracked_one": "ویرایش {{count}} پرونده از دست می‌رود. این کار بازگشت‌پذیر نیست.",
+        "confirmDiscardTracked_other": "ویرایش {{count}} پرونده از دست می‌رود. این کار بازگشت‌پذیر نیست.",
+        "confirmDiscardUntracked_one": "{{count}} پروندهٔ تازه به زباله‌دان منتقل می‌شود.",
+        "confirmDiscardUntracked_other": "{{count}} پروندهٔ تازه به زباله‌دان منتقل می‌شود."
       }
     },
     "pathCopied": "مسیر کپی شد",
-    "copyFailed": "کپی مسیر ناموفق بود"
+    "copyFailed": "کپی مسیر ناموفق بود",
+    "imported_one": "{{count}} فایل وارد شد",
+    "imported_other": "{{count}} فایل وارد شد"
   },
   "terminal": {
     "running": "در حال اجرا",
@@ -781,5 +809,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "گسترش برنامه",
     "collapse": "جمع کردن برنامه"
-  }
+  },
+  "createFailedWithDetail": "ایجاد گفتگو ممکن نشد: {{error}}",
+  "agentStartFailedWithDetail": "راه‌اندازی ایجنت ممکن نشد: {{error}}"
 }

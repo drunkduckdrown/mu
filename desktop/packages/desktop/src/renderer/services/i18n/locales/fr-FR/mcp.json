@@ -71,5 +71,11 @@
     "normal": "Normal",
     "high": "Élevé",
     "urgent": "Urgent"
-  }
+  },
+  "toolCount": "{{count}} outils",
+  "toolCount_one": "{{count}} outil",
+  "toolCount_other": "{{count}} outils",
+  "serverWithToolCount": "{{name}} ({{count}} outils)",
+  "serverWithToolCount_one": "{{name}} ({{count}} outil)",
+  "serverWithToolCount_other": "{{name}} ({{count}} outils)"
 }

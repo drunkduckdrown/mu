@@ -58,6 +58,7 @@ describe('resolveFeedbackModule', () => {
     );
     // Pages where preselecting a module makes no sense (multi-purpose or
     // pre-auth surfaces where the user picks the module themselves).
+    // `/welcome` is mu's first-run guide, shown before anything is set up.
     const moduleLess = new Set(['/guid', '/login', '/welcome', '/test/components']);
     const paths = [...routerSrc.matchAll(/path='([^*'][^']*)'/g)].map((m) => m[1]);
     expect(paths.length).toBeGreaterThan(10);

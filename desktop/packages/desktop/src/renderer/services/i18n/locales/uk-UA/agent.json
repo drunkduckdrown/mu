@@ -31,7 +31,8 @@
     "switchSuccess": "Модель успішно змінено",
     "switchFailed": "Не вдалося змінити модель",
     "searchPlaceholder": "Пошук моделей",
-    "noResults": "Немає відповідних моделей"
+    "noResults": "Немає відповідних моделей",
+    "withThoughtLevel": "{{model}} · {{level}}"
   },
   "config": {
     "setting": "Застосування налаштування...",

@@ -42,7 +42,8 @@
     "noHistory": "Запусков ещё не было",
     "notFound": "Задача не найдена",
     "executionModeDescriptionNew": "Каждый запуск начинает новый диалог, предыдущий контекст не сохраняется. Лучше для периодических отчётов или проверок, которые должны быть независимыми.",
-    "executionModeDescriptionExisting": "Каждый запуск продолжается в том же диалоге, предыдущий контекст и результаты остаются доступными. Лучше для задач, которые строятся на предыдущих запусках."
+    "executionModeDescriptionExisting": "Каждый запуск продолжается в том же диалоге, предыдущий контекст и результаты остаются доступными. Лучше для задач, которые строятся на предыдущих запусках.",
+    "lastRunFailed": "Последний запуск завершился ошибкой"
   },
   "notification": {
     "taskComplete": "Задача завершена",
@@ -126,7 +127,23 @@
       "hourly": "Каждый час",
       "dailyAt": "Каждый день в {{time}}",
       "weekdaysAt": "По будням в {{time}}",
-      "weeklyAt": "Каждый {{day}} в {{time}}"
+      "weeklyAt": "Каждый {{day}} в {{time}}",
+      "everyMinute": "Каждую минуту",
+      "everyNMinutes": "Каждые {{count}} минут",
+      "everyNMinutes_one": "Каждую {{count}} минуту",
+      "everyNMinutes_other": "Каждые {{count}} минуты",
+      "everyNMinutes_few": "Каждые {{count}} минуты",
+      "everyNMinutes_many": "Каждые {{count}} минут",
+      "everyNHours": "Каждые {{count}} часов",
+      "everyNHours_one": "Каждый {{count}} час",
+      "everyNHours_other": "Каждые {{count}} часа",
+      "weeklyOnDaysAt": "Каждую неделю: {{days}}, в {{time}}",
+      "monthlyAt": "Ежемесячно, {{day}}-го числа в {{time}}",
+      "everyNHours_few": "Каждые {{count}} часа",
+      "everyNHours_many": "Каждые {{count}} часов",
+      "everyInterval": "Раз в {{interval}}",
+      "onceAt": "Однократно: {{time}}",
+      "customExpr": "Пользовательское расписание ({{expr}})"
     },
     "custom": {
       "modeLabel": "Режим повтора",
@@ -142,6 +159,8 @@
       "monthDay": "День месяца",
       "preview": "Созданное Cron-выражение"
     },
+    "createFailed": "Не удалось создать задачу: {{error}}",
+    "updateFailed": "Не удалось сохранить задачу: {{error}}",
     "searchPlaceholder": "Поиск задач...",
     "noSearchResults": "Нет подходящих запланированных задач."
   },
@@ -163,5 +182,11 @@
     "conversationNotFound": "Диалог не найден",
     "scheduledTimePassed": "Запланированное время прошло",
     "conversationBusy": "Диалог занят после {{count}} попыток"
-  }
+  },
+  "nextRunAt": "Следующий запуск: {{time}}",
+  "keepAwakeFailed": "Не удалось изменить режим «Не спать»: {{error}}",
+  "pauseFailed": "Не удалось приостановить задачу: {{error}}",
+  "resumeFailed": "Не удалось возобновить задачу: {{error}}",
+  "deleteFailed": "Не удалось удалить задачу: {{error}}",
+  "runNowFailed": "Не удалось запустить задачу: {{error}}"
 }

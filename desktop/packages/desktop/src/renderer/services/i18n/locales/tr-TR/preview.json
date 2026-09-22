@@ -138,7 +138,8 @@
     "printedToConsole": "Öğe bilgisi konsola yazıldı",
     "inspectElement": "Öğeyi İncele",
     "inspectElementEnable": "Öğe denetçisini etkinleştir",
-    "inspectElementDisable": "Öğe denetçisini devre dışı bırak"
+    "inspectElementDisable": "Öğe denetçisini devre dışı bırak",
+    "frameTitle": "HTML önizlemesi"
   },
   "ppt": {
     "loading": "PPT önizlemesi başlatılıyor...",
@@ -241,6 +242,79 @@
       "deny": "Reddet",
       "countdown": "{{seconds}} sn sonra otomatik reddedilecek",
       "untrusted": "Yukarıdaki metin web sayfasından gelir. Sayfanın gerçekte gösterdiğine güvenin."
+    },
+    "detachCause": "Neden",
+    "detachReason": {
+      "tab_closed": "Sekme kapatıldı.",
+      "connection": "mu'nun tarama oturumu çalışma bitmeden sona erdi.",
+      "devtools": "Bu sayfada geliştirici araçları açıldı.",
+      "crashed": "Sayfa çöktü."
+    },
+    "permission": {
+      "location": "konum",
+      "media": "kamera veya mikrofon",
+      "notifications": "bildirimler",
+      "clipboard": "pano",
+      "screen": "ekran yakalama",
+      "midi": "MIDI cihazları",
+      "fullscreen": "tam ekran",
+      "pointerLock": "fare kilidi",
+      "devices": "USB, seri veya HID cihazları",
+      "storage": "depolama erişimi",
+      "openExternal": "başka bir uygulamayı açma",
+      "protectedContent": "korumalı içerik oynatma",
+      "windows": "pencere yönetimi"
+    },
+    "end": {
+      "stopped_by_user": "İzleyen kişi tarafından durduruldu.",
+      "max_steps": "{{count}} işlemden sonra durdu.",
+      "max_steps_one": "{{count}} işlemden sonra durdu.",
+      "max_steps_other": "{{count}} işlemden sonra durdu.",
+      "no_judge": "Hiçbir hakem bir işlem seçemedi ({{judgeReason}}).",
+      "no_progress": "Hakem ilerleme sağlayan bir işlem bulamadı.",
+      "not_confirmed": "“{{label}}” geri alınamaz görünüyor ve onaylanmadı.",
+      "no_value": "“{{label}}” için bir değer üretilemedi.",
+      "stuck": "Art arda {{count}} işlem hiçbir şeyi değiştirmedi.",
+      "stuck_one": "{{count}} işlem hiçbir şeyi değiştirmedi.",
+      "stuck_other": "Art arda {{count}} işlem hiçbir şeyi değiştirmedi."
+    },
+    "judgeReason": {
+      "shadow": "gölge modu: yanıtı yalnızca kaydedilir",
+      "abstain": "hakem çekimser kaldı",
+      "off": "hakem kapalı",
+      "noVerdict": "karar yok",
+      "error": {
+        "timeout": "hakem zaman aşımına uğradı",
+        "aborted": "hakem çağrısı iptal edildi",
+        "unreachable": "hakeme ulaşılamadı",
+        "auth": "hakem anahtarı reddedildi",
+        "payment_required": "hakem için ödeme yöntemi gerekli",
+        "rate_limited": "hakem hız sınırına ulaştı",
+        "bad_request": "hakem isteği reddetti",
+        "server": "hakem sunucusunda hata oluştu",
+        "invalid_response": "hakemin yanıtı okunamadı",
+        "unexpected": "beklenmeyen bir hata",
+        "all": "tüm hakem çağrıları başarısız oldu",
+        "other": "hakem çağrısı başarısız oldu"
+      }
     }
-  }
+  },
+  "tabTitle": {
+    "image": "Görsel",
+    "diff": "Fark"
+  },
+  "sideBySide": "Yan yana",
+  "diffTag": {
+    "changed": "Değiştirildi",
+    "added": "Eklendi",
+    "deleted": "Silindi",
+    "renamed": "Yeniden adlandırıldı"
+  },
+  "diffEmpty": "Bu dosyada değişiklik yok",
+  "mermaidTitleWithSummary": "Mermaid diyagramı: {{summary}}",
+  "wavedromTitleWithSummary": "WaveDrom diyagramı: {{summary}}",
+  "saveFailedWithDetail": "Kaydedilemedi: {{detail}}",
+  "zoomActualSize": "Yakınlaştırmayı sıfırla",
+  "zoomFit": "Sığdır",
+  "zoomFitTooltip": "Panel genişliğine sığdır"
 }

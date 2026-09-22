@@ -41,7 +41,7 @@
   "viewMoreLines": "檢視更多 ({{count}} 行)",
   "viewMoreLines_one": "檢視更多 ({{count}} 行)",
   "viewMoreLines_other": "檢視更多 ({{count}} 行)",
-  "success": "Success",
+  "success": "成功",
   "error": "錯誤",
   "saveSuccess": "儲存成功",
   "saveFailed": "儲存失敗",
@@ -217,9 +217,9 @@
       "unknown": "狀態無法取得",
       "runs": "蜂群執行紀錄",
       "graph": "協作關係圖",
-      "graphHint": "箭頭表示已確認的資訊傳遞。選擇蜂群成員即可檢視。",
+      "graphHint": "箭頭表示已確認的送達。選擇蜂群成員即可檢視。",
       "deliveries": "資訊流",
-      "noDeliveries": "尚無已確認的資訊傳遞。",
+      "noDeliveries": "尚無已確認的送達。",
       "board": "共享看板",
       "noNotes": "尚無共享發現。",
       "context": "執行上下文",
@@ -242,14 +242,57 @@
       "selectBee": "選擇蜂群成員以檢視其活動。",
       "unknownSource": "未知來源",
       "noteMissing": "未記錄發現。",
-      "allFlow": "所有傳遞",
-      "beeFlow": "{{name}} 的傳遞",
+      "allFlow": "所有送達",
+      "beeFlow": "{{name}} 的送達",
       "audit": "Jev 判定",
       "waitingRun": "正在等待這次蜂群執行的紀錄。",
       "recordedAt": "記錄時間 {{time}}",
       "beeMissing": "此蜂群成員不在已記錄的快照中。",
       "snapshot": "最近回報狀態",
-      "updated": "上次更新 {{time}}"
+      "updated": "上次更新 {{time}}",
+      "runTitle": {
+        "tasks": "{{count}} 個任務",
+        "tasks_one": "{{count}} 個任務",
+        "tasks_other": "{{count}} 個任務",
+        "chain": "{{count}} 步的任務鏈",
+        "chain_one": "{{count}} 步的任務鏈",
+        "chain_other": "{{count}} 步的任務鏈"
+      },
+      "choosingRoles": "正在為 {{count}} 個子代理選擇角色、模型和思考強度…",
+      "choosingRoles_one": "正在為 {{count}} 個子代理選擇角色、模型和思考強度…",
+      "choosingRoles_other": "正在為 {{count}} 個子代理選擇角色、模型和思考強度…",
+      "activity": {
+        "notesReceived": "← 收到其他蜂群成員的 {{count}} 則發現",
+        "notesReceived_one": "← 收到其他蜂群成員的 {{count}} 則發現",
+        "notesReceived_other": "← 收到其他蜂群成員的 {{count}} 則發現",
+        "lateNotes": "← 最後一輪：{{count}} 則遲到的發現",
+        "lateNotes_one": "← 最後一輪：{{count}} 則遲到的發現",
+        "lateNotes_other": "← 最後一輪：{{count}} 則遲到的發現",
+        "askedFindings": "← 被問到目前有哪些發現",
+        "toldWrapUp": "← 被要求收尾並提交報告",
+        "toolFailed": "{{tool}} 失敗",
+        "retry": "重試 {{attempt}}/{{maxAttempts}}：{{message}}",
+        "modelError": "模型錯誤：{{message}}",
+        "compacting": "正在壓縮上下文"
+      },
+      "errors": {
+        "cancelled": "執行已取消",
+        "stoppedByUser": "已被使用者停止",
+        "endedByUser": "已被使用者結束",
+        "stalledModel": "模型已 {{duration}} 沒有任何動靜",
+        "stalledTool": "{{tool}} 呼叫已 {{duration}} 沒有任何動靜",
+        "timeBudget": "已用完 {{duration}} 的時間預算",
+        "timeBudgetReached": "已用完時間預算",
+        "noReportInTime": "{{reason}}；被要求後 {{duration}} 內沒有提交報告",
+        "modelFailed": "模型請求失敗",
+        "modelAborted": "模型請求已中止",
+        "retriesExhausted": "模型請求多次重試後仍然失敗",
+        "exitedCode": "子代理在完成前結束，結束代碼 {{exitCode}}",
+        "exitedSignal": "子代理在完成前被 {{signal}} 終止",
+        "exitedKilled": "子代理在完成前被訊號終止",
+        "chainBroken": "未開始：前一步（「{{step}}」）沒有完成",
+        "detail": "{{reason}}：{{detail}}"
+      }
     },
     "judgeView": {
       "title": "判定與影響",
@@ -273,7 +316,7 @@
       "latency": "{{ms}} 毫秒",
       "more": "另有 {{count}} 項",
       "batch": "本筆記錄涵蓋的候選項：{{count}} 個。",
-      "batchFailures": "未得到回答、已回退到預設策略：{{count}} 個。",
+      "batchFailures": "未得到回答、已改用預設策略：{{count}} 個。",
       "changedThinking": "思考強度：{{from}} → {{to}}",
       "sentHints": "傳給主模型的提示",
       "unlinked": "獨立記錄",
@@ -283,7 +326,7 @@
         "returned": "判定已回傳",
         "confirmed": "作用已確認",
         "shadow": "影子模式",
-        "fallback": "回退",
+        "fallback": "改用預設",
         "late": "晚到",
         "rule": "規則判定",
         "ended": "等待已結束",
@@ -292,7 +335,7 @@
       "actions": {
         "toRuntime": "判定已交給執行層；這不代表操作已經完成。",
         "observeOnly": "影子模式：僅記錄用於對比，執行沒有依據這次判定改變。",
-        "useDefault": "已回退到該判定點的預設策略。回退不等於放行：風險判定和蜂群閘門的預設策略偏保守。",
+        "useDefault": "已改用該判定點的預設策略。改用預設不等於放行：風險判定和蜂群閘門的預設策略偏保守。",
         "lateIgnored": "這一輪已經開始，這次晚到的判定沒有改變它。",
         "waiting": "正在等待判定結果。",
         "waitEnded": "等待或任務已結束，沒有記錄到最終判定。",
@@ -445,13 +488,34 @@
         "rate_limited": "判定器請求過於頻繁",
         "bad_request": "判定器拒絕了請求",
         "server": "判定服務出錯",
-        "invalid_response": "判定器的回答無法解析"
+        "invalid_response": "判定器的回答無法解析",
+        "verdict": "判定器已作答"
       },
       "probabilityValue": "判定為「是」的機率：{{percent}}",
       "optionProbability": "{{option}} {{percent}}",
       "reasonValue": "原因：{{reason}}",
       "fieldValue": "{{field}}：{{value}}",
-      "errorValue": "錯誤 · {{kind}}"
+      "errorValue": "錯誤 · {{kind}}",
+      "noAnswerAfter": "{{duration}}內未得到回答",
+      "hints": {
+        "clarify": "請求看起來不夠明確：先問一個關鍵問題。",
+        "side_question": "這是個題外問題：簡短回答，然後繼續主任務。",
+        "plan_first": "改動大或有風險：先寫一個簡短的計畫，確認後再動手修改。",
+        "try_hive": "難度較高：如果原因不明或直接嘗試不行，就改用蜂群。",
+        "try_delegate": "可以拆成相互獨立的幾部分：考慮交給子代理並行處理。"
+      },
+      "answerIds": {
+        "turn_type": "任務類型",
+        "is_side_question": "題外問題",
+        "needs_clarification": "太模糊，無法直接動手",
+        "needs_files_changed": "需要修改程式碼",
+        "needs_memory": "以往的筆記有幫助",
+        "swarm_worthy": "可拆成獨立部分",
+        "plan_first": "改動大或有風險",
+        "task_complexity": "涉及範圍",
+        "reasoning_depth": "推理深度",
+        "tool_complexity": "工具使用量"
+      }
     },
     "decisions": "Jev",
     "memory": "經驗",
@@ -485,7 +549,7 @@
       "auto_compaction_start": "正在壓縮上下文",
       "auto_compaction_end": "壓縮結束",
       "hive.note": "共享發現",
-      "hive.delivery": "傳遞已確認",
+      "hive.delivery": "送達已確認",
       "hive.gate": "Jev 閘門",
       "hive.manifest": "蜂群任務分配",
       "bee.event": "執行步驟",
@@ -646,10 +710,36 @@
         "stuck": "好像卡住了"
       },
       "checks_one": "驗收 {{done}}/{{total}}",
-      "checks_other": "驗收 {{done}}/{{total}}"
+      "checks_other": "驗收 {{done}}/{{total}}",
+      "codes": {
+        "progress": {
+          "none": "還沒有列出要做完的事。",
+          "all": "清單上的 {{total}} 件事都做完了。",
+          "all_one": "清單上的 {{total}} 件事都做完了。",
+          "all_other": "清單上的 {{total}} 件事都做完了。",
+          "some": "清單上 {{total}} 件事，做完了 {{done}} 件。",
+          "some_one": "清單上 {{total}} 件事，做完了 {{done}} 件。",
+          "some_other": "清單上 {{total}} 件事，做完了 {{done}} 件。"
+        },
+        "now": {
+          "understanding": "正在看程式碼和資料，先弄清楚要做什麼。",
+          "planning": "正在想怎麼做，還沒有動手改。",
+          "changing": "正在改程式碼。",
+          "checking": "正在跑測試或檢查，看改得對不對。",
+          "fixing": "檢查發現了問題，正在修。",
+          "waiting": "停下來了，在等你回覆。",
+          "wrapping_up": "手上的活做完了，正在收尾。",
+          "stuck": "好像在原地打轉，可能需要你給個方向。",
+          "unclear": "正在做事。",
+          "focus": "{{now}}（在做：{{focus}}）"
+        },
+        "confirm": {
+          "waiting_reply": "它在等你回覆。"
+        }
+      }
     },
     "activityLoadFailed": "無法載入協作記錄，正在重試…",
-    "beeFailed": "這隻蜂回報了一個錯誤。",
+    "beeFailed": "這個蜂群成員回報了錯誤。",
     "beeCounts": {
       "turns": "{{count}} 輪",
       "turns_one": "{{count}} 輪",
@@ -675,12 +765,106 @@
     "compactionDropped_one": "移除 {{count}} 次呼叫",
     "compactionDropped_other": "移除 {{count}} 次呼叫",
     "jevLine": {
-      "classifying": "Jev 正在歸類…",
-      "classified": "Jev 歸類為{{type}}",
-      "byRule": "按規則歸類為{{type}}",
+      "classifying": "Jev 正在分類這則訊息…",
+      "classified": "Jev 分類為{{type}}",
+      "byRule": "依規則分類為{{type}}",
       "shadow": "{{line}}（僅觀察，沒有生效）",
       "late": "{{line}}（來晚了，這一輪沒用上）",
       "fallback": "Jev 這次沒給出分類，按預設方式繼續"
+    },
+    "eventLine": {
+      "detail": "詳細資訊：{{detail}}",
+      "progress": {
+        "frame": "正在更新任務框架",
+        "lessons": "正在查看先前工作階段的經驗",
+        "skills": "正在挑選這個工作階段需要的技能",
+        "capabilities": "正在挑選這個任務需要的能力",
+        "permissionReview": "JeV 正在審批：{{summary}}"
+      },
+      "goal": {
+        "paused": "已暫停：{{reason}}",
+        "reason": {
+          "interrupted": "你中斷了這次執行",
+          "modelCallFailed": "一次模型呼叫失敗了",
+          "needsUser": "代理在等你回覆",
+          "needsUserDetail": "代理需要你：{{detail}}",
+          "unjudged": "沒有判定器能判讀目標是否達成，也沒有能證明尚未完成的事",
+          "idle": "代理連續 {{count}} 次什麼都沒做就停下了",
+          "idle_one": "代理連續 {{count}} 次什麼都沒做就停下了",
+          "idle_other": "代理連續 {{count}} 次什麼都沒做就停下了",
+          "noProgress": "連續 {{count}} 次沒有進展，告訴它接下來怎麼做",
+          "noProgress_one": "連續 {{count}} 次沒有進展，告訴它接下來怎麼做",
+          "noProgress_other": "連續 {{count}} 次沒有進展，告訴它接下來怎麼做",
+          "noProgressDetail": "連續 {{count}} 次沒有進展（{{detail}}），告訴它接下來怎麼做",
+          "noProgressDetail_one": "連續 {{count}} 次沒有進展（{{detail}}），告訴它接下來怎麼做",
+          "noProgressDetail_other": "連續 {{count}} 次沒有進展（{{detail}}），告訴它接下來怎麼做",
+          "continuationsUsedUp": "續跑次數（{{count}} 次）用完了",
+          "continuationsUsedUp_one": "續跑次數（{{count}} 次）用完了",
+          "continuationsUsedUp_other": "續跑次數（{{count}} 次）用完了",
+          "minutesUsedUp": "時間額度（{{duration}}）用完了",
+          "sessionReopened": "工作階段重新開啟了"
+        }
+      },
+      "frame": {
+        "unclearChange": "這則訊息會怎樣改變任務：「{{message}}」？"
+      },
+      "search": {
+        "notConfigured": "「{{source}}」不是可用的搜尋來源（features.web.search）",
+        "failed": "{{source}} 發生錯誤：{{message}}",
+        "robotPage": "{{source}} 回傳了人機驗證頁面：它把這個用戶端當成了機器人",
+        "httpError": "{{source}} 回傳了 HTTP {{status}}",
+        "noResults": "{{source}} 回傳的頁面裡沒有結果（沒找到，或頁面結構變了）",
+        "unrelated": "{{source}} 回傳的結果與查詢毫不相關，搜尋引擎把用戶端當成機器人時常會這樣"
+      },
+      "mcp": {
+        "line": "{{name}}：{{reason}}",
+        "projectUntrusted": "專案未受信任，而這個伺服器是專案自行定義的",
+        "needsApproval": "它由專案定義（{{source}}），尚未獲得核准；在 mu 中開啟這個資料夾並允許一次，或在 mu.json 中定義它",
+        "denied": "你沒有允許這個專案的伺服器啟動",
+        "unreachable": "無法啟動或連線到它",
+        "closed": "mu 還在等回應時，連線就關閉了",
+        "timeout": "它沒有及時回應",
+        "aborted": "啟動被取消了",
+        "rpc": "它回傳了錯誤",
+        "protocol": "它的回應不符合 MCP 協定",
+        "startFailed": "啟動失敗了",
+        "crashedRestarting": "執行時當機了，mu 會重新啟動它一次",
+        "crashedAgain": "又當機了，不會再重新啟動",
+        "restartFailed": "當機後重新啟動也失敗了",
+        "restartFailedCause": "當機後重新啟動也失敗了：{{cause}}"
+      },
+      "rewind": {
+        "sameCommandFailed": "同一條指令已經失敗了 {{count}} 次：{{command}}",
+        "sameCommandFailed_one": "同一條指令已經失敗了 {{count}} 次：{{command}}",
+        "sameCommandFailed_other": "同一條指令已經失敗了 {{count}} 次：{{command}}",
+        "monitorTrouble": "監控在這一輪裡提醒了 {{count}} 次（{{kind}}：{{detail}}）",
+        "monitorTrouble_one": "監控在這一輪裡提醒了 {{count}} 次（{{kind}}：{{detail}}）",
+        "monitorTrouble_other": "監控在這一輪裡提醒了 {{count}} 次（{{kind}}：{{detail}}）",
+        "trouble": {
+          "loop": "原地打轉",
+          "drift": "偏離任務"
+        }
+      },
+      "browser": {
+        "finished": "{{status}}：{{reason}}",
+        "openFailed": "頁面無法在瀏覽器中開啟。",
+        "openFailedPanel": "頁面無法在應用程式的瀏覽器面板中開啟。",
+        "launch": {
+          "noBrowser": {
+            "mac": "在 /Applications 中找不到 Chrome、Chromium、Edge 或 Brave。請安裝其中一個，或將 MU_CHROME 設為某個 Chromium 核心瀏覽器的執行檔。",
+            "windows": "在 Program Files 或 %LOCALAPPDATA% 下找不到 Chrome、Chromium、Edge 或 Brave。請安裝其中一個，或將 MU_CHROME 設為它的 .exe 檔案。",
+            "wsl": "WSL 中找不到瀏覽器。請在 WSL 中安裝一個，或開啟 WSL 的鏡像網路模式；具體步驟請見下方的 reason 欄位。",
+            "other": "找不到 Chrome、Chromium、Edge 或 Brave。請安裝其中一個，或將 MU_CHROME 設為它的執行檔；安裝指令請見下方的 reason 欄位。"
+          },
+          "windowsBrowserUnusable": "無法使用 {{executable}}：WSL 只有在鏡像網路模式下才能連線到 Windows 端的瀏覽器。",
+          "profileNoWindowsPath": "瀏覽器設定檔資料夾 {{profileDir}} 沒有對應的 Windows 路徑（未設定 WSL_DISTRO_NAME）。",
+          "browserSpawnFailed": "無法啟動 {{command}}。",
+          "browserExitedOnStart": "瀏覽器在啟動過程中結束了（結束代碼 {{exitCode}}）。",
+          "devtoolsPortTimeout": "瀏覽器沒有及時開啟 DevTools 連接埠。",
+          "cdpConnectTimeout": "連線到瀏覽器逾時。",
+          "cdpConnectFailed": "無法連線到瀏覽器。"
+        }
+      }
     }
   },
   "menu": {

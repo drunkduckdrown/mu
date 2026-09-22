@@ -94,16 +94,16 @@
       "runtimeComponentDescription": "У цій інсталяції бракує потрібних вбудованих компонентів середовища виконання, тому {{resource}} не може запуститися. Перевстановіть найновіший пакет AionUi. Якщо проблема повториться після перевстановлення, перевірте, чи не помістило програмне забезпечення безпеки або антивірус компоненти AionUi у карантин."
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi package architecture mismatch",
-      "description": "This AionUi package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "Архітектура пакета AionUi не збігається",
+      "description": "Цей пакет AionUi призначений для {{packageArch}}, а цей Mac має архітектуру {{deviceArch}}. Можливо, ви завантажили не той пакет. Завантажте та встановіть пакет для {{expectedArch}}."
     },
     "dataMigration": {
-      "title": "Local data migration failed",
-      "description": "AionUi opened, but AionCore stopped while initializing local data. Reinstalling AionUi may not fix this. Send a diagnostics report or contact support so the local database migration can be inspected.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "title": "Не вдалося перенести локальні дані",
+      "description": "AionUi відкрився, але AionCore зупинився під час ініціалізації локальних даних. Повторне встановлення AionUi може не вирішити проблему. Надішліть діагностичний звіт або зверніться до підтримки, щоб можна було перевірити міграцію локальної бази даних.",
+      "sendDiagnostics": "Надіслати діагностику",
+      "diagnosticsSent": "Діагностику надіслано",
+      "diagnosticsReportSuccess": "Діагностичний звіт надіслано",
+      "diagnosticsReportFailed": "Не вдалося надіслати діагностичний звіт"
     },
     "databaseNewerThanApp": {
       "title": "Потрібна новіша версія AionUi",
@@ -111,20 +111,20 @@
       "descriptionWithVersion": "Ваші локальні дані створено версією AionUi, новішою за встановлену зараз (v{{currentVersion}}), тому ця версія не може їх відкрити. Оновіть AionUi до останньої версії, щоб продовжити — дані цілі, перевстановлення чи скидання не потрібні."
     },
     "localDataRepair": {
-      "title": "Local data repair failed",
+      "title": "Не вдалося відновити локальні дані",
       "description": "AionUi відкрився, але AionCore зупинився під час підготовки локальних даних запуску, як-от записи assistants або агентів. Повторне встановлення AionUi може не вирішити проблему. Надішліть діагностичний звіт або зверніться до підтримки, щоб можна було перевірити локальну базу даних.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "sendDiagnostics": "Надіслати діагностику",
+      "diagnosticsSent": "Діагностику надіслано",
+      "diagnosticsReportSuccess": "Діагностичний звіт надіслано",
+      "diagnosticsReportFailed": "Не вдалося надіслати діагностичний звіт"
     },
     "startupDirectory": {
-      "title": "Startup directory is unavailable",
-      "description": "AionUi opened, but AionCore could not start because the configured work or log directory is missing, unavailable, or blocked by permissions. Check that the configured directories exist and are writable, then restart AionUi.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "title": "Директорія запуску недоступна",
+      "description": "AionUi відкрився, але AionCore не зміг запуститися, бо налаштована робоча директорія або директорія логів відсутня, недоступна чи заблокована через дозволи. Переконайтеся, що налаштовані директорії існують і доступні для запису, а потім перезапустіть AionUi.",
+      "sendDiagnostics": "Надіслати діагностику",
+      "diagnosticsSent": "Діагностику надіслано",
+      "diagnosticsReportSuccess": "Діагностичний звіт надіслано",
+      "diagnosticsReportFailed": "Не вдалося надіслати діагностичний звіт"
     },
     "recoverableDatabaseCorruption": {
       "title": "Локальні дані пошкоджено",
@@ -146,10 +146,10 @@
     "transientConcurrentStartup": {
       "title": "AionUi запускається",
       "description": "Коли це вікно відкрилося, інший процес запуску AionUi усе ще використовував локальні дані. Це тимчасово, і ваші дані в безпеці — перевстановлення не потрібне. Зачекайте трохи та повторіть спробу або перезапустіть AionUi.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report",
+      "sendDiagnostics": "Надіслати діагностику",
+      "diagnosticsSent": "Діагностику надіслано",
+      "diagnosticsReportSuccess": "Діагностичний звіт надіслано",
+      "diagnosticsReportFailed": "Не вдалося надіслати діагностичний звіт",
       "diagnosticsHint": "Якщо це повторюється, ви можете надіслати звіт діагностики."
     },
     "pendingSlow": {
@@ -252,11 +252,64 @@
       "recordedAt": "Записано {{time}}",
       "beeMissing": "Цієї бджоли немає в записаному знімку.",
       "snapshot": "Останній повідомлений стан",
-      "updated": "Останнє оновлення {{time}}"
+      "updated": "Останнє оновлення {{time}}",
+      "runTitle": {
+        "tasks": "{{count}} завдань",
+        "tasks_one": "{{count}} завдання",
+        "tasks_other": "{{count}} завдання",
+        "tasks_few": "{{count}} завдання",
+        "tasks_many": "{{count}} завдань",
+        "chain": "ланцюжок із {{count}} кроків",
+        "chain_one": "ланцюжок із {{count}} кроку",
+        "chain_other": "ланцюжок із {{count}} кроку",
+        "chain_few": "ланцюжок із {{count}} кроків",
+        "chain_many": "ланцюжок із {{count}} кроків"
+      },
+      "choosingRoles": "вибір ролі, моделі й рівня міркування для {{count}} субагентів…",
+      "choosingRoles_one": "вибір ролі, моделі й рівня міркування для {{count}} субагента…",
+      "choosingRoles_other": "вибір ролі, моделі й рівня міркування для {{count}} субагента…",
+      "choosingRoles_few": "вибір ролі, моделі й рівня міркування для {{count}} субагентів…",
+      "choosingRoles_many": "вибір ролі, моделі й рівня міркування для {{count}} субагентів…",
+      "activity": {
+        "notesReceived": "← {{count}} знахідок від інших",
+        "notesReceived_one": "← {{count}} знахідка від інших",
+        "notesReceived_other": "← {{count}} знахідки від інших",
+        "notesReceived_few": "← {{count}} знахідки від інших",
+        "notesReceived_many": "← {{count}} знахідок від інших",
+        "askedFindings": "← запитано, що вже знайдено",
+        "toldWrapUp": "← попрошено завершити роботу й подати звіт",
+        "toolFailed": "виклик {{tool}} не вдався",
+        "retry": "повторна спроба {{attempt}}/{{maxAttempts}}: {{message}}",
+        "modelError": "помилка моделі: {{message}}",
+        "compacting": "ущільнює контекст",
+        "lateNotes": "← наостанок: {{count}} запізнілих знахідок",
+        "lateNotes_one": "← наостанок: {{count}} запізніла знахідка",
+        "lateNotes_other": "← наостанок: {{count}} запізнілої знахідки",
+        "lateNotes_few": "← наостанок: {{count}} запізнілі знахідки",
+        "lateNotes_many": "← наостанок: {{count}} запізнілих знахідок"
+      },
+      "errors": {
+        "cancelled": "запуск скасовано",
+        "stoppedByUser": "зупинено користувачем",
+        "endedByUser": "завершено користувачем",
+        "stalledModel": "модель не подає ознак життя протягом {{duration}}",
+        "stalledTool": "виклик {{tool}} не подає ознак життя протягом {{duration}}",
+        "timeBudget": "вичерпано ліміт часу ({{duration}})",
+        "timeBudgetReached": "вичерпано ліміт часу",
+        "noReportInTime": "{{reason}}; звіту не надійшло протягом {{duration}} після запиту",
+        "modelFailed": "запит до моделі не вдався",
+        "modelAborted": "запит до моделі перервано",
+        "retriesExhausted": "запит до моделі не вдався й після повторних спроб",
+        "exitedCode": "субагент завершився з кодом {{exitCode}}, не закінчивши роботу",
+        "exitedSignal": "субагента завершено сигналом {{signal}}, перш ніж він закінчив роботу",
+        "exitedKilled": "субагента завершено сигналом, перш ніж він закінчив роботу",
+        "chainBroken": "не розпочато: попередній крок («{{step}}») не завершився",
+        "detail": "{{reason}}: {{detail}}"
+      }
     },
     "judgeView": {
       "title": "Рішення та їхній вплив",
-      "description": "Тут видно, що оцінював шар суджень і що сталося насправді. Рекомендації та підтверджені дії показано окремо.",
+      "description": "Тут видно, що оцінював суддя і що сталося насправді. Рекомендації та підтверджені дії показано окремо.",
       "empty": "У цьому сеансі ще немає записаних рішень.",
       "question": "Що оцінювалося",
       "result": "Результат рішення",
@@ -277,7 +330,7 @@
       "more": "ще {{count}}",
       "batch": "Кандидатів у цьому записі: {{count}}.",
       "batchFailures": "Без відповіді, застосовано типову стратегію: {{count}}.",
-      "changedThinking": "Рівень міркувань: {{from}} → {{to}}",
+      "changedThinking": "Рівень міркування: {{from}} → {{to}}",
       "sentHints": "Підказки, надіслані основній моделі",
       "unlinked": "Окремий запис",
       "unlinkedHint": "Записано без прив’язки до ходу. Показано окремо й не об’єднується з близькими за часом записами.",
@@ -294,7 +347,7 @@
       },
       "actions": {
         "toRuntime": "Рішення передано шару виконання; це не доводить, що операцію завершено.",
-        "observeOnly": "Записано лише для порівняння; виконання не змінювалося на підставі цього судження.",
+        "observeOnly": "Тіньовий режим: записано лише для порівняння, виконання на підставі цього рішення не змінювалося.",
         "useDefault": "Застосовано типову стратегію цієї точки рішення. Типова стратегія не означає дозвіл: перевірки ризиків і шлюзи Hive типово обережні.",
         "lateIgnored": "Хід уже розпочався; це запізніле рішення його не змінило.",
         "waiting": "Очікується результат рішення.",
@@ -315,7 +368,7 @@
         "compaction": "Які старі результати можна скоротити?",
         "skills": "Які навички стосуються цього завдання?",
         "locate": "Які файли найімовірніше стосуються справи?",
-        "routing": "Яка роль і який рівень міркувань пасують кожному підзавданню?",
+        "routing": "Яка роль і який рівень міркування пасують кожному підзавданню?",
         "publish": "Чи варто ділитися цією знахідкою з іншими бджолами?",
         "deliver": "Чи допоможе ця знахідка бджолі-отримувачу?",
         "browser": "Що браузеру робити далі?",
@@ -326,12 +379,22 @@
         "completion": "Чи потрібна ще перевірка цієї зміни?",
         "notify": "Коли це сповіщення має дійти до моделі?",
         "cache": "Чи треба підтримувати кеш сеансу прогрітим?",
-        "other": "Записане судження"
+        "other": "Записане рішення",
+        "rewind": "Чи цей підхід — глухий кут, який варто відкотити?",
+        "goalMet": "Чи досягнуто мети?",
+        "outputDrift": "Чи порушує вивід одне з ваших правил?",
+        "taskFrame": "Чи змінює це повідомлення рамку завдання?",
+        "constraint": "Чи порушує цей виклик одне з ваших обмежень?",
+        "capabilities": "Які можливості потрібні для цього завдання?",
+        "diagnostics": "Коли ця діагностика має дійти до моделі?",
+        "patch": "Чи залишається патч субагента в межах його завдання?",
+        "review": "Наскільки серйозне кожне зауваження рецензії?",
+        "board": "На якому етапі робота?"
       },
       "fields": {
         "turnType": "Тип завдання",
         "gear": "Рівень завдання",
-        "thinking": "Рівень міркувань",
+        "thinking": "Рівень міркування",
         "agent": "Запропонована роль",
         "strength": "Сила моделі",
         "drop": "Запропоновано відфільтрувати",
@@ -347,7 +410,19 @@
         "result": "Результат",
         "reason": "Причина",
         "keepResult": "Зберегти результат",
-        "keepCall": "Зберегти виклик"
+        "keepCall": "Зберегти виклик",
+        "broken": "Порушені правила",
+        "open": "Можливості для відкриття",
+        "errors": "Помилки",
+        "warnings": "Попередження",
+        "withinTask": "У межах завдання",
+        "unrelated": "Сторонні файли",
+        "judged": "Оцінені файли",
+        "priorities": "Пріоритети",
+        "phase": "Етап",
+        "focus": "Пункт у роботі",
+        "needsUser": "Потрібен користувач",
+        "update": "Переписати зведення"
       },
       "values": {
         "true": "Так",
@@ -399,20 +474,67 @@
         "dead_end": "Глухий кут",
         "decision": "Рішення",
         "blocker": "Перешкода",
-        "abstain": "Модель суджень утрималася",
+        "abstain": "Суддя утримався",
         "shadow": "Тіньовий режим",
         "skipped": "Пропущено користувачем",
         "timeout": "Час очікування минув",
         "all": "Жоден кандидат не отримав відповіді",
-        "unreachable": "Модель суджень недоступна",
+        "unreachable": "Суддя недоступний",
         "unexpected": "Неочікувана помилка",
-        "off": "Вимкнено"
+        "off": "Вимкнено",
+        "continue": "Продовжувати",
+        "propose": "Запропонувати відкат",
+        "met": "Досягнуто",
+        "ask": "Запитати користувача",
+        "unjudged": "Без рішення",
+        "none": "Немає",
+        "new_task": "Нове завдання",
+        "constraint": "Нове обмеження",
+        "correction": "Виправлення",
+        "subgoal": "Нова проміжна мета",
+        "unclear": "Незрозуміла зміна",
+        "hold": "Відкласти",
+        "no_answer": "Відповідь не надійшла вчасно",
+        "aborted": "Скасовано",
+        "auth": "Ключ судді відхилено",
+        "payment_required": "Сервісу судді потрібен спосіб оплати",
+        "rate_limited": "Перевищено ліміт запитів до судді",
+        "bad_request": "Суддя відхилив запит",
+        "server": "Помилка сервера судді",
+        "invalid_response": "Нечитабельна відповідь судді",
+        "verdict": "Суддя відповів"
+      },
+      "probabilityValue": "Імовірність «так»: {{percent}}",
+      "optionProbability": "{{option}} {{percent}}",
+      "reasonValue": "Причина: {{reason}}",
+      "fieldValue": "{{field}}: {{value}}",
+      "errorValue": "Помилка · {{kind}}",
+      "noAnswerAfter": "Відповідь не надійшла за {{duration}}",
+      "hints": {
+        "clarify": "Запит сформульовано нечітко: спершу варто поставити одне уточнювальне запитання.",
+        "side_question": "Це побічне питання: варто коротко відповісти й повернутися до основного завдання.",
+        "plan_first": "Завдання виглядає великим або ризикованим: перед правками варто скласти короткий план і погодити його.",
+        "try_hive": "Завдання виглядає складним: якщо причина невідома або пряма спроба не вдасться, варто залучити Hive.",
+        "try_delegate": "Завдання ділиться на незалежні частини: варто передати їх субагентам для паралельної роботи."
+      },
+      "answerIds": {
+        "turn_type": "Тип завдання",
+        "is_side_question": "Побічне питання",
+        "needs_clarification": "Надто нечітко, щоб діяти",
+        "needs_files_changed": "Потрібна зміна коду",
+        "needs_memory": "Знадобляться минулі нотатки",
+        "swarm_worthy": "Незалежні частини",
+        "plan_first": "Велике або ризиковане",
+        "task_complexity": "Обсяг",
+        "reasoning_depth": "Глибина міркування",
+        "tool_complexity": "Використання інструментів"
       }
     },
     "decisions": "Jev",
     "memory": "Досвід",
     "images": "Зображення",
     "empty": "У цьому сеансі ще немає записаних подій.",
+    "quiet": "Немає активності вже {{duration}}",
     "passed": "Прийнято",
     "filtered": "Відфільтровано",
     "image": "Зображення, яке повернув інструмент",
@@ -440,7 +562,7 @@
       "auto_compaction_start": "Стиснення контексту",
       "auto_compaction_end": "Стиснення завершено",
       "hive.note": "Спільна знахідка",
-      "hive.delivery": "Доставку підтверджено",
+      "hive.delivery": "Передачу підтверджено",
       "hive.gate": "Шлюз Jev",
       "hive.manifest": "Призначення Hive",
       "bee.event": "Подія бджоли",
@@ -450,8 +572,73 @@
       "compaction_start": "Ущільнення контексту…",
       "compaction_end": "Ущільнення завершено",
       "context.usage": "Використання контексту",
-      "context.policy": "Поріг автоущільнення (токени)",
-      "compaction.plan": "План бета-ущільнення"
+      "context.policy": "Режим бета-ущільнення",
+      "compaction.plan": "План бета-ущільнення",
+      "goal": {
+        "state": "Стан мети"
+      },
+      "board": {
+        "update": "Зведення оновлено",
+        "switched": "Зведення ввімкнено або вимкнено"
+      },
+      "checkpoint": {
+        "taken": "Контрольну точку збережено"
+      },
+      "rewind": {
+        "proposed": "Запропоновано відкат",
+        "done": "Відкочено",
+        "undone": "Відкат скасовано"
+      },
+      "ttsr": {
+        "interrupted": "Вивід зупинено правилом"
+      },
+      "frame": {
+        "updated": "Рамку завдання оновлено"
+      },
+      "capability": {
+        "opened": "Можливість відкрито"
+      },
+      "inherit": {
+        "found": "Знайдено налаштування для успадкування",
+        "rule": "Застосовано успадковане правило"
+      },
+      "mcp": {
+        "started": "MCP-сервер запущено",
+        "failed": "Збій MCP-сервера",
+        "tools_changed": "Інструменти MCP змінилися"
+      },
+      "constraint": {
+        "blocked": "Заблоковано вашим обмеженням"
+      },
+      "browser": {
+        "run": "Завдання браузера",
+        "step": "Крок браузера"
+      },
+      "diagnostics": {
+        "delivered": "Діагностику доставлено",
+        "held": "Діагностику відкладено",
+        "dropped": "Діагностику відкинуто"
+      },
+      "background": {
+        "start": "Фоновий процес запущено",
+        "exit": "Фоновий процес завершився",
+        "stop": "Фоновий процес зупинено",
+        "match": "Збіг у фоновому виводі"
+      },
+      "web": {
+        "fetch": "Сторінку отримано",
+        "search": "Пошук в інтернеті"
+      },
+      "swarm": {
+        "worktree": {
+          "created": "Робоче дерево створено",
+          "removed": "Робоче дерево видалено"
+        },
+        "patch": {
+          "ready": "Патч готовий",
+          "applied": "Патч застосовано"
+        }
+      }
     },
     "contextUsage": "Використання контексту",
     "contextPending": "Очікування нового вимірювання контексту",
@@ -464,10 +651,11 @@
     "compacting": "Ущільнення контексту…",
     "compactionResults": "Результати ущільнення ({{count}})",
     "noCompaction": "У цьому сеансі ущільнення ще не виконувалося.",
-    "betaApplied": "Застосовано бета-обрізання",
+    "betaApplied": "Застосовано бета-скорочення",
     "summaryApplied": "Застосовано ущільнення через підсумок",
     "compactionAborted": "Ущільнення скасовано",
     "compactionFailed": "Не вдалося виконати ущільнення",
+    "compactionSavings": "Контекст зменшено на ≈{{saved}}",
     "compactionEstimate": "Кількість токенів після ущільнення є оцінкою; наступна відповідь моделі оновить дані.",
     "cacheHit": "Влучання в кеш",
     "cachePending": "Даних про використання кешу ще немає",
@@ -477,7 +665,7 @@
       "tagline": "Агент для програмування з ядром суджень",
       "judge": {
         "idle": "Суддя в очікуванні",
-        "judging": "Суддя виносить судження",
+        "judging": "Суддя працює",
         "off": "Суддю вимкнено"
       },
       "starters": {
@@ -533,8 +721,82 @@
         "waiting": "Чекає на вас",
         "wrapping_up": "Завершує",
         "stuck": "Схоже, застряг"
-      }
+      },
+      "checks_one": "Перевірок виконано: {{done}} з {{total}}",
+      "checks_other": "Перевірок виконано: {{done}} з {{total}}",
+      "codes": {
+        "progress": {
+          "none": "Списку справ ще немає.",
+          "all": "У списку {{total}} справ, усе зроблено.",
+          "all_one": "У списку {{total}} справа, усе зроблено.",
+          "all_other": "У списку {{total}} справи, усе зроблено.",
+          "some": "У списку {{total}} справ, зроблено {{done}}.",
+          "some_one": "У списку {{total}} справа, зроблено {{done}}.",
+          "some_other": "У списку {{total}} справи, зроблено {{done}}.",
+          "some_few": "У списку {{total}} справи, зроблено {{done}}.",
+          "some_many": "У списку {{total}} справ, зроблено {{done}}.",
+          "all_few": "У списку {{total}} справи, усе зроблено.",
+          "all_many": "У списку {{total}} справ, усе зроблено."
+        },
+        "confirm": {
+          "waiting_reply": "Агент чекає на вашу відповідь."
+        },
+        "now": {
+          "understanding": "Читає код і нотатки, щоб зрозуміти, що робити.",
+          "changing": "Змінює код.",
+          "checking": "Запускає тести чи перевірки, щоб з’ясувати, чи працює зміна.",
+          "fixing": "Перевірка знайшла проблему; агент її виправляє.",
+          "waiting": "Зупинився й чекає на вашу відповідь.",
+          "wrapping_up": "Роботу зроблено; наводить останні штрихи.",
+          "stuck": "Схоже, ходить по колу; можливо, потрібна ваша підказка.",
+          "unclear": "Працює.",
+          "focus": "{{now}} (Зараз: {{focus}})",
+          "planning": "Обмірковує, як це зробити; поки нічого не змінено."
+        }
+      },
+      "checks_few": "Перевірок виконано: {{done}} з {{total}}",
+      "checks_many": "Перевірок виконано: {{done}} з {{total}}"
     },
+    "activityLoadFailed": "Не вдалося завантажити активність співпраці. Повторна спроба…",
+    "beeFailed": "Ця бджола повідомила про помилку.",
+    "beeCounts": {
+      "turns": "{{count}} ходів",
+      "turns_one": "{{count}} хід",
+      "turns_other": "{{count}} ходу",
+      "turns_few": "{{count}} ходи",
+      "turns_many": "{{count}} ходів",
+      "received": "{{count}} отримано",
+      "received_one": "{{count}} отримано",
+      "received_other": "{{count}} отримано",
+      "received_few": "{{count}} отримано",
+      "received_many": "{{count}} отримано",
+      "shared": "{{count}} поширено",
+      "shared_one": "{{count}} поширено",
+      "shared_other": "{{count}} поширено",
+      "shared_few": "{{count}} поширено",
+      "shared_many": "{{count}} поширено",
+      "tools": "{{count}} викликів інструментів",
+      "tools_one": "{{count}} виклик інструмента",
+      "tools_other": "{{count}} виклику інструмента",
+      "tools_few": "{{count}} виклики інструментів",
+      "tools_many": "{{count}} викликів інструментів"
+    },
+    "compactionTokens": "{{before}} → ≈{{after}} токенів",
+    "compactionKept": "{{count}} результатів збережено",
+    "compactionKept_one": "{{count}} результат збережено",
+    "compactionKept_other": "{{count}} результату збережено",
+    "compactionPruned": "{{count}} скорочено",
+    "compactionPruned_one": "{{count}} скорочено",
+    "compactionPruned_other": "{{count}} скорочено",
+    "compactionPruned_few": "{{count}} скорочено",
+    "compactionPruned_many": "{{count}} скорочено",
+    "compactionKept_few": "{{count}} результати збережено",
+    "compactionKept_many": "{{count}} результатів збережено",
+    "compactionDropped": "{{count}} викликів вилучено",
+    "compactionDropped_one": "{{count}} виклик вилучено",
+    "compactionDropped_other": "{{count}} виклику вилучено",
+    "compactionDropped_few": "{{count}} виклики вилучено",
+    "compactionDropped_many": "{{count}} викликів вилучено",
     "jevLine": {
       "classifying": "Jev визначає тип повідомлення…",
       "classified": "Jev визначив тип: {{type}}",
@@ -542,6 +804,152 @@
       "shadow": "{{line}} (лише спостереження, не застосовано)",
       "late": "{{line}} (запізнився на цей хід)",
       "fallback": "Цього разу Jev не визначив тип; продовжуємо як зазвичай"
+    },
+    "eventLine": {
+      "detail": "Деталі: {{detail}}",
+      "progress": {
+        "frame": "Оновлення рамки завдання",
+        "lessons": "Перевірка уроків із попередніх сеансів",
+        "skills": "Вибір навичок, потрібних для цього сеансу",
+        "capabilities": "Вибір можливостей, потрібних для цього завдання",
+        "permissionReview": "JeV розглядає: {{summary}}"
+      },
+      "goal": {
+        "paused": "На паузі: {{reason}}",
+        "reason": {
+          "interrupted": "ви перервали запуск",
+          "modelCallFailed": "виклик моделі не вдався",
+          "needsUser": "агентові потрібно щось від вас",
+          "needsUserDetail": "агентові потрібно щось від вас: {{detail}}",
+          "unjudged": "жоден суддя не зміг визначити, чи досягнуто мети, і немає доказів, що щось лишилося незавершеним",
+          "continuationsUsedUp": "вичерпано ліміт у {{count}} продовжень роботи",
+          "continuationsUsedUp_one": "вичерпано ліміт у {{count}} продовження роботи",
+          "continuationsUsedUp_other": "вичерпано ліміт у {{count}} продовження роботи",
+          "minutesUsedUp": "вичерпано ліміт часу ({{duration}})",
+          "sessionReopened": "сеанс відкрито повторно",
+          "continuationsUsedUp_few": "вичерпано ліміт у {{count}} продовження роботи",
+          "continuationsUsedUp_many": "вичерпано ліміт у {{count}} продовжень роботи",
+          "idle": "агент завершив {{count}} запусків поспіль, нічого не зробивши",
+          "idle_one": "агент завершив {{count}} запуск, нічого не зробивши",
+          "idle_other": "агент завершив {{count}} запуску поспіль, нічого не зробивши",
+          "noProgress": "немає прогресу за {{count}} запусків поспіль; скажіть, як діяти далі",
+          "noProgress_one": "немає прогресу за {{count}} запуск; скажіть, як діяти далі",
+          "noProgress_other": "немає прогресу за {{count}} запуску поспіль; скажіть, як діяти далі",
+          "noProgressDetail": "немає прогресу за {{count}} запусків поспіль ({{detail}}); скажіть, як діяти далі",
+          "noProgressDetail_one": "немає прогресу за {{count}} запуск ({{detail}}); скажіть, як діяти далі",
+          "noProgressDetail_other": "немає прогресу за {{count}} запуску поспіль ({{detail}}); скажіть, як діяти далі",
+          "noProgressDetail_few": "немає прогресу за {{count}} запуски поспіль ({{detail}}); скажіть, як діяти далі",
+          "noProgressDetail_many": "немає прогресу за {{count}} запусків поспіль ({{detail}}); скажіть, як діяти далі",
+          "noProgress_few": "немає прогресу за {{count}} запуски поспіль; скажіть, як діяти далі",
+          "noProgress_many": "немає прогресу за {{count}} запусків поспіль; скажіть, як діяти далі",
+          "idle_few": "агент завершив {{count}} запуски поспіль, нічого не зробивши",
+          "idle_many": "агент завершив {{count}} запусків поспіль, нічого не зробивши"
+        }
+      },
+      "frame": {
+        "unclearChange": "Як це змінює завдання: «{{message}}»?"
+      },
+      "search": {
+        "notConfigured": "«{{source}}» не є джерелом пошуку (features.web.search)",
+        "failed": "Помилка джерела {{source}}: {{message}}",
+        "robotPage": "Джерело {{source}} відповіло сторінкою перевірки: воно вважає цей клієнт роботом",
+        "httpError": "Джерело {{source}} відповіло кодом HTTP {{status}}",
+        "noResults": "Джерело {{source}} повернуло сторінку без результатів (нічого не знайдено або змінилася її розмітка)",
+        "unrelated": "Джерело {{source}} повернуло результати, які не стосуються запиту: так пошукові системи відповідають клієнтам, яких вважають роботами"
+      },
+      "mcp": {
+        "line": "{{name}}: {{reason}}",
+        "projectUntrusted": "проєкт не є довіреним, а цей сервер визначено в проєкті",
+        "needsApproval": "його визначено в проєкті ({{source}}) і ще не схвалено; відкрийте цю папку в mu і один раз дозвольте запуск або визначте сервер у mu.json",
+        "aborted": "запуск скасовано",
+        "rpc": "відповів помилкою",
+        "protocol": "відповів не за протоколом MCP",
+        "startFailed": "його не вдалося запустити",
+        "crashedRestarting": "аварійно завершився під час роботи; mu перезапустить його один раз",
+        "crashedAgain": "знову аварійно завершився й більше не перезапускатиметься",
+        "restartFailed": "аварійно завершився, і перезапуск теж не вдався",
+        "restartFailedCause": "аварійно завершився, і перезапуск теж не вдався: {{cause}}",
+        "closed": "підключення до нього закрилося, поки mu ще чекав на відповідь",
+        "timeout": "не відповів вчасно",
+        "denied": "ви не дозволили запуск сервера цього проєкту",
+        "unreachable": "не вдалося запустити його або підключитися до нього"
+      },
+      "rewind": {
+        "sameCommandFailed": "Та сама команда {{count}} разів завершилася помилкою: {{command}}",
+        "sameCommandFailed_one": "Та сама команда {{count}} раз завершилася помилкою: {{command}}",
+        "sameCommandFailed_other": "Та сама команда {{count}} раза завершилася помилкою: {{command}}",
+        "sameCommandFailed_few": "Та сама команда {{count}} рази завершилася помилкою: {{command}}",
+        "sameCommandFailed_many": "Та сама команда {{count}} разів завершилася помилкою: {{command}}",
+        "monitorTrouble": "Контроль відхилень спрацював {{count}} разів за цей хід ({{kind}}: {{detail}})",
+        "monitorTrouble_one": "Контроль відхилень спрацював {{count}} раз за цей хід ({{kind}}: {{detail}})",
+        "monitorTrouble_other": "Контроль відхилень спрацював {{count}} раза за цей хід ({{kind}}: {{detail}})",
+        "trouble": {
+          "loop": "зациклення",
+          "drift": "відхилення від завдання"
+        },
+        "monitorTrouble_few": "Контроль відхилень спрацював {{count}} рази за цей хід ({{kind}}: {{detail}})",
+        "monitorTrouble_many": "Контроль відхилень спрацював {{count}} разів за цей хід ({{kind}}: {{detail}})"
+      },
+      "browser": {
+        "finished": "{{status}}: {{reason}}",
+        "openFailed": "Не вдалося відкрити сторінку в браузері.",
+        "openFailedPanel": "Не вдалося відкрити сторінку в панелі браузера застосунку.",
+        "launch": {
+          "noBrowser": {
+            "mac": "У /Applications не знайдено Chrome, Chromium, Edge чи Brave. Встановіть один із них або вкажіть у MU_CHROME виконуваний файл браузера на основі Chromium.",
+            "windows": "У Program Files і %LOCALAPPDATA% не знайдено Chrome, Chromium, Edge чи Brave. Встановіть один із них або вкажіть у MU_CHROME його файл .exe.",
+            "wsl": "У WSL не знайдено жодного браузера. Встановіть браузер у WSL або ввімкніть у WSL дзеркальний режим мережі; кроки наведено в полі reason нижче.",
+            "other": "Не знайдено Chrome, Chromium, Edge чи Brave. Встановіть один із них або вкажіть у MU_CHROME його виконуваний файл; команди встановлення наведено в полі reason нижче."
+          },
+          "windowsBrowserUnusable": "Не вдається використати {{executable}}: браузер на боці Windows доступний із WSL лише в дзеркальному режимі мережі.",
+          "profileNoWindowsPath": "Папка профілю {{profileDir}} не має шляху Windows (WSL_DISTRO_NAME не задано).",
+          "browserExitedOnStart": "Браузер завершив роботу під час запуску (код {{exitCode}}).",
+          "devtoolsPortTimeout": "Браузер не відкрив порт DevTools вчасно.",
+          "cdpConnectTimeout": "Час очікування підключення до браузера минув.",
+          "cdpConnectFailed": "Не вдалося підключитися до браузера.",
+          "browserSpawnFailed": "Не вдалося запустити {{command}}."
+        }
+      }
     }
-  }
+  },
+  "menu": {
+    "about": "Про {{name}}",
+    "services": "Служби",
+    "hide": "Приховати {{name}}",
+    "hideOthers": "Приховати інші",
+    "unhide": "Показати все",
+    "quit": "Закрити {{name}}",
+    "edit": "Редагування",
+    "undo": "Скасувати",
+    "redo": "Повторити",
+    "cut": "Вирізати",
+    "copy": "Копіювати",
+    "paste": "Вставити",
+    "pasteAndMatchStyle": "Вставити з узгодженням стилю",
+    "delete": "Видалити",
+    "selectAll": "Вибрати все",
+    "view": "Вигляд",
+    "reload": "Перезавантажити",
+    "forceReload": "Примусово перезавантажити",
+    "toggleDevTools": "Інструменти розробника",
+    "resetZoom": "Фактичний розмір",
+    "zoomIn": "Збільшити",
+    "zoomOut": "Зменшити",
+    "toggleFullScreen": "Повноекранний режим",
+    "help": "Довідка",
+    "checkForUpdates": "Перевірити оновлення…"
+  },
+  "trayMenu": {
+    "runningTasks": "Завдань виконується: {{count}}"
+  },
+  "noData": "Немає даних",
+  "labelWithSelectedCount": "{{label}} ({{selected}}/{{total}})",
+  "selectedSkillsWithCount": "Вибрані навички · {{count}}",
+  "window": {
+    "minimize": "Згорнути",
+    "maximize": "Розгорнути",
+    "restore": "Відновити"
+  },
+  "collapseSidebar": "Згорнути бічну панель",
+  "expandSidebar": "Розгорнути бічну панель"
 }

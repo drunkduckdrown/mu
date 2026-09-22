@@ -15,7 +15,7 @@
     "quickActionsTitle": "AionUi 能做什么？",
     "quickActionFeedback": "反馈问题",
     "quickActionStar": "喜欢我们？点个星吧",
-    "skillsMarket": "AionUi Skills Market",
+    "skillsMarket": "AionUi 技能市场",
     "skillsMarketDesc": "按需搜索并调用社区 Skills，一次配置，所有Agent通用。",
     "skillsMarketDetails": "详情 >>"
   },
@@ -110,7 +110,7 @@
     "untitled": "未命名会话"
   },
   "dropdown": {
-    "cliAgents": "CLI Agents",
+    "cliAgents": "CLI Agent",
     "presetAssistants": "预设助手"
   },
   "noAgentsAvailable": "没有可用的 Agent",
@@ -547,7 +547,7 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "当前 Agent 正在处理，暂时不能直接发送。可以先存到草稿箱，稍后发送。",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
+    "actionMode": "选择发送方式",
     "midturnBlockedSendHint": "当前 Agent 正在处理，暂时不能直接发送。可以先存到草稿箱，稍后发送。",
     "addToQueueBusyHint": "先存到草稿箱，稍后发送。"
   },

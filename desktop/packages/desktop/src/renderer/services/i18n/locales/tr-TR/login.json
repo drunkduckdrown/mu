@@ -21,6 +21,8 @@
     "tooManyAttempts": "Çok fazla deneme, lütfen daha sonra tekrar deneyin",
     "networkError": "Bağlantı başarısız, lütfen tekrar deneyin",
     "serverError": "Sunucu hatası, lütfen daha sonra tekrar deneyin",
-    "unknown": "Giriş başarısız, lütfen tekrar deneyin"
+    "unknown": "Giriş başarısız, lütfen tekrar deneyin",
+    "csrfExpired": "Giriş oturumunuzun süresi doldu. Lütfen tekrar deneyin.",
+    "staleCache": "Önbelleğe alınmış veriler nedeniyle giriş başarısız oldu. Tarayıcı önbelleğinizi temizleyip tekrar deneyin."
   }
 }

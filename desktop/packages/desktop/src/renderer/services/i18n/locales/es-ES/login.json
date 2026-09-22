@@ -21,6 +21,8 @@
     "tooManyAttempts": "Demasiados intentos, vuelve a intentarlo más tarde",
     "networkError": "Error de conexión, intenta de nuevo",
     "serverError": "Error del servidor, intenta más tarde",
-    "unknown": "Error al iniciar sesión, intenta de nuevo"
+    "unknown": "Error al iniciar sesión, intenta de nuevo",
+    "csrfExpired": "El inicio de sesión ha caducado. Inténtalo de nuevo.",
+    "staleCache": "No se pudo iniciar sesión por datos en caché. Borra la caché del navegador e inténtalo de nuevo."
   }
 }

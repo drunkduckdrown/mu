@@ -59,7 +59,8 @@
     "exit_code": "Çıkış kodu: {{code}}",
     "duration": "Süre: {{seconds}}",
     "auto_approved": "Otomatik onaylandı",
-    "manual_approval": "Manuel onay"
+    "manual_approval": "Manuel onay",
+    "toolCallId": "Araç çağrısı ID'si: {{id}}"
   },
   "actions": {
     "create": "oluştur",
@@ -76,6 +77,11 @@
     "output": "Çıktı",
     "loading": "Tam çıktı yükleniyor…",
     "loadError": "Tam çıktı yüklenemedi.",
-    "retry": "Yeniden dene"
+    "retry": "Yeniden dene",
+    "callAria": "{{name}} · {{status}}"
+  },
+  "kind": {
+    "edit": "Dosya düzenleme",
+    "read": "Dosya okuma"
   }
 }

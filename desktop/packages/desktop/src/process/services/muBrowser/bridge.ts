@@ -3,7 +3,9 @@ import {
   CONFIRM_TIMEOUT_MS,
   plainText,
   reduceBrowserRuns,
+  runEnding,
   type BrowserControlAction,
+  type BrowserRunEnding,
   type BrowserRunEvent,
   type BrowserRunNotice,
   type BrowserRuns,
@@ -87,7 +89,7 @@ type Run = {
   /** Lost rather than closed: the next `Mu.control` says stop, so the loop ends instead of failing on a dead page. */
   lost: boolean;
   announced: boolean;
-  reported?: { status: unknown; reason?: string };
+  reported?: { status: unknown; reason?: string; ending: BrowserRunEnding };
   confirmationRefused: boolean;
   lastUrl: string;
   confirm?: PendingConfirm;
@@ -347,7 +349,8 @@ export class BrowserBridge {
           stopRequested: run.control.stop,
           confirmationRefused: run.confirmationRefused,
         }),
-        run.reported?.reason
+        run.reported?.reason,
+        run.reported?.ending
       );
     }
     // The tab stays open for the person; only the connection's claim on it ends here.
@@ -508,14 +511,15 @@ export class BrowserBridge {
         url: webAddress(url) ? String(url) : undefined,
       });
     } else if (state === 'finished') {
-      run.reported = { status, reason: plainText(reason, 600) || undefined };
+      // `code`, `params`, `errorCode` and `errorParams`: what the step bar says in the person's language.
+      run.reported = { status, reason: plainText(reason, 600) || undefined, ending: runEnding(request.params) };
     }
   }
 
-  private finish(run: Run, status: BrowserRunStatus, reason?: string): void {
+  private finish(run: Run, status: BrowserRunStatus, reason?: string, ending?: BrowserRunEnding): void {
     if (run.announced) return;
     run.announced = true;
-    this.publish({ type: 'finished', tabId: run.tabId, status, reason, at: this.now() });
+    this.publish({ type: 'finished', tabId: run.tabId, status, reason, ...ending, at: this.now() });
   }
 
   /** Ends everything the run holds on its page. Calls still waiting for the page are answered with an error. */

@@ -16,9 +16,9 @@
     "renameCancel": "Annuler",
     "renameSuccess": "Équipe renommée",
     "deleteSuccess": "Équipe supprimée",
-    "archive": "Archive",
-    "archiveSuccess": "Team archived",
-    "archiveFailed": "Failed to archive team"
+    "archive": "Archiver",
+    "archiveSuccess": "Équipe archivée",
+    "archiveFailed": "Échec de l’archivage de l’équipe"
   },
   "newAgent": "Nouvel agent",
   "noMessages": "Aucun message pour l'instant.",
@@ -73,7 +73,9 @@
     "selectedMembersTitleWithCount": "Membres sélectionnés {{count}}",
     "leaderLegend": "= Chef",
     "membersHelper": "Choisissez les membres et désignez un chef. Le même assistant peut être sélectionné plusieurs fois.",
-    "memberHint": "Aucun assistant adapté comme membre ? Après la création, laissez le chef créer des membres temporaires dans la discussion."
+    "memberHint": "Aucun assistant adapté comme membre ? Après la création, laissez le chef créer des membres temporaires dans la discussion.",
+    "errorWithDetail": "Impossible de créer l’équipe : {{error}}",
+    "memberErrorWithDetail": "Impossible de choisir un modèle pour {{name}} : {{error}}"
   },
   "removeAgent": {
     "confirmTitle": "Retirer un membre de l'équipe",
@@ -99,7 +101,8 @@
     "noSearchResults": "Aucun résultat trouvé",
     "tellLeaderHint": "Pas de bon candidat ? Vous pouvez aussi demander au chef de s'en charger.",
     "tellLeaderCta": "Dire au chef →",
-    "tellLeaderPrefill": "Aide-moi à ajouter à l'équipe un membre doué pour ___"
+    "tellLeaderPrefill": "Aide-moi à ajouter à l'équipe un membre doué pour ___",
+    "addFailedWithDetail": "Impossible d’ajouter le membre : {{error}}"
   },
   "reorderMember": "Faites glisser pour réorganiser le membre",
   "interruptAndSend": "Interrompre et envoyer",

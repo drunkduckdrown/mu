@@ -20,6 +20,16 @@ export type Draft = {
 
 export const newDraft = (settings: KyrnSettings): Draft => ({ settings, judgeKeys: {}, providerKeys: {} });
 
+/**
+ * The settings as the page reads them. A main process older than this page sends no permission default and no board
+ * model: without them the whole area would fail to draw; with these it shows that mu cannot be told.
+ */
+export const completeSettings = (settings: KyrnSettings): KyrnSettings => ({
+  ...settings,
+  permissions: settings.permissions ?? { mode: '', from: 'default' },
+  boardModel: settings.boardModel ?? { supported: false, model: '' },
+});
+
 export function manifestOf(settings: KyrnSettings | undefined): HarnessManifest | undefined {
   return settings?.harness.status === 'ok' ? settings.harness.manifest : undefined;
 }

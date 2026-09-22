@@ -179,4 +179,52 @@ describe('KYRN panel entry and Hive navigation', () => {
     expect(await screen.findByText(common.kyrn.event.board.switched)).toBeVisible();
     expect(screen.getByText('0.50')).toBeVisible();
   });
+
+  it('sums up coded runtime events in the app language above their raw payload', async () => {
+    activity.mockResolvedValue({
+      ok: true,
+      data: {
+        sessionId: 'session',
+        cursor: 3,
+        more: false,
+        events: [
+          {
+            id: 'mcp',
+            at: 1,
+            kind: 'mcp.failed',
+            payload: { name: 'github', code: 'timeout', reason: 'no answer within 30000 ms' },
+          },
+          {
+            id: 'goal',
+            at: 2,
+            kind: 'goal.state',
+            payload: {
+              status: 'paused',
+              text: 'ship the release',
+              reason: 'english reason',
+              reasonCode: 'idle',
+              reasonParams: { runs: 2 },
+            },
+          },
+          { id: 'rule', at: 3, kind: 'ttsr.interrupted', payload: { text: 'a rule as written' } },
+        ],
+      },
+    });
+    render(<KyrnPanel conversationId='conv' />, { wrapper: Wrapper });
+    fireEvent.click(screen.getByRole('tab', { name: common.kyrn.decisions }));
+
+    fireEvent.click(await screen.findByText(common.kyrn.event.mcp.failed));
+    expect(await screen.findByText('github: it did not answer in time')).toBeVisible();
+    expect(screen.getByText('Details: no answer within 30000 ms')).toBeVisible();
+    // The raw payload stays under the summary, as it came.
+    expect(screen.getByText(/"code": "timeout"/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText(common.kyrn.event.goal.state));
+    expect(await screen.findByText('ship the release')).toBeVisible();
+    expect(screen.getByText('Paused: the agent ended 2 runs in a row without doing anything')).toBeVisible();
+
+    // A kind without codes keeps the generic summary.
+    fireEvent.click(screen.getByText(common.kyrn.event.ttsr.interrupted));
+    expect(await screen.findByText('a rule as written')).toBeVisible();
+  });
 });

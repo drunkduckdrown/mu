@@ -83,13 +83,20 @@
     "archive": "Archiver",
     "archiveSuccess": "Archivé",
     "archiveFailed": "Échec de l'archivage",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "Archivage par lot",
+    "batchArchiveConfirm": "Archiver {{count}} sujets sélectionnés ? Vous pourrez les restaurer ou les supprimer depuis « Archives » dans les paramètres.",
+    "batchArchiveSuccess": "{{count}} sujets archivés",
+    "archiveProject": "Archiver le projet",
+    "archiveProjectTitle": "Archiver le projet",
+    "archiveProjectConfirm": "Archiver le projet « {{name}} » ? Ses {{count}} conversations seront aussi archivées. Vous pourrez les restaurer ou les supprimer depuis « Archives » dans les paramètres.",
+    "archiving": "Archivage...",
+    "batchArchiveConfirm_one": "Archiver {{count}} sujet sélectionné ? Vous pourrez le restaurer ou le supprimer depuis « Archives » dans les paramètres.",
+    "batchArchiveConfirm_other": "Archiver {{count}} sujets sélectionnés ? Vous pourrez les restaurer ou les supprimer depuis « Archives » dans les paramètres.",
+    "batchArchiveSuccess_one": "{{count}} sujet archivé",
+    "batchArchiveSuccess_other": "{{count}} sujets archivés",
+    "archiveProjectConfirm_one": "Archiver le projet « {{name}} » ? {{count}} conversation de ce projet sera aussi archivée. Vous pourrez la restaurer ou la supprimer depuis « Archives » dans les paramètres.",
+    "archiveProjectConfirm_other": "Archiver le projet « {{name}} » ? Ses {{count}} conversations seront aussi archivées. Vous pourrez les restaurer ou les supprimer depuis « Archives » dans les paramètres.",
+    "projectActions": "Actions du projet"
   },
   "historySearch": {
     "tooltip": "Rechercher des messages",
@@ -116,7 +123,8 @@
     "codes": {
       "TEAM_ASSISTANT_ID_REQUIRED": "Veuillez sélectionner un assistant avant de créer l'équipe.",
       "TEAM_ASSISTANT_NOT_FOUND": "L'assistant {{assistantId}} n'est plus disponible. Actualisez la liste des assistants et choisissez-en une autre.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Utilisez assistant_id au lieu de {{field}}."
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Utilisez assistant_id au lieu de {{field}}.",
+      "WORKSPACE_PATH_UNAVAILABLE": "Le chemin de l’espace de travail sélectionné n’est pas disponible. Vérifiez qu’il existe et qu’il est accessible."
     }
   },
   "agentError": {
@@ -348,7 +356,8 @@
         "title": "La demande utilisait un ancien champ d'identité d'équipe",
         "body": "Cette action d'équipe doit utiliser assistant_id au lieu des anciens champs backend ou agent."
       }
-    }
+    },
+    "errorCodeValue": "Code d’erreur : {{code}}"
   },
   "workspace": {
     "title": "Espace de travail",
@@ -432,7 +441,10 @@
       "terminal": "Terminal",
       "explorer": "Explorateur de fichiers",
       "browser": "Navigateur"
-    }
+    },
+    "collapsePanel": "Masquer le panneau du projet",
+    "togglePanel": "Afficher ou masquer le panneau du projet",
+    "expandPanel": "Afficher le panneau du projet"
   },
   "minimap": {
     "searchAria": "Rechercher dans la conversation",
@@ -441,7 +453,9 @@
     "noMatch": "Aucun contenu correspondant trouvé",
     "count": "{{count}} échanges",
     "count_one": "{{count}} échange",
-    "count_other": "{{count}} échanges"
+    "count_other": "{{count}} échanges",
+    "questionLabel": "Q :",
+    "answerLabel": "R :"
   },
   "chat": {
     "noModelSelected": "Aucun modèle sélectionné pour la session actuelle, impossible d'envoyer le message",
@@ -465,7 +479,7 @@
       "processing": "Transcription audio...",
       "unsupported": "La saisie vocale n'est pas disponible dans cet environnement",
       "startShort": "Micro",
-      "stopShort": "Stop",
+      "stopShort": "Arrêter",
       "transcribingShort": "...",
       "audioCaptureError": "Aucun microphone détecté",
       "emptyTranscript": "Aucune parole détectée",
@@ -475,8 +489,11 @@
       "permissionDenied": "Permission microphone refusée",
       "recordingUnsupported": "L'enregistrement en direct n'est pas pris en charge ici. Veuillez téléverser un fichier audio à la place",
       "transcriptionFailed": "Échec de la transcription audio",
-      "genericError": "Échec de la saisie vocale. Veuillez réessayer"
-    }
+      "genericError": "Échec de la saisie vocale. Veuillez réessayer",
+      "transcriptionFailedStatus": "Échec de la transcription (HTTP {{status}})"
+    },
+    "archivedCannotSend": "Cette conversation est archivée et ne peut plus recevoir de messages.",
+    "awaitingConfirmation": "En attente de confirmation"
   },
   "sideQuestion": {
     "title": "Question secondaire",
@@ -530,9 +547,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "L'interjection n'est pas prise en charge pendant que cet agent répond. Utilisez plutôt Ajouter à la boîte de brouillons.",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "Choisir l’action d’envoi",
+    "midturnBlockedSendHint": "Cet agent travaille encore : le message ne peut pas être envoyé directement. Ajoutez-le à la boîte de brouillons et envoyez-le plus tard.",
+    "addToQueueBusyHint": "Ajoutez-le à la boîte de brouillons et envoyez-le plus tard."
   },
   "contextUsage": {
     "tokensUsed": "{{tokens}} jetons utilisés",
@@ -569,7 +586,10 @@
   },
   "thinking": {
     "label": "Réflexion...",
-    "history": "Historique de réflexion"
+    "history": "Historique de réflexion",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "Réflexion terminée · {{time}}",
+    "elapsed": "({{time}})"
   },
   "skills": {
     "loaded": "Compétences chargées",
@@ -584,7 +604,9 @@
       "failed": "Échoué",
       "unsupported": "Non pris en charge"
     },
-    "selected": "MCP sélectionnés"
+    "selected": "MCP sélectionnés",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "MCP sélectionnés · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "Préparation de l'environnement d'exécution. Le premier démarrage peut prendre un peu plus de temps."
@@ -630,15 +652,15 @@
   },
   "notFound": "Conversation introuvable ou supprimée",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "Ajouter un dossier au projet",
     "refreshFiles": "Actualiser les fichiers",
     "refreshChanges": "Actualiser les modifications",
     "collapseAll": "Tout réduire",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "Retirer du projet",
+    "attachDuplicate": "Ce dossier fait déjà partie du projet",
+    "attachOverlap": "Ce dossier chevauche un dossier déjà présent dans le projet",
+    "attachFailed": "Impossible d’ajouter le dossier",
+    "removeFailed": "Impossible de retirer le dossier",
     "contextMenu": {
       "newFile": "Nouveau fichier",
       "newDir": "Nouveau dossier",
@@ -657,7 +679,7 @@
       "changes": "Modifications"
     },
     "addedToChat": "{{name}} ajouté au chat",
-    "imported": "{{count}} fichier(s) importé(s)",
+    "imported": "{{count}} fichiers importés",
     "importPartialFailed": "{{copied}} copié(s), {{failed}} échec(s) (conflits de noms ou non pris en charge)",
     "importFailed": "Échec de l’import des fichiers",
     "copyNodeFailed": "Échec de la copie",
@@ -727,7 +749,7 @@
         "confirmDiscardTitle": "Abandonner les modifications ?",
         "confirmDiscardTracked": "Les modifications de {{count}} fichiers seront perdues. Cette action est irréversible.",
         "confirmDiscardUntracked": "{{count}} nouveaux fichiers seront déplacés vers la corbeille.",
-        "confirmDiscardMixed": "Les modifications de {{tracked}} fichier(s) seront perdues définitivement ; {{untracked}} nouveau(x) fichier(s) iront à la corbeille.",
+        "confirmDiscardMixed": "Fichiers modifiés dont les changements seront définitivement perdus : {{tracked}}. Nouveaux fichiers déplacés vers la corbeille : {{untracked}}.",
         "discardConfirmButton": "Abandonner",
         "okStage": "{{count}} fichiers indexés",
         "okStage_one": "{{count}} fichier indexé",
@@ -748,11 +770,17 @@
         "outcomeUnknown": "La connexion a été réinitialisée avant la réponse — cette action a peut-être abouti, ou non. Actualisez et vérifiez la liste des fichiers avant de réessayer.",
         "allFailed": "Aucun des {{count}} fichier(s) n'a pu être traité",
         "allFailed_one": "{{count}} fichier n'a pas pu être traité",
-        "allFailed_other": "Aucun des {{count}} fichiers n'a pu être traité"
+        "allFailed_other": "Aucun des {{count}} fichiers n'a pu être traité",
+        "confirmDiscardTracked_one": "Les modifications de {{count}} fichier seront perdues. Cette action est irréversible.",
+        "confirmDiscardTracked_other": "Les modifications de {{count}} fichiers seront perdues. Cette action est irréversible.",
+        "confirmDiscardUntracked_one": "{{count}} nouveau fichier sera déplacé vers la corbeille.",
+        "confirmDiscardUntracked_other": "{{count}} nouveaux fichiers seront déplacés vers la corbeille."
       }
     },
     "pathCopied": "Chemin copié",
-    "copyFailed": "Échec de la copie du chemin"
+    "copyFailed": "Échec de la copie du chemin",
+    "imported_one": "{{count}} fichier importé",
+    "imported_other": "{{count}} fichiers importés"
   },
   "terminal": {
     "running": "En cours",
@@ -781,5 +809,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "Développer le plan",
     "collapse": "Réduire le plan"
-  }
+  },
+  "createFailedWithDetail": "Impossible de créer la conversation : {{error}}",
+  "agentStartFailedWithDetail": "Impossible de démarrer l’agent : {{error}}"
 }

@@ -13,6 +13,7 @@ import {
   pausedKey,
   permissionKey,
   reasonLine,
+  reasonText,
   statusHintKey,
   statusKey,
   verbKey,
@@ -158,7 +159,7 @@ const StepBar: React.FC<{ run: BrowserRunState }> = ({ run }) => {
           {reason && (
             <div className={styles.goal}>
               <span className={styles.label}>{t(reason.labelKey)}</span>
-              <span className={styles.goalText}>{reason.key ? t(reason.key) : reason.text}</span>
+              <span className={styles.goalText}>{reasonText(reason, t)}</span>
             </div>
           )}
           {run.steps.length === 0 ? (

@@ -1,149 +1,156 @@
 {
   "title": "mu-Einstellungen",
-  "description": "Everything mu can be told: judges, decision points, features, models and context. Shared with the mu command line.",
+  "description": "Alles, was du mu vorgeben kannst: Judges, Entscheidungspunkte, Funktionen, Modelle und Kontext. Gemeinsam mit der mu-Kommandozeile genutzt.",
   "reload": "Neu laden",
   "search": "Entscheidungspunkte und Funktionen durchsuchen",
   "noMatch": "Nichts passt zur Suche.",
   "modified": "Geändert",
-  "applyNote": "Changes apply to new sessions. A running session keeps the configuration it started with; reconnect it to pick them up.",
+  "applyNote": "Änderungen gelten für neue Sitzungen. Eine laufende Sitzung behält die Konfiguration, mit der sie gestartet wurde; verbinde sie neu, um die Änderungen zu übernehmen.",
   "apiKey": "API-Schlüssel",
-  "keyHelp": "Write-only: once saved it is never shown again. Kept in the harness .env on this machine (owner-only).",
-  "keyKeep": "Leave empty to keep the saved key",
-  "endpointRule": "Use HTTPS, or HTTP to this machine only (127.0.0.1, localhost). No user name, password, query or fragment in the address.",
+  "keyHelp": "Nur schreibbar: Nach dem Speichern wird der Schlüssel nie wieder angezeigt. Er liegt in der .env des Harness auf diesem Rechner (nur für den Besitzer lesbar).",
+  "keyKeep": "Leer lassen, um den gespeicherten Schlüssel zu behalten",
+  "endpointRule": "Verwende HTTPS; HTTP nur für diesen Rechner (127.0.0.1, localhost). Keine Benutzernamen, Passwörter, Abfrageparameter oder Fragmente in der Adresse.",
   "sections": {
-    "judges": "Richter",
+    "judges": "Judges",
     "decisions": "Entscheidungspunkte",
     "features": "Funktionen",
     "models": "Modelle und Anbieter",
-    "permissions": "Permissions",
+    "permissions": "Berechtigungen",
     "context": "Kontext"
   },
   "modes": {
     "active": "Aktiv",
     "shadow": "Schatten",
     "off": "Aus",
-    "activeHelp": "The verdict takes effect.",
-    "shadowHelp": "Asked and recorded, but nothing changes.",
-    "offHelp": "Not asked. Behaves like plain pi."
+    "activeHelp": "Das Urteil wird angewendet.",
+    "shadowHelp": "Wird gefragt und aufgezeichnet, ändert aber nichts.",
+    "offHelp": "Wird nicht gefragt. Verhält sich wie das normale pi."
   },
   "harness": {
-    "tooOld": "This harness is too old to describe its decision points and features. Update the mu harness to see them here; the basic settings still work.",
-    "unsupported": "The harness describes itself in a format this app does not know (version {{version}}). Update the app to edit decision points and features."
+    "tooOld": "Dieses Harness ist zu alt, um seine Entscheidungspunkte und Funktionen zu beschreiben. Aktualisiere das mu-Harness, um sie hier zu sehen; die Grundeinstellungen funktionieren weiterhin.",
+    "unsupported": "Das Harness beschreibt sich in einem Format, das diese App nicht kennt (Version {{version}}). Aktualisiere die App, um Entscheidungspunkte und Funktionen zu bearbeiten."
   },
   "load": {
-    "failed": "The settings could not be loaded"
+    "failed": "Die Einstellungen konnten nicht geladen werden"
   },
   "save": {
-    "saved": "Gespeichert. Neue Sitzungen verwenden es.",
+    "saved": "Gespeichert. Gilt für neue Sitzungen; verbinde laufende neu.",
     "unsaved": "Ungespeicherte Änderungen in: {{sections}}",
     "nothing": "Keine ungespeicherten Änderungen",
     "unsavedDot": "Ungespeicherte Änderungen",
     "discard": "Verwerfen",
-    "stale": "Another program (the mu command line, or a running session) changed the configuration after it was loaded here, so nothing was saved. Reload to see the current state; your unsaved edits will be lost.",
+    "stale": "Ein anderes Programm (die mu-Kommandozeile oder eine laufende Sitzung) hat die Konfiguration geändert, nachdem sie hier geladen wurde, daher wurde nichts gespeichert. Lade neu, um den aktuellen Stand zu sehen; deine ungespeicherten Änderungen gehen dabei verloren.",
     "failed": "Nicht gespeichert: {{reason}}"
   },
   "units": {
     "ms": "ms",
-    "tokens": "tokens"
+    "tokens": "Tokens"
   },
   "options": {
-    "range": "Range {{min}} – {{max}}.",
-    "emptyText": "Empty: use the default",
-    "addItem": "Type and press Enter",
-    "addNumber": "Type a number and press Enter",
+    "range": "Bereich {{min}} – {{max}}.",
+    "emptyText": "Leer: Standard verwenden",
+    "addItem": "Eingeben und Enter drücken",
+    "addNumber": "Zahl eingeben und Enter drücken",
     "problem": {
-      "type": "This value has the wrong type.",
-      "range": "This value is outside the allowed range.",
-      "choice": "This is not one of the choices.",
-      "length": "Too long, or an entry is empty."
+      "type": "Dieser Wert hat den falschen Typ.",
+      "range": "Dieser Wert liegt außerhalb des erlaubten Bereichs.",
+      "choice": "Das ist keine der Auswahlmöglichkeiten.",
+      "length": "Zu lang, oder ein Eintrag ist leer."
     }
   },
   "decisions": {
-    "description": "Each point where the judge is asked. A point follows the default mode unless you give it one of its own.",
+    "description": "Jede Stelle, an der der Judge gefragt wird. Ein Punkt folgt dem Standardmodus, außer du gibst ihm einen eigenen.",
     "defaultMode": "Standardmodus",
-    "defaultModeHelp": "For every decision point without a mode of its own.",
+    "defaultModeHelp": "Für jeden Entscheidungspunkt ohne eigenen Modus.",
     "follow": "Standard folgen ({{mode}})",
     "feature": "Funktion: {{name}}",
-    "featureOff": "Feature is off: not asked"
+    "featureOff": "Funktion ist aus: wird nicht gefragt",
+    "groups": {
+      "input": "Eingabe",
+      "context": "Kontext",
+      "tools": "Tools und Sicherheit",
+      "turn": "Runde",
+      "team": "Teamarbeit"
+    },
+    "otherGroup": "Sonstiges"
   },
   "features": {
-    "description": "What the harness does around the model. Values you have not changed keep following the harness defaults.",
+    "description": "Was das Harness rund um das Modell tut. Werte, die du nicht geändert hast, folgen weiter den Standardwerten des Harness.",
     "beta": "Beta",
     "reset": "Standard wiederherstellen",
-    "asks": "Decision points: {{names}}.",
-    "permissionsElsewhere": "The mode of a new conversation is chosen under Permissions.",
-    "boardModelElsewhere": "The model that writes the board is chosen under Models & providers."
+    "asks": "Entscheidungspunkte: {{names}}.",
+    "permissionsElsewhere": "Den Modus neuer Unterhaltungen wählst du unter „Berechtigungen“.",
+    "boardModelElsewhere": "Das Modell, das das Board schreibt, wählst du unter „Modelle und Anbieter“."
   },
   "judges": {
     "tiers": "Stufen",
-    "tiersHelp": "Judges are tried in order. A later one only sees what the earlier ones left uncertain.",
+    "tiersHelp": "Die Judges werden der Reihe nach gefragt. Ein späterer sieht nur, was die vorherigen offen gelassen haben.",
     "order": "Reihenfolge",
-    "judge": "Richter",
-    "type": "How it is reached",
-    "model": "Judge model",
-    "modelHelp": "For a general model as judge: provider/model-id.",
+    "judge": "Judge",
+    "type": "Anbindung",
+    "model": "Judge-Modell",
+    "modelHelp": "Bei einem allgemeinen Modell als Judge: provider/model-id.",
     "endpoint": "Endpunkt",
-    "endpointDefault": "Default address of the service",
+    "endpointDefault": "Standardadresse des Dienstes",
     "timeout": "Zeitlimit",
-    "keyVariable": "Key variable",
-    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY, or a name starting with MU_JUDGE_.",
+    "keyVariable": "Schlüsselvariable",
+    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY oder ein Name, der mit MU_JUDGE_ beginnt.",
     "types": {
-      "jev": "Jev (automatic route)",
-      "typesafe": "Jev, direct (TypeSafe)",
-      "gateway": "Jev through Vercel AI Gateway",
-      "local": "Local judge (Laya)",
-      "http": "Your own HTTP judge service",
-      "llm": "A general model as judge",
-      "mock": "Mock (neutral answers)",
-      "jevHelp": "TypeSafe directly when its key is set, otherwise the Vercel AI Gateway.",
-      "typesafeHelp": "Always TypeSafe directly.",
-      "gatewayHelp": "Always through the Vercel AI Gateway.",
-      "localHelp": "The Laya sidecar on this machine.",
-      "httpHelp": "Any endpoint that takes {state, questions} and returns {answers}.",
-      "llmHelp": "A generative model from your providers, prompted to answer as JSON.",
-      "mockHelp": "For tests and offline work: nothing is asked."
+      "jev": "Jev (automatische Route)",
+      "typesafe": "Jev, direkt (TypeSafe)",
+      "gateway": "Jev über Vercel AI Gateway",
+      "local": "Lokaler Judge (Laya)",
+      "http": "Eigener HTTP-Judge-Dienst",
+      "llm": "Ein allgemeines Modell als Judge",
+      "mock": "Mock (neutrale Antworten)",
+      "jevHelp": "Direkt über TypeSafe, wenn dessen Schlüssel gesetzt ist, sonst über das Vercel AI Gateway.",
+      "typesafeHelp": "Immer direkt über TypeSafe.",
+      "gatewayHelp": "Immer über das Vercel AI Gateway.",
+      "localHelp": "Der Laya-Hintergrunddienst auf diesem Rechner.",
+      "httpHelp": "Jeder Endpunkt, der {state, questions} annimmt und {answers} zurückgibt.",
+      "llmHelp": "Ein generatives Modell eines deiner Anbieter, das per Prompt in JSON antwortet.",
+      "mockHelp": "Für Tests und Offline-Arbeit: Es wird nichts gefragt."
     },
-    "intro": "While it works, mu makes many small calls: how to handle this message, whether this step breaks a rule you set. The judge answers them. Pick one.",
-    "choose": "Choose a judge",
-    "custom": "The first judge right now is a custom one: see and change it under Advanced.",
-    "advanced": "Advanced",
-    "keyPlaceholder": "Paste a TypeSafe or Vercel AI Gateway key",
-    "localHow": "Needs the Laya judge service running on this machine: run mu judge start in a terminal (macOS for now). One-click setup in the app is coming.",
+    "intro": "Während mu arbeitet, fallen viele kleine Fragen an: wie es mit dieser Nachricht umgehen soll, ob dieser Schritt gegen eine deiner Vorgaben verstößt. Der Judge beantwortet sie. Wähle einen aus.",
+    "choose": "Judge wählen",
+    "custom": "Der erste Judge ist gerade ein benutzerdefinierter: Unter „Erweitert“ kannst du ihn ansehen und ändern.",
+    "advanced": "Erweitert",
+    "keyPlaceholder": "Schlüssel von TypeSafe oder Vercel AI Gateway einfügen",
     "choices": {
       "jev": {
         "title": "Jev",
-        "tag": "Recommended",
-        "description": "Fast and accurate, billed per call. Needs a TypeSafe or Vercel AI Gateway key."
+        "tag": "Empfohlen",
+        "description": "Schnell und genau, Abrechnung pro Aufruf. Braucht einen Schlüssel von TypeSafe oder Vercel AI Gateway."
       },
       "local": {
-        "title": "Local Laya",
-        "tag": "Free · offline",
-        "description": "Runs on this computer, no network, no cost. Good at classifying; relating and scoring are less reliable."
+        "title": "Laya (lokal)",
+        "tag": "Kostenlos · offline",
+        "description": "Läuft auf diesem Rechner, ohne Netzwerk und ohne Kosten. Gut beim Einordnen; beim Zuordnen und Bewerten weniger zuverlässig."
       }
     },
-    "localAddress": "Address: {{address}}",
+    "localAddress": "Adresse: {{address}}",
     "laya": {
-      "running": "Running on this machine",
-      "stopped": "Installed, not running. mu starts it when it needs it.",
-      "missing": "Not installed yet.",
-      "platform": "Laya cannot run on this computer: it needs a Mac with Apple Silicon. You can enter the address of a judge service of your own in the advanced view.",
-      "needsUv": "Installing needs uv, a Python package manager. Install it, then come back here.",
-      "uvLink": "How to install uv",
-      "install": "Install Laya",
-      "start": "Start",
-      "stop": "Stop",
-      "confirmTitle": "Download and install Laya?",
-      "confirmText": "This downloads about {{size}} MB from PyPI and Hugging Face (Python packages and the model's weights) into mu's folder, and takes a few minutes. Laya starts once it is installed.",
-      "confirmOk": "Download and install",
+      "running": "Läuft auf diesem Rechner",
+      "stopped": "Installiert, läuft aber nicht. mu startet Laya bei Bedarf.",
+      "missing": "Noch nicht installiert.",
+      "platform": "Laya läuft nicht auf diesem Rechner: Dafür ist ein Mac mit Apple Silicon nötig. Unter „Erweitert“ kannst du die Adresse eines eigenen Judge-Dienstes eingeben.",
+      "needsUv": "Für die Installation brauchst du uv, einen Python-Paketmanager. Installiere ihn und komm dann hierher zurück.",
+      "uvLink": "So installierst du uv",
+      "install": "Laya installieren",
+      "start": "Starten",
+      "stop": "Stoppen",
+      "confirmTitle": "Laya herunterladen und installieren?",
+      "confirmText": "Dabei werden etwa {{size}} MB von PyPI und Hugging Face (Python-Pakete und die Modellgewichte) in den Ordner von mu heruntergeladen; das dauert ein paar Minuten. Laya startet, sobald die Installation fertig ist.",
+      "confirmOk": "Herunterladen und installieren",
       "working": {
-        "setup": "Installing Laya…",
-        "start": "Starting Laya…",
-        "stop": "Stopping Laya…"
+        "setup": "Laya wird installiert…",
+        "start": "Laya wird gestartet…",
+        "stop": "Laya wird gestoppt…"
       },
       "failed": {
-        "setup": "Installing did not finish. You can try again.",
-        "start": "Laya did not start.",
-        "stop": "Laya did not stop."
+        "setup": "Die Installation wurde nicht abgeschlossen. Du kannst es erneut versuchen.",
+        "start": "Laya konnte nicht starten.",
+        "stop": "Laya konnte nicht gestoppt werden."
       }
     }
   },
@@ -156,117 +163,156 @@
     "manual": "Gesetzt (von Hand)"
   },
   "context": {
-    "description": "When the conversation is compacted, and how. Shared with pi's settings.json.",
+    "description": "Wann und wie die Unterhaltung verdichtet wird. Gemeinsam mit der settings.json von pi genutzt.",
     "auto": "Automatische Verdichtung",
-    "autoHelp": "Compacts the history when the context is nearly full.",
+    "autoHelp": "Verdichtet den Verlauf, wenn der Kontext fast voll ist.",
     "limit": "Kontextgrenze",
-    "beta": "Summary-free compaction",
-    "betaHelp": "Keeps or prunes original passages by judgment instead of writing a summary. The same switch as the compaction feature."
+    "limitHelp": "0 folgt dem Kontextfenster des Modells abzüglich der Reserve. Sonst {{min}} bis {{max}}. Wird vor der nächsten Modellanfrage geprüft, kein harter Schnitt.",
+    "limitProblem": "Gib 0 oder eine ganze Zahl von {{min}} bis {{max}} ein.",
+    "beta": "Verdichtung ohne Zusammenfassung",
+    "betaHelp": "Behält oder kürzt Originalpassagen per Judge-Urteil, statt eine Zusammenfassung zu schreiben. Derselbe Schalter wie bei der Verdichtungsfunktion."
   },
   "permissions": {
-    "description": "Whether mu asks you before it acts. This is the mode every new conversation starts in; each conversation can still be switched from “Permissions” in its send box.",
-    "choose": "Mode of a new conversation",
-    "note": "The “Permissions” picker in a conversation’s send box switches that conversation only; typing /permissions in a conversation also changes the mode new conversations start in. What you said not to do is stopped in every mode, and a step that touches mu’s own settings always asks.",
-    "off": "Permission modes are off in Features: nothing is asked by mode, only the risky command guard works.",
-    "missing": "This version of mu has no permission modes yet. Update mu to choose one here.",
+    "description": "Ob mu dich fragt, bevor es handelt. In diesem Modus startet jede neue Unterhaltung; jede Unterhaltung lässt sich trotzdem über „Berechtigung“ in ihrem Eingabefeld umstellen.",
+    "choose": "Modus neuer Unterhaltungen",
+    "note": "Die Auswahl „Berechtigung“ im Eingabefeld einer Unterhaltung stellt nur diese Unterhaltung um; gibst du in einer Unterhaltung /permissions ein, änderst du auch den Modus, mit dem neue Unterhaltungen starten. Was du untersagt hast, wird in jedem Modus gestoppt, und bei einem Schritt, der die Einstellungen von mu selbst betrifft, wirst du immer gefragt.",
+    "off": "Die Berechtigungsmodi sind unter „Funktionen“ ausgeschaltet: Es wird nicht nach Modus gefragt, nur der Schutz vor riskanten Befehlen greift.",
+    "missing": "Diese Version von mu hat noch keine Berechtigungsmodi. Aktualisiere mu, um hier einen auszuwählen.",
     "modes": {
       "full": {
-        "title": "Full access",
-        "description": "Runs everything without asking, so you are not interrupted."
+        "title": "Vollzugriff",
+        "description": "Führt alles aus, ohne zu fragen, damit du nicht unterbrochen wirst."
       },
       "jev": {
-        "title": "JeV approves",
-        "description": "Reads and edits in the project go ahead; JeV approves commands, changes outside the project and outside actions for you, and asks you only when it is not sure."
+        "title": "JeV gibt frei",
+        "description": "Lesen und Bearbeiten im Projekt laufen direkt; Befehle, Änderungen außerhalb des Projekts und Aktionen nach außen gibt JeV für dich frei und fragt dich nur im Zweifel."
       },
       "ask": {
-        "title": "Minimal permissions",
-        "description": "Only reading goes ahead; every edit, command and outside action asks you first."
+        "title": "Minimale Berechtigungen",
+        "description": "Nur Lesen läuft direkt; vor jeder Änderung, jedem Befehl und jeder Aktion nach außen wirst du gefragt."
       }
     }
   },
+  "permissionsCard": {
+    "kind": {
+      "edit": "mu möchte eine Datei bearbeiten",
+      "shell": "mu möchte einen Befehl ausführen",
+      "run": "mu möchte ein Programm ausführen",
+      "outside": "mu möchte eine Datei außerhalb des Projekts ändern",
+      "delegate": "mu möchte Unteragenten starten",
+      "other": "mu möchte eine Aktion nach außen ausführen"
+    },
+    "reason": {
+      "ask": "Minimale Berechtigungen: Vor jedem Schritt wirst du gefragt.",
+      "unsure": "JeV ist nicht sicher, ob du diesen Schritt willst.",
+      "beyond": "JeV meint, das geht über das hinaus, worum du gebeten hast.",
+      "unrelated": "JeV meint, das gehört nicht zur Aufgabe.",
+      "protected": "Das betrifft die Einstellungen von mu selbst; nur du kannst es erlauben."
+    },
+    "answer": {
+      "once": "Einmal erlauben",
+      "session": "Für diese Unterhaltung erlauben",
+      "sessionFor": "Für diese Unterhaltung erlauben ({{grant}})",
+      "deny": "Nicht erlauben"
+    },
+    "flag": {
+      "recursive_or_forced_delete": "rekursives oder erzwungenes Löschen",
+      "discards_git_work": "verwirft Änderungen in git",
+      "force_push": "Force-Push",
+      "drops_database_objects": "löscht Datenbankobjekte",
+      "overwrites_device": "überschreibt ein Gerät",
+      "opens_permissions_recursively": "öffnet Berechtigungen rekursiv",
+      "runs_downloaded_script": "führt ein heruntergeladenes Skript aus",
+      "runs_as_administrator": "läuft als Administrator",
+      "runs_as_root": "läuft als root"
+    },
+    "flagged": "Riskant: {{flag}}."
+  },
   "providers": {
-    "description": "Which model a new session starts with, and the providers behind the models.",
-    "lead": "Where the models come from: subscriptions and endpoints, plus the model that writes the plain-language board. A conversation’s model and thinking level are picked in its send box.",
+    "lead": "Woher die Modelle kommen: Abos und Endpunkte, dazu das Modell, das das Klartext-Board schreibt. Modell und Denkstufe einer Unterhaltung wählst du in ihrem Eingabefeld.",
     "title": "Anbieter",
-    "custom": "Custom providers",
-    "manualGroup": "Written by hand",
-    "builtinGroup": "Other built-in",
+    "custom": "Benutzerdefinierte Anbieter",
+    "manualGroup": "Von Hand geschrieben",
+    "builtinGroup": "Weitere integrierte Anbieter",
     "add": "Anbieter hinzufügen",
     "new": "Neuer Anbieter",
     "unsaved": "Nicht gespeichert",
     "remove": "Entfernen",
-    "endpointType": "Endpunkttyp",
+    "endpointType": "API-Format",
     "name": "Anzeigename",
-    "namePlaceholder": "e.g. My proxy",
+    "namePlaceholder": "z. B. Mein Proxy",
     "id": "ID",
-    "idHelp": "Lowercase letters, digits and hyphens. Fixed once saved; used as provider/model.",
+    "idHelp": "Kleinbuchstaben, Ziffern und Bindestriche. Nach dem Speichern fest; wird als provider/model verwendet.",
     "idProblem": {
-      "format": "Use lowercase letters, digits and hyphens, starting with a letter or digit (at most 40).",
-      "reserved": "This is the id of a built-in provider. An entry under it would reroute that provider instead of adding one.",
-      "taken": "This id is already in use."
+      "format": "Nur Kleinbuchstaben, Ziffern und Bindestriche, beginnend mit einem Buchstaben oder einer Ziffer (höchstens 40).",
+      "reserved": "Das ist die ID eines integrierten Anbieters. Ein Eintrag darunter würde diesen Anbieter umleiten, statt einen neuen hinzuzufügen.",
+      "taken": "Diese ID wird bereits verwendet."
     },
     "baseUrl": "Basis-URL",
-    "keyEnter": "Paste the API key",
-    "keyReplace": "A key written by hand is in use. Typing one here replaces it.",
-    "keyHelp": "Saved to the harness .env as {{variable}}; models.json only holds the reference. Never shown again.",
-    "authHeader": "Also send Authorization: Bearer (some proxies need it)",
-    "headers": "Extra headers written by hand are kept as they are: {{names}}. Their values are secrets and are edited in models.json.",
-    "pick": "Choose a provider on the left, or add one.",
-    "manual": "Written by hand",
-    "foreignHelp": "This entry reroutes a built-in provider, or uses an interface type this screen does not edit. It can be removed here but not edited: edit it in models.json.",
-    "modelCount": "{{count}} Modelle",
+    "keyEnter": "API-Schlüssel einfügen",
+    "keyReplace": "Derzeit wird ein von Hand geschriebener Schlüssel verwendet. Wenn du hier einen eingibst, ersetzt er ihn.",
+    "keyHelp": "Wird als {{variable}} in der .env des Harness gespeichert; models.json enthält nur den Verweis. Wird nie wieder angezeigt.",
+    "authHeader": "Zusätzlich Authorization: Bearer senden (manche Proxys brauchen das)",
+    "headers": "Von Hand geschriebene zusätzliche Header bleiben unverändert: {{names}}. Ihre Werte sind geheim und werden in models.json bearbeitet.",
+    "pick": "Wähle links einen Anbieter aus oder füge einen hinzu.",
+    "manual": "Von Hand geschrieben",
+    "foreignHelp": "Dieser Eintrag leitet einen integrierten Anbieter um oder nutzt ein API-Format, das diese Seite nicht bearbeitet. Er lässt sich hier entfernen, aber nicht bearbeiten: Bearbeite ihn in models.json.",
+    "modelCount": "{{count, number}} Modelle",
     "usable": "Nutzbar",
-    "builtinHelp": "mu reported it as usable at its last connection, usually because its API key is in the environment. It cannot be removed here: delete that key from the environment, and it is gone after mu connects again.",
-    "noneYet": "None yet",
-    "commented": "models.json contains comments. Saving from here would remove them, so providers are read-only. Remove the comments by hand to edit here.",
-    "summary": "Sign in with a subscription and use it right away, or connect any OpenAI-, Anthropic- or Gemini-compatible endpoint.",
-    "subscriptions": "Subscriptions",
-    "manualShort": "By hand",
-    "needsSetup": "Not set up yet",
-    "more": "More actions",
-    "removeProvider": "Remove provider",
-    "removeTitle": "Remove {{name}}?",
-    "removeSaved": "When you save, it is deleted from models.json, and so is the key stored for it.",
-    "removeUnsaved": "It is not saved yet, so what you filled in here is discarded.",
-    "removeEntry": "When you save, this hand-written entry is deleted from models.json. If it overrides a built-in provider, that provider goes back to its defaults.",
-    "removeDefault": "New sessions start with it, so the startup model is cleared too."
+    "builtinHelp": "mu hat ihn bei der letzten Verbindung als nutzbar gemeldet, meist weil sein API-Schlüssel in der Umgebung liegt. Hier lässt er sich nicht entfernen: Entferne diesen Schlüssel aus der Umgebung, dann ist er nach der nächsten Verbindung von mu verschwunden.",
+    "noneYet": "Noch keine",
+    "unreadable": "models.json konnte nicht gelesen werden, daher werden Anbieter weder angezeigt noch gespeichert. Repariere die Datei von Hand und lade dann neu.",
+    "commented": "models.json enthält Kommentare. Beim Speichern von hier aus würden sie entfernt, daher sind die Anbieter schreibgeschützt. Entferne die Kommentare von Hand, um sie hier zu bearbeiten.",
+    "modelCount_one": "{{count, number}} Modell",
+    "modelCount_other": "{{count, number}} Modelle",
+    "summary": "Melde dich mit einem Abo an und leg direkt los, oder verbinde einen beliebigen OpenAI-, Anthropic- oder Gemini-kompatiblen Endpunkt.",
+    "subscriptions": "Abos",
+    "manualShort": "Von Hand",
+    "needsSetup": "Noch nicht eingerichtet",
+    "more": "Weitere Aktionen",
+    "removeProvider": "Anbieter entfernen",
+    "removeTitle": "{{name}} entfernen?",
+    "removeSaved": "Beim Speichern wird er aus models.json gelöscht, ebenso der dafür gespeicherte Schlüssel.",
+    "removeUnsaved": "Er ist noch nicht gespeichert, daher wird verworfen, was du hier eingegeben hast.",
+    "removeEntry": "Beim Speichern wird dieser von Hand geschriebene Eintrag aus models.json gelöscht. Überschreibt er einen integrierten Anbieter, erhält dieser wieder seine Standardwerte.",
+    "removeDefault": "Neue Sitzungen starten damit, daher wird auch das Standardmodell zurückgesetzt."
   },
   "accounts": {
-    "signIn": "Sign in",
-    "signOut": "Sign out",
-    "signOutFailed": "Signing out did not finish. You can try again.",
-    "signOutConfirm": "Sign out of {{name}}? You will need to sign in again to use it.",
-    "signedOut": "Not signed in",
-    "instant": "Signing in and out takes effect at once, without saving.",
-    "models": "Models you can use",
-    "byKey": "Usable (API key)",
-    "byKeyHelp": "No subscription is signed in, but mu reported it as usable at its last connection, usually because its API key is in the environment. Signing in switches it to the subscription.",
-    "otherRunning": "{{name}} is signing in, and one sign-in runs at a time.",
-    "showRunning": "Show it"
+    "signIn": "Anmelden",
+    "signOut": "Abmelden",
+    "signOutFailed": "Die Abmeldung wurde nicht abgeschlossen. Du kannst es erneut versuchen.",
+    "signOutConfirm": "Von {{name}} abmelden? Um es wieder zu nutzen, musst du dich erneut anmelden.",
+    "signedOut": "Nicht angemeldet",
+    "instant": "Anmelden und Abmelden wirken sofort, ohne Speichern.",
+    "models": "Nutzbare Modelle",
+    "byKey": "Nutzbar (API-Schlüssel)",
+    "byKeyHelp": "Es ist kein Abo angemeldet, aber mu hat diesen Anbieter bei der letzten Verbindung als nutzbar gemeldet, meist weil sein API-Schlüssel in der Umgebung gesetzt ist. Nach der Anmeldung wird das Abo verwendet.",
+    "otherRunning": "Die {{name}}-Anmeldung läuft gerade; es ist immer nur eine Anmeldung gleichzeitig möglich.",
+    "showRunning": "Anzeigen"
   },
   "endpoints": {
     "openaiCompletions": {
-      "name": "OpenAI compatible (Chat Completions)",
-      "hint": "The most widely supported: proxies, Ollama, vLLM, LM Studio, DeepSeek…",
-      "url": "Usually ends in /v1, e.g. https://api.example.com/v1 or http://localhost:11434/v1.",
-      "short": "OpenAI compatible"
+      "name": "OpenAI-kompatibel (Chat Completions)",
+      "hint": "Am breitesten unterstützt: Proxys, Ollama, vLLM, LM Studio, DeepSeek…",
+      "url": "Endet meist auf /v1, z. B. https://api.example.com/v1 oder http://localhost:11434/v1.",
+      "short": "OpenAI-kompatibel"
     },
     "openaiResponses": {
       "name": "OpenAI Responses",
-      "hint": "OpenAI's newer Responses API, for services that offer it.",
-      "url": "Usually ends in /v1, e.g. https://api.example.com/v1.",
+      "hint": "Die neuere Responses-API von OpenAI, für Dienste, die sie anbieten.",
+      "url": "Endet meist auf /v1, z. B. https://api.example.com/v1.",
       "short": "OpenAI Responses"
     },
     "anthropicMessages": {
-      "name": "Anthropic compatible (Messages)",
-      "hint": "For Claude and services that speak the Anthropic Messages format.",
-      "url": "Without /v1: the client adds /v1/messages itself, e.g. https://api.example.com.",
-      "short": "Anthropic compatible"
+      "name": "Anthropic-kompatibel (Messages)",
+      "hint": "Für Claude und Dienste, die das Anthropic-Messages-Format unterstützen.",
+      "url": "Ohne /v1: Der Client ergänzt /v1/messages selbst, z. B. https://api.example.com.",
+      "short": "Anthropic-kompatibel"
     },
     "googleGenerativeAi": {
       "name": "Google Generative AI",
-      "hint": "Gemini and Gemma through Google AI Studio.",
-      "url": "e.g. https://generativelanguage.googleapis.com/v1beta.",
+      "hint": "Gemini und Gemma über Google AI Studio.",
+      "url": "z. B. https://generativelanguage.googleapis.com/v1beta.",
       "short": "Google"
     }
   },
@@ -279,62 +325,55 @@
     "reasoning": "Denken",
     "image": "Bilder",
     "add": "Modell hinzufügen",
-    "none": "No models yet. Add one, or test the connection to pick from what the endpoint lists.",
+    "none": "Noch keine Modelle. Füge eins hinzu oder teste die Verbindung, um aus der Liste des Endpunkts zu wählen.",
     "problem": {
-      "emptyId": "Every model needs an ID.",
-      "duplicate": "Two models have the same ID."
+      "emptyId": "Jedes Modell braucht eine ID.",
+      "duplicate": "Zwei Modelle haben dieselbe ID."
     },
-    "edit": "Edit {{name}}",
-    "removeNamed": "Remove {{name}}",
-    "done": "Done",
-    "contextTag": "Context window {{size}}",
-    "tagReasoning": "Thinking",
-    "tagImage": "Vision",
-    "noId": "New model",
-    "show": "Show {{name}}"
+    "idField": "Modell-ID · wie die API sie erwartet",
+    "rowField": "{{field}} {{n}}",
+    "edit": "{{name}} bearbeiten",
+    "removeNamed": "{{name}} entfernen",
+    "done": "Fertig",
+    "contextTag": "Kontextfenster {{size}}",
+    "tagReasoning": "Denken",
+    "tagImage": "Bilder",
+    "noId": "Neues Modell",
+    "show": "{{name}} anzeigen",
+    "addListed": "{{name}} hinzufügen"
   },
   "test": {
     "run": "Verbindung testen",
-    "hint": "One minimal request from this app: the model list, or else a single token with the first model.",
-    "okModels": "Connected ({{ms}} ms). The endpoint lists {{count}} models.",
-    "okCompletion": "Connected ({{ms}} ms). The model answered.",
-    "auth": "The key was rejected (HTTP {{status}}).",
-    "notFound": "Nothing at this address (HTTP 404). Check the base URL and the endpoint type; add a model to test with a request.",
-    "http": "The endpoint answered HTTP {{status}}.",
-    "timeout": "No answer in time.",
-    "network": "Could not connect. Check the address and the network.",
-    "redirect": "The endpoint redirects elsewhere (HTTP {{status}}). Use the final address: a key is not sent along a redirect.",
-    "invalidResponse": "The answer is not what this endpoint type returns. Is the type right?",
-    "keyUnavailable": "The saved key is a command or a composite value, which this app does not evaluate. Type a key to test.",
-    "urlChanged": "The address or type was changed. A saved key is only sent where it was saved for: save first, or type the key again."
-  },
-  "defaults": {
-    "title": "Standardmodell",
-    "summary": "What a new session starts with. You can still switch inside a conversation.",
-    "provider": "Anbieter",
-    "model": "Modell",
-    "level": "Denkstufe",
-    "levelUnset": "Nicht festlegen",
-    "levelHelp": "Levels this model does not take are disabled.",
-    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
-    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
-    "notSet": "Nicht festgelegt",
-    "pickProvider": "Choose a provider first."
+    "hint": "Eine minimale Anfrage aus dieser App: die Modellliste, sonst ein einzelnes Token mit dem ersten Modell.",
+    "okModels": "Verbunden ({{ms}} ms). Der Endpunkt listet {{count, number}} Modelle auf.",
+    "okCompletion": "Verbunden ({{ms}} ms). Das Modell hat geantwortet.",
+    "auth": "Der Schlüssel wurde abgelehnt (HTTP {{status}}).",
+    "notFound": "Unter dieser Adresse gibt es nichts (HTTP 404). Prüfe die Basis-URL und das API-Format; füge ein Modell hinzu, um mit einer Anfrage zu testen.",
+    "http": "Der Endpunkt hat mit HTTP {{status}} geantwortet.",
+    "timeout": "Keine Antwort innerhalb des Zeitlimits.",
+    "network": "Keine Verbindung möglich. Prüfe die Adresse und das Netzwerk.",
+    "redirect": "Der Endpunkt leitet weiter (HTTP {{status}}). Verwende die endgültige Adresse: Bei einer Weiterleitung wird kein Schlüssel mitgesendet.",
+    "invalidResponse": "Die Antwort entspricht nicht diesem API-Format. Ist das Format richtig?",
+    "keyUnavailable": "Der gespeicherte Schlüssel ist ein Befehl oder ein zusammengesetzter Wert, den diese App nicht auswertet. Gib zum Testen einen Schlüssel ein.",
+    "urlChanged": "Die Adresse oder das API-Format wurde geändert. Ein gespeicherter Schlüssel wird nur dorthin gesendet, wofür er gespeichert wurde: Speichere zuerst oder gib den Schlüssel erneut ein.",
+    "detail": "Antwort des Endpunkts: {{detail}}",
+    "okModels_one": "Verbunden ({{ms}} ms). Der Endpunkt listet {{count, number}} Modell auf.",
+    "okModels_other": "Verbunden ({{ms}} ms). Der Endpunkt listet {{count, number}} Modelle auf."
   },
   "boardModel": {
-    "title": "Plain-language model",
-    "summary": "Writes the plain-language board: how the work is going, in everyday words. For you only, never in the conversation’s context; each update is one call.",
-    "pick": "A model of your choice",
-    "recommended": "Recommended: Claude Opus 4.6, the most natural and steady; then Gemini 3.8 Flash, faster and cheaper.",
-    "recommendedTag": "recommended",
-    "provider": "Provider",
-    "model": "Model",
-    "notSet": "Not set",
-    "pickProvider": "Pick a provider first",
-    "unset": "None yet: mu asks the first time the board is switched on.",
-    "session": "Whatever model the conversation uses",
-    "sessionHelp": "When the conversation switches model, the board follows.",
-    "update": "This version of mu cannot be told here which model writes the board. Update mu first."
+    "title": "Klartext-Modell",
+    "summary": "Schreibt das Klartext-Board: wie die Arbeit vorangeht, in einfachen Worten. Nur für dich, nie im Kontext der Unterhaltung; jede Aktualisierung kostet einen Modellaufruf.",
+    "pick": "Ein Modell deiner Wahl",
+    "recommended": "Empfohlen: Claude Opus 4.6, am natürlichsten und beständigsten; danach Gemini 3.8 Flash, schneller und günstiger.",
+    "recommendedTag": "empfohlen",
+    "provider": "Anbieter",
+    "model": "Modell",
+    "notSet": "Nicht festgelegt",
+    "pickProvider": "Zuerst einen Anbieter wählen",
+    "unset": "Noch keins: mu fragt, wenn das Board zum ersten Mal eingeschaltet wird.",
+    "session": "Dasselbe Modell wie die Unterhaltung",
+    "sessionHelp": "Wechselt die Unterhaltung das Modell, wechselt das Board mit.",
+    "update": "In dieser Version von mu lässt sich hier nicht festlegen, welches Modell das Board schreibt. Aktualisiere zuerst mu."
   },
   "levels": {
     "off": "Aus",
@@ -346,97 +385,98 @@
     "max": "Maximal"
   },
   "welcome": {
-    "reopen": "Setup guide",
-    "progress": "Setup progress",
+    "reopen": "Einrichtungsanleitung",
+    "progress": "Fortschritt der Einrichtung",
     "steps": {
-      "model": "Model",
+      "model": "Modell",
       "judge": "Judge",
-      "done": "Done"
+      "done": "Fertig"
     },
-    "skipAll": "Skip setup",
-    "skipStep": "Skip for now",
-    "back": "Back",
-    "next": "Next",
-    "start": "Get started",
+    "skipAll": "Einrichtung überspringen",
+    "skipStep": "Vorerst überspringen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "start": "Loslegen",
     "model": {
-      "title": "Connect a model",
-      "subtitle": "mu uses it to write code and answer you. Three steps; you can change all of it in Settings later.",
-      "model": "Model",
-      "baseUrl": "Base URL",
-      "key": "API key",
-      "keyPlaceholder": "Paste the key; a service on this machine may need none",
-      "modelId": "Model name",
+      "title": "Modell verbinden",
+      "subtitle": "mu schreibt damit Code und antwortet dir. Drei Schritte; alles lässt sich später in den Einstellungen ändern.",
+      "model": "Modell",
+      "baseUrl": "Basis-URL",
+      "key": "API-Schlüssel",
+      "keyPlaceholder": "Schlüssel einfügen; ein Dienst auf diesem Rechner braucht evtl. keinen",
+      "modelId": "Modellname",
       "signedIn": {
-        "title": "Sign in with a subscription",
-        "tag": "No API key",
-        "description": "A ChatGPT, Claude or Grok plan"
+        "title": "Mit Abo anmelden",
+        "tag": "Kein API-Schlüssel",
+        "description": "Ein ChatGPT-, Claude- oder Grok-Abo"
       },
       "openai": {
-        "title": "OpenAI-compatible API",
-        "tag": "Most common",
-        "description": "OpenAI, DeepSeek, Kimi, Qwen, Ollama, and relay services",
-        "modelPlaceholder": "e.g. deepseek-chat"
+        "title": "OpenAI-kompatible API",
+        "tag": "Am gängigsten",
+        "description": "OpenAI, DeepSeek, Kimi, Qwen, Ollama und Proxy-Dienste",
+        "modelPlaceholder": "z. B. deepseek-chat"
       },
       "anthropic": {
-        "title": "Anthropic-compatible API",
+        "title": "Anthropic-kompatible API",
         "tag": "Claude",
-        "description": "Claude, and services that speak the Messages format",
-        "modelPlaceholder": "e.g. claude-sonnet-5"
+        "description": "Claude und Dienste, die das Messages-Format unterstützen",
+        "modelPlaceholder": "z. B. claude-sonnet-5"
       },
       "problems": {
-        "baseUrl": "Enter an address that starts with https:// (http:// only for this machine).",
-        "key": "Enter the API key.",
-        "model": "Enter the model name."
+        "baseUrl": "Gib eine Adresse ein, die mit https:// beginnt (http:// nur für diesen Rechner).",
+        "key": "Gib den API-Schlüssel ein.",
+        "model": "Gib den Modellnamen ein."
       },
       "openaiApi": {
-        "label": "Interface",
+        "label": "API-Format",
         "openai-completions": "Chat Completions",
         "openai-responses": "Responses",
-        "openai-completionsHint": "Works almost everywhere; most services and relays speak it.",
-        "openai-responsesHint": "OpenAI's newer interface; only some services support it."
+        "openai-completionsHint": "Funktioniert fast überall; die meisten Dienste und Proxys unterstützen es.",
+        "openai-responsesHint": "Die neuere API von OpenAI; nur manche Dienste unterstützen sie."
       }
     },
     "judge": {
-      "title": "Choose a judge",
-      "subtitle": "The judge answers the small calls mu makes while it works. mu runs without one, just without these checks."
+      "title": "Judge wählen",
+      "subtitle": "Der Judge beantwortet die kleinen Fragen, die bei der Arbeit von mu anfallen. mu läuft auch ohne Judge, nur eben ohne diese Prüfungen."
     },
     "done": {
-      "title": "All set",
-      "subtitle": "Check it over, then start.",
-      "model": "Model",
+      "title": "Alles bereit",
+      "subtitle": "Prüfe alles noch einmal, dann kann es losgehen.",
+      "model": "Modell",
       "judge": "Judge",
-      "none": "Not set",
-      "noKey": "No key yet: judgments follow the default rules until there is one",
-      "saveFailed": "Saving did not work: {{reason}}"
+      "none": "Nicht festgelegt",
+      "noKey": "Noch kein Schlüssel: Bis dahin gilt die Standardstrategie",
+      "saveFailed": "Speichern fehlgeschlagen: {{reason}}",
+      "modelValue": "{{provider}} / {{model}}"
     },
     "intro": {
-      "title": "Welcome to mu",
-      "lead": "mu is a coding assistant that does the work: it reads your project, edits code, runs commands and tests, and keeps going until the job is done.",
+      "title": "Willkommen bei mu",
+      "lead": "mu ist ein Programmierassistent, der selbst Hand anlegt: mu liest dein Projekt, bearbeitet Code, führt Befehle und Tests aus und macht weiter, bis die Aufgabe erledigt ist.",
       "points": {
         "judge": {
-          "title": "A check at every step",
-          "text": "A built-in judge watches the key moments: think before acting, keep to the rules you set, never call it done unverified."
+          "title": "Eine Prüfung bei jedem Schritt",
+          "text": "Ein integrierter Judge achtet auf die entscheidenden Momente: erst nachdenken, dann handeln, deine Vorgaben einhalten und nichts als erledigt melden, was nicht überprüft ist."
         },
         "control": {
-          "title": "You see it, you steer it",
-          "text": "Any change can be rolled back; every step in the browser is in view, and you can pause or take over."
+          "title": "Alles im Blick, alles im Griff",
+          "text": "Jede Änderung lässt sich rückgängig machen; jeder Schritt im Browser ist sichtbar, und du kannst pausieren oder übernehmen."
         },
         "ready": {
-          "title": "Ready out of the box",
-          "text": "It picks up the rules, skills and MCP servers you already set up in Claude Code, Cursor and Codex."
+          "title": "Sofort einsatzbereit",
+          "text": "mu übernimmt die Regeln, Skills und MCP-Server, die du bereits in Claude Code, Cursor und Codex eingerichtet hast."
         }
       },
-      "start": "Set up"
+      "start": "Einrichten"
     },
     "login": {
       "providers": {
         "openai-codex": {
           "name": "ChatGPT",
-          "plan": "Plus / Pro plan"
+          "plan": "Plus-/Pro-Abo"
         },
         "anthropic": {
           "name": "Claude",
-          "plan": "Pro / Max plan"
+          "plan": "Pro-/Max-Abo"
         },
         "xai": {
           "name": "Grok",
@@ -444,37 +484,75 @@
         },
         "google-gemini-cli": {
           "name": "Gemini CLI",
-          "plan": "Google account"
+          "plan": "Google-Konto"
         },
         "google-antigravity": {
           "name": "Antigravity",
-          "plan": "Google account"
+          "plan": "Google-Konto"
         }
       },
-      "signedIn": "Signed in",
-      "inProgress": "Signing in…",
-      "waiting": "The {{name}} sign-in page is open in your browser. Sign in and allow access; this continues by itself.",
+      "signedIn": "Angemeldet",
+      "inProgress": "Wird angemeldet…",
+      "waiting": "Die Anmeldeseite von {{name}} ist in deinem Browser geöffnet. Melde dich an und erlaube den Zugriff; hier geht es dann von selbst weiter.",
       "deviceCode": "Code",
-      "code": "Authorization code",
-      "codePlaceholder": "Paste the code the browser shows, or the address it ended on",
-      "submit": "Submit",
-      "openAgain": "Open the page again",
-      "pasteCode": "Paste a code instead",
-      "cancel": "Cancel",
-      "failed": "Signing in did not finish. You can try again.",
-      "asks": "{{name}} asks (in its own words):",
-      "needAccount": "Sign in to an account first, then pick a model.",
-      "experimental": "Experimental",
-      "starting": "Getting the {{name}} sign-in ready…",
-      "waitingDevice": "The {{name}} verification page is open in your browser. Check that the code there matches this one (type it in if it is not filled in), approve, and this continues by itself.",
+      "code": "Autorisierungscode",
+      "codePlaceholder": "Code aus dem Browser oder die Adresse, auf der er gelandet ist, einfügen",
+      "submit": "Absenden",
+      "openAgain": "Seite erneut öffnen",
+      "pasteCode": "Stattdessen Code einfügen",
+      "cancel": "Abbrechen",
+      "failed": "Die Anmeldung wurde nicht abgeschlossen. Du kannst es erneut versuchen.",
+      "asks": "{{name}} fragt (im Originalwortlaut):",
+      "needAccount": "Melde dich zuerst bei einem Konto an und wähle dann ein Modell.",
+      "experimental": "Experimentell",
+      "starting": "{{name}}-Anmeldung wird vorbereitet…",
+      "waitingDevice": "Die Bestätigungsseite von {{name}} ist in deinem Browser geöffnet. Prüfe, ob der Code dort mit diesem übereinstimmt (gib ihn ein, falls er nicht ausgefüllt ist), bestätige, und hier geht es von selbst weiter.",
       "risk": {
-        "title": "Know the risk before you sign in",
-        "text": "This signs in through the login Google made for {{tool}} itself, not one Google provides for mu. Google may treat that as against its terms and limit or suspend the account.",
-        "instead": "Use an account you can afford to lose access to. The official ways are a Gemini API key, or Vertex AI signed in with gcloud.",
-        "continue": "I understand the risk, sign in",
-        "cancel": "Don't sign in"
+        "title": "Erst das Risiko kennen, dann anmelden",
+        "text": "Diese Anmeldung nutzt den Login, den Google für {{tool}} selbst gebaut hat, nicht einen, den Google für mu anbietet. Google kann das als Verstoß gegen seine Bedingungen werten und das Konto einschränken oder sperren.",
+        "instead": "Verwende ein Konto, auf das du notfalls verzichten kannst. Die offiziellen Wege sind ein Gemini-API-Schlüssel oder Vertex AI mit Anmeldung über gcloud.",
+        "continue": "Risiko verstanden, anmelden",
+        "cancel": "Nicht anmelden"
       },
-      "readingModels": "Signed in to {{name}}. Reading the models this account can use…"
+      "readingModels": "Bei {{name}} angemeldet. Die Modelle für dieses Konto werden geladen…"
     }
+  },
+  "turnErrors": {
+    "processExited": "mu wurde mitten in der Runde beendet. Sende die Nachricht erneut, um es neu zu starten.",
+    "busyConfig": "Warte, bis die aktuelle Runde beendet ist, bevor du das Modell oder die Denkstufe änderst.",
+    "unsupportedValue": "mu bietet dieses Modell, diese Denkstufe oder diesen Berechtigungsmodus nicht an.",
+    "permissionsNotSwitched": "mu hat den Berechtigungsmodus nicht umgestellt. Versuche es erneut oder gib /permissions in der Unterhaltung ein.",
+    "imageUnsupported": "Es lassen sich nur PNG-, JPEG-, WebP- oder GIF-Bilder bis 12 MB senden.",
+    "contentUnsupported": "mu akzeptiert nur Text, Bilder und Textdateien.",
+    "wrongProject": "Diese Unterhaltung gehört zu einem anderen Projektordner.",
+    "notPersisted": "mu konnte diese Unterhaltung nicht speichern.",
+    "startFailed": "mu konnte nicht starten.",
+    "timeout": "mu hat nicht rechtzeitig geantwortet.",
+    "processClosed": "mu wurde beendet. Sende die Nachricht erneut, um es neu zu starten.",
+    "modelFailed": "Die Modellanfrage ist fehlgeschlagen.",
+    "turnRunning": "mu arbeitet noch an der vorherigen Nachricht. Warte, bis es fertig ist, oder stoppe es zuerst."
+  },
+  "errors": {
+    "credential": "Der Schlüssel enthält Zeichen, die ein Schlüssel nicht haben darf, etwa Leerzeichen, Anführungszeichen oder Zeilenumbrüche. Füge ihn erneut ein.",
+    "keyVariable": "{{name}} kann keinen Judge-Schlüssel enthalten. Verwende TYPESAFE_API_KEY, AI_GATEWAY_API_KEY oder einen Namen, der mit MU_JUDGE_ beginnt.",
+    "sharedKey": "{{providers}} würden sich eine Schlüsselvariable teilen. Ändere eine der IDs.",
+    "pickBoth": "Wähle Anbieter und Modell zusammen aus.",
+    "modelsUnreadable": "models.json konnte nicht gelesen werden. Repariere die Datei von Hand, bevor du Anbieter speicherst.",
+    "modelsCommented": "models.json enthält Kommentare, die beim Speichern von hier entfernt würden. Bearbeite die Anbieter von Hand.",
+    "option": {
+      "type": "„{{name}}“ hat einen Wert vom falschen Typ.",
+      "choice": "„{{name}}“ ist keine der Auswahlmöglichkeiten.",
+      "length": "„{{name}}“ ist zu lang oder enthält einen leeren Eintrag.",
+      "range": "„{{name}}“ liegt außerhalb des zulässigen Bereichs."
+    },
+    "invalidJson": "{{file}} ist kein gültiges JSON. Korrigiere die Datei von Hand und lade dann neu.",
+    "unreadable": "{{file}} konnte nicht gelesen werden.",
+    "runtimeOffline": "Die mu-Laufzeit ist nicht online. Prüfe den lokalen Starter und die Anmeldung.",
+    "otherRegistration": "In der App ist bereits ein anderer mu-Befehl registriert.",
+    "backend": "Der lokale Dienst hat nicht wie erwartet geantwortet (HTTP {{status}}).",
+    "invalid": "Einer der Werte ist ungültig.",
+    "unknown": "In mu ist etwas schiefgelaufen.",
+    "unwritable": "{{file}} konnte nicht geschrieben werden.",
+    "contextLimit": "Die Kontextgrenze muss 0 oder eine ganze Zahl von {{min}} bis {{max}} sein."
   }
 }

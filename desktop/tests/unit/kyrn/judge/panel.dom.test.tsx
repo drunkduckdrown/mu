@@ -257,7 +257,8 @@ describe('JeV panel', () => {
     ]);
 
     const [risk, preflight] = cards().map((card) => within(card));
-    expect(preflight.getByText(`Reason: ${copy.values.no_answer}`)).toBeInTheDocument();
+    // The seconds the English sentence named are kept, in the app's words for a duration.
+    expect(preflight.getByText(/^Reason: No answer after 6\s?sec/)).toBeInTheDocument();
     expect(preflight.queryByText(/no answer after/)).not.toBeInTheDocument();
     expect(risk.getByText(`Reason: Error · ${copy.values.rate_limited}`)).toBeInTheDocument();
   });
@@ -376,5 +377,64 @@ describe('JeV panel', () => {
     expect(preflight.getByText(`原因：${zh.values.error} · ${zh.values.timeout}`)).toBeInTheDocument();
     expect(preflight.getByText(`思考强度：${zhMu.levels.medium} → ${zhMu.levels.xhigh}`)).toBeInTheDocument();
     expect(skills.getByText(zh.fields.relevant).parentElement).toHaveTextContent('git、deploy和docs');
+  });
+
+  it('says the preflight’s hints, answers and reason in the app language by their codes', async () => {
+    const chinese = createInstance();
+    await chinese.init({
+      lng: 'zh-CN',
+      resources: { 'zh-CN': { translation: { common: zhCommon, mu: zhMu } } },
+      interpolation: { escapeValue: false },
+    });
+    const zh = zhCommon.kyrn.judgeView;
+    const sentence =
+      'The request looks under-specified. Ask one focused clarifying question before doing significant work.';
+    render(
+      <I18nextProvider i18n={chinese}>
+        <Judge
+          events={[
+            event(
+              'preflight.verdict',
+              verdict({
+                hints: [sentence, 'An older hint without an id.'],
+                hintIds: ['clarify'],
+                answers: [['large or risky', 'yes · 80% likely']],
+                answerValues: {
+                  turn_type: { type: 'choice', choice: 'research', probabilities: { research: 0.6 } },
+                  plan_first: { type: 'boolean', probability: 0.8 },
+                },
+              }),
+              turn('runtime-a', 1, 2)
+            ),
+            event(
+              'preflight.verdict',
+              verdict({ state: 'none', reason: 'abstain', reasonCode: 'error:payment_required' }),
+              turn('runtime-a', 2, 6)
+            ),
+            // A code this build has no words for: the English beside it is what the card says.
+            event(
+              'preflight.verdict',
+              verdict({ state: 'none', reason: 'the judge budget is spent', reasonCode: 'budget_spent' }),
+              turn('runtime-a', 3, 9)
+            ),
+          ]}
+        />
+      </I18nextProvider>
+    );
+
+    const [unknown, fallback, applied] = cards().map((card) => within(card));
+    expect(unknown.getByText('原因：the judge budget is spent')).toBeInTheDocument();
+    expect(unknown.queryByText(/budget_spent/)).not.toBeInTheDocument();
+    expect(fallback.getByText(`原因：${zh.values.error} · ${zh.values.payment_required}`)).toBeInTheDocument();
+    expect(applied.getByText(zh.hints.clarify)).toBeInTheDocument();
+    expect(applied.queryByText(sentence)).not.toBeInTheDocument();
+    // A hint without an id is shown as the main model was given it.
+    expect(applied.getByText('An older hint without an id.')).toBeInTheDocument();
+    fireEvent.click(applied.getByText(zh.details));
+    expect(applied.getByText(zh.answerIds.plan_first).parentElement).toHaveTextContent('判定为“是”的概率：80%');
+    // "Task type" also names the verdict's own field; the answer row is the one with the judge's choice.
+    const turnType = applied.getAllByText(zh.answerIds.turn_type).map((label) => label.parentElement?.textContent);
+    expect(turnType).toContain(`${zh.answerIds.turn_type}${zh.values.research} · ${zh.values.research} 60%`);
+    expect(applied.queryByText('large or risky')).not.toBeInTheDocument();
   });
 });

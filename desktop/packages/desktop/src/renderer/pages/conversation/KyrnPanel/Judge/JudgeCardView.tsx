@@ -6,16 +6,9 @@ import type { Activity } from '@/common/kyrn/types';
 import { formatNumber } from '@/renderer/services/i18n/format';
 import { formatNameList } from '@/renderer/services/i18n/list';
 import { thinkingLevelLabel } from '@/renderer/utils/model/thinkingLevel';
-import {
-  answerRows,
-  reasonCode,
-  resultFacts,
-  type JudgeAnswer,
-  type JudgeCard,
-  type JudgeFact,
-  type JudgeState,
-} from './activity';
+import { answerRows, resultFacts, type JudgeAnswer, type JudgeCard, type JudgeFact, type JudgeState } from './activity';
 import styles from './Judge.module.css';
+import { answerLabel, hintLines, reasonText } from './wording';
 import { useClock } from '../clock';
 
 const KEY = 'common.kyrn.judgeView';
@@ -69,10 +62,8 @@ export default function JudgeCardView({ card }: { card: JudgeCard }) {
       : t(`${KEY}.fields.${name}`, { defaultValue: name });
   };
   // "error:timeout" keeps its cause: a fallback after a timeout is not one after an abstention.
-  const code = reasonCode(card.reason);
-  const reason = code.startsWith('error:')
-    ? t(`${KEY}.errorValue`, { kind: label('values', code.slice(6)) })
-    : code && label('values', code);
+  const reason = reasonText(t, language, card.reason, card.reasonParams, card.reasonFallback);
+  const hints = hintLines(t, card.hints, card.hintIds);
   const facts = resultFacts(card);
   const answers = answerRows(card);
 
@@ -102,7 +93,7 @@ export default function JudgeCardView({ card }: { card: JudgeCard }) {
 
   const answer = (row: JudgeAnswer) => (
     <li key={row.id} className={styles.answer}>
-      <span className={styles.answerId}>{row.id}</span>
+      <span className={styles.answerId}>{answerLabel(t, card.stage, row.id)}</span>
       {row.type === 'boolean' && t(`${KEY}.probabilityValue`, { percent: percent(row.probability) })}
       {row.type === 'score' &&
         t(`${KEY}.scoreValue`, {
@@ -200,11 +191,11 @@ export default function JudgeCardView({ card }: { card: JudgeCard }) {
             })}
           </div>
         )}
-        {card.hints.length > 0 && (
+        {hints.length > 0 && (
           <div className={styles.effect}>
             {t('common.kyrn.judgeView.sentHints')}
             <ul className={styles.hints}>
-              {card.hints.map((hint, index) => (
+              {hints.map((hint, index) => (
                 <li key={index}>{hint}</li>
               ))}
             </ul>

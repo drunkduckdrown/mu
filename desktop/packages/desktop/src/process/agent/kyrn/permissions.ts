@@ -27,7 +27,26 @@ export type PermissionRequest = {
   /** The call: a command, `edit <path>`, `<tool> <target>`. */
   summary: string;
   answers: string[];
+  /**
+   * The same answers by id, in the same order (`once`, `session` when offered, `deny`), from a mu that sends them.
+   * The desktop words the buttons by these; the answers themselves are only in Chinese or English.
+   */
+  answerIds?: string[];
+  /** Why mu asks: `ask`, `unsure`, `beyond`, `unrelated`, `flagged` or `protected`. */
+  reason?: string;
+  /** For a flagged command, what makes it risky, as a code (`force_push`, `runs_as_root`, …). */
+  flagCode?: string;
+  /** What "for this conversation" would cover: a command's first words, `edit`, a path or a tool. Data, not words. */
+  grantLabel?: string;
 };
+
+/** The codes a permission card carries for the desktop to word it: under `rawInput.mu`, beside the call. */
+export type PermissionCodes = Pick<PermissionRequest, 'kind' | 'reason' | 'flagCode' | 'grantLabel'>;
+
+/** Codes are lowercase words joined by underscores; anything else is not passed on as one. */
+const CODE = /^[a-z][a-z_]{0,47}$/;
+const code = (value: unknown): string | undefined =>
+  typeof value === 'string' && CODE.test(value) ? value : undefined;
 
 /** A presentation event mu sends on its status channel, or undefined for any other event. */
 export function presentation(event: JsonRecord): { kind: string; payload: JsonRecord } | undefined {
@@ -67,7 +86,24 @@ export function readModes(payload: JsonRecord): PermissionModes | undefined {
 export function readRequest(payload: JsonRecord): PermissionRequest | undefined {
   const answers = array(payload.answers).map(text);
   if (answers.length < 2 || answers.some((answer) => !answer)) return undefined;
-  return { kind: text(payload.kind), summary: text(payload.summary), answers };
+  // Ids count only as a full, distinct set in the answers' order; an older mu sends none.
+  const ids = array(payload.answerIds).map(code);
+  const answerIds =
+    ids.length === answers.length && ids.every(Boolean) && new Set(ids).size === ids.length
+      ? (ids as string[])
+      : undefined;
+  const reason = code(payload.reason);
+  const flagCode = code(payload.flagCode);
+  const grantLabel = text(asRecord(payload.grant).label);
+  return {
+    kind: text(payload.kind),
+    summary: text(payload.summary),
+    answers,
+    ...(answerIds ? { answerIds } : {}),
+    ...(reason ? { reason } : {}),
+    ...(flagCode ? { flagCode } : {}),
+    ...(grantLabel ? { grantLabel } : {}),
+  };
 }
 
 /** The send box's permission picker. The category is what the app looks for; the names are mu's. */
@@ -98,10 +134,17 @@ const TOOL_KIND: Record<string, ToolKind> = { edit: 'edit', outside: 'edit', she
 export function permissionCall(request: PermissionRequest, title: string): Omit<ToolCallUpdate, 'toolCallId'> {
   const lines = title.split('\n');
   const why = lines.length > 2 ? (lines.at(-1) ?? '').trim() : '';
+  const codes: PermissionCodes = {
+    kind: request.kind,
+    ...(request.reason ? { reason: request.reason } : {}),
+    ...(request.flagCode ? { flagCode: request.flagCode } : {}),
+    ...(request.grantLabel ? { grantLabel: request.grantLabel } : {}),
+  };
   return {
     title: lines[0] || request.summary,
     kind: TOOL_KIND[request.kind] ?? 'other',
-    rawInput: { command: request.summary, ...(why ? { description: why } : {}) },
+    // mu's own sentences stay the fallback; a desktop that knows the codes words the card in the reader's language.
+    rawInput: { command: request.summary, ...(why ? { description: why } : {}), mu: codes },
     content: [{ type: 'content', content: { type: 'text', text: title } }],
   };
 }
@@ -110,4 +153,19 @@ export function permissionCall(request: PermissionRequest, title: string): Omit<
 export function answerKind(index: number, count: number): PermissionOptionKind {
   if (index === count - 1) return 'reject_once';
   return index === 0 ? 'allow_once' : 'allow_always';
+}
+
+/** Option ids of mu's answers the desktop can word: `mu:once`, `mu:session`, `mu:deny`. */
+export const MU_ANSWER_PREFIX = 'mu:';
+
+/** The option id of answer `index`: by its id when mu sent ids, else its position. */
+export const answerOptionId = (request: PermissionRequest | undefined, index: number): string =>
+  request?.answerIds ? `${MU_ANSWER_PREFIX}${request.answerIds[index]}` : String(index);
+
+/** The answer an option id stands for, or -1 for an id no answer has. */
+export function answerIndex(request: PermissionRequest | undefined, optionId: string, count: number): number {
+  if (request?.answerIds && optionId.startsWith(MU_ANSWER_PREFIX))
+    return request.answerIds.indexOf(optionId.slice(MU_ANSWER_PREFIX.length));
+  const index = Number(optionId);
+  return Number.isInteger(index) && index >= 0 && index < count && !request?.answerIds ? index : -1;
 }

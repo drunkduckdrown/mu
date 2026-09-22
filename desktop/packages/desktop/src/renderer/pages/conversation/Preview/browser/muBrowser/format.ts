@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import type { BrowserRunState, BrowserRunStatus, BrowserRunStep, PauseReason } from '@/common/kyrn/browserRun';
 
 /**
@@ -23,20 +24,115 @@ export const pausedKey = (reason: PauseReason | undefined): string => `preview.m
 /** The codes the main process sends as a detached run's reason (`DetachCause` in process/services/muBrowser/bridge.ts). */
 const DETACH_CAUSES = new Set(['tab_closed', 'connection', 'devtools', 'crashed']);
 
-/** A line under the unfolded bar: an i18n key for its label, and either an i18n key or text taken as it is. */
-export type ReasonLine = { labelKey: string; key?: string; text?: string };
+/**
+ * A line under the unfolded bar: an i18n key for its label, then either a sentence said in the person's language (a
+ * key, its values, and `terms`: values that are i18n keys themselves) or `text` taken as it is.
+ */
+export type ReasonLine = {
+  labelKey: string;
+  key?: string;
+  values?: Record<string, string | number>;
+  terms?: Record<string, string>;
+  text?: string;
+};
+
+/** The kinds of a failed judge call (`error:<kind>`), and `all`: every call of a batch failed. */
+const JUDGE_ERRORS = new Set([
+  'timeout',
+  'aborted',
+  'unreachable',
+  'auth',
+  'payment_required',
+  'rate_limited',
+  'bad_request',
+  'server',
+  'invalid_response',
+  'unexpected',
+  'all',
+]);
+
+/**
+ * The judge's own reason inside `no_judge` (a decision reason: `shadow`, `abstain`, `off` when browser.step was
+ * switched off during the run, `error:<kind>`, `error:all`, or the harness's `no verdict` when the decision gave none)
+ * as an i18n key. A failure of a kind this app does not know yet is still a failed judge call; anything else is
+ * undefined, and the whole sentence stays in the harness's words.
+ */
+export function judgeReasonKey(reason: string): string | undefined {
+  if (reason === 'shadow' || reason === 'abstain' || reason === 'off') return `preview.muBrowser.judgeReason.${reason}`;
+  if (reason === 'no verdict') return 'preview.muBrowser.judgeReason.noVerdict';
+  const failed = /^error:(.+)$/.exec(reason);
+  if (!failed) return undefined;
+  return `preview.muBrowser.judgeReason.error.${JUDGE_ERRORS.has(failed[1]) ? failed[1] : 'other'}`;
+}
+
+const count = (value: string | number | undefined): number | undefined =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : undefined;
+
+const named = (value: string | number | undefined): string | undefined =>
+  typeof value === 'string' && value !== '' ? value : undefined;
+
+type Sentence = Pick<ReasonLine, 'key' | 'values' | 'terms'>;
+
+/**
+ * The harness's end code (`browser.run` state `finished`, as its `Mu.run` report carries it) as a sentence, when the
+ * code is one with a sentence and its params are all there. `done`, `read` and `cancelled` come without one; `error`
+ * carries an exception's own message; a code this app does not know keeps the harness's words.
+ */
+function endSentence(code: string | undefined, params: BrowserRunState['params']): Sentence | undefined {
+  const key = `preview.muBrowser.end.${code}`;
+  switch (code) {
+    case 'stopped_by_user':
+    case 'no_progress':
+      return { key };
+    case 'max_steps': {
+      const steps = count(params?.maxSteps);
+      return steps === undefined ? undefined : { key, values: { count: steps } };
+    }
+    case 'stuck': {
+      const actions = count(params?.actions);
+      return actions === undefined ? undefined : { key, values: { count: actions } };
+    }
+    case 'not_confirmed':
+    case 'no_value': {
+      const label = named(params?.label);
+      return label === undefined ? undefined : { key, values: { label } };
+    }
+    case 'no_judge': {
+      const why = named(params?.judgeReason);
+      const term = why === undefined ? undefined : judgeReasonKey(why);
+      return term === undefined ? undefined : { key, terms: { judgeReason: term } };
+    }
+    default:
+      return undefined;
+  }
+}
 
 /**
  * Why a finished run ended, for the unfolded bar. A detached run's reason comes from the main process: a known code is
  * said in the person's language, anything else is Electron's own wording and only offered as a technical detail. Any
- * other reason is the harness's own verdict, shown as its words.
+ * other run says it in the harness's code when it sent one this app knows, else in the harness's own words; the
+ * message of a run that threw is a technical detail too.
  */
 export function reasonLine(run: BrowserRunState): ReasonLine | undefined {
-  if (run.phase !== 'finished' || !run.reason) return undefined;
-  if (run.status !== 'detached') return { labelKey: 'preview.muBrowser.reason', text: run.reason };
-  return DETACH_CAUSES.has(run.reason)
-    ? { labelKey: 'preview.muBrowser.detachCause', key: `preview.muBrowser.detachReason.${run.reason}` }
-    : { labelKey: 'common.technical_details', text: run.reason };
+  if (run.phase !== 'finished') return undefined;
+  if (run.status === 'detached') {
+    if (!run.reason) return undefined;
+    return DETACH_CAUSES.has(run.reason)
+      ? { labelKey: 'preview.muBrowser.detachCause', key: `preview.muBrowser.detachReason.${run.reason}` }
+      : { labelKey: 'common.technical_details', text: run.reason };
+  }
+  const sentence = endSentence(run.code, run.params);
+  if (sentence) return { labelKey: 'preview.muBrowser.reason', ...sentence };
+  if (!run.reason) return undefined;
+  if (run.code === 'error') return { labelKey: 'common.technical_details', text: run.reason };
+  return { labelKey: 'preview.muBrowser.reason', text: run.reason };
+}
+
+/** A reason line's words: its sentence in the person's language (its terms translated first), or its text. */
+export function reasonText(line: ReasonLine, t: TFunction): string {
+  if (!line.key) return line.text ?? '';
+  const terms = Object.fromEntries(Object.entries(line.terms ?? {}).map(([name, key]) => [name, t(key)]));
+  return t(line.key, { ...line.values, ...terms });
 }
 
 /** Electron's permission ids (`setPermissionRequestHandler`), grouped the way a person names them. */

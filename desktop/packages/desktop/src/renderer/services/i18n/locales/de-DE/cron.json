@@ -42,7 +42,8 @@
     "notFound": "Aufgabe nicht gefunden",
     "executionModeDescriptionNew": "Jede Ausführung startet ein neues Gespräch, der vorherige Kontext wird nicht übernommen. Ideal für wiederkehrende Berichte oder Prüfungen, die unabhängig bleiben sollen.",
     "executionModeDescriptionExisting": "Jede Ausführung setzt das gleiche Gespräch fort, frühere Ergebnisse bleiben verfügbar. Ideal für Folgeaufgaben, die auf früheren Ausführungen aufbauen.",
-    "assistant": "Assistant"
+    "lastRunFailed": "Die letzte Ausführung ist fehlgeschlagen",
+    "assistant": "Assistent"
   },
   "notification": {
     "taskComplete": "Aufgabe abgeschlossen",
@@ -109,9 +110,9 @@
       "aionrsNoProvider": "Keine verfügbaren Modelle",
       "assistantLockedExistingConversation": "Aufgaben mit laufendem Gespräch müssen den ursprünglichen Assistenten behalten. Erstelle eine neue Aufgabe, um einen anderen Assistenten zu verwenden.",
       "teamTaskExecutionModeLockedReason": "Geplante Team-Aufgaben müssen im zugehörigen Team-Gespräch weiterlaufen, deshalb kann der Ausführungsmodus nicht geändert werden.",
-      "assistant": "Assistant",
-      "assistantRequired": "Please select an assistant",
-      "assistantPlaceholder": "Select the assistant to execute this task"
+      "assistant": "Assistent",
+      "assistantRequired": "Wähle einen Assistenten aus",
+      "assistantPlaceholder": "Assistenten für diese Aufgabe auswählen"
     },
     "freq": {
       "manual": "Manuell",
@@ -126,7 +127,19 @@
       "hourly": "Jede Stunde",
       "dailyAt": "Täglich um {{time}}",
       "weekdaysAt": "Werktags um {{time}}",
-      "weeklyAt": "Jeden {{day}} um {{time}}"
+      "weeklyAt": "Jeden {{day}} um {{time}}",
+      "everyMinute": "Jede Minute",
+      "everyNMinutes": "Alle {{count}} Minuten",
+      "everyNMinutes_one": "Alle {{count}} Minute",
+      "everyNMinutes_other": "Alle {{count}} Minuten",
+      "everyNHours": "Alle {{count}} Stunden",
+      "everyNHours_one": "Alle {{count}} Stunde",
+      "everyNHours_other": "Alle {{count}} Stunden",
+      "weeklyOnDaysAt": "Jeden {{days}} um {{time}}",
+      "monthlyAt": "Monatlich am {{day}}. um {{time}}",
+      "everyInterval": "Alle {{interval}}",
+      "onceAt": "Einmalig am {{time}}",
+      "customExpr": "Benutzerdefinierter Zeitplan ({{expr}})"
     },
     "custom": {
       "modeLabel": "Wiederholungsmuster",
@@ -142,6 +155,8 @@
       "monthDay": "Tag des Monats",
       "preview": "Generierter Cron-Ausdruck"
     },
+    "createFailed": "Aufgabe konnte nicht erstellt werden: {{error}}",
+    "updateFailed": "Aufgabe konnte nicht gespeichert werden: {{error}}",
     "searchPlaceholder": "Aufgaben suchen...",
     "noSearchResults": "Keine passenden geplanten Aufgaben."
   },
@@ -163,5 +178,11 @@
     "conversationNotFound": "Gespräch nicht gefunden",
     "scheduledTimePassed": "Geplante Zeit ist abgelaufen",
     "conversationBusy": "Gespräch nach {{count}} Versuchen noch beschäftigt"
-  }
+  },
+  "nextRunAt": "Nächste Ausführung: {{time}}",
+  "keepAwakeFailed": "„Aktiv halten“ konnte nicht geändert werden: {{error}}",
+  "pauseFailed": "Aufgabe konnte nicht pausiert werden: {{error}}",
+  "resumeFailed": "Aufgabe konnte nicht fortgesetzt werden: {{error}}",
+  "deleteFailed": "Aufgabe konnte nicht gelöscht werden: {{error}}",
+  "runNowFailed": "Aufgabe konnte nicht ausgeführt werden: {{error}}"
 }

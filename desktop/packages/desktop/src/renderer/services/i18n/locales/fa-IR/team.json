@@ -16,9 +16,9 @@
     "renameCancel": "لغو",
     "renameSuccess": "نام تیم تغییر کرد",
     "deleteSuccess": "تیم حذف شد",
-    "archive": "Archive",
-    "archiveSuccess": "Team archived",
-    "archiveFailed": "Failed to archive team"
+    "archive": "بایگانی",
+    "archiveSuccess": "تیم بایگانی شد",
+    "archiveFailed": "بایگانی تیم ناموفق بود"
   },
   "newAgent": "عامل جدید",
   "noMessages": "هنوز پیامی وجود ندارد.",
@@ -34,51 +34,53 @@
     "retryStart": "تلاش مجدد برای شروع"
   },
   "sendBox": {
-    "placeholder": "ارسال پیام به عامل ارسال..."
+    "placeholder": "ارسال پیام به سرتیم…"
   },
   "create": {
-    "title": "New Team",
+    "title": "تیم جدید",
     "namePlaceholder": "نام تیم",
     "dispatchAgentPlaceholder": "انتخاب سرتیم",
-    "subAgentsPlaceholder": "انتخاب عامل‌های فرعی",
-    "confirm": "Confirm Create",
+    "subAgentsPlaceholder": "انتخاب هم‌تیمی‌ها",
+    "confirm": "تأیید و ایجاد",
     "noSupportedAgents": "عامل پشتیبانی‌شده‌ای نصب نشده است",
-    "supportedAgentsHint": "در حال حاضر از Claude و Codex پشتیبانی می‌شود. عامل‌های بیشتر به‌زودی اضافه خواهند شد.",
+    "supportedAgentsHint": "در حال حاضر از عامل‌های Claude و Aion CLI پشتیبانی می‌شود. عامل‌های بیشتر به‌زودی اضافه می‌شوند.",
     "leaderDesc": "اهداف شما را درک می‌کند و عامل‌ها را برای تکمیل وظایف هماهنگ می‌کند",
-    "searchPlaceholder": "Search",
+    "searchPlaceholder": "جستجو",
     "noSearchResults": "نتیجه‌ای یافت نشد",
     "step": {
       "dispatch": "سرتیم",
-      "subAgents": "عامل‌های فرعی",
+      "subAgents": "اعضای تیم",
       "workspace": "پروژه"
     },
     "nameRequired": "لطفاً نام تیم را وارد کنید",
     "leaderRequired": "لطفاً یک سرتیم انتخاب کنید",
-    "selectFolder": "Select folder",
+    "selectFolder": "انتخاب پوشه",
     "recentLabel": "اخیر",
     "chooseDifferentFolder": "انتخاب پوشه دیگر",
     "error": "ایجاد تیم ناموفق بود",
-    "selectedMembers": "Selected members",
-    "teamLeader": "Team Leader",
-    "currentLeader": "Current Leader",
-    "setAsLeader": "Set as Leader",
-    "teammate": "Teammate",
-    "selectAtLeastOneMember": "Select at least one assistant as the Team Leader.",
-    "selectOneLeader": "Select one Team Leader",
-    "subtitle": "Let multiple AI assistants team up and collaborate. We suggest one team focuses on a single goal — create separate teams for different tasks.",
-    "nameLabel": "Team name",
-    "workspaceLabel": "Workspace",
-    "allAssistantsWithCount": "All assistants ({{count}})",
-    "selectedMembersWithCount": "Selected members {{count}} · ⚑ = Leader",
-    "selectedMembersTitleWithCount": "Selected members {{count}}",
-    "leaderLegend": "= Leader",
-    "membersHelper": "Choose team members and assign one Leader. The same assistant can be selected multiple times.",
-    "memberHint": "No suitable assistant as a member? After creation, let the Leader create temporary team members in chat."
+    "selectedMembers": "اعضای انتخاب‌شده",
+    "teamLeader": "سرتیم",
+    "currentLeader": "سرتیم فعلی",
+    "setAsLeader": "تعیین به‌عنوان سرتیم",
+    "teammate": "هم‌تیمی",
+    "selectAtLeastOneMember": "دست‌کم یک دستیار را به‌عنوان سرتیم انتخاب کنید.",
+    "selectOneLeader": "یک سرتیم انتخاب کنید",
+    "subtitle": "چند دستیار هوش مصنوعی را در یک تیم کنار هم بگذارید تا با هم کار کنند. پیشنهاد می‌کنیم هر تیم روی یک هدف تمرکز کند — برای وظایف مختلف، تیم‌های جداگانه بسازید.",
+    "nameLabel": "نام تیم",
+    "workspaceLabel": "فضای کاری",
+    "allAssistantsWithCount": "همهٔ دستیارها ({{count}})",
+    "selectedMembersWithCount": "اعضای انتخاب‌شده {{count}} · ⚑ = سرتیم",
+    "selectedMembersTitleWithCount": "اعضای انتخاب‌شده {{count}}",
+    "leaderLegend": "= سرتیم",
+    "membersHelper": "اعضای تیم را انتخاب کنید و یک سرتیم تعیین کنید. یک دستیار را می‌توان چند بار انتخاب کرد.",
+    "memberHint": "دستیار مناسبی برای عضویت نیست؟ پس از ایجاد تیم، از سرتیم بخواهید در چت اعضای موقت بسازد.",
+    "errorWithDetail": "ایجاد تیم ناموفق بود: {{error}}",
+    "memberErrorWithDetail": "انتخاب مدل برای {{name}} ناموفق بود: {{error}}"
   },
   "removeAgent": {
     "confirmTitle": "حذف عضو تیم",
-    "confirmContent": "Remove this member from the team?",
-    "confirmContentActive": "This member is working. Remove it anyway? Its current work will be interrupted."
+    "confirmContent": "این عضو از تیم حذف شود؟",
+    "confirmContentActive": "این عضو در حال کار است. با این حال حذف شود؟ کار فعلی آن قطع می‌شود."
   },
   "emptyState": {
     "subtitle": "هدف خود را شرح دهید و من تیم را برای کار روی آن آماده می‌کنم",
@@ -86,39 +88,40 @@
       "debate": "برگزاری یک مناظره با عامل‌هایی که طرف‌های مختلف را می‌گیرند",
       "interview": "برنامه‌ریزی یک مصاحبه عمیق بین عامل‌ها",
       "expert_review": "تحلیل یک مسئله واحد توسط چندین متخصص",
-      "add_member": "Help me add a member good at ___ to the team"
+      "add_member": "یک عضو که در ___ مهارت دارد به تیم اضافه کن"
     },
-    "leaderGreeting": "Hi, I'm the Leader. I understand your goal and coordinate the team — describe what you want and I'll arrange it.",
-    "memberGreeting": "Hi, I'm a team member. I take direction from the Leader and you."
+    "leaderGreeting": "سلام، من سرتیم هستم. هدف شما را درک می‌کنم و تیم را هماهنگ می‌کنم — بگویید چه می‌خواهید تا ترتیبش را بدهم.",
+    "memberGreeting": "سلام، من عضو تیم هستم. از سرتیم و شما دستور می‌گیرم."
   },
   "addMember": {
-    "title": "Add member",
-    "subtitle": "The same assistant can be added repeatedly",
-    "searchAssistants": "Search assistants...",
-    "addFailed": "Failed to add member",
-    "noSearchResults": "No results found",
-    "tellLeaderHint": "Not a good fit? You can also ask the Leader to arrange it.",
-    "tellLeaderCta": "Tell the Leader →",
-    "tellLeaderPrefill": "Help me add a member good at ___ to the team"
+    "title": "افزودن عضو",
+    "subtitle": "یک دستیار را می‌توان چند بار اضافه کرد",
+    "searchAssistants": "جستجوی دستیارها…",
+    "addFailed": "افزودن عضو ناموفق بود",
+    "noSearchResults": "نتیجه‌ای یافت نشد",
+    "tellLeaderHint": "مورد مناسبی نیست؟ می‌توانید از سرتیم هم بخواهید ترتیبش را بدهد.",
+    "tellLeaderCta": "به سرتیم بگویید ←",
+    "tellLeaderPrefill": "یک عضو که در ___ مهارت دارد به تیم اضافه کن",
+    "addFailedWithDetail": "افزودن عضو ناموفق بود: {{error}}"
   },
   "view": {
-    "label": "View",
-    "parallel": "Parallel",
-    "single": "Single",
+    "label": "نما",
+    "parallel": "موازی",
+    "single": "تکی",
     "board": "تابلو"
   },
   "warmup": {
-    "title": "Waking up the team…",
+    "title": "در حال بیدار کردن تیم…",
     "subtitle": "در حال آماده‌سازی اعضا",
-    "memberFailedTitle": "Member {{name}} failed to start",
-    "leaderFailedTitle": "Lead {{name}} failed to start",
-    "genericFailedTitle": "The team could not start",
-    "multiFailedTitle": "{{count}} members failed to start",
-    "leaderSuffix": " (Lead)",
-    "unknownError": "failed to start",
-    "memberFailedHint": "Switch its model above, or remove it from the bar on top, then retry.",
-    "leaderFailedHint": "Switch its model above, then retry.",
-    "retry": "Retry"
+    "memberFailedTitle": "راه‌اندازی عضو {{name}} ناموفق بود",
+    "leaderFailedTitle": "راه‌اندازی سرتیم {{name}} ناموفق بود",
+    "genericFailedTitle": "تیم راه‌اندازی نشد",
+    "multiFailedTitle": "راه‌اندازی {{count}} عضو ناموفق بود",
+    "leaderSuffix": " (سرتیم)",
+    "unknownError": "راه‌اندازی ناموفق بود",
+    "memberFailedHint": "مدل آن را در بالا عوض کنید یا آن را از نوار بالا حذف کنید، سپس دوباره تلاش کنید.",
+    "leaderFailedHint": "مدل آن را در بالا عوض کنید و دوباره تلاش کنید.",
+    "retry": "تلاش دوباره"
   },
   "reorderMember": "برای تغییر ترتیب عضو بکشید",
   "interruptAndSend": "توقف و ارسال",
@@ -134,7 +137,7 @@
       "removing": "این عضو در حال حذف شدن است.",
       "sessionStopped": "نشست تیم متوقف شده است.",
       "unsupported": "این عامل از شروع زمینه جدید پشتیبانی نمی‌کند.",
-      "leaderNotTargetable": "برای رهبر تیم نمی‌توان زمینه جدیدی آغاز کرد."
+      "leaderNotTargetable": "برای سرتیم نمی‌توان زمینهٔ جدیدی آغاز کرد."
     },
     "contextReset": {
       "title": "شروع زمینه جدید",

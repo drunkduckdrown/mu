@@ -1013,6 +1013,19 @@ describe('permissions', () => {
     );
   });
 
+  it('still draws when an older main process sends no permission default and no board model', async () => {
+    const { permissions: _permissions, boardModel: _boardModel, ...older } = withModes();
+    bridge.settings.mockResolvedValue({ ok: true, data: older as KyrnSettings });
+    const { unmount } = render(<SettingsArea section='permissions' />, { wrapper });
+    // The tiles are there, none picked: the page cannot say which mode new conversations start in.
+    expect(await screen.findByTestId('mu-permission-full')).toHaveAttribute('aria-checked', 'false');
+    expect(screen.queryByTestId('mu-save-bar')).not.toBeInTheDocument();
+    unmount();
+    render(<SettingsArea section='models' />, { wrapper });
+    expect(await screen.findByTestId('mu-board-model')).toHaveTextContent('Update mu');
+    expect(screen.queryByTestId('mu-save-bar')).not.toBeInTheDocument();
+  });
+
   it('points from the features to where the mode and the board’s model are set', async () => {
     bridge.settings.mockResolvedValue({ ok: true, data: withModes() });
     await open('features');

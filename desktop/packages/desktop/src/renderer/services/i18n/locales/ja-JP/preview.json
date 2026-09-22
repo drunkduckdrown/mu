@@ -6,7 +6,7 @@
   "maximizePanel": "最大化",
   "restorePanel": "元に戻す",
   "source": "ソース",
-  "code": "Code",
+  "code": "コード",
   "preview": "プレビュー",
   "editor": "エディタ",
   "previewEffect": "プレビュー",
@@ -138,7 +138,8 @@
     "printedToConsole": "要素情報をコンソールに出力しました",
     "inspectElement": "要素を検証",
     "inspectElementEnable": "要素インスペクターを有効化",
-    "inspectElementDisable": "要素インスペクターを無効化"
+    "inspectElementDisable": "要素インスペクターを無効化",
+    "frameTitle": "HTML プレビュー"
   },
   "ppt": {
     "loading": "PPTプレビューを起動中...",
@@ -241,6 +242,79 @@
       "deny": "拒否",
       "countdown": "{{seconds}} 秒後に自動で拒否します",
       "untrusted": "上の文言はウェブページのものです。実際のページの内容で判断してください。"
+    },
+    "detachCause": "原因",
+    "detachReason": {
+      "tab_closed": "タブが閉じられました。",
+      "connection": "mu の閲覧セッションが、実行の完了前に終了しました。",
+      "devtools": "このページで開発者ツールが開かれました。",
+      "crashed": "ページがクラッシュしました。"
+    },
+    "permission": {
+      "location": "位置情報",
+      "media": "カメラまたはマイク",
+      "notifications": "通知",
+      "clipboard": "クリップボード",
+      "screen": "画面キャプチャ",
+      "midi": "MIDI デバイス",
+      "fullscreen": "全画面表示",
+      "pointerLock": "マウスのロック",
+      "devices": "USB、シリアルまたは HID デバイス",
+      "storage": "ストレージへのアクセス",
+      "openExternal": "他のアプリの起動",
+      "protectedContent": "保護されたコンテンツの再生",
+      "windows": "ウィンドウ管理"
+    },
+    "end": {
+      "stopped_by_user": "見ていたユーザーが停止しました。",
+      "max_steps": "{{count}} 回操作したところで停止しました。",
+      "max_steps_one": "{{count}} 回操作したところで停止しました。",
+      "max_steps_other": "{{count}} 回操作したところで停止しました。",
+      "no_judge": "どの判定器も操作を選べませんでした（{{judgeReason}}）。",
+      "no_progress": "判定器は目標に近づける操作を見つけられませんでした。",
+      "not_confirmed": "「{{label}}」は取り消せない可能性がある操作で、確認が得られませんでした。",
+      "no_value": "「{{label}}」に入力する値を作成できませんでした。",
+      "stuck": "{{count}} 回続けて操作しても、何も変わりませんでした。",
+      "stuck_one": "{{count}} 回の操作で何も変わりませんでした。",
+      "stuck_other": "{{count}} 回続けて操作しても、何も変わりませんでした。"
+    },
+    "judgeReason": {
+      "shadow": "シャドーモード: 回答は記録のみ",
+      "abstain": "判定器が棄権",
+      "off": "判定器がオフ",
+      "noVerdict": "判定なし",
+      "error": {
+        "timeout": "判定器がタイムアウト",
+        "aborted": "判定器の呼び出しはキャンセル済み",
+        "unreachable": "判定器に接続できません",
+        "auth": "判定器のキーが拒否されました",
+        "payment_required": "判定器に支払い方法が必要です",
+        "rate_limited": "判定器がレート制限中",
+        "bad_request": "判定器がリクエストを拒否しました",
+        "server": "判定器のサーバーエラー",
+        "invalid_response": "判定器の回答を読み取れません",
+        "unexpected": "予期しないエラー",
+        "all": "判定器の呼び出しがすべて失敗",
+        "other": "判定器の呼び出しが失敗"
+      }
     }
-  }
+  },
+  "tabTitle": {
+    "image": "画像",
+    "diff": "差分"
+  },
+  "sideBySide": "並べて表示",
+  "diffTag": {
+    "changed": "変更",
+    "added": "追加",
+    "deleted": "削除",
+    "renamed": "名前変更"
+  },
+  "diffEmpty": "このファイルに変更はありません",
+  "mermaidTitleWithSummary": "Mermaid 図：{{summary}}",
+  "wavedromTitleWithSummary": "WaveDrom 波形図：{{summary}}",
+  "saveFailedWithDetail": "保存に失敗しました：{{detail}}",
+  "zoomActualSize": "ズームをリセット",
+  "zoomFit": "幅に合わせる",
+  "zoomFitTooltip": "パネルの幅に合わせる"
 }

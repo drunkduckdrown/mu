@@ -9,6 +9,7 @@ import type { NormalizedToolCall, NormalizedToolStatus, ToolMessage } from '@/co
 import { normalizeToolMessages } from '@/common/chat/normalizeToolCall';
 import LocalImageView from '@/renderer/components/media/LocalImageView';
 import { HiveToolCard } from '@/renderer/pages/conversation/KyrnPanel/Hive';
+import { swarmProgressText } from '@/renderer/pages/conversation/KyrnPanel/Hive/codes';
 import { downloadFileFromPath } from '@/renderer/utils/file/download';
 import styles from './MessageToolGroupSummary.module.css';
 
@@ -175,7 +176,9 @@ const ToolItemDetail: React.FC<{ item: NormalizedToolCall }> = ({ item }) => {
           {displayItem.output && (
             <div className={styles.detailSection}>
               <div className={styles.detailLabel}>{t('tools.execution.output')}</div>
-              <pre className={styles.detailContent}>{displayItem.output}</pre>
+              <pre className={styles.detailContent}>
+                {swarmProgressText(t, displayItem.swarmProgress, displayItem.output)}
+              </pre>
             </div>
           )}
         </div>

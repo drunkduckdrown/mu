@@ -217,9 +217,9 @@
       "unknown": "状态不可用",
       "runs": "蜂群运行记录",
       "graph": "协作关系图",
-      "graphHint": "箭头表示已确认的信息传递。选择一个蜂群成员查看详情。",
+      "graphHint": "箭头表示已确认的送达。选择一个蜂群成员查看详情。",
       "deliveries": "信息流",
-      "noDeliveries": "尚无已确认的信息传递。",
+      "noDeliveries": "尚无已确认的送达。",
       "board": "共享看板",
       "noNotes": "尚无共享发现。",
       "context": "执行上下文",
@@ -235,21 +235,64 @@
       "assistant": "蜂群成员消息",
       "thinking": "已发布的思考",
       "user": "任务输入",
-      "custom": "运行框架消息",
+      "custom": "harness 消息",
       "tool": "工具",
       "waitingOutput": "等待已完成的工具输出。",
       "noText": "没有文本输出。",
       "selectBee": "选择一个蜂群成员查看其活动。",
       "unknownSource": "未知来源",
       "noteMissing": "未记录发现。",
-      "allFlow": "所有传递",
-      "beeFlow": "{{name}} 的传递",
+      "allFlow": "全部送达",
+      "beeFlow": "{{name}} 的送达",
       "audit": "Jev 判定",
       "waitingRun": "正在等待这次蜂群运行的记录。",
       "recordedAt": "记录时间 {{time}}",
       "beeMissing": "此蜂群成员不在已记录快照中。",
       "snapshot": "最近上报状态",
-      "updated": "上次更新 {{time}}"
+      "updated": "上次更新 {{time}}",
+      "runTitle": {
+        "tasks": "{{count}} 个任务",
+        "tasks_one": "{{count}} 个任务",
+        "tasks_other": "{{count}} 个任务",
+        "chain": "{{count}} 步的任务链",
+        "chain_one": "{{count}} 步的任务链",
+        "chain_other": "{{count}} 步的任务链"
+      },
+      "choosingRoles": "正在为 {{count}} 个子代理选择角色、模型和思考强度…",
+      "choosingRoles_one": "正在为 {{count}} 个子代理选择角色、模型和思考强度…",
+      "choosingRoles_other": "正在为 {{count}} 个子代理选择角色、模型和思考强度…",
+      "activity": {
+        "notesReceived": "← 收到其他蜂群成员的 {{count}} 条发现",
+        "notesReceived_one": "← 收到其他蜂群成员的 {{count}} 条发现",
+        "notesReceived_other": "← 收到其他蜂群成员的 {{count}} 条发现",
+        "lateNotes": "← 最后一轮：{{count}} 条迟到的发现",
+        "lateNotes_one": "← 最后一轮：{{count}} 条迟到的发现",
+        "lateNotes_other": "← 最后一轮：{{count}} 条迟到的发现",
+        "askedFindings": "← 被问到目前有哪些发现",
+        "toldWrapUp": "← 被要求收尾并提交报告",
+        "toolFailed": "{{tool}} 失败",
+        "retry": "重试 {{attempt}}/{{maxAttempts}}：{{message}}",
+        "modelError": "模型错误：{{message}}",
+        "compacting": "正在压缩上下文"
+      },
+      "errors": {
+        "cancelled": "运行已取消",
+        "stoppedByUser": "已被用户停止",
+        "endedByUser": "已被用户结束",
+        "stalledModel": "模型已 {{duration}} 没有任何动静",
+        "stalledTool": "{{tool}} 调用已 {{duration}} 没有任何动静",
+        "timeBudget": "已用完 {{duration}} 的时间预算",
+        "timeBudgetReached": "已用完时间预算",
+        "noReportInTime": "{{reason}}；被要求后 {{duration}} 内没有提交报告",
+        "modelFailed": "模型请求失败",
+        "modelAborted": "模型请求已中止",
+        "retriesExhausted": "模型请求多次重试后仍然失败",
+        "exitedCode": "子代理在完成前退出，退出码 {{exitCode}}",
+        "exitedSignal": "子代理在完成前被 {{signal}} 终止",
+        "exitedKilled": "子代理在完成前被信号终止",
+        "chainBroken": "未开始：前一步（“{{step}}”）没有完成",
+        "detail": "{{reason}}：{{detail}}"
+      }
     },
     "judgeView": {
       "title": "判定与影响",
@@ -324,7 +367,7 @@
         "notify": "这条通知应该何时送达模型？",
         "cache": "会话缓存需要继续保温吗？",
         "other": "已记录的判定",
-        "rewind": "这条路是否走进了死胡同、值得回退？",
+        "rewind": "这条路是否走进了死胡同、值得回滚？",
         "goalMet": "目标达成了吗？",
         "outputDrift": "输出是否违反了你的规则？",
         "taskFrame": "这条消息改变了任务帧吗？",
@@ -427,7 +470,7 @@
         "unexpected": "意外错误",
         "off": "关闭",
         "continue": "继续",
-        "propose": "建议回退",
+        "propose": "建议回滚",
         "met": "已达成",
         "ask": "询问用户",
         "unjudged": "未判定",
@@ -445,13 +488,34 @@
         "rate_limited": "判定器请求过于频繁",
         "bad_request": "判定器拒绝了请求",
         "server": "判定服务出错",
-        "invalid_response": "判定器的回答无法解析"
+        "invalid_response": "判定器的回答无法解析",
+        "verdict": "判定器已作答"
       },
       "probabilityValue": "判定为“是”的概率：{{percent}}",
       "optionProbability": "{{option}} {{percent}}",
       "reasonValue": "原因：{{reason}}",
       "fieldValue": "{{field}}：{{value}}",
-      "errorValue": "错误 · {{kind}}"
+      "errorValue": "错误 · {{kind}}",
+      "noAnswerAfter": "{{duration}}内未得到回答",
+      "hints": {
+        "clarify": "请求看起来不够明确：先问一个关键问题。",
+        "side_question": "这是个题外问题：简短回答，然后继续主任务。",
+        "plan_first": "改动大或有风险：先写一个简短的计划，确认后再动手修改。",
+        "try_hive": "难度较高：如果原因不明或直接尝试不行，就改用蜂群。",
+        "try_delegate": "可以拆成相互独立的几部分：考虑交给子代理并行处理。"
+      },
+      "answerIds": {
+        "turn_type": "任务类型",
+        "is_side_question": "题外问题",
+        "needs_clarification": "太模糊，无法直接动手",
+        "needs_files_changed": "需要修改代码",
+        "needs_memory": "以往的笔记有帮助",
+        "swarm_worthy": "可拆成独立部分",
+        "plan_first": "改动大或有风险",
+        "task_complexity": "涉及范围",
+        "reasoning_depth": "推理深度",
+        "tool_complexity": "工具使用量"
+      }
     },
     "decisions": "Jev",
     "memory": "经验",
@@ -485,7 +549,7 @@
       "auto_compaction_start": "正在压缩上下文",
       "auto_compaction_end": "压缩结束",
       "hive.note": "共享发现",
-      "hive.delivery": "传递已确认",
+      "hive.delivery": "已确认送达",
       "hive.gate": "Jev 闸门",
       "hive.manifest": "蜂群任务分配",
       "bee.event": "执行步骤",
@@ -508,9 +572,9 @@
         "taken": "已保存检查点"
       },
       "rewind": {
-        "proposed": "建议回退",
-        "done": "已回退",
-        "undone": "已撤销回退"
+        "proposed": "建议回滚",
+        "done": "已回滚",
+        "undone": "已撤销回滚"
       },
       "ttsr": {
         "interrupted": "输出因违反规则被打断"
@@ -646,7 +710,33 @@
         "stuck": "好像卡住了"
       },
       "checks_one": "验收 {{done}}/{{total}}",
-      "checks_other": "验收 {{done}}/{{total}}"
+      "checks_other": "验收 {{done}}/{{total}}",
+      "codes": {
+        "progress": {
+          "none": "还没有列出要做完的事。",
+          "all": "清单上的 {{total}} 件事都做完了。",
+          "all_one": "清单上的 {{total}} 件事都做完了。",
+          "all_other": "清单上的 {{total}} 件事都做完了。",
+          "some": "清单上 {{total}} 件事，做完了 {{done}} 件。",
+          "some_one": "清单上 {{total}} 件事，做完了 {{done}} 件。",
+          "some_other": "清单上 {{total}} 件事，做完了 {{done}} 件。"
+        },
+        "now": {
+          "understanding": "正在看代码和资料，先弄清楚要做什么。",
+          "planning": "正在想怎么做，还没有动手改。",
+          "changing": "正在改代码。",
+          "checking": "正在跑测试或检查，看改得对不对。",
+          "fixing": "检查发现了问题，正在修。",
+          "waiting": "停下来了，在等你回复。",
+          "wrapping_up": "手上的活做完了，正在收尾。",
+          "stuck": "好像在原地打转，可能需要你给个方向。",
+          "unclear": "正在干活。",
+          "focus": "{{now}}（在做：{{focus}}）"
+        },
+        "confirm": {
+          "waiting_reply": "它在等你回复。"
+        }
+      }
     },
     "activityLoadFailed": "无法加载协作记录，正在重试…",
     "beeFailed": "这只蜂报告了一个错误。",
@@ -681,6 +771,100 @@
       "shadow": "{{line}}（仅观察，没有生效）",
       "late": "{{line}}（来晚了，这一轮没用上）",
       "fallback": "Jev 这次没给出分类，按默认方式继续"
+    },
+    "eventLine": {
+      "detail": "详情：{{detail}}",
+      "progress": {
+        "frame": "正在更新任务帧",
+        "lessons": "正在查看以往会话中的经验",
+        "skills": "正在挑选本次会话需要的技能",
+        "capabilities": "正在挑选这个任务需要的能力",
+        "permissionReview": "JeV 在审批：{{summary}}"
+      },
+      "goal": {
+        "paused": "已暂停：{{reason}}",
+        "reason": {
+          "interrupted": "你打断了这次运行",
+          "modelCallFailed": "一次模型调用失败了",
+          "needsUser": "代理在等你回复",
+          "needsUserDetail": "代理需要你：{{detail}}",
+          "unjudged": "没有判定器能读出目标是否达成，也没有能证明还没做完的事",
+          "idle": "代理连续 {{count}} 次什么都没做就停下了",
+          "idle_one": "代理连续 {{count}} 次什么都没做就停下了",
+          "idle_other": "代理连续 {{count}} 次什么都没做就停下了",
+          "noProgress": "连续 {{count}} 次没有进展，告诉它接下来怎么做",
+          "noProgress_one": "连续 {{count}} 次没有进展，告诉它接下来怎么做",
+          "noProgress_other": "连续 {{count}} 次没有进展，告诉它接下来怎么做",
+          "noProgressDetail": "连续 {{count}} 次没有进展（{{detail}}），告诉它接下来怎么做",
+          "noProgressDetail_one": "连续 {{count}} 次没有进展（{{detail}}），告诉它接下来怎么做",
+          "noProgressDetail_other": "连续 {{count}} 次没有进展（{{detail}}），告诉它接下来怎么做",
+          "continuationsUsedUp": "续跑次数（{{count}} 次）用完了",
+          "continuationsUsedUp_one": "续跑次数（{{count}} 次）用完了",
+          "continuationsUsedUp_other": "续跑次数（{{count}} 次）用完了",
+          "minutesUsedUp": "时间额度（{{duration}}）用完了",
+          "sessionReopened": "会话重新打开了"
+        }
+      },
+      "frame": {
+        "unclearChange": "这条消息会怎样改变任务：“{{message}}”？"
+      },
+      "search": {
+        "notConfigured": "“{{source}}”不是可用的搜索来源（features.web.search）",
+        "failed": "{{source}} 出错：{{message}}",
+        "robotPage": "{{source}} 返回了人机验证页面：它把这个客户端当成了机器人",
+        "httpError": "{{source}} 返回了 HTTP {{status}}",
+        "noResults": "{{source}} 返回的页面里没有结果（没找到，或者页面结构变了）",
+        "unrelated": "{{source}} 返回的结果与查询毫不相关，搜索引擎把客户端当成机器人时常会这样"
+      },
+      "mcp": {
+        "line": "{{name}}：{{reason}}",
+        "projectUntrusted": "项目未被信任，而这个服务器是项目自己定义的",
+        "needsApproval": "它由项目定义（{{source}}），还没有获得批准；在 mu 中打开这个文件夹并允许一次，或者在 mu.json 中定义它",
+        "denied": "你没有允许这个项目的服务器启动",
+        "unreachable": "无法启动或连接到它",
+        "closed": "mu 还在等回应时，连接就关闭了",
+        "timeout": "它没有及时响应",
+        "aborted": "启动被取消了",
+        "rpc": "它返回了错误",
+        "protocol": "它的回应不符合 MCP 协议",
+        "startFailed": "启动失败了",
+        "crashedRestarting": "运行时崩溃了，mu 会重启它一次",
+        "crashedAgain": "又崩溃了，不会再重启",
+        "restartFailed": "崩溃后重启也失败了",
+        "restartFailedCause": "崩溃后重启也失败了：{{cause}}"
+      },
+      "rewind": {
+        "sameCommandFailed": "同一条命令已经失败了 {{count}} 次：{{command}}",
+        "sameCommandFailed_one": "同一条命令已经失败了 {{count}} 次：{{command}}",
+        "sameCommandFailed_other": "同一条命令已经失败了 {{count}} 次：{{command}}",
+        "monitorTrouble": "监控在这一轮里提醒了 {{count}} 次（{{kind}}：{{detail}}）",
+        "monitorTrouble_one": "监控在这一轮里提醒了 {{count}} 次（{{kind}}：{{detail}}）",
+        "monitorTrouble_other": "监控在这一轮里提醒了 {{count}} 次（{{kind}}：{{detail}}）",
+        "trouble": {
+          "loop": "原地打转",
+          "drift": "偏离任务"
+        }
+      },
+      "browser": {
+        "finished": "{{status}}：{{reason}}",
+        "openFailed": "页面无法在浏览器中打开。",
+        "openFailedPanel": "页面无法在应用的浏览器面板中打开。",
+        "launch": {
+          "noBrowser": {
+            "mac": "在 /Applications 中没有找到 Chrome、Chromium、Edge 或 Brave。请安装其中一个，或把 MU_CHROME 设为某个 Chromium 内核浏览器的可执行文件。",
+            "windows": "在 Program Files 或 %LOCALAPPDATA% 下没有找到 Chrome、Chromium、Edge 或 Brave。请安装其中一个，或把 MU_CHROME 设为它的 .exe 文件。",
+            "wsl": "WSL 中没有找到浏览器。请在 WSL 中安装一个，或者开启 WSL 的镜像网络模式；具体步骤见下方的 reason 字段。",
+            "other": "没有找到 Chrome、Chromium、Edge 或 Brave。请安装其中一个，或把 MU_CHROME 设为它的可执行文件；安装命令见下方的 reason 字段。"
+          },
+          "windowsBrowserUnusable": "无法使用 {{executable}}：WSL 只有在镜像网络模式下才能连接 Windows 这边的浏览器。",
+          "profileNoWindowsPath": "浏览器配置文件夹 {{profileDir}} 没有对应的 Windows 路径（未设置 WSL_DISTRO_NAME）。",
+          "browserSpawnFailed": "无法启动 {{command}}。",
+          "browserExitedOnStart": "浏览器在启动过程中退出了（退出码 {{exitCode}}）。",
+          "devtoolsPortTimeout": "浏览器没有及时打开 DevTools 端口。",
+          "cdpConnectTimeout": "连接浏览器超时。",
+          "cdpConnectFailed": "无法连接到浏览器。"
+        }
+      }
     }
   },
   "menu": {

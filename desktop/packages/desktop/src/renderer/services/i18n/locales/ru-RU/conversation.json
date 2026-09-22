@@ -87,13 +87,26 @@
     "archive": "Архивировать",
     "archiveSuccess": "Архивировано",
     "archiveFailed": "Не удалось архивировать",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "Массовое архивирование",
+    "batchArchiveConfirm": "Архивировать {{count}} выбранных тем? Восстановить или удалить их можно в настройках, в разделе «Архив».",
+    "batchArchiveSuccess": "Архивировано {{count}} тем",
+    "archiveProject": "Архивировать проект",
+    "archiveProjectTitle": "Архивировать проект",
+    "archiveProjectConfirm": "Архивировать проект «{{name}}»? Вместе с ним будут архивированы все его диалоги ({{count}}). Восстановить или удалить диалоги можно в настройках, в разделе «Архив».",
+    "archiving": "Архивирование...",
+    "batchArchiveConfirm_one": "Архивировать {{count}} выбранную тему? Восстановить или удалить её можно в настройках, в разделе «Архив».",
+    "batchArchiveConfirm_other": "Архивировать {{count}} выбранной темы? Восстановить или удалить их можно в настройках, в разделе «Архив».",
+    "batchArchiveSuccess_one": "Архивирована {{count}} тема",
+    "batchArchiveSuccess_other": "Архивировано {{count}} темы",
+    "batchArchiveSuccess_few": "Архивировано {{count}} темы",
+    "batchArchiveSuccess_many": "Архивировано {{count}} тем",
+    "batchArchiveConfirm_few": "Архивировать {{count}} выбранные темы? Восстановить или удалить их можно в настройках, в разделе «Архив».",
+    "batchArchiveConfirm_many": "Архивировать {{count}} выбранных тем? Восстановить или удалить их можно в настройках, в разделе «Архив».",
+    "archiveProjectConfirm_one": "Архивировать проект «{{name}}»? Вместе с ним будет архивирован {{count}} диалог. Восстановить или удалить диалоги можно в настройках, в разделе «Архив».",
+    "archiveProjectConfirm_other": "Архивировать проект «{{name}}»? Вместе с ним будут архивированы {{count}} диалога. Восстановить или удалить диалоги можно в настройках, в разделе «Архив».",
+    "projectActions": "Действия с проектом",
+    "archiveProjectConfirm_few": "Архивировать проект «{{name}}»? Вместе с ним будут архивированы {{count}} диалога. Восстановить или удалить диалоги можно в настройках, в разделе «Архив».",
+    "archiveProjectConfirm_many": "Архивировать проект «{{name}}»? Вместе с ним будут архивированы {{count}} диалогов. Восстановить или удалить диалоги можно в настройках, в разделе «Архив»."
   },
   "historySearch": {
     "tooltip": "Поиск сообщений",
@@ -120,7 +133,8 @@
     "codes": {
       "TEAM_ASSISTANT_ID_REQUIRED": "Перед созданием команды выберите ассистента.",
       "TEAM_ASSISTANT_NOT_FOUND": "Ассистент {{assistantId}} больше недоступен. Обновите список ассистентов и выберите другого.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Используйте assistant_id вместо {{field}}."
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Используйте assistant_id вместо {{field}}.",
+      "WORKSPACE_PATH_UNAVAILABLE": "Выбранный путь рабочей области недоступен. Убедитесь, что он существует и к нему есть доступ."
     }
   },
   "agentError": {
@@ -352,7 +366,8 @@
         "title": "В запросе использовано устаревшее поле идентификации команды",
         "body": "Это командное действие должно использовать assistant_id вместо устаревших полей backend или agent."
       }
-    }
+    },
+    "errorCodeValue": "Код ошибки: {{code}}"
   },
   "workspace": {
     "title": "Проект",
@@ -436,7 +451,10 @@
       "terminal": "Терминал",
       "explorer": "Проводник",
       "browser": "Браузер"
-    }
+    },
+    "collapsePanel": "Скрыть панель проекта",
+    "togglePanel": "Показать или скрыть панель проекта",
+    "expandPanel": "Показать панель проекта"
   },
   "minimap": {
     "searchAria": "Поиск по диалогу",
@@ -446,6 +464,8 @@
     "count": "{{count}} ходов",
     "count_one": "{{count}} ход",
     "count_other": "{{count}} ходов",
+    "questionLabel": "В:",
+    "answerLabel": "О:",
     "count_few": "{{count}} хода",
     "count_many": "{{count}} ходов"
   },
@@ -481,8 +501,11 @@
       "permissionDenied": "Доступ к микрофону отклонён",
       "recordingUnsupported": "Запись в реальном времени не поддерживается. Загрузите аудиофайл",
       "transcriptionFailed": "Не удалось транскрибировать аудио",
-      "genericError": "Ошибка голосового ввода. Попробуйте снова"
-    }
+      "genericError": "Ошибка голосового ввода. Попробуйте снова",
+      "transcriptionFailedStatus": "Не удалось транскрибировать аудио (HTTP {{status}})"
+    },
+    "archivedCannotSend": "Этот диалог в архиве, отправлять в него новые сообщения нельзя.",
+    "awaitingConfirmation": "Ожидает подтверждения"
   },
   "sideQuestion": {
     "title": "Боковой вопрос",
@@ -538,9 +561,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "Вставка сообщений не поддерживается, пока этот агент отвечает. Используйте «Добавить в черновики».",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "Выбрать способ отправки",
+    "midturnBlockedSendHint": "Агент ещё работает, поэтому сообщение нельзя отправить сразу. Добавьте его в черновики и отправьте позже.",
+    "addToQueueBusyHint": "Добавьте в черновики и отправьте позже."
   },
   "contextUsage": {
     "tokensUsed": "Использовано токенов: {{tokens}}",
@@ -577,7 +600,10 @@
   },
   "thinking": {
     "label": "Размышляет...",
-    "history": "История размышлений"
+    "history": "История размышлений",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "Размышления завершены · {{time}}",
+    "elapsed": "({{time}})"
   },
   "skills": {
     "loaded": "Загруженные навыки",
@@ -592,7 +618,9 @@
       "failed": "Ошибка",
       "unsupported": "Не поддерживается"
     },
-    "selected": "Выбранные MCP"
+    "selected": "Выбранные MCP",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "Выбранные MCP · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "Подготавливается среда выполнения. Первый запуск может занять немного больше времени."
@@ -638,15 +666,15 @@
   },
   "notFound": "Беседа не найдена или была удалена",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "Добавить папку в проект",
     "refreshFiles": "Обновить файлы",
     "refreshChanges": "Обновить изменения",
     "collapseAll": "Свернуть все",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "Убрать из проекта",
+    "attachDuplicate": "Эта папка уже есть в проекте",
+    "attachOverlap": "Эта папка пересекается с папкой, которая уже есть в проекте",
+    "attachFailed": "Не удалось добавить папку",
+    "removeFailed": "Не удалось убрать папку из проекта",
     "contextMenu": {
       "rename": "Переименовать",
       "addToChat": "Добавить в чат",
@@ -735,7 +763,7 @@
         "confirmDiscardTitle": "Отменить изменения?",
         "confirmDiscardTracked": "Правки в {{count}} файлах будут потеряны. Это нельзя отменить.",
         "confirmDiscardUntracked": "{{count}} новых файлов будут перемещены в корзину.",
-        "confirmDiscardMixed": "Правки в {{tracked}} файле(ах) будут безвозвратно потеряны; {{untracked}} новых файла(ов) попадут в корзину.",
+        "confirmDiscardMixed": "Изменённые файлы, правки в которых будут безвозвратно потеряны: {{tracked}}. Новые файлы, которые будут перемещены в корзину: {{untracked}}.",
         "discardConfirmButton": "Отменить",
         "okStage": "Проиндексировано файлов: {{count}}",
         "okStage_one": "Проиндексировано файлов: {{count}}",
@@ -763,12 +791,24 @@
         "allFailed": "Ни один из {{count}} файл(ов) не удалось обработать",
         "allFailed_one": "Не удалось обработать {{count}} файл",
         "allFailed_other": "Не удалось обработать ни один из {{count}} файлов",
+        "confirmDiscardTracked_one": "Правки в {{count}} файле будут потеряны. Это нельзя отменить.",
+        "confirmDiscardTracked_other": "Правки в {{count}} файла будут потеряны. Это нельзя отменить.",
+        "confirmDiscardUntracked_one": "{{count}} новый файл будет перемещён в корзину.",
+        "confirmDiscardUntracked_other": "{{count}} нового файла будут перемещены в корзину.",
+        "confirmDiscardUntracked_few": "{{count}} новых файла будут перемещены в корзину.",
+        "confirmDiscardUntracked_many": "{{count}} новых файлов будут перемещены в корзину.",
+        "confirmDiscardTracked_few": "Правки в {{count}} файлах будут потеряны. Это нельзя отменить.",
+        "confirmDiscardTracked_many": "Правки в {{count}} файлах будут потеряны. Это нельзя отменить.",
         "allFailed_few": "Не удалось обработать ни один из {{count}} файлов",
         "allFailed_many": "Не удалось обработать ни один из {{count}} файлов"
       }
     },
     "pathCopied": "Путь скопирован",
-    "copyFailed": "Не удалось скопировать путь"
+    "copyFailed": "Не удалось скопировать путь",
+    "imported_one": "Импортирован {{count}} файл",
+    "imported_other": "Импортировано {{count}} файла",
+    "imported_few": "Импортировано {{count}} файла",
+    "imported_many": "Импортировано {{count}} файлов"
   },
   "terminal": {
     "running": "Выполняется",
@@ -797,5 +837,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "Развернуть план",
     "collapse": "Свернуть план"
-  }
+  },
+  "createFailedWithDetail": "Не удалось создать диалог: {{error}}",
+  "agentStartFailedWithDetail": "Не удалось запустить агента: {{error}}"
 }

@@ -1,149 +1,156 @@
 {
   "title": "Налаштування mu",
-  "description": "Everything mu can be told: judges, decision points, features, models and context. Shared with the mu command line.",
+  "description": "Усе, що можна налаштувати в mu: судді, точки рішення, функції, моделі й контекст. Налаштування спільні з командним рядком mu.",
   "reload": "Перезавантажити",
   "search": "Пошук у точках рішення та функціях",
   "noMatch": "Нічого не знайдено.",
   "modified": "Змінено",
-  "applyNote": "Changes apply to new sessions. A running session keeps the configuration it started with; reconnect it to pick them up.",
-  "apiKey": "Ключ API",
-  "keyHelp": "Write-only: once saved it is never shown again. Kept in the harness .env on this machine (owner-only).",
-  "keyKeep": "Leave empty to keep the saved key",
-  "endpointRule": "Use HTTPS, or HTTP to this machine only (127.0.0.1, localhost). No user name, password, query or fragment in the address.",
+  "applyNote": "Зміни застосовуються до нових сеансів. Запущений сеанс зберігає конфігурацію, з якою його запущено; перепідключіть його, щоб застосувати зміни.",
+  "apiKey": "API-ключ",
+  "keyHelp": "Лише для запису: після збереження ключ більше не показується. Зберігається у файлі .env середовища виконання на цьому комп’ютері (доступ лише у власника).",
+  "keyKeep": "Залиште порожнім, щоб не змінювати збережений ключ",
+  "endpointRule": "Використовуйте HTTPS, а HTTP — лише для цього комп’ютера (127.0.0.1, localhost). В адресі не має бути імені користувача, пароля, запиту чи фрагмента.",
   "sections": {
     "judges": "Судді",
     "decisions": "Точки рішення",
     "features": "Функції",
     "models": "Моделі та провайдери",
-    "permissions": "Permissions",
+    "permissions": "Дозволи",
     "context": "Контекст"
   },
   "modes": {
     "active": "Діє",
     "shadow": "Тінь",
     "off": "Вимк.",
-    "activeHelp": "The verdict takes effect.",
-    "shadowHelp": "Asked and recorded, but nothing changes.",
-    "offHelp": "Not asked. Behaves like plain pi."
+    "activeHelp": "Рішення застосовується.",
+    "shadowHelp": "Суддю запитують і рішення записують, але нічого не змінюється.",
+    "offHelp": "Суддю не запитують. Усе як у звичайному pi."
   },
   "harness": {
-    "tooOld": "This harness is too old to describe its decision points and features. Update the mu harness to see them here; the basic settings still work.",
-    "unsupported": "The harness describes itself in a format this app does not know (version {{version}}). Update the app to edit decision points and features."
+    "tooOld": "Це середовище виконання надто старе, щоб описати свої точки рішення та функції. Оновіть середовище виконання mu, щоб побачити їх тут; базові налаштування працюють і далі.",
+    "unsupported": "Середовище виконання описує себе у форматі, невідомому цьому застосунку (версія {{version}}). Оновіть застосунок, щоб редагувати точки рішення та функції."
   },
   "load": {
-    "failed": "The settings could not be loaded"
+    "failed": "Не вдалося завантажити налаштування"
   },
   "save": {
-    "saved": "Збережено. Нові сеанси використовують ці налаштування.",
+    "saved": "Збережено. Діє для нових сеансів; запущені сеанси перепідключіть.",
     "unsaved": "Незбережені зміни: {{sections}}",
     "nothing": "Незбережених змін немає",
     "unsavedDot": "Незбережені зміни",
     "discard": "Скасувати зміни",
-    "stale": "Another program (the mu command line, or a running session) changed the configuration after it was loaded here, so nothing was saved. Reload to see the current state; your unsaved edits will be lost.",
+    "stale": "Інша програма (командний рядок mu або запущений сеанс) змінила конфігурацію після того, як її тут завантажено, тому нічого не збережено. Перезавантажте, щоб побачити поточний стан; ваші незбережені зміни буде втрачено.",
     "failed": "Не збережено: {{reason}}"
   },
   "units": {
     "ms": "мс",
-    "tokens": "tokens"
+    "tokens": "токенів"
   },
   "options": {
-    "range": "Range {{min}} – {{max}}.",
-    "emptyText": "Empty: use the default",
-    "addItem": "Type and press Enter",
-    "addNumber": "Type a number and press Enter",
+    "range": "Діапазон {{min}} – {{max}}.",
+    "emptyText": "Порожньо: використовується типове значення",
+    "addItem": "Введіть і натисніть Enter",
+    "addNumber": "Введіть число й натисніть Enter",
     "problem": {
-      "type": "This value has the wrong type.",
-      "range": "This value is outside the allowed range.",
-      "choice": "This is not one of the choices.",
-      "length": "Too long, or an entry is empty."
+      "type": "Значення має неправильний тип.",
+      "range": "Значення поза дозволеним діапазоном.",
+      "choice": "Цього значення немає серед варіантів.",
+      "length": "Надто довге значення або порожній пункт."
     }
   },
   "decisions": {
-    "description": "Each point where the judge is asked. A point follows the default mode unless you give it one of its own.",
+    "description": "Кожне місце, де питають суддю. Точка рішення працює в типовому режимі, якщо ви не задасте їй власний.",
     "defaultMode": "Типовий режим",
-    "defaultModeHelp": "For every decision point without a mode of its own.",
+    "defaultModeHelp": "Для кожної точки рішення, що не має власного режиму.",
     "follow": "Як типово ({{mode}})",
     "feature": "Функція: {{name}}",
-    "featureOff": "Feature is off: not asked"
+    "featureOff": "Функцію вимкнено: суддю не питають",
+    "groups": {
+      "input": "Ввід",
+      "context": "Контекст",
+      "tools": "Інструменти та безпека",
+      "turn": "Хід",
+      "team": "Співпраця"
+    },
+    "otherGroup": "Інше"
   },
   "features": {
-    "description": "What the harness does around the model. Values you have not changed keep following the harness defaults.",
+    "description": "Що середовище виконання робить навколо моделі. Значення, які ви не змінювали, і далі відповідають типовим значенням середовища виконання.",
     "beta": "Бета",
     "reset": "Повернути типові",
-    "asks": "Decision points: {{names}}.",
-    "permissionsElsewhere": "The mode of a new conversation is chosen under Permissions.",
-    "boardModelElsewhere": "The model that writes the board is chosen under Models & providers."
+    "asks": "Точки рішення: {{names}}.",
+    "permissionsElsewhere": "Режим нової розмови вибирається в розділі «Дозволи».",
+    "boardModelElsewhere": "Модель, яка пише зведення, вибирається в розділі «Моделі та провайдери»."
   },
   "judges": {
     "tiers": "Рівні суддів",
-    "tiersHelp": "Judges are tried in order. A later one only sees what the earlier ones left uncertain.",
+    "tiersHelp": "Суддів опитують по черзі. Наступний бачить лише те, що попередні залишили невизначеним.",
     "order": "Порядок",
     "judge": "Суддя",
-    "type": "How it is reached",
-    "model": "Judge model",
-    "modelHelp": "For a general model as judge: provider/model-id.",
+    "type": "Спосіб підключення",
+    "model": "Модель-суддя",
+    "modelHelp": "Для універсальної моделі в ролі судді: provider/model-id.",
     "endpoint": "Кінцева точка",
-    "endpointDefault": "Default address of the service",
+    "endpointDefault": "Типова адреса сервісу",
     "timeout": "Тайм-аут",
-    "keyVariable": "Key variable",
-    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY, or a name starting with MU_JUDGE_.",
+    "keyVariable": "Змінна ключа",
+    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY або назва, що починається з MU_JUDGE_.",
     "types": {
-      "jev": "Jev (automatic route)",
-      "typesafe": "Jev, direct (TypeSafe)",
-      "gateway": "Jev through Vercel AI Gateway",
-      "local": "Local judge (Laya)",
-      "http": "Your own HTTP judge service",
-      "llm": "A general model as judge",
-      "mock": "Mock (neutral answers)",
-      "jevHelp": "TypeSafe directly when its key is set, otherwise the Vercel AI Gateway.",
-      "typesafeHelp": "Always TypeSafe directly.",
-      "gatewayHelp": "Always through the Vercel AI Gateway.",
-      "localHelp": "The Laya sidecar on this machine.",
-      "httpHelp": "Any endpoint that takes {state, questions} and returns {answers}.",
-      "llmHelp": "A generative model from your providers, prompted to answer as JSON.",
-      "mockHelp": "For tests and offline work: nothing is asked."
+      "jev": "Jev (автоматичний маршрут)",
+      "typesafe": "Jev напряму (TypeSafe)",
+      "gateway": "Jev через Vercel AI Gateway",
+      "local": "Локальний суддя (Laya)",
+      "http": "Власний HTTP-сервіс судді",
+      "llm": "Універсальна модель як суддя",
+      "mock": "Імітація (нейтральні відповіді)",
+      "jevHelp": "Напряму через TypeSafe, якщо задано його ключ, інакше через Vercel AI Gateway.",
+      "typesafeHelp": "Завжди напряму через TypeSafe.",
+      "gatewayHelp": "Завжди через Vercel AI Gateway.",
+      "localHelp": "Сервіс Laya на цьому комп’ютері.",
+      "httpHelp": "Будь-яка кінцева точка, що приймає {state, questions} і повертає {answers}.",
+      "llmHelp": "Генеративна модель від ваших провайдерів з інструкцією відповідати у форматі JSON.",
+      "mockHelp": "Для тестів і роботи офлайн: суддю нічого не запитують."
     },
-    "intro": "While it works, mu makes many small calls: how to handle this message, whether this step breaks a rule you set. The judge answers them. Pick one.",
-    "choose": "Choose a judge",
-    "custom": "The first judge right now is a custom one: see and change it under Advanced.",
-    "advanced": "Advanced",
-    "keyPlaceholder": "Paste a TypeSafe or Vercel AI Gateway key",
-    "localHow": "Needs the Laya judge service running on this machine: run mu judge start in a terminal (macOS for now). One-click setup in the app is coming.",
+    "intro": "Під час роботи mu має вирішувати багато дрібних питань: як обробити це повідомлення, чи не порушує цей крок заданого вами правила. На них відповідає суддя. Виберіть один із варіантів.",
+    "choose": "Виберіть суддю",
+    "custom": "Зараз першим стоїть власний суддя: переглянути й змінити його можна в розділі «Додатково».",
+    "advanced": "Додатково",
+    "keyPlaceholder": "Вставте ключ TypeSafe або Vercel AI Gateway",
     "choices": {
       "jev": {
         "title": "Jev",
-        "tag": "Recommended",
-        "description": "Fast and accurate, billed per call. Needs a TypeSafe or Vercel AI Gateway key."
+        "tag": "Рекомендовано",
+        "description": "Швидко й точно, оплата за кожен виклик. Потрібен ключ TypeSafe або Vercel AI Gateway."
       },
       "local": {
-        "title": "Local Laya",
-        "tag": "Free · offline",
-        "description": "Runs on this computer, no network, no cost. Good at classifying; relating and scoring are less reliable."
+        "title": "Локальна Laya",
+        "tag": "Безкоштовно · офлайн",
+        "description": "Працює на цьому комп’ютері, без мережі й без витрат. Добре класифікує; зіставлення та оцінювання менш надійні."
       }
     },
-    "localAddress": "Address: {{address}}",
+    "localAddress": "Адреса: {{address}}",
     "laya": {
-      "running": "Running on this machine",
-      "stopped": "Installed, not running. mu starts it when it needs it.",
-      "missing": "Not installed yet.",
-      "platform": "Laya cannot run on this computer: it needs a Mac with Apple Silicon. You can enter the address of a judge service of your own in the advanced view.",
-      "needsUv": "Installing needs uv, a Python package manager. Install it, then come back here.",
-      "uvLink": "How to install uv",
-      "install": "Install Laya",
-      "start": "Start",
-      "stop": "Stop",
-      "confirmTitle": "Download and install Laya?",
-      "confirmText": "This downloads about {{size}} MB from PyPI and Hugging Face (Python packages and the model's weights) into mu's folder, and takes a few minutes. Laya starts once it is installed.",
-      "confirmOk": "Download and install",
+      "running": "Працює на цьому комп’ютері",
+      "stopped": "Встановлено, не запущено. mu запускає її, коли вона потрібна.",
+      "missing": "Ще не встановлено.",
+      "platform": "Laya не може працювати на цьому комп’ютері: їй потрібен Mac з Apple Silicon. Адресу власного сервісу судді можна ввести в розділі «Додатково».",
+      "needsUv": "Для встановлення потрібен uv — менеджер пакетів Python. Встановіть його й поверніться сюди.",
+      "uvLink": "Як встановити uv",
+      "install": "Встановити Laya",
+      "start": "Запустити",
+      "stop": "Зупинити",
+      "confirmTitle": "Завантажити й встановити Laya?",
+      "confirmText": "Буде завантажено близько {{size}} МБ із PyPI і Hugging Face (пакети Python і ваги моделі) до папки mu; це займе кілька хвилин. Після встановлення Laya запуститься.",
+      "confirmOk": "Завантажити й встановити",
       "working": {
-        "setup": "Installing Laya…",
-        "start": "Starting Laya…",
-        "stop": "Stopping Laya…"
+        "setup": "Встановлення Laya…",
+        "start": "Запуск Laya…",
+        "stop": "Зупинка Laya…"
       },
       "failed": {
-        "setup": "Installing did not finish. You can try again.",
-        "start": "Laya did not start.",
-        "stop": "Laya did not stop."
+        "setup": "Встановлення не завершено. Можна спробувати ще раз.",
+        "start": "Laya не запустилася.",
+        "stop": "Laya не зупинилася."
       }
     }
   },
@@ -156,117 +163,158 @@
     "manual": "Задано (вручну)"
   },
   "context": {
-    "description": "When the conversation is compacted, and how. Shared with pi's settings.json.",
-    "auto": "Автоматичне стиснення",
-    "autoHelp": "Compacts the history when the context is nearly full.",
+    "description": "Коли і як ущільнюється розмова. Налаштування спільні з settings.json у pi.",
+    "auto": "Автоматичне ущільнення",
+    "autoHelp": "Ущільнює історію, коли контекст майже заповнений.",
     "limit": "Межа контексту",
-    "beta": "Summary-free compaction",
-    "betaHelp": "Keeps or prunes original passages by judgment instead of writing a summary. The same switch as the compaction feature."
+    "limitHelp": "0 означає вікно моделі мінус резерв. Інакше від {{min}} до {{max}}. Перевіряється перед наступним запитом до моделі; це не жорстка межа.",
+    "limitProblem": "Введіть 0 або ціле число від {{min}} до {{max}}.",
+    "beta": "Ущільнення без підсумку",
+    "betaHelp": "Зберігає або скорочує оригінальні фрагменти за рішенням судді замість того, щоб писати підсумок. Це той самий перемикач, що й у функції ущільнення."
   },
   "permissions": {
-    "description": "Whether mu asks you before it acts. This is the mode every new conversation starts in; each conversation can still be switched from “Permissions” in its send box.",
-    "choose": "Mode of a new conversation",
-    "note": "The “Permissions” picker in a conversation’s send box switches that conversation only; typing /permissions in a conversation also changes the mode new conversations start in. What you said not to do is stopped in every mode, and a step that touches mu’s own settings always asks.",
-    "off": "Permission modes are off in Features: nothing is asked by mode, only the risky command guard works.",
-    "missing": "This version of mu has no permission modes yet. Update mu to choose one here.",
+    "description": "Чи запитує mu вашого дозволу, перш ніж діяти. У цьому режимі починається кожна нова розмова; у кожній розмові його все одно можна змінити через «Дозволи» в полі введення.",
+    "choose": "Режим нової розмови",
+    "note": "Перемикач «Дозволи» в полі введення розмови змінює режим лише цієї розмови; команда /permissions у розмові змінює ще й режим, з якого починаються нові розмови. Те, що ви заборонили робити, блокується в будь-якому режимі, а перед кроком, який зачіпає налаштування самого mu, вас запитують завжди.",
+    "off": "Режими дозволів вимкнено в розділі «Функції»: запитів за режимом немає, діє лише захист від ризикованих команд.",
+    "missing": "У цій версії mu ще немає режимів дозволів. Оновіть mu, щоб вибрати режим тут.",
     "modes": {
       "full": {
-        "title": "Full access",
-        "description": "Runs everything without asking, so you are not interrupted."
+        "title": "Повний доступ",
+        "description": "Виконує все без запитів, щоб вас не відволікати."
       },
       "jev": {
-        "title": "JeV approves",
-        "description": "Reads and edits in the project go ahead; JeV approves commands, changes outside the project and outside actions for you, and asks you only when it is not sure."
+        "title": "Схвалює JeV",
+        "description": "Читання й правки в проєкті — без запитів; команди, зміни поза проєктом і зовнішні дії схвалює за вас JeV, а вас запитує лише тоді, коли не впевнений."
       },
       "ask": {
-        "title": "Minimal permissions",
-        "description": "Only reading goes ahead; every edit, command and outside action asks you first."
+        "title": "Мінімальні дозволи",
+        "description": "Без запиту — лише читання; перед кожною правкою, командою чи зовнішньою дією mu спершу запитує вас."
       }
     }
   },
+  "permissionsCard": {
+    "kind": {
+      "edit": "mu хоче відредагувати файл",
+      "shell": "mu хоче виконати команду",
+      "run": "mu хоче запустити програму",
+      "outside": "mu хоче змінити файл поза проєктом",
+      "delegate": "mu хоче запустити субагентів",
+      "other": "mu хоче виконати зовнішню дію"
+    },
+    "reason": {
+      "ask": "Мінімальні дозволи: перед кожним кроком mu спершу запитує вас.",
+      "unsure": "JeV не впевнений, що цей крок — саме те, чого ви хочете.",
+      "beyond": "JeV вважає, що це виходить за межі того, про що ви просили.",
+      "unrelated": "JeV вважає, що це не стосується завдання.",
+      "protected": "Це зачіпає налаштування самого mu; дозволити це можете лише ви."
+    },
+    "answer": {
+      "once": "Дозволити один раз",
+      "session": "Дозволити в цій розмові",
+      "sessionFor": "Дозволити в цій розмові ({{grant}})",
+      "deny": "Не дозволяти"
+    },
+    "flag": {
+      "recursive_or_forced_delete": "рекурсивне або примусове видалення",
+      "discards_git_work": "відкидає зміни в git",
+      "force_push": "примусовий push",
+      "drops_database_objects": "видаляє об’єкти бази даних",
+      "overwrites_device": "перезаписує пристрій",
+      "opens_permissions_recursively": "рекурсивно розширює права доступу",
+      "runs_downloaded_script": "запускає завантажений скрипт",
+      "runs_as_administrator": "виконується від імені адміністратора",
+      "runs_as_root": "виконується від імені root"
+    },
+    "flagged": "Ризиковано: {{flag}}."
+  },
   "providers": {
-    "description": "Which model a new session starts with, and the providers behind the models.",
-    "lead": "Where the models come from: subscriptions and endpoints, plus the model that writes the plain-language board. A conversation’s model and thinking level are picked in its send box.",
+    "lead": "Звідки беруться моделі: підписки та кінцеві точки, а також модель, яка пише зведення простими словами. Модель і рівень міркування розмови вибираються в її полі введення.",
     "title": "Провайдери",
-    "custom": "Custom providers",
-    "manualGroup": "Written by hand",
-    "builtinGroup": "Other built-in",
+    "custom": "Власні провайдери",
+    "manualGroup": "Вписано вручну",
+    "builtinGroup": "Інші вбудовані",
     "add": "Додати провайдера",
     "new": "Новий провайдер",
     "unsaved": "Не збережено",
     "remove": "Видалити",
-    "endpointType": "Тип кінцевої точки",
+    "endpointType": "Формат API",
     "name": "Назва для показу",
-    "namePlaceholder": "e.g. My proxy",
+    "namePlaceholder": "напр. Мій проксі",
     "id": "ID",
-    "idHelp": "Lowercase letters, digits and hyphens. Fixed once saved; used as provider/model.",
+    "idHelp": "Малі латинські літери, цифри й дефіси. Після збереження не змінюється; використовується як provider/model.",
     "idProblem": {
-      "format": "Use lowercase letters, digits and hyphens, starting with a letter or digit (at most 40).",
-      "reserved": "This is the id of a built-in provider. An entry under it would reroute that provider instead of adding one.",
-      "taken": "This id is already in use."
+      "format": "Використовуйте малі латинські літери, цифри й дефіси; на початку — літера або цифра (не більше 40 символів).",
+      "reserved": "Це ID вбудованого провайдера. Запис із ним перенаправив би цього провайдера, а не додав нового.",
+      "taken": "Цей ID уже використовується."
     },
-    "baseUrl": "Базова URL-адреса",
-    "keyEnter": "Paste the API key",
-    "keyReplace": "A key written by hand is in use. Typing one here replaces it.",
-    "keyHelp": "Saved to the harness .env as {{variable}}; models.json only holds the reference. Never shown again.",
-    "authHeader": "Also send Authorization: Bearer (some proxies need it)",
-    "headers": "Extra headers written by hand are kept as they are: {{names}}. Their values are secrets and are edited in models.json.",
-    "pick": "Choose a provider on the left, or add one.",
-    "manual": "Written by hand",
-    "foreignHelp": "This entry reroutes a built-in provider, or uses an interface type this screen does not edit. It can be removed here but not edited: edit it in models.json.",
-    "modelCount": "Моделей: {{count}}",
+    "baseUrl": "Base URL",
+    "keyEnter": "Вставте API-ключ",
+    "keyReplace": "Використовується ключ, вписаний вручну. Ключ, введений тут, замінить його.",
+    "keyHelp": "Зберігається у файлі .env середовища виконання як {{variable}}; models.json містить лише посилання. Більше не показується.",
+    "authHeader": "Також надсилати Authorization: Bearer (потрібно деяким проксі)",
+    "headers": "Додаткові заголовки, вписані вручну, зберігаються як є: {{names}}. Їхні значення секретні й редагуються в models.json.",
+    "pick": "Виберіть провайдера ліворуч або додайте нового.",
+    "manual": "Вписано вручну",
+    "foreignHelp": "Цей запис перенаправляє вбудованого провайдера або використовує формат API, який тут не редагується. Його можна видалити, але не змінити: редагуйте його в models.json.",
+    "modelCount": "Моделей: {{count, number}}",
     "usable": "Доступний",
-    "builtinHelp": "mu reported it as usable at its last connection, usually because its API key is in the environment. It cannot be removed here: delete that key from the environment, and it is gone after mu connects again.",
-    "noneYet": "None yet",
-    "commented": "models.json contains comments. Saving from here would remove them, so providers are read-only. Remove the comments by hand to edit here.",
-    "summary": "Sign in with a subscription and use it right away, or connect any OpenAI-, Anthropic- or Gemini-compatible endpoint.",
-    "subscriptions": "Subscriptions",
-    "manualShort": "By hand",
-    "needsSetup": "Not set up yet",
-    "more": "More actions",
-    "removeProvider": "Remove provider",
-    "removeTitle": "Remove {{name}}?",
-    "removeSaved": "When you save, it is deleted from models.json, and so is the key stored for it.",
-    "removeUnsaved": "It is not saved yet, so what you filled in here is discarded.",
-    "removeEntry": "When you save, this hand-written entry is deleted from models.json. If it overrides a built-in provider, that provider goes back to its defaults.",
-    "removeDefault": "New sessions start with it, so the startup model is cleared too."
+    "builtinHelp": "Під час останнього підключення mu повідомив, що цей провайдер доступний, зазвичай тому, що його API-ключ є в змінних середовища. Тут його не можна видалити: приберіть цей ключ зі змінних середовища, і провайдер зникне після наступного підключення mu.",
+    "noneYet": "Ще немає",
+    "unreadable": "Не вдалося прочитати models.json, тому провайдери не показуються й не зберігаються. Виправте файл вручну, потім перезавантажте.",
+    "commented": "models.json містить коментарі. Збереження звідси їх видалить, тому провайдери доступні лише для читання. Щоб редагувати тут, видаліть коментарі вручну.",
+    "modelCount_one": "{{count, number}} модель",
+    "modelCount_other": "{{count, number}} моделі",
+    "modelCount_few": "{{count, number}} моделі",
+    "modelCount_many": "{{count, number}} моделей",
+    "summary": "Увійдіть через підписку й одразу користуйтеся або підключіть будь-яку кінцеву точку, сумісну з OpenAI, Anthropic або Gemini.",
+    "subscriptions": "Підписки",
+    "manualShort": "Вручну",
+    "needsSetup": "Ще не налаштовано",
+    "more": "Ще дії",
+    "removeProvider": "Видалити провайдера",
+    "removeTitle": "Видалити {{name}}?",
+    "removeSaved": "Під час збереження його буде видалено з models.json разом зі збереженим для нього ключем.",
+    "removeUnsaved": "Його ще не збережено, тож усе, що ви тут заповнили, буде відкинуто.",
+    "removeEntry": "Під час збереження цей вписаний вручну запис буде видалено з models.json. Якщо він перевизначає вбудованого провайдера, той повернеться до типових налаштувань.",
+    "removeDefault": "Нові сеанси починаються з ним, тож типову модель теж буде скинуто."
   },
   "accounts": {
-    "signIn": "Sign in",
-    "signOut": "Sign out",
-    "signOutFailed": "Signing out did not finish. You can try again.",
-    "signOutConfirm": "Sign out of {{name}}? You will need to sign in again to use it.",
-    "signedOut": "Not signed in",
-    "instant": "Signing in and out takes effect at once, without saving.",
-    "models": "Models you can use",
-    "byKey": "Usable (API key)",
-    "byKeyHelp": "No subscription is signed in, but mu reported it as usable at its last connection, usually because its API key is in the environment. Signing in switches it to the subscription.",
-    "otherRunning": "{{name}} is signing in, and one sign-in runs at a time.",
-    "showRunning": "Show it"
+    "signIn": "Увійти",
+    "signOut": "Вийти",
+    "signOutFailed": "Вихід не завершено. Можна спробувати ще раз.",
+    "signOutConfirm": "Вийти з {{name}}? Щоб користуватися ним знову, доведеться ввійти ще раз.",
+    "signedOut": "Вхід не виконано",
+    "instant": "Вхід і вихід діють одразу, без збереження.",
+    "models": "Доступні моделі",
+    "byKey": "Доступний (API-ключ)",
+    "byKeyHelp": "Вхід через підписку не виконано, але під час останнього підключення mu повідомив, що провайдер доступний: зазвичай тому, що його API-ключ задано в середовищі. Після входу буде використано підписку.",
+    "otherRunning": "Триває вхід у {{name}}, а одночасно може виконуватися лише один вхід.",
+    "showRunning": "Показати"
   },
   "endpoints": {
     "openaiCompletions": {
-      "name": "OpenAI compatible (Chat Completions)",
-      "hint": "The most widely supported: proxies, Ollama, vLLM, LM Studio, DeepSeek…",
-      "url": "Usually ends in /v1, e.g. https://api.example.com/v1 or http://localhost:11434/v1.",
-      "short": "OpenAI compatible"
+      "name": "Сумісний з OpenAI (Chat Completions)",
+      "hint": "Найширша підтримка: проксі, Ollama, vLLM, LM Studio, DeepSeek…",
+      "url": "Зазвичай закінчується на /v1, наприклад https://api.example.com/v1 або http://localhost:11434/v1.",
+      "short": "Сумісний з OpenAI"
     },
     "openaiResponses": {
       "name": "OpenAI Responses",
-      "hint": "OpenAI's newer Responses API, for services that offer it.",
-      "url": "Usually ends in /v1, e.g. https://api.example.com/v1.",
+      "hint": "Новіший Responses API від OpenAI, для сервісів, які його підтримують.",
+      "url": "Зазвичай закінчується на /v1, наприклад https://api.example.com/v1.",
       "short": "OpenAI Responses"
     },
     "anthropicMessages": {
-      "name": "Anthropic compatible (Messages)",
-      "hint": "For Claude and services that speak the Anthropic Messages format.",
-      "url": "Without /v1: the client adds /v1/messages itself, e.g. https://api.example.com.",
-      "short": "Anthropic compatible"
+      "name": "Сумісний з Anthropic (Messages)",
+      "hint": "Для Claude і сервісів, що підтримують формат Anthropic Messages.",
+      "url": "Без /v1: клієнт сам додає /v1/messages, наприклад https://api.example.com.",
+      "short": "Сумісний з Anthropic"
     },
     "googleGenerativeAi": {
       "name": "Google Generative AI",
-      "hint": "Gemini and Gemma through Google AI Studio.",
-      "url": "e.g. https://generativelanguage.googleapis.com/v1beta.",
+      "hint": "Gemini і Gemma через Google AI Studio.",
+      "url": "Наприклад, https://generativelanguage.googleapis.com/v1beta.",
       "short": "Google"
     }
   },
@@ -279,62 +327,57 @@
     "reasoning": "Міркування",
     "image": "Зображення",
     "add": "Додати модель",
-    "none": "No models yet. Add one, or test the connection to pick from what the endpoint lists.",
+    "none": "Моделей ще немає. Додайте модель або перевірте підключення, щоб вибрати зі списку кінцевої точки.",
     "problem": {
-      "emptyId": "Every model needs an ID.",
-      "duplicate": "Two models have the same ID."
+      "emptyId": "Кожній моделі потрібен ID.",
+      "duplicate": "Дві моделі мають однаковий ID."
     },
-    "edit": "Edit {{name}}",
-    "removeNamed": "Remove {{name}}",
-    "done": "Done",
-    "contextTag": "Context window {{size}}",
-    "tagReasoning": "Thinking",
-    "tagImage": "Vision",
-    "noId": "New model",
-    "show": "Show {{name}}"
+    "idField": "ID моделі · як його очікує API",
+    "rowField": "{{field}}, рядок {{n}}",
+    "edit": "Редагувати {{name}}",
+    "removeNamed": "Видалити {{name}}",
+    "done": "Готово",
+    "contextTag": "Вікно контексту {{size}}",
+    "tagReasoning": "Міркування",
+    "tagImage": "Зображення",
+    "noId": "Нова модель",
+    "show": "Показати {{name}}",
+    "addListed": "Додати {{name}}"
   },
   "test": {
-    "run": "Перевірити зʼєднання",
-    "hint": "One minimal request from this app: the model list, or else a single token with the first model.",
-    "okModels": "Connected ({{ms}} ms). The endpoint lists {{count}} models.",
-    "okCompletion": "Connected ({{ms}} ms). The model answered.",
-    "auth": "The key was rejected (HTTP {{status}}).",
-    "notFound": "Nothing at this address (HTTP 404). Check the base URL and the endpoint type; add a model to test with a request.",
-    "http": "The endpoint answered HTTP {{status}}.",
-    "timeout": "No answer in time.",
-    "network": "Could not connect. Check the address and the network.",
-    "redirect": "The endpoint redirects elsewhere (HTTP {{status}}). Use the final address: a key is not sent along a redirect.",
-    "invalidResponse": "The answer is not what this endpoint type returns. Is the type right?",
-    "keyUnavailable": "The saved key is a command or a composite value, which this app does not evaluate. Type a key to test.",
-    "urlChanged": "The address or type was changed. A saved key is only sent where it was saved for: save first, or type the key again."
-  },
-  "defaults": {
-    "title": "Типова модель",
-    "summary": "What a new session starts with. You can still switch inside a conversation.",
-    "provider": "Провайдер",
-    "model": "Модель",
-    "level": "Рівень міркування",
-    "levelUnset": "Не вказувати",
-    "levelHelp": "Levels this model does not take are disabled.",
-    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
-    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
-    "notSet": "Не вказано",
-    "pickProvider": "Choose a provider first."
+    "run": "Перевірити підключення",
+    "hint": "Один мінімальний запит із цього застосунку: список моделей, а якщо не вийде — один токен від першої моделі.",
+    "okModels": "Підключено ({{ms}} мс). Моделей у кінцевої точки: {{count, number}}.",
+    "okCompletion": "Підключено ({{ms}} мс). Модель відповіла.",
+    "auth": "Ключ відхилено (HTTP {{status}}).",
+    "notFound": "За цією адресою нічого немає (HTTP 404). Перевірте Base URL і формат API; щоб перевірити запитом, додайте модель.",
+    "http": "Кінцева точка відповіла HTTP {{status}}.",
+    "timeout": "Відповідь не надійшла вчасно.",
+    "network": "Не вдалося підключитися. Перевірте адресу й мережу.",
+    "redirect": "Кінцева точка перенаправляє деінде (HTTP {{status}}). Вкажіть остаточну адресу: під час перенаправлення ключ не надсилається.",
+    "invalidResponse": "Відповідь не в цьому форматі API. Чи правильно вибрано формат?",
+    "keyUnavailable": "Збережений ключ — це команда або складене значення, яке цей застосунок не обчислює. Щоб перевірити, введіть ключ.",
+    "urlChanged": "Адресу або формат API змінено. Збережений ключ надсилається лише на ту адресу, для якої його збережено: спочатку збережіть або введіть ключ ще раз.",
+    "detail": "Відповідь кінцевої точки: {{detail}}",
+    "okModels_one": "Підключено ({{ms}} мс). Кінцева точка надає {{count, number}} модель.",
+    "okModels_other": "Підключено ({{ms}} мс). Кінцева точка надає {{count, number}} моделі.",
+    "okModels_few": "Підключено ({{ms}} мс). Кінцева точка надає {{count, number}} моделі.",
+    "okModels_many": "Підключено ({{ms}} мс). Кінцева точка надає {{count, number}} моделей."
   },
   "boardModel": {
-    "title": "Plain-language model",
-    "summary": "Writes the plain-language board: how the work is going, in everyday words. For you only, never in the conversation’s context; each update is one call.",
-    "pick": "A model of your choice",
-    "recommended": "Recommended: Claude Opus 4.6, the most natural and steady; then Gemini 3.8 Flash, faster and cheaper.",
-    "recommendedTag": "recommended",
-    "provider": "Provider",
-    "model": "Model",
-    "notSet": "Not set",
-    "pickProvider": "Pick a provider first",
-    "unset": "None yet: mu asks the first time the board is switched on.",
-    "session": "Whatever model the conversation uses",
-    "sessionHelp": "When the conversation switches model, the board follows.",
-    "update": "This version of mu cannot be told here which model writes the board. Update mu first."
+    "title": "Модель для зведення",
+    "summary": "Пише зведення простими словами: як іде робота, без жаргону. Лише для вас і ніколи не потрапляє в контекст розмови; кожне оновлення — один виклик.",
+    "pick": "Модель на ваш вибір",
+    "recommended": "Рекомендовано: Claude Opus 4.6 — найприродніша й найстабільніша; далі Gemini 3.8 Flash — швидша й дешевша.",
+    "recommendedTag": "рекомендовано",
+    "provider": "Провайдер",
+    "model": "Модель",
+    "notSet": "Не задано",
+    "pickProvider": "Спершу виберіть провайдера",
+    "unset": "Ще не вибрано: mu запитає, коли ви вперше ввімкнете зведення.",
+    "session": "Та сама модель, що й у розмові",
+    "sessionHelp": "Коли в розмові змінюється модель, зведення переходить на неї.",
+    "update": "У цій версії mu тут не можна вибрати модель, яка пише зведення. Спершу оновіть mu."
   },
   "levels": {
     "off": "Вимк.",
@@ -346,97 +389,98 @@
     "max": "Максимальний"
   },
   "welcome": {
-    "reopen": "Setup guide",
-    "progress": "Setup progress",
+    "reopen": "Майстер налаштування",
+    "progress": "Прогрес налаштування",
     "steps": {
-      "model": "Model",
-      "judge": "Judge",
-      "done": "Done"
+      "model": "Модель",
+      "judge": "Суддя",
+      "done": "Готово"
     },
-    "skipAll": "Skip setup",
-    "skipStep": "Skip for now",
-    "back": "Back",
-    "next": "Next",
-    "start": "Get started",
+    "skipAll": "Пропустити налаштування",
+    "skipStep": "Поки пропустити",
+    "back": "Назад",
+    "next": "Далі",
+    "start": "Почати",
     "model": {
-      "title": "Connect a model",
-      "subtitle": "mu uses it to write code and answer you. Three steps; you can change all of it in Settings later.",
-      "model": "Model",
+      "title": "Підключіть модель",
+      "subtitle": "mu використовує її, щоб писати код і відповідати вам. Три кроки; усе це можна змінити пізніше в налаштуваннях.",
+      "model": "Модель",
       "baseUrl": "Base URL",
-      "key": "API key",
-      "keyPlaceholder": "Paste the key; a service on this machine may need none",
-      "modelId": "Model name",
+      "key": "API-ключ",
+      "keyPlaceholder": "Вставте ключ; сервісу на цьому комп’ютері він може бути не потрібен",
+      "modelId": "Назва моделі",
       "signedIn": {
-        "title": "Sign in with a subscription",
-        "tag": "No API key",
-        "description": "A ChatGPT, Claude or Grok plan"
+        "title": "Увійти через підписку",
+        "tag": "Без API-ключа",
+        "description": "Підписка ChatGPT, Claude або Grok"
       },
       "openai": {
-        "title": "OpenAI-compatible API",
-        "tag": "Most common",
-        "description": "OpenAI, DeepSeek, Kimi, Qwen, Ollama, and relay services",
-        "modelPlaceholder": "e.g. deepseek-chat"
+        "title": "API, сумісний з OpenAI",
+        "tag": "Найпоширеніший",
+        "description": "OpenAI, DeepSeek, Kimi, Qwen, Ollama та проксі-сервіси",
+        "modelPlaceholder": "напр. deepseek-chat"
       },
       "anthropic": {
-        "title": "Anthropic-compatible API",
+        "title": "API, сумісний з Anthropic",
         "tag": "Claude",
-        "description": "Claude, and services that speak the Messages format",
-        "modelPlaceholder": "e.g. claude-sonnet-5"
+        "description": "Claude і сервіси, що підтримують формат Messages",
+        "modelPlaceholder": "напр. claude-sonnet-5"
       },
       "problems": {
-        "baseUrl": "Enter an address that starts with https:// (http:// only for this machine).",
-        "key": "Enter the API key.",
-        "model": "Enter the model name."
+        "baseUrl": "Введіть адресу, що починається з https:// (http:// лише для цього комп’ютера).",
+        "key": "Введіть API-ключ.",
+        "model": "Введіть назву моделі."
       },
       "openaiApi": {
-        "label": "Interface",
+        "label": "Формат API",
         "openai-completions": "Chat Completions",
         "openai-responses": "Responses",
-        "openai-completionsHint": "Works almost everywhere; most services and relays speak it.",
-        "openai-responsesHint": "OpenAI's newer interface; only some services support it."
+        "openai-completionsHint": "Працює майже скрізь; його підтримує більшість сервісів і проксі.",
+        "openai-responsesHint": "Новіший API від OpenAI; його підтримують лише деякі сервіси."
       }
     },
     "judge": {
-      "title": "Choose a judge",
-      "subtitle": "The judge answers the small calls mu makes while it works. mu runs without one, just without these checks."
+      "title": "Виберіть суддю",
+      "subtitle": "Суддя відповідає на дрібні питання, які mu вирішує під час роботи. mu працює й без нього, лише без цих перевірок."
     },
     "done": {
-      "title": "All set",
-      "subtitle": "Check it over, then start.",
-      "model": "Model",
-      "judge": "Judge",
-      "none": "Not set",
-      "noKey": "No key yet: judgments follow the default rules until there is one",
-      "saveFailed": "Saving did not work: {{reason}}"
+      "title": "Усе готово",
+      "subtitle": "Перевірте все й починайте.",
+      "model": "Модель",
+      "judge": "Суддя",
+      "none": "Не задано",
+      "noKey": "Ключа ще немає: доки його не додано, рішення ухвалюються за типовими правилами",
+      "saveFailed": "Не вдалося зберегти: {{reason}}",
+      "modelValue": "{{provider}} / {{model}}"
     },
     "intro": {
-      "title": "Welcome to mu",
-      "lead": "mu is a coding assistant that does the work: it reads your project, edits code, runs commands and tests, and keeps going until the job is done.",
+      "title": "Ласкаво просимо до mu",
+      "lead": "mu — помічник із програмування, який сам виконує роботу: читає ваш проєкт, редагує код, запускає команди й тести та не зупиняється, доки завдання не виконано.",
       "points": {
         "judge": {
-          "title": "A check at every step",
-          "text": "A built-in judge watches the key moments: think before acting, keep to the rules you set, never call it done unverified."
+          "title": "Перевірка на кожному кроці",
+          "text": "Вбудований суддя стежить за ключовими моментами: спершу подумати, потім діяти; дотримуватися заданих вами правил; не оголошувати роботу завершеною без перевірки."
         },
         "control": {
-          "title": "You see it, you steer it",
-          "text": "Any change can be rolled back; every step in the browser is in view, and you can pause or take over."
+          "title": "Усе на виду й під контролем",
+          "text": "Будь-яку зміну можна відкотити; кожен крок у браузері на виду, і ви можете поставити на паузу або перебрати керування."
         },
         "ready": {
-          "title": "Ready out of the box",
-          "text": "It picks up the rules, skills and MCP servers you already set up in Claude Code, Cursor and Codex."
+          "title": "Готовий до роботи одразу",
+          "text": "mu підхоплює правила, навички та MCP-сервери, які ви вже налаштували в Claude Code, Cursor і Codex."
         }
       },
-      "start": "Set up"
+      "start": "Налаштувати"
     },
     "login": {
       "providers": {
         "openai-codex": {
           "name": "ChatGPT",
-          "plan": "Plus / Pro plan"
+          "plan": "Підписка Plus / Pro"
         },
         "anthropic": {
           "name": "Claude",
-          "plan": "Pro / Max plan"
+          "plan": "Підписка Pro / Max"
         },
         "xai": {
           "name": "Grok",
@@ -444,37 +488,75 @@
         },
         "google-gemini-cli": {
           "name": "Gemini CLI",
-          "plan": "Google account"
+          "plan": "Обліковий запис Google"
         },
         "google-antigravity": {
           "name": "Antigravity",
-          "plan": "Google account"
+          "plan": "Обліковий запис Google"
         }
       },
-      "signedIn": "Signed in",
-      "inProgress": "Signing in…",
-      "waiting": "The {{name}} sign-in page is open in your browser. Sign in and allow access; this continues by itself.",
-      "deviceCode": "Code",
-      "code": "Authorization code",
-      "codePlaceholder": "Paste the code the browser shows, or the address it ended on",
-      "submit": "Submit",
-      "openAgain": "Open the page again",
-      "pasteCode": "Paste a code instead",
-      "cancel": "Cancel",
-      "failed": "Signing in did not finish. You can try again.",
-      "asks": "{{name}} asks (in its own words):",
-      "needAccount": "Sign in to an account first, then pick a model.",
-      "experimental": "Experimental",
-      "starting": "Getting the {{name}} sign-in ready…",
-      "waitingDevice": "The {{name}} verification page is open in your browser. Check that the code there matches this one (type it in if it is not filled in), approve, and this continues by itself.",
+      "signedIn": "Вхід виконано",
+      "inProgress": "Вхід…",
+      "waiting": "Сторінку входу {{name}} відкрито в браузері. Увійдіть і дозвольте доступ; далі все продовжиться автоматично.",
+      "deviceCode": "Код",
+      "code": "Код авторизації",
+      "codePlaceholder": "Вставте код, який показує браузер, або адресу, на якій він зупинився",
+      "submit": "Надіслати",
+      "openAgain": "Відкрити сторінку ще раз",
+      "pasteCode": "Вставити код вручну",
+      "cancel": "Скасувати",
+      "failed": "Вхід не завершено. Можна спробувати ще раз.",
+      "asks": "{{name}} запитує (дослівно):",
+      "needAccount": "Спочатку увійдіть в обліковий запис, потім виберіть модель.",
+      "experimental": "Експериментально",
+      "starting": "Підготовка входу в {{name}}…",
+      "waitingDevice": "Сторінку перевірки {{name}} відкрито в браузері. Переконайтеся, що код там збігається з цим (введіть його, якщо він не заповнений), підтвердьте, і все продовжиться автоматично.",
       "risk": {
-        "title": "Know the risk before you sign in",
-        "text": "This signs in through the login Google made for {{tool}} itself, not one Google provides for mu. Google may treat that as against its terms and limit or suspend the account.",
-        "instead": "Use an account you can afford to lose access to. The official ways are a Gemini API key, or Vertex AI signed in with gcloud.",
-        "continue": "I understand the risk, sign in",
-        "cancel": "Don't sign in"
+        "title": "Дізнайтеся про ризик перед входом",
+        "text": "Цей вхід використовує механізм, створений Google для самого {{tool}}, а не наданий Google для mu. Google може вважати це порушенням своїх умов і обмежити або призупинити обліковий запис.",
+        "instead": "Використовуйте обліковий запис, доступ до якого не шкода втратити. Офіційні способи — API-ключ Gemini або Vertex AI із входом через gcloud.",
+        "continue": "Я розумію ризик, увійти",
+        "cancel": "Не входити"
       },
-      "readingModels": "Signed in to {{name}}. Reading the models this account can use…"
+      "readingModels": "Вхід у {{name}} виконано. Отримання моделей, доступних цьому обліковому запису…"
     }
+  },
+  "turnErrors": {
+    "processExited": "mu зупинився посеред ходу. Надішліть повідомлення ще раз, щоб перезапустити його.",
+    "busyConfig": "Дочекайтеся завершення поточного ходу, перш ніж змінювати модель або рівень міркування.",
+    "unsupportedValue": "mu не підтримує цю модель, рівень міркування або режим дозволів.",
+    "permissionsNotSwitched": "mu не змінив режим дозволів. Спробуйте ще раз або введіть /permissions у розмові.",
+    "imageUnsupported": "Можна надсилати лише зображення PNG, JPEG, WebP або GIF розміром до 12 МБ.",
+    "contentUnsupported": "mu приймає лише текст, зображення й текстові файли.",
+    "wrongProject": "Ця розмова належить до іншої папки проєкту.",
+    "notPersisted": "mu не зміг зберегти цю розмову.",
+    "startFailed": "Не вдалося запустити mu.",
+    "timeout": "mu не відповів вчасно.",
+    "processClosed": "mu зупинився. Надішліть повідомлення ще раз, щоб перезапустити його.",
+    "modelFailed": "Запит до моделі не вдався.",
+    "turnRunning": "mu ще обробляє попереднє повідомлення. Дочекайтеся або спочатку зупиніть його."
+  },
+  "errors": {
+    "credential": "Ключ містить неприпустимі символи, наприклад пробіли, лапки чи розриви рядків. Вставте його ще раз.",
+    "keyVariable": "{{name}} не може зберігати ключ судді. Використовуйте TYPESAFE_API_KEY, AI_GATEWAY_API_KEY або назву, що починається з MU_JUDGE_.",
+    "sharedKey": "{{providers}} використовували б одну змінну ключа. Змініть один з ID.",
+    "pickBoth": "Виберіть провайдера й модель разом.",
+    "modelsUnreadable": "Не вдалося прочитати models.json. Виправте його вручну, перш ніж зберігати провайдерів.",
+    "modelsCommented": "models.json містить коментарі, які буде видалено під час збереження звідси. Редагуйте провайдерів вручну.",
+    "option": {
+      "type": "«{{name}}»: значення неправильного типу.",
+      "choice": "«{{name}}»: значення не входить до списку варіантів.",
+      "length": "«{{name}}»: значення задовге або містить порожній елемент.",
+      "range": "«{{name}}»: значення поза допустимим діапазоном."
+    },
+    "invalidJson": "{{file}} не є коректним JSON. Виправте його вручну, а потім перезавантажте.",
+    "unreadable": "Не вдалося прочитати {{file}}.",
+    "runtimeOffline": "Середовище виконання mu недоступне. Перевірте локальний засіб запуску та вхід.",
+    "otherRegistration": "У застосунку вже зареєстровано іншу команду mu.",
+    "backend": "Локальний сервіс відповів не так, як очікувалося (HTTP {{status}}).",
+    "invalid": "Одне зі значень недійсне.",
+    "unknown": "У mu сталася помилка.",
+    "unwritable": "Не вдалося записати {{file}}.",
+    "contextLimit": "Межа контексту має бути 0 або цілим числом від {{min}} до {{max}}."
   }
 }

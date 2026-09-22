@@ -39,38 +39,38 @@
     "renamePlaceholder": "새 이름을 입력하세요",
     "renameSuccess": "이름이 변경되었습니다",
     "renameFailed": "이름 변경에 실패했습니다",
-    "batchManage": "Batch Manage",
-    "batchModeExit": "Exit Batch Mode",
-    "selectAll": "Select All",
-    "selectedCount": "{{count}} selected",
-    "batchExport": "Batch Export",
-    "batchExportConfirm": "Export {{count}} selected topics?",
-    "batchDelete": "Batch Delete",
-    "batchDeleteConfirm": "Delete {{count}} selected topics?",
-    "batchDeleteConfirm_one": "Delete {{count}} selected topics?",
-    "batchDeleteConfirm_other": "Delete {{count}} selected topics?",
-    "batchDeleteSuccess": "{{count}} topics deleted",
-    "batchDeleteSuccess_one": "{{count}} topics deleted",
-    "batchDeleteSuccess_other": "{{count}} topics deleted",
-    "batchNoSelection": "Please select topics first",
-    "export": "Export",
-    "exportDialogTitle": "Export Topics",
-    "exportDialogSingleDescription": "Export current topic conversation records (JSON + Markdown) and project files into a ZIP package.",
-    "exportDialogBatchDescription": "Export {{count}} selected topics' conversation records (JSON + Markdown) and project files into one ZIP package.",
-    "exportTargetFolder": "Export To Folder",
-    "exportSelectFolder": "Please select an export folder",
-    "exportDialogHint": "Folder selection follows the same interaction as changing the project.",
-    "exporting": "Exporting...",
-    "exportSuccess": "Export succeeded",
-    "exportCanceled": "Export canceled",
-    "exportFailed": "Export failed",
-    "pin": "Pin",
-    "unpin": "Unpin",
+    "batchManage": "일괄 관리",
+    "batchModeExit": "일괄 관리 종료",
+    "selectAll": "모두 선택",
+    "selectedCount": "{{count}}개 선택됨",
+    "batchExport": "일괄 내보내기",
+    "batchExportConfirm": "선택한 대화 {{count}}개를 내보낼까요?",
+    "batchDelete": "일괄 삭제",
+    "batchDeleteConfirm": "선택한 대화 {{count}}개를 삭제할까요?",
+    "batchDeleteConfirm_one": "선택한 대화 {{count}}개를 삭제할까요?",
+    "batchDeleteConfirm_other": "선택한 대화 {{count}}개를 삭제할까요?",
+    "batchDeleteSuccess": "대화 {{count}}개를 삭제했습니다",
+    "batchDeleteSuccess_one": "대화 {{count}}개를 삭제했습니다",
+    "batchDeleteSuccess_other": "대화 {{count}}개를 삭제했습니다",
+    "batchNoSelection": "먼저 대화를 선택하세요",
+    "export": "내보내기",
+    "exportDialogTitle": "대화 내보내기",
+    "exportDialogSingleDescription": "현재 대화의 기록(JSON + Markdown)과 프로젝트 파일을 ZIP 파일로 내보냅니다.",
+    "exportDialogBatchDescription": "선택한 대화 {{count}}개의 대화 기록(JSON + Markdown)과 프로젝트 파일을 하나의 ZIP 파일로 내보냅니다.",
+    "exportTargetFolder": "내보낼 폴더",
+    "exportSelectFolder": "내보낼 폴더를 선택하세요",
+    "exportDialogHint": "폴더 선택 방식은 프로젝트 변경과 같습니다.",
+    "exporting": "내보내는 중...",
+    "exportSuccess": "내보내기가 완료되었습니다",
+    "exportCanceled": "내보내기가 취소되었습니다",
+    "exportFailed": "내보내기에 실패했습니다",
+    "pin": "고정",
+    "unpin": "고정 해제",
     "markAsUnread": "읽지 않음으로 표시",
     "markAsRead": "읽음으로 표시",
-    "pinned": "Pinned",
-    "pinFailed": "Pin operation failed",
-    "pinnedSection": "Pinned",
+    "pinned": "고정됨",
+    "pinFailed": "고정하지 못했습니다",
+    "pinnedSection": "고정됨",
     "deleteSuccess": "삭제되었습니다",
     "deleteFailed": "삭제에 실패했습니다",
     "projectsSection": "프로젝트",
@@ -83,13 +83,20 @@
     "archive": "보관",
     "archiveSuccess": "보관됨",
     "archiveFailed": "보관 실패",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "일괄 보관",
+    "batchArchiveConfirm": "선택한 대화 {{count}}개를 보관할까요? 설정 > 보관됨에서 복원하거나 삭제할 수 있습니다.",
+    "batchArchiveSuccess": "대화 {{count}}개를 보관했습니다",
+    "archiveProject": "프로젝트 보관",
+    "archiveProjectTitle": "프로젝트 보관",
+    "archiveProjectConfirm": "프로젝트 “{{name}}”을(를) 보관할까요? 이 프로젝트의 대화 {{count}}개도 함께 보관됩니다. 설정 > 보관됨에서 복원하거나 삭제할 수 있습니다.",
+    "archiving": "보관 중...",
+    "batchArchiveConfirm_one": "선택한 대화 {{count}}개를 보관할까요? 설정 > 보관됨에서 복원하거나 삭제할 수 있습니다.",
+    "batchArchiveConfirm_other": "선택한 대화 {{count}}개를 보관할까요? 설정 > 보관됨에서 복원하거나 삭제할 수 있습니다.",
+    "batchArchiveSuccess_one": "대화 {{count}}개를 보관했습니다",
+    "batchArchiveSuccess_other": "대화 {{count}}개를 보관했습니다",
+    "archiveProjectConfirm_one": "프로젝트 “{{name}}”을(를) 보관할까요? 이 프로젝트의 대화 {{count}}개도 함께 보관됩니다. 설정 > 보관됨에서 복원하거나 삭제할 수 있습니다.",
+    "archiveProjectConfirm_other": "프로젝트 “{{name}}”을(를) 보관할까요? 이 프로젝트의 대화 {{count}}개도 함께 보관됩니다. 설정 > 보관됨에서 복원하거나 삭제할 수 있습니다.",
+    "projectActions": "프로젝트 작업"
   },
   "historySearch": {
     "tooltip": "메시지 검색",
@@ -103,7 +110,7 @@
     "untitled": "제목 없는 대화"
   },
   "dropdown": {
-    "cliAgents": "CLI Agents",
+    "cliAgents": "CLI 에이전트",
     "presetAssistants": "프리셋 어시스턴트"
   },
   "noAgentsAvailable": "사용 가능한 에이전트가 없습니다",
@@ -114,9 +121,10 @@
       "WORKSPACE_PATH_UNAVAILABLE": "선택한 작업공간 경로를 사용할 수 없습니다. 작업공간 경로 \"{{workspacePath}}\" 가 실제로 존재하고 접근 가능한지 확인하세요."
     },
     "codes": {
-      "TEAM_ASSISTANT_ID_REQUIRED": "Please select an assistant before creating the team.",
-      "TEAM_ASSISTANT_NOT_FOUND": "Assistant {{assistantId}} is no longer available. Refresh the assistant list and choose another one.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Use assistant_id instead of {{field}}."
+      "TEAM_ASSISTANT_ID_REQUIRED": "팀을 만들기 전에 어시스턴트를 선택하세요.",
+      "TEAM_ASSISTANT_NOT_FOUND": "{{assistantId}} 어시스턴트는 더 이상 사용할 수 없습니다. 어시스턴트 목록을 새로 고친 뒤 다른 어시스턴트를 선택하세요.",
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "{{field}} 대신 assistant_id를 사용하세요.",
+      "WORKSPACE_PATH_UNAVAILABLE": "선택한 작업 공간 경로를 사용할 수 없습니다. 경로가 존재하고 접근 가능한지 확인하세요."
     }
   },
   "agentError": {
@@ -317,38 +325,39 @@
         "body": "앱이 상위 오류를 받았지만 에이전트, 제공자, 네트워크 또는 로컬 환경 중 어디에서 발생했는지 판단할 수 없었습니다."
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
-        "title": "Failed to read the team helper response",
-        "body": "AionUi could not read the local team helper response. Retry once, and if it keeps happening, restart the app."
+        "title": "팀 도우미 응답을 읽지 못했습니다",
+        "body": "AionUi가 로컬 팀 도우미의 응답을 읽지 못했습니다. 한 번 다시 시도하고, 계속 발생하면 앱을 다시 시작하세요."
       },
       "MCP_TOOL_REMOTE_ERROR": {
-        "title": "The local team helper rejected the request",
-        "body": "The local team helper returned an error while processing this request. Review the details below and retry after adjusting the team action."
+        "title": "로컬 팀 도우미가 요청을 거부했습니다",
+        "body": "로컬 팀 도우미가 이 요청을 처리하는 중 오류를 반환했습니다. 아래 세부 정보를 확인하고 팀 작업을 조정한 뒤 다시 시도하세요."
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
-        "title": "The team helper returned an unexpected response",
-        "body": "AionUi received an unexpected response from the local team helper. Retry once, and report it if the problem persists."
+        "title": "팀 도우미가 예기치 않은 응답을 반환했습니다",
+        "body": "AionUi가 로컬 팀 도우미로부터 예기치 않은 응답을 받았습니다. 한 번 다시 시도하고, 문제가 계속되면 신고하세요."
       },
       "MCP_TCP_READ_FAILED": {
-        "title": "Failed to read from the local team helper",
-        "body": "AionUi could not read the local team helper TCP response. Retry once, and restart the app if it keeps failing."
+        "title": "로컬 팀 도우미에서 읽지 못했습니다",
+        "body": "AionUi가 로컬 팀 도우미의 TCP 응답을 읽지 못했습니다. 한 번 다시 시도하고, 계속 실패하면 앱을 다시 시작하세요."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
-        "title": "Team service is not ready yet",
-        "body": "The local team session is still starting or has been interrupted. Wait a moment and retry."
+        "title": "팀 서비스가 아직 준비되지 않았습니다",
+        "body": "로컬 팀 세션이 아직 시작 중이거나 중단되었습니다. 잠시 기다린 뒤 다시 시도하세요."
       },
       "TEAM_ASSISTANT_ID_REQUIRED": {
-        "title": "A teammate assistant must be selected",
-        "body": "Choose a real assistant from the available assistant catalog before creating or spawning a teammate."
+        "title": "팀 멤버 어시스턴트를 선택해야 합니다",
+        "body": "팀 멤버를 만들거나 실행하기 전에 사용 가능한 어시스턴트 카탈로그에서 실제 어시스턴트를 선택하세요."
       },
       "TEAM_ASSISTANT_NOT_FOUND": {
-        "title": "The selected assistant is no longer available",
-        "body": "Refresh the assistant catalog, then choose another assistant for this teammate."
+        "title": "선택한 어시스턴트를 더 이상 사용할 수 없습니다",
+        "body": "어시스턴트 카탈로그를 새로 고친 뒤 이 팀 멤버에 사용할 다른 어시스턴트를 선택하세요."
       },
       "TEAM_ASSISTANT_FIELD_UNSUPPORTED": {
-        "title": "The request used a legacy team identity field",
-        "body": "This team action must use assistant_id instead of legacy backend or agent fields."
+        "title": "요청에 이전 팀 식별 필드가 사용되었습니다",
+        "body": "이 팀 작업에는 이전 backend 또는 agent 필드 대신 assistant_id를 사용해야 합니다."
       }
-    }
+    },
+    "errorCodeValue": "오류 코드: {{code}}"
   },
   "workspace": {
     "title": "프로젝트",
@@ -432,7 +441,10 @@
       "terminal": "터미널",
       "explorer": "파일 탐색기",
       "browser": "브라우저"
-    }
+    },
+    "collapsePanel": "프로젝트 패널 숨기기",
+    "togglePanel": "프로젝트 패널 표시/숨기기",
+    "expandPanel": "프로젝트 패널 표시"
   },
   "minimap": {
     "searchAria": "대화 검색",
@@ -441,7 +453,9 @@
     "noMatch": "일치하는 내용이 없습니다",
     "count": "{{count}} 건",
     "count_one": "{{count}} 건",
-    "count_other": "{{count}} 건"
+    "count_other": "{{count}} 건",
+    "questionLabel": "질문:",
+    "answerLabel": "답변:"
   },
   "chat": {
     "noModelSelected": "현재 세션에 선택된 모델이 없어 메시지를 보낼 수 없습니다",
@@ -475,8 +489,11 @@
       "permissionDenied": "마이크 권한이 거부되었습니다",
       "recordingUnsupported": "현재 환경에서는 직접 녹음할 수 없습니다. 오디오 파일을 업로드해 주세요",
       "transcriptionFailed": "오디오 전사에 실패했습니다",
-      "genericError": "음성 입력에 실패했습니다. 다시 시도해 주세요"
-    }
+      "genericError": "음성 입력에 실패했습니다. 다시 시도해 주세요",
+      "transcriptionFailedStatus": "전사에 실패했습니다(HTTP {{status}})"
+    },
+    "archivedCannotSend": "보관된 대화이므로 새 메시지를 보낼 수 없습니다.",
+    "awaitingConfirmation": "확인 대기 중"
   },
   "sideQuestion": {
     "title": "잠깐 질문",
@@ -530,9 +547,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "이 에이전트가 응답하는 동안에는 끼어들기를 지원하지 않습니다. Draft box에 추가를 사용하세요.",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "전송 방식 선택",
+    "midturnBlockedSendHint": "이 에이전트가 아직 작업 중이어서 메시지를 바로 보낼 수 없습니다. 임시함에 저장한 뒤 나중에 보내세요.",
+    "addToQueueBusyHint": "임시함에 저장한 뒤 나중에 보내세요."
   },
   "contextUsage": {
     "tokensUsed": "{{tokens}} 토큰 사용됨",
@@ -569,7 +586,10 @@
   },
   "thinking": {
     "label": "생각 중...",
-    "history": "사고 기록"
+    "history": "사고 기록",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "생각 완료 · {{time}}",
+    "elapsed": "({{time}})"
   },
   "skills": {
     "loaded": "로드된 스킬",
@@ -584,7 +604,9 @@
       "failed": "실패",
       "unsupported": "지원되지 않음"
     },
-    "selected": "선택된 MCP"
+    "selected": "선택된 MCP",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "선택된 MCP · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "실행 환경을 준비하는 중입니다. 첫 시작은 조금 더 오래 걸릴 수 있습니다."
@@ -630,15 +652,15 @@
   },
   "notFound": "대화를 찾을 수 없거나 삭제되었습니다",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "프로젝트에 폴더 추가",
     "refreshFiles": "파일 새로 고침",
     "refreshChanges": "변경 새로 고침",
     "collapseAll": "모두 접기",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "프로젝트에서 제거",
+    "attachDuplicate": "이 폴더는 이미 프로젝트에 있습니다",
+    "attachOverlap": "이 폴더는 프로젝트에 이미 있는 폴더와 겹칩니다",
+    "attachFailed": "폴더를 추가하지 못했습니다",
+    "removeFailed": "폴더를 제거하지 못했습니다",
     "contextMenu": {
       "rename": "이름 바꾸기",
       "addToChat": "채팅에 추가",
@@ -657,7 +679,7 @@
       "changes": "변경"
     },
     "addedToChat": "{{name}}을(를) 채팅에 추가했습니다",
-    "imported": "{{count}}개 파일을 가져왔습니다",
+    "imported": "파일 {{count}}개를 가져왔습니다",
     "importPartialFailed": "{{copied}}개 복사, {{failed}}개 실패(이름 충돌 또는 미지원)",
     "importFailed": "파일 가져오기에 실패했습니다",
     "copyNodeFailed": "복사에 실패했습니다",
@@ -727,7 +749,7 @@
         "confirmDiscardTitle": "변경을 버릴까요?",
         "confirmDiscardTracked": "{{count}}개 파일의 편집 내용이 사라지며 되돌릴 수 없습니다.",
         "confirmDiscardUntracked": "새 파일 {{count}}개가 휴지통으로 이동됩니다.",
-        "confirmDiscardMixed": "{{tracked}}개 파일의 편집 내용은 되돌릴 수 없이 사라지고, 새 파일 {{untracked}}개는 휴지통으로 이동됩니다.",
+        "confirmDiscardMixed": "편집 내용이 영구히 사라지는 변경 파일: {{tracked}}개. 휴지통으로 이동되는 새 파일: {{untracked}}개.",
         "discardConfirmButton": "버리기",
         "okStage": "파일 {{count}}개를 스테이징했습니다",
         "okStage_one": "파일 {{count}}개를 스테이징했습니다",
@@ -748,11 +770,17 @@
         "outcomeUnknown": "응답이 오기 전에 연결이 재설정되었습니다 — 이 작업은 완료되었을 수도, 되지 않았을 수도 있습니다. 다시 시도하기 전에 새로 고쳐 파일 목록을 확인하세요.",
         "allFailed": "{{count}}개 파일을 모두 처리하지 못했습니다",
         "allFailed_one": "{{count}}개 파일을 모두 처리하지 못했습니다",
-        "allFailed_other": "{{count}}개 파일을 모두 처리하지 못했습니다"
+        "allFailed_other": "{{count}}개 파일을 모두 처리하지 못했습니다",
+        "confirmDiscardTracked_one": "파일 {{count}}개의 편집 내용이 사라집니다. 이 작업은 되돌릴 수 없습니다.",
+        "confirmDiscardTracked_other": "파일 {{count}}개의 편집 내용이 사라집니다. 이 작업은 되돌릴 수 없습니다.",
+        "confirmDiscardUntracked_one": "새 파일 {{count}}개가 휴지통으로 이동됩니다.",
+        "confirmDiscardUntracked_other": "새 파일 {{count}}개가 휴지통으로 이동됩니다."
       }
     },
     "pathCopied": "경로가 복사되었습니다",
-    "copyFailed": "경로 복사에 실패했습니다"
+    "copyFailed": "경로 복사에 실패했습니다",
+    "imported_one": "파일 {{count}}개를 가져왔습니다",
+    "imported_other": "파일 {{count}}개를 가져왔습니다"
   },
   "terminal": {
     "running": "실행 중",
@@ -781,5 +809,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "계획 펼치기",
     "collapse": "계획 접기"
-  }
+  },
+  "createFailedWithDetail": "대화 생성에 실패했습니다: {{error}}",
+  "agentStartFailedWithDetail": "에이전트를 시작하지 못했습니다: {{error}}"
 }

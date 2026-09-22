@@ -10,7 +10,7 @@
   "yoloNoSandbox": "Auto completo (sin sandbox)",
   "auto": "Auto",
   "dontAsk": "No preguntar",
-  "bypass": "Bypass (YOLO)",
+  "bypass": "Omitir comprobaciones (YOLO)",
   "bypassPermissions": "YOLO",
   "smart": "Inteligente",
   "build": "Modo construcción",

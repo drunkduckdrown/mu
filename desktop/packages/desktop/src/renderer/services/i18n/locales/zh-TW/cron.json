@@ -27,7 +27,7 @@
   "deleteSuccess": "任務已刪除",
   "pauseSuccess": "任務已暫停",
   "resumeSuccess": "任務已恢復",
-  "message.badge": "Scheduled",
+  "message.badge": "定時任務",
   "allScheduledTasks": "全部定時任務",
   "noTasks": "暫無定時任務",
   "runNowSuccess": "任務已觸發執行",

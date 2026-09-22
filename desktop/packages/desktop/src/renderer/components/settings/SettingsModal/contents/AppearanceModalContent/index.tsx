@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '@/renderer/components/settings/LanguageSwitcher';
 import ScaleControl from '@/renderer/components/settings/ScaleControl';
 import CssThemeSettings from '@renderer/pages/settings/AppearanceSettings/CssThemeSettings';
 import AionScrollArea from '@/renderer/components/base/AionScrollArea';
@@ -46,11 +47,12 @@ const PreferenceRow: React.FC<{
 /**
  * 外观设置内容组件 / Appearance settings content component
  *
- * 提供外观相关的配置选项，包括主题画廊、字体（字族 + 字号）和缩放
- * Provides appearance-related configuration options including theme gallery,
- * fonts (family + size) and scale.
+ * 提供外观相关的配置选项，包括界面语言、主题画廊、字体（字族 + 字号）和缩放
+ * Provides appearance-related configuration options including the interface
+ * language, theme gallery, fonts (family + size) and scale.
  *
  * @features
+ * - 界面语言（与「系统」页同一个切换）/ Interface language (the same switch as on System)
  * - 统一主题画廊（浅色、深色及装饰主题）/ Unified theme gallery (light, dark, decorative)
  * - 分区字体：全局/聊天/Markdown/代码，每区可选字族与字号，未选字族的区继承全局
  *   Per-region fonts: global/chat/markdown/code, each with a family + size;
@@ -68,6 +70,15 @@ const AppearanceModalContent: React.FC = () => {
       {/* 内容区域 / Content Area */}
       <AionScrollArea className='flex-1 min-h-0 pb-16px' disableOverflow={isPageMode}>
         <div className='space-y-16px'>
+          {/* 语言：也是「系统」页的第一行，两处用同一个控件 / Language: also the first row of System, the same control */}
+          <div className='px-16px md:px-24px lg:px-28px py-14px md:py-16px bg-2 rd-16px'>
+            <div className='w-full flex flex-col divide-y divide-border-2' data-testid='appearance-language'>
+              <PreferenceRow label={t('settings.language')}>
+                <LanguageSwitcher />
+              </PreferenceRow>
+            </div>
+          </div>
+
           {/* 主题画廊 / Theme Gallery */}
           <div className='px-16px md:px-24px lg:px-28px py-14px md:py-16px bg-2 rd-16px'>
             <div className='text-14px text-t-primary leading-22px mb-12px'>{t('settings.theme')}</div>

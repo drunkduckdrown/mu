@@ -3,6 +3,7 @@ import {
   answerRows,
   DECISIONS,
   judgeCards,
+  readReason,
   reasonCode,
   resultFacts,
   runtimeEvents,
@@ -455,7 +456,99 @@ describe('JeV judgment cards: what the view can translate', () => {
     const kinds = ['timeout', 'aborted', 'unreachable', 'auth', 'payment_required', 'rate_limited', 'bad_request'];
     for (const locale of [common, zhCN, zhTW]) {
       const values = locale.kyrn.judgeView.values as Record<string, string>;
-      for (const kind of [...kinds, 'server', 'invalid_response', 'no_answer']) expect(values[kind]).toBeTruthy();
+      for (const kind of [...kinds, 'server', 'invalid_response', 'unexpected', 'all', 'no_answer'])
+        expect(values[kind]).toBeTruthy();
     }
+  });
+
+  it('prefers the stable reason code and keeps what it names, reading older records by their words', () => {
+    expect(readReason('no answer after 6.0 s')).toEqual({ code: 'no_answer', params: { seconds: 6 } });
+    expect(readReason('no answer after 6.0 s', 'no_answer', { seconds: 6, note: 'x' })).toEqual({
+      code: 'no_answer',
+      params: { seconds: 6 },
+      text: 'no answer after 6.0 s',
+    });
+    // A coded record that lost its parameters still names its seconds in its words.
+    expect(readReason('no answer after 4.5 s', 'no_answer')).toMatchObject({ params: { seconds: 4.5 } });
+    // The English beside a code is kept for a code the view has no words for; a reason that is its code is not.
+    expect(readReason('the judge budget is spent', 'budget_spent')).toEqual({
+      code: 'budget_spent',
+      params: undefined,
+      text: 'the judge budget is spent',
+    });
+    expect(readReason('error:auth', 'error:auth')).toEqual({ code: 'error:auth', params: undefined });
+    expect(readReason('skipped', 'skipped', {})).toEqual({ code: 'skipped', params: undefined });
+    expect(readReason(undefined)).toEqual({ code: '' });
+
+    const [coded] = judgeCards([
+      event(
+        'preflight.verdict',
+        verdict({
+          state: 'none',
+          reason: 'no answer after 4.5 s',
+          reasonCode: 'no_answer',
+          reasonParams: { seconds: 4.5 },
+        }),
+        turn('runtime-a', 1, 2)
+      ),
+    ]);
+    const [older] = judgeCards([
+      event('preflight.verdict', verdict({ state: 'none', reason: 'no answer after 6.0 s' }), turn('runtime-a', 1, 2)),
+    ]);
+    expect(coded).toMatchObject({
+      reason: 'no_answer',
+      reasonParams: { seconds: 4.5 },
+      reasonFallback: 'no answer after 4.5 s',
+    });
+    expect(older).toMatchObject({ reason: 'no_answer', reasonParams: { seconds: 6 } });
+  });
+
+  it('keeps each hint beside its id, and has no ids for a record from before them', () => {
+    const [card] = judgeCards([
+      event(
+        'preflight.verdict',
+        verdict({ hints: ['Ask first.', 42, 'Plan first.'], hintIds: ['clarify', 'odd', 'plan_first'] }),
+        turn('runtime-a', 1, 2)
+      ),
+    ]);
+    expect(card.hints).toEqual(['Ask first.', '', 'Plan first.']);
+    expect(card.hintIds).toEqual(['clarify', 'odd', 'plan_first']);
+
+    const [older] = judgeCards([
+      event('preflight.verdict', verdict({ hints: ['Ask first.'] }), turn('runtime-a', 1, 2)),
+    ]);
+    expect(older).toMatchObject({ hints: ['Ask first.'], hintIds: [''] });
+    const [shadow] = judgeCards([
+      event('preflight.verdict', verdict({ state: 'shadow', hints: ['Ask first.'], hintIds: ['clarify'] })),
+    ]);
+    expect(shadow).toMatchObject({ hints: [], hintIds: [] });
+  });
+
+  it('reads a verdict’s answers by question id rather than as English label and value pairs', () => {
+    const answerValues = {
+      turn_type: { type: 'choice', choice: 'research', probabilities: { research: 0.6, chat: 0.1 } },
+      plan_first: { type: 'boolean', probability: 0.8 },
+      task_complexity: { type: 'score', score: 2 },
+    };
+    const [card] = judgeCards([event('preflight.verdict', verdict({ answerValues }), turn('runtime-a', 1, 2))]);
+    expect(answerRows(card).rows).toEqual([
+      {
+        id: 'turn_type',
+        type: 'choice',
+        choice: 'research',
+        options: [
+          { name: 'research', probability: 0.6 },
+          { name: 'chat', probability: 0.1 },
+        ],
+      },
+      { id: 'plan_first', type: 'boolean', probability: 0.8 },
+      { id: 'task_complexity', type: 'score', score: 2 },
+    ]);
+
+    // Without the ids, the pairs the harness wrote are all there is.
+    const [older] = judgeCards([event('preflight.verdict', verdict(), turn('runtime-a', 1, 2))]);
+    expect(answerRows(older).rows).toEqual([
+      { id: 'Turn type', type: 'text', text: 'multi-step task 55% · research 32%' },
+    ]);
   });
 });

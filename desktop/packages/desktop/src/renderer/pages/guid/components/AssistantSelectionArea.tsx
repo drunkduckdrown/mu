@@ -219,7 +219,8 @@ const AssistantSelectionArea: React.FC<AssistantSelectionAreaProps> = ({
     );
   }, [agentSearchTextById, localeKey, overflowAssistants, search, showOverflowSearch]);
 
-  if (enabledAssistants.length === 0) return null;
+  // A picker with one assistant has nothing to pick: mu alone shows no badge. It returns with a second assistant.
+  if (enabledAssistants.length < 2) return null;
 
   const renderAssistantPill = (assistant: Assistant, testId: string, fullWidth = false) => {
     const avatar = resolveAssistantAvatar(assistant.avatar);

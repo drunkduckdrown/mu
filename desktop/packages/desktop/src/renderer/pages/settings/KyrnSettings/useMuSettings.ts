@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { kyrnBridge, unwrap } from '@/common/kyrn/bridge';
 import type { AvailableModels } from '@/common/kyrn/models';
 import type { KyrnSettings } from '@/common/kyrn/types';
-import { dirtySections, isStale, newDraft, toSave, type Draft, type SectionId } from './draft';
+import { completeSettings, dirtySections, isStale, newDraft, toSave, type Draft, type SectionId } from './draft';
 import { toMuError, type MuError } from './fields/muError';
 
 export type MuSettings = {
@@ -42,6 +42,7 @@ export function useMuSettings(): MuSettings {
     void kyrnBridge.settings
       .invoke()
       .then(unwrap)
+      .then(completeSettings)
       .then((value) => {
         setBase(value);
         setDraft(newDraft(value));
@@ -74,7 +75,7 @@ export function useMuSettings(): MuSettings {
     setSaving(true);
     setError(undefined);
     try {
-      const saved = unwrap(await kyrnBridge.save.invoke(toSave(draft, base)));
+      const saved = completeSettings(unwrap(await kyrnBridge.save.invoke(toSave(draft, base))));
       setBase(saved);
       setDraft(newDraft(saved));
       return true;

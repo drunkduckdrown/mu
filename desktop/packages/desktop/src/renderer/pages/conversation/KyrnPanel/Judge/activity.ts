@@ -39,13 +39,44 @@ export type JudgeStage = (typeof DECISIONS)[keyof typeof DECISIONS] | 'other';
 export const stageOf = (specId: string): JudgeStage => DECISIONS[specId as keyof typeof DECISIONS] ?? 'other';
 
 /** The harness words an unanswered classification as "no answer after 6.0 s"; the view shows it as a code. */
-const NO_ANSWER = /^no answer after \d+(?:\.\d+)? s$/;
+const NO_ANSWER = /^no answer after (\d+(?:\.\d+)?) s$/;
+
+/** What a reason names, such as the seconds waited: numbers only, anything else is dropped. */
+export type ReasonParams = Record<string, number>;
+
+const numbers = (value: unknown): ReasonParams | undefined => {
+  const entries = Object.entries(record(value)).filter(
+    (entry): entry is [string, number] => typeof entry[1] === 'number' && Number.isFinite(entry[1])
+  );
+  return entries.length ? Object.fromEntries(entries) : undefined;
+};
+
+/** A reason as the view reads it: the code, what it names, and the recorded words where they differ from the code. */
+export type ReadReason = { code: string; params?: ReasonParams; text?: string };
 
 /**
- * A recorded reason as a code the view can translate: `error:<kind>` and the judge's own codes stay as they are,
- * the preflight's English sentence for a wait without an answer becomes `no_answer`.
+ * A recorded reason as a code the view can translate, with what it names. A stable `code` beside the reason wins;
+ * without one (records from before the harness sent codes), `error:<kind>` and the judge's own codes stay as they
+ * are, and the preflight's English sentence for a wait without an answer becomes `no_answer` with its seconds.
+ * `text` keeps the recorded English beside a code, for a code this build has no words for.
  */
-export const reasonCode = (reason: string): string => (NO_ANSWER.test(reason.trim()) ? 'no_answer' : reason);
+export function readReason(reason: unknown, code?: unknown, params?: unknown): ReadReason {
+  const text = str(reason).trim();
+  const unanswered = NO_ANSWER.exec(text);
+  if (typeof code === 'string' && code) {
+    const named = numbers(params);
+    // A record whose parameters were lost still names its seconds in its words.
+    const read =
+      code === 'no_answer' && named?.seconds === undefined && unanswered
+        ? { ...named, seconds: Number(unanswered[1]) }
+        : named;
+    return { code, params: read, ...(text && text !== code ? { text } : {}) };
+  }
+  return unanswered ? { code: 'no_answer', params: { seconds: Number(unanswered[1]) } } : { code: text };
+}
+
+/** `readReason` without the parameters. */
+export const reasonCode = (reason: string): string => readReason(reason).code;
 
 /**
  * What became of a judgment. `returned` only says the runtime received it; `confirmed` needs a
@@ -89,9 +120,17 @@ export type JudgeCard = {
   model: string;
   latencyMs?: number;
   outcome: unknown;
+  /** Why the judge's answer did not drive execution, as a code (`abstain`, `error:timeout`, `no_answer`…). */
   reason: string;
+  /** What the reason names (`no_answer`: `seconds`). */
+  reasonParams?: ReasonParams;
+  /** The recorded English beside a reason code, shown when this build has no words for the code. */
+  reasonFallback?: string;
   thinking?: { from: string; to: string };
+  /** What the main model was told, in the harness's (English) words. */
   hints: string[];
+  /** Which hints those are, in the same order (`clarify`, `side_question`…); '' where a record names none. */
+  hintIds: string[];
   answers: unknown;
   batch?: { size: number; failures: number };
   route?: { from: string; to: string };
@@ -151,6 +190,7 @@ function decisionCard(group: Group, ledger: Payload): JudgeCard {
     outcome: shadow && ledger.judged !== undefined ? ledger.judged : ledger.outcome,
     reason: str(ledger.reason),
     hints: [],
+    hintIds: [],
     answers: ledger.answers ?? record(ledger.batch).answers,
     batch: batchOf(ledger),
     preview: '',
@@ -194,14 +234,20 @@ function preflightCard(group: Group, ended: (group: Group) => boolean): JudgeCar
       outcome: undefined,
     };
   }
+  const why = readReason(verdict.reason, verdict.reasonCode, verdict.reasonParams);
   const change = record(verdict.thinking);
   const thinking =
     str(change.from) && str(change.to) && change.from !== change.to
       ? { from: str(change.from), to: str(change.to) }
       : undefined;
-  const hints = Array.isArray(verdict.hints)
-    ? verdict.hints.filter((hint): hint is string => typeof hint === 'string')
-    : [];
+  // A hint and its id share an index; a record from before the ids has the sentences only.
+  const sentences = Array.isArray(verdict.hints) ? verdict.hints.map(str) : [];
+  const ids = Array.isArray(verdict.hintIds) ? verdict.hintIds.map(str) : [];
+  const told = Array.from({ length: Math.max(sentences.length, ids.length) }, (_, index) => ({
+    hint: sentences[index] ?? '',
+    id: ids[index] ?? '',
+  })).filter((pair) => pair.hint || pair.id);
+  const hints = told.map((pair) => pair.hint);
   const applied = verdict.state === 'applied';
   const effect = applied && (thinking !== undefined || hints.length > 0);
   let state: JudgeState = 'unknown';
@@ -220,10 +266,12 @@ function preflightCard(group: Group, ended: (group: Group) => boolean): JudgeCar
     model: state === 'rule' ? '' : base.model,
     latencyMs: amount(verdict.latencyMs) ?? base.latencyMs ?? amount(wait?.waitedMs),
     outcome: { turnType: verdict.turnType, gear: verdict.gear },
-    reason: str(verdict.reason) || base.reason,
+    ...(why.code ? { reason: why.code, reasonParams: why.params, reasonFallback: why.text } : {}),
     thinking: applied ? thinking : undefined,
     hints: applied ? hints : [],
-    answers: ledger?.answers ?? verdict.answers,
+    hintIds: applied ? told.map((pair) => pair.id) : [],
+    // The answers by question id as the judge gave them; the label and English value pairs are for older records.
+    answers: ledger?.answers ?? verdict.answerValues ?? verdict.answers,
   };
 }
 
@@ -261,6 +309,7 @@ function gateCard(group: Group, receipts: ReadonlySet<string>, notes: ReadonlyMa
     },
     reason,
     hints: [],
+    hintIds: [],
     answers: undefined,
     route: { from: str(gate.bee) || str(gate.from), to: str(gate.to) },
     preview: str(gate.text) || str(gate.head) || str(note?.text),

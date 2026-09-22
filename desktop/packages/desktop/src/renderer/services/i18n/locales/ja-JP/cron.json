@@ -39,7 +39,7 @@
   "drawer.nextRun": "Next Run",
   "drawer.save": "Save",
   "drawer.saveSuccess": "Saved successfully",
-  "message.badge": "Scheduled",
+  "message.badge": "スケジュール",
   "allScheduledTasks": "すべてのスケジュールタスク",
   "noTasks": "スケジュールタスクがありません",
   "runNowSuccess": "タスクの実行をトリガーしました",
@@ -55,7 +55,8 @@
     "noHistory": "実行履歴はありません",
     "notFound": "タスクが見つかりません",
     "executionModeDescriptionNew": "実行のたびに新しい会話を作成するため、前回までの文脈は引き継がれません。定期レポートや巡回チェックなど、各回を独立させたいタスクに向いています。",
-    "executionModeDescriptionExisting": "実行のたびに同じ会話で続行するため、過去の文脈や結果を引き継げます。前回の内容を踏まえて追跡したい継続タスクに向いています。"
+    "executionModeDescriptionExisting": "実行のたびに同じ会話で続行するため、過去の文脈や結果を引き継げます。前回の内容を踏まえて追跡したい継続タスクに向いています。",
+    "lastRunFailed": "前回の実行は失敗しました"
   },
   "notification": {
     "taskComplete": "タスク完了",
@@ -139,7 +140,19 @@
       "hourly": "毎時実行",
       "dailyAt": "毎日 {{time}} に実行",
       "weekdaysAt": "平日 {{time}} に実行",
-      "weeklyAt": "毎週{{day}} {{time}} に実行"
+      "weeklyAt": "毎週{{day}} {{time}} に実行",
+      "everyMinute": "毎分実行",
+      "everyNMinutes": "{{count}} 分ごとに実行",
+      "everyNMinutes_one": "{{count}} 分ごとに実行",
+      "everyNMinutes_other": "{{count}} 分ごとに実行",
+      "everyNHours": "{{count}} 時間ごとに実行",
+      "everyNHours_one": "{{count}} 時間ごとに実行",
+      "everyNHours_other": "{{count}} 時間ごとに実行",
+      "weeklyOnDaysAt": "毎週 {{days}} {{time}} に実行",
+      "monthlyAt": "毎月 {{day}} 日 {{time}} に実行",
+      "everyInterval": "{{interval}} ごとに実行",
+      "onceAt": "{{time}} に 1 回実行",
+      "customExpr": "カスタムスケジュール（{{expr}}）"
     },
     "custom": {
       "modeLabel": "繰り返し方法",
@@ -155,6 +168,8 @@
       "monthDay": "日付",
       "preview": "生成された Cron"
     },
+    "createFailed": "タスクを作成できませんでした：{{error}}",
+    "updateFailed": "タスクを保存できませんでした：{{error}}",
     "searchPlaceholder": "タスクを検索...",
     "noSearchResults": "一致するスケジュール済みタスクはありません。"
   },
@@ -176,5 +191,11 @@
     "conversationNotFound": "会話が見つかりません",
     "scheduledTimePassed": "予定時刻が過ぎました",
     "conversationBusy": "会話がビジーです。{{count}} 回の試行後にスキップしました"
-  }
+  },
+  "nextRunAt": "次回実行：{{time}}",
+  "keepAwakeFailed": "スリープ防止の設定を変更できませんでした：{{error}}",
+  "pauseFailed": "タスクを一時停止できませんでした：{{error}}",
+  "resumeFailed": "タスクを再開できませんでした：{{error}}",
+  "deleteFailed": "タスクを削除できませんでした：{{error}}",
+  "runNowFailed": "タスクを実行できませんでした：{{error}}"
 }

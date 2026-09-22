@@ -138,7 +138,8 @@
     "printedToConsole": "Información del elemento registrada en consola",
     "inspectElement": "Inspeccionar elemento",
     "inspectElementEnable": "Activar inspector de elementos",
-    "inspectElementDisable": "Desactivar inspector de elementos"
+    "inspectElementDisable": "Desactivar inspector de elementos",
+    "frameTitle": "Vista previa de HTML"
   },
   "ppt": {
     "loading": "Iniciando vista previa de PPT...",
@@ -241,6 +242,79 @@
       "deny": "Denegar",
       "countdown": "Se denegará automáticamente en {{seconds}} s",
       "untrusted": "El texto de arriba procede de la página web. Fíate de lo que muestra la propia página."
+    },
+    "detachCause": "Causa",
+    "detachReason": {
+      "tab_closed": "Se ha cerrado la pestaña.",
+      "connection": "La sesión de navegación de mu ha terminado antes de que acabara la ejecución.",
+      "devtools": "Se han abierto las herramientas para desarrolladores en esta página.",
+      "crashed": "La página se ha bloqueado."
+    },
+    "permission": {
+      "location": "ubicación",
+      "media": "cámara o micrófono",
+      "notifications": "notificaciones",
+      "clipboard": "portapapeles",
+      "screen": "captura de pantalla",
+      "midi": "dispositivos MIDI",
+      "fullscreen": "pantalla completa",
+      "pointerLock": "bloqueo del ratón",
+      "devices": "dispositivos USB, serie o HID",
+      "storage": "acceso al almacenamiento",
+      "openExternal": "abrir otra aplicación",
+      "protectedContent": "reproducción de contenido protegido",
+      "windows": "gestión de ventanas"
+    },
+    "end": {
+      "stopped_by_user": "Lo detuvo la persona que estaba mirando.",
+      "max_steps": "Se detuvo tras {{count}} acciones.",
+      "max_steps_one": "Se detuvo tras {{count}} acción.",
+      "max_steps_other": "Se detuvo tras {{count}} acciones.",
+      "no_judge": "Ningún juez pudo elegir una acción ({{judgeReason}}).",
+      "no_progress": "El juez no encontró ninguna operación que acercara al objetivo.",
+      "not_confirmed": "«{{label}}» parece irreversible y no se confirmó.",
+      "no_value": "No se pudo generar un valor para «{{label}}».",
+      "stuck": "{{count}} acciones seguidas no cambiaron nada.",
+      "stuck_one": "{{count}} acción no cambió nada.",
+      "stuck_other": "{{count}} acciones seguidas no cambiaron nada."
+    },
+    "judgeReason": {
+      "shadow": "modo sombra: su respuesta solo se registra",
+      "abstain": "el juez se abstuvo",
+      "off": "el juez está desactivado",
+      "noVerdict": "sin veredicto",
+      "error": {
+        "timeout": "se agotó el tiempo de espera del juez",
+        "aborted": "se canceló la llamada al juez",
+        "unreachable": "no se pudo contactar con el juez",
+        "auth": "se rechazó la clave del juez",
+        "payment_required": "el juez necesita un método de pago",
+        "rate_limited": "el juez ha alcanzado su límite de solicitudes",
+        "bad_request": "el juez rechazó la solicitud",
+        "server": "error en el servidor del juez",
+        "invalid_response": "no se pudo leer la respuesta del juez",
+        "unexpected": "un error inesperado",
+        "all": "fallaron todas las llamadas al juez",
+        "other": "falló la llamada al juez"
+      }
     }
-  }
+  },
+  "tabTitle": {
+    "image": "Imagen",
+    "diff": "Diferencias"
+  },
+  "sideBySide": "En paralelo",
+  "diffTag": {
+    "changed": "Modificado",
+    "added": "Añadido",
+    "deleted": "Eliminado",
+    "renamed": "Renombrado"
+  },
+  "diffEmpty": "No hay cambios en este archivo",
+  "mermaidTitleWithSummary": "Diagrama Mermaid: {{summary}}",
+  "wavedromTitleWithSummary": "Diagrama WaveDrom: {{summary}}",
+  "saveFailedWithDetail": "No se pudo guardar: {{detail}}",
+  "zoomActualSize": "Restablecer zoom",
+  "zoomFit": "Ajustar",
+  "zoomFitTooltip": "Ajustar al ancho del panel"
 }

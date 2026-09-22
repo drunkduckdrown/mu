@@ -264,6 +264,39 @@
       "openExternal": "開啟其他應用程式",
       "protectedContent": "受保護內容播放",
       "windows": "視窗管理"
+    },
+    "end": {
+      "stopped_by_user": "你叫停了這次執行。",
+      "max_steps": "執行 {{count}} 個操作後停止了。",
+      "max_steps_one": "執行 {{count}} 個操作後停止了。",
+      "max_steps_other": "執行 {{count}} 個操作後停止了。",
+      "no_judge": "沒有判定器能選出下一步操作（{{judgeReason}}）。",
+      "no_progress": "判定器找不到能推進目標的操作。",
+      "not_confirmed": "「{{label}}」看起來無法復原，且沒有得到確認。",
+      "no_value": "無法為「{{label}}」產生要填寫的內容。",
+      "stuck": "連續 {{count}} 個操作都沒有改變頁面。",
+      "stuck_one": "連續 {{count}} 個操作都沒有改變頁面。",
+      "stuck_other": "連續 {{count}} 個操作都沒有改變頁面。"
+    },
+    "judgeReason": {
+      "shadow": "影子模式，回答只做記錄",
+      "abstain": "判定器棄權",
+      "noVerdict": "沒有給出結論",
+      "error": {
+        "timeout": "判定器逾時",
+        "aborted": "判定請求已取消",
+        "unreachable": "無法連線到判定器",
+        "auth": "判定器金鑰遭拒",
+        "payment_required": "判定服務需要付款方式",
+        "rate_limited": "判定器請求過於頻繁",
+        "bad_request": "判定器拒絕了請求",
+        "server": "判定伺服器發生錯誤",
+        "invalid_response": "判定器的回答無法解析",
+        "unexpected": "非預期錯誤",
+        "all": "所有判定請求都失敗了",
+        "other": "判定請求失敗"
+      },
+      "off": "判定器未啟用"
     }
   },
   "tabTitle": {

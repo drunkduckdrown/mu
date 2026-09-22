@@ -1,8 +1,69 @@
 const record = (value: unknown): Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+const isRecord = (value: unknown): boolean => value !== null && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown): string => (typeof value === 'string' ? value : '');
 const number = (value: unknown): number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : 0;
+
+/** What a presentation code names (a count, a tool, a message): only strings and finite numbers are kept. */
+export type CodeParams = Readonly<Record<string, string | number>>;
+/** A sentence of the harness as a stable code and its params; the English next to it is the fallback. */
+export type Coded = { code: string; params: CodeParams };
+
+export function parseParams(value: unknown): CodeParams {
+  const params: Record<string, string | number> = {};
+  for (const [key, item] of Object.entries(record(value))) {
+    if (typeof item === 'string' || (typeof item === 'number' && Number.isFinite(item))) params[key] = item;
+  }
+  return params;
+}
+
+/** `{ code, params? }`, or undefined when there is no code to translate by. */
+export function parseCoded(value: unknown): Coded | undefined {
+  const row = record(value);
+  const code = text(row.code);
+  return code ? { code, params: parseParams(row.params) } : undefined;
+}
+
+/** One line of a bee's activity log; `code` is absent in sessions recorded before the harness wrote codes. */
+export type BeeActivity = { at: number; text: string; code?: string; params: CodeParams };
+/** A wrap-up that was requested: `reason` is the harness's English, `code` the same as a code. */
+export type BeeWrapUp = { at: number; reason: string; code?: string; params: CodeParams };
+/** Why a bee ended (`error`, in English) and the same as a code, plus the wrap-up it may have been asked for. */
+export type BeeErrorState = { error: string; errorCode?: string; errorParams: CodeParams; wrapUp?: BeeWrapUp };
+
+export function parseBeeActivity(value: unknown): BeeActivity[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((item): BeeActivity[] => {
+    const row = record(item);
+    const line = text(row.text);
+    const code = text(row.code);
+    if (!line && !code) return [];
+    return [{ at: number(row.at), text: line, ...(code ? { code } : {}), params: parseParams(row.params) }];
+  });
+}
+
+export function parseBeeError(value: unknown): BeeErrorState {
+  const bee = record(value);
+  const errorCode = text(bee.errorCode);
+  const wrapUp = record(bee.wrapUp);
+  const wrapUpCode = text(wrapUp.code);
+  return {
+    error: text(bee.error),
+    ...(errorCode ? { errorCode } : {}),
+    errorParams: parseParams(bee.errorParams),
+    ...(isRecord(bee.wrapUp)
+      ? {
+          wrapUp: {
+            at: number(wrapUp.at),
+            reason: text(wrapUp.reason),
+            ...(wrapUpCode ? { code: wrapUpCode } : {}),
+            params: parseParams(wrapUp.params),
+          },
+        }
+      : {}),
+  };
+}
 
 const BEE_STATUSES = [
   'queued',
@@ -17,7 +78,7 @@ const BEE_STATUSES = [
   'timed-out',
 ] as const;
 export type HiveBeeStatus = (typeof BEE_STATUSES)[number] | 'unknown';
-export type HiveBee = {
+export type HiveBee = BeeErrorState & {
   name: string;
   assignmentIndex: number;
   status: HiveBeeStatus;
@@ -30,12 +91,16 @@ export type HiveBee = {
   published: number;
   received: number;
   said: string;
-  error: string;
   quietMs: number;
   tool?: { name: string; summary: string };
+  /** The last few things it did, newest last. Empty in a final (compact) snapshot. */
+  recent: BeeActivity[];
 };
-export type HiveSnapshot = {
-  title: string;
+export type SwarmKind = 'hive' | 'delegate';
+/** A run's title. A delegate run's is mu's own words and has `titleCode`; a hive's is its goal, shown as it is. */
+export type SwarmTitle = { title: string; titleCode?: Coded };
+export type HiveSnapshot = SwarmTitle & {
+  kind: SwarmKind;
   bees: HiveBee[];
   startedAt: number;
   endedAt: number;
@@ -43,10 +108,17 @@ export type HiveSnapshot = {
 };
 export type HiveToolData = { goal: string; names: string[]; snapshot?: HiveSnapshot };
 
-/** Decode only display fields; paths and arbitrary tool metadata never reach the native view. */
-export function parseHiveSnapshot(value: unknown): HiveSnapshot | undefined {
+export function parseSwarmTitle(value: unknown): SwarmTitle {
   const row = record(value);
-  if (row.kind !== 'hive' || !Array.isArray(row.bees)) return undefined;
+  const titleCode = parseCoded(row.titleCode);
+  return { title: text(row.title), ...(titleCode ? { titleCode } : {}) };
+}
+
+/** Decode only display fields of a hive or delegate snapshot; paths and arbitrary tool metadata never reach the view. */
+export function parseSwarmSnapshot(value: unknown): HiveSnapshot | undefined {
+  const row = record(value);
+  const kind: SwarmKind | undefined = row.kind === 'hive' || row.kind === 'delegate' ? row.kind : undefined;
+  if (!kind || !Array.isArray(row.bees)) return undefined;
   const names = new Set<string>();
   const bees = row.bees.flatMap((item, assignmentIndex): HiveBee[] => {
     const bee = record(item);
@@ -69,19 +141,26 @@ export function parseHiveSnapshot(value: unknown): HiveSnapshot | undefined {
         published: number(bee.published),
         received: number(bee.received),
         said: text(bee.said),
-        error: text(bee.error),
+        ...parseBeeError(bee),
         quietMs: number(bee.quietMs),
         tool: text(tool.name) ? { name: text(tool.name), summary: text(tool.summary) } : undefined,
+        recent: parseBeeActivity(bee.recent),
       },
     ];
   });
   return {
-    title: text(row.title),
+    kind,
+    ...parseSwarmTitle(row),
     bees,
     startedAt: number(row.startedAt),
     endedAt: number(row.endedAt),
     now: number(row.now),
   };
+}
+
+/** A hive's snapshot only: a delegate run is drawn by the panel's own list, not as a hive. */
+export function parseHiveSnapshot(value: unknown): HiveSnapshot | undefined {
+  return record(value).kind === 'hive' ? parseSwarmSnapshot(value) : undefined;
 }
 
 /** Keep structured Hive data alongside the unchanged generic input/output evidence. */
@@ -96,6 +175,19 @@ export function parseHiveTool(title: string, input: unknown, output: unknown): H
       snapshot?.bees.map((bee) => bee.name) ??
       (Array.isArray(args.bees) ? args.bees.map((bee) => text(record(bee).name)).filter(Boolean) : []),
   };
+}
+
+const SWARM_PROGRESS_CODES = new Set(['choosing_roles']);
+
+/**
+ * What the delegate and hive tools say before their first snapshot, as a code:
+ * `details: { code: 'choosing_roles', params: { count } }` next to the English partial output.
+ */
+export function parseSwarmProgress(output: unknown): Coded | undefined {
+  const details = record(record(output).details);
+  if (details.snapshot !== undefined) return undefined;
+  const coded = parseCoded(details);
+  return coded && SWARM_PROGRESS_CODES.has(coded.code) ? coded : undefined;
 }
 
 export function isBeeActive(status: HiveBeeStatus): boolean {

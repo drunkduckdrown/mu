@@ -83,13 +83,20 @@
     "archive": "Archivar",
     "archiveSuccess": "Archivado",
     "archiveFailed": "Error al archivar",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "Archivar por lotes",
+    "batchArchiveConfirm": "¿Archivar {{count}} temas seleccionados? Puedes restaurarlos o eliminarlos desde Archivados en Configuración.",
+    "batchArchiveSuccess": "{{count}} temas archivados",
+    "archiveProject": "Archivar proyecto",
+    "archiveProjectTitle": "Archivar proyecto",
+    "archiveProjectConfirm": "¿Archivar el proyecto «{{name}}»? También se archivarán sus {{count}} conversaciones. Puedes restaurarlas o eliminarlas desde Archivados en Configuración.",
+    "archiving": "Archivando...",
+    "batchArchiveConfirm_one": "¿Archivar {{count}} tema seleccionado? Puedes restaurarlo o eliminarlo desde Archivados en Configuración.",
+    "batchArchiveConfirm_other": "¿Archivar {{count}} temas seleccionados? Puedes restaurarlos o eliminarlos desde Archivados en Configuración.",
+    "batchArchiveSuccess_one": "{{count}} tema archivado",
+    "batchArchiveSuccess_other": "{{count}} temas archivados",
+    "archiveProjectConfirm_one": "¿Archivar el proyecto «{{name}}»? También se archivará su conversación ({{count}}). Puedes restaurarla o eliminarla desde Archivados en Configuración.",
+    "archiveProjectConfirm_other": "¿Archivar el proyecto «{{name}}»? También se archivarán sus {{count}} conversaciones. Puedes restaurarlas o eliminarlas desde Archivados en Configuración.",
+    "projectActions": "Acciones del proyecto"
   },
   "historySearch": {
     "tooltip": "Buscar mensajes",
@@ -114,9 +121,10 @@
       "WORKSPACE_PATH_UNAVAILABLE": "La ruta del área de trabajo seleccionada no está disponible. Asegúrate de que la ruta \"{{workspacePath}}\" exista y sea accesible."
     },
     "codes": {
-      "TEAM_ASSISTANT_ID_REQUIRED": "Please select an assistant before creating the team.",
-      "TEAM_ASSISTANT_NOT_FOUND": "Assistant {{assistantId}} is no longer available. Refresh the assistant list and choose another one.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Use assistant_id instead of {{field}}."
+      "TEAM_ASSISTANT_ID_REQUIRED": "Selecciona un asistente antes de crear el equipo.",
+      "TEAM_ASSISTANT_NOT_FOUND": "El asistente {{assistantId}} ya no está disponible. Actualiza la lista de asistentes y elige otro.",
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Usa assistant_id en lugar de {{field}}.",
+      "WORKSPACE_PATH_UNAVAILABLE": "La ruta del área de trabajo seleccionada no está disponible. Asegúrate de que exista y sea accesible."
     }
   },
   "agentError": {
@@ -297,58 +305,59 @@
         "body": "La aplicación recibió un error upstream pero no pudo clasificarlo con certeza. Revisa los detalles a continuación o envía comentarios."
       },
       "USER_AGENT_PROTOCOL_PARSE_ERROR": {
-        "title": "Agent reported a protocol parse error",
-        "body": "The selected agent reported that an ACP/JSON-RPC message could not be parsed."
+        "title": "El agente indicó un error de análisis del protocolo",
+        "body": "El agente seleccionado indicó que no se pudo analizar un mensaje ACP/JSON-RPC."
       },
       "USER_AGENT_INVALID_REQUEST": {
-        "title": "Agent reported an invalid protocol request",
-        "body": "The selected agent reported that the ACP/JSON-RPC request object was invalid."
+        "title": "El agente informó de una solicitud de protocolo no válida",
+        "body": "El agente seleccionado informó de que el objeto de solicitud ACP/JSON-RPC no era válido."
       },
       "USER_AGENT_RESOURCE_NOT_FOUND": {
-        "title": "Agent could not find a required resource",
-        "body": "The selected agent reported that a required resource, such as a file, was not found."
+        "title": "El agente no encontró un recurso necesario",
+        "body": "El agente seleccionado indicó que no se encontró un recurso necesario, como un archivo."
       },
       "USER_AGENT_PROTOCOL_ERROR": {
-        "title": "Agent returned a protocol error",
-        "body": "The selected agent returned a non-standard ACP error code."
+        "title": "El agente devolvió un error de protocolo",
+        "body": "El agente seleccionado devolvió un código de error ACP no estándar."
       },
       "USER_LLM_PROVIDER_AWS_SSO_EXPIRED": {
-        "title": "AWS SSO session expired",
-        "body": "Your AWS SSO session has expired. Run 'aws sso login' for the matching profile, then send the message again."
+        "title": "La sesión de AWS SSO ha caducado",
+        "body": "Tu sesión de AWS SSO ha caducado. Ejecuta 'aws sso login' para el perfil correspondiente y vuelve a enviar el mensaje."
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
-        "title": "Failed to read the team helper response",
-        "body": "AionUi could not read the local team helper response. Retry once, and if it keeps happening, restart the app."
+        "title": "No se pudo leer la respuesta del proceso auxiliar del equipo",
+        "body": "AionUi no pudo leer la respuesta del proceso auxiliar local del equipo. Reinténtalo una vez y, si sigue ocurriendo, reinicia la aplicación."
       },
       "MCP_TOOL_REMOTE_ERROR": {
-        "title": "The local team helper rejected the request",
-        "body": "The local team helper returned an error while processing this request. Review the details below and retry after adjusting the team action."
+        "title": "El proceso auxiliar local del equipo rechazó la solicitud",
+        "body": "El proceso auxiliar local del equipo devolvió un error al procesar esta solicitud. Revisa los detalles a continuación y vuelve a intentarlo después de ajustar la acción del equipo."
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
-        "title": "The team helper returned an unexpected response",
-        "body": "AionUi received an unexpected response from the local team helper. Retry once, and report it if the problem persists."
+        "title": "El proceso auxiliar del equipo devolvió una respuesta inesperada",
+        "body": "AionUi recibió una respuesta inesperada del proceso auxiliar local del equipo. Reinténtalo una vez e infórmalo si el problema persiste."
       },
       "MCP_TCP_READ_FAILED": {
-        "title": "Failed to read from the local team helper",
-        "body": "AionUi could not read the local team helper TCP response. Retry once, and restart the app if it keeps failing."
+        "title": "No se pudo leer del proceso auxiliar local del equipo",
+        "body": "AionUi no pudo leer la respuesta TCP del proceso auxiliar local del equipo. Reinténtalo una vez y reinicia la aplicación si sigue fallando."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
-        "title": "Team service is not ready yet",
-        "body": "The local team session is still starting or has been interrupted. Wait a moment and retry."
+        "title": "El servicio de equipo aún no está listo",
+        "body": "La sesión local del equipo todavía se está iniciando o se ha interrumpido. Espera un momento y vuelve a intentarlo."
       },
       "TEAM_ASSISTANT_ID_REQUIRED": {
-        "title": "A teammate assistant must be selected",
-        "body": "Choose a real assistant from the available assistant catalog before creating or spawning a teammate."
+        "title": "Hay que seleccionar un asistente para el miembro del equipo",
+        "body": "Elige un asistente real del catálogo de asistentes disponibles antes de crear o iniciar un miembro del equipo."
       },
       "TEAM_ASSISTANT_NOT_FOUND": {
-        "title": "The selected assistant is no longer available",
-        "body": "Refresh the assistant catalog, then choose another assistant for this teammate."
+        "title": "El asistente seleccionado ya no está disponible",
+        "body": "Actualiza el catálogo de asistentes y elige otro asistente para este miembro del equipo."
       },
       "TEAM_ASSISTANT_FIELD_UNSUPPORTED": {
-        "title": "The request used a legacy team identity field",
-        "body": "This team action must use assistant_id instead of legacy backend or agent fields."
+        "title": "La solicitud usó un campo antiguo de identidad del equipo",
+        "body": "Esta acción del equipo debe usar assistant_id en lugar de los campos antiguos backend o agent."
       }
-    }
+    },
+    "errorCodeValue": "Código de error: {{code}}"
   },
   "workspace": {
     "title": "Proyecto",
@@ -432,7 +441,10 @@
       "terminal": "Terminal",
       "explorer": "Explorador de archivos",
       "browser": "Navegador"
-    }
+    },
+    "collapsePanel": "Ocultar panel del proyecto",
+    "togglePanel": "Mostrar u ocultar el panel del proyecto",
+    "expandPanel": "Mostrar panel del proyecto"
   },
   "minimap": {
     "searchAria": "Buscar en conversación",
@@ -441,7 +453,9 @@
     "noMatch": "No se encontró contenido coincidente",
     "count": "{{count}} turnos",
     "count_one": "{{count}} turno",
-    "count_other": "{{count}} turnos"
+    "count_other": "{{count}} turnos",
+    "questionLabel": "P:",
+    "answerLabel": "R:"
   },
   "chat": {
     "noModelSelected": "No hay modelo seleccionado para la sesión actual, no se puede enviar el mensaje",
@@ -465,7 +479,7 @@
       "stopTooltip": "Detener grabación",
       "processing": "Transcribiendo audio...",
       "unsupported": "La entrada de voz no está disponible en este entorno",
-      "startShort": "Mic",
+      "startShort": "Micro",
       "stopShort": "Detener",
       "transcribingShort": "...",
       "audioCaptureError": "No se detectó ningún micrófono",
@@ -476,8 +490,11 @@
       "permissionDenied": "Se denegó el permiso del micrófono",
       "recordingUnsupported": "La grabación en vivo no está disponible aquí. Por favor sube un archivo de audio",
       "transcriptionFailed": "Error en la transcripción de audio",
-      "genericError": "Error en la entrada de voz. Por favor intenta de nuevo"
-    }
+      "genericError": "Error en la entrada de voz. Por favor intenta de nuevo",
+      "transcriptionFailedStatus": "Error en la transcripción (HTTP {{status}})"
+    },
+    "archivedCannotSend": "Esta conversación está archivada y no admite mensajes nuevos.",
+    "awaitingConfirmation": "Esperando confirmación"
   },
   "sideQuestion": {
     "title": "Pregunta lateral",
@@ -531,9 +548,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "No se admite interrumpir mientras este agente está respondiendo. Usa Añadir al buzón de borradores en su lugar.",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "Elegir acción de envío",
+    "midturnBlockedSendHint": "Este agente sigue trabajando, así que el mensaje no se puede enviar directamente. Guárdalo en el buzón de borradores y envíalo más tarde.",
+    "addToQueueBusyHint": "Guárdalo en el buzón de borradores y envíalo más tarde."
   },
   "contextUsage": {
     "tokensUsed": "{{tokens}} tokens usados",
@@ -570,11 +587,14 @@
   },
   "thinking": {
     "label": "Pensando...",
-    "history": "Historial de razonamiento"
+    "history": "Historial de razonamiento",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "Razonamiento completado · {{time}}",
+    "elapsed": "({{time}})"
   },
   "skills": {
     "loaded": "Habilidades cargadas",
-    "slashHint": "Skill"
+    "slashHint": "Habilidad"
   },
   "mcp": {
     "loaded": "MCP cargado",
@@ -585,7 +605,9 @@
       "failed": "Falló",
       "unsupported": "No compatible"
     },
-    "selected": "MCP seleccionado"
+    "selected": "MCP seleccionado",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "MCP seleccionados · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "Preparando el entorno de ejecución. El primer inicio puede tardar un poco más."
@@ -631,15 +653,15 @@
   },
   "notFound": "Conversación no encontrada o ha sido eliminada",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "Añadir carpeta al proyecto",
     "refreshFiles": "Actualizar archivos",
     "refreshChanges": "Actualizar cambios",
     "collapseAll": "Contraer todo",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "Quitar del proyecto",
+    "attachDuplicate": "Esta carpeta ya está en el proyecto",
+    "attachOverlap": "Esta carpeta se solapa con otra que ya está en el proyecto",
+    "attachFailed": "No se pudo añadir la carpeta",
+    "removeFailed": "No se pudo quitar la carpeta",
     "contextMenu": {
       "rename": "Cambiar nombre",
       "addToChat": "Añadir al chat",
@@ -658,7 +680,7 @@
       "changes": "Cambios"
     },
     "addedToChat": "Se añadió {{name}} al chat",
-    "imported": "{{count}} archivo(s) importado(s)",
+    "imported": "{{count}} archivos importados",
     "importPartialFailed": "{{copied}} copiado(s), {{failed}} con error (conflictos de nombre o no admitidos)",
     "importFailed": "Error al importar los archivos",
     "copyNodeFailed": "Error al copiar",
@@ -728,7 +750,7 @@
         "confirmDiscardTitle": "¿Descartar los cambios?",
         "confirmDiscardTracked": "Las ediciones de {{count}} archivos se perderán. Esto no se puede deshacer.",
         "confirmDiscardUntracked": "{{count}} archivos nuevos se moverán a la papelera.",
-        "confirmDiscardMixed": "Las ediciones de {{tracked}} archivo(s) se perderán de forma irreversible; {{untracked}} archivo(s) nuevo(s) irán a la papelera.",
+        "confirmDiscardMixed": "Archivos modificados cuyas ediciones se perderán para siempre: {{tracked}}. Archivos nuevos que irán a la papelera: {{untracked}}.",
         "discardConfirmButton": "Descartar",
         "okStage": "{{count}} archivos preparados",
         "okStage_one": "{{count}} archivo preparado",
@@ -749,11 +771,17 @@
         "outcomeUnknown": "La conexión se restableció antes de recibir respuesta: esta acción puede haberse completado o no. Actualiza y revisa la lista de archivos antes de reintentar.",
         "allFailed": "No se pudo procesar ninguno de los {{count}} archivo(s)",
         "allFailed_one": "No se pudo procesar {{count}} archivo",
-        "allFailed_other": "No se pudo procesar ninguno de los {{count}} archivos"
+        "allFailed_other": "No se pudo procesar ninguno de los {{count}} archivos",
+        "confirmDiscardTracked_one": "Las ediciones de {{count}} archivo se perderán. Esto no se puede deshacer.",
+        "confirmDiscardTracked_other": "Las ediciones de {{count}} archivos se perderán. Esto no se puede deshacer.",
+        "confirmDiscardUntracked_one": "{{count}} archivo nuevo se moverá a la papelera.",
+        "confirmDiscardUntracked_other": "{{count}} archivos nuevos se moverán a la papelera."
       }
     },
     "pathCopied": "Ruta copiada",
-    "copyFailed": "No se pudo copiar la ruta"
+    "copyFailed": "No se pudo copiar la ruta",
+    "imported_one": "{{count}} archivo importado",
+    "imported_other": "{{count}} archivos importados"
   },
   "terminal": {
     "running": "En ejecución",
@@ -782,5 +810,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "Expandir plan",
     "collapse": "Contraer plan"
-  }
+  },
+  "createFailedWithDetail": "No se pudo crear la conversación: {{error}}",
+  "agentStartFailedWithDetail": "No se pudo iniciar el agente: {{error}}"
 }

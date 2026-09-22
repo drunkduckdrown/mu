@@ -138,7 +138,8 @@
     "printedToConsole": "Informações do elemento enviadas ao console",
     "inspectElement": "Inspecionar elemento",
     "inspectElementEnable": "Habilitar inspecionador de elemento",
-    "inspectElementDisable": "Desabilitar inspecionador de elemento"
+    "inspectElementDisable": "Desabilitar inspecionador de elemento",
+    "frameTitle": "Pré-visualização de HTML"
   },
   "ppt": {
     "loading": "Iniciando visualização do PPT...",
@@ -151,7 +152,7 @@
     "addressPlaceholder": "Digite uma URL ou pesquise",
     "agentActiveTooltip": "O agente está operando esta aba",
     "tabLimitReached": "Limite de abas atingido ({{count}}). A aba mais antiga foi reutilizada.",
-    "agentFirstUseTitle": "O agente está usando o navegador interno",
+    "agentFirstUseTitle": "O agente está usando o navegador integrado",
     "agentFirstUseContent": "Ele pode abrir páginas, clicar e ler conteúdo neste painel. Seu login é preservado.",
     "agentFirstUseAction": "Abrir configurações"
   },
@@ -188,16 +189,16 @@
     "reason": "Segundo o mu",
     "goal": "Objetivo",
     "pause": "Pausar",
-    "resume": "Continuar",
+    "resume": "Retomar",
     "stop": "Parar",
-    "takeover": "Assumir",
-    "takeoverTip": "Pausa a execução e passa o teclado para você. Ao terminar, clique em “Continuar”: o mu observa a página de novo antes de decidir.",
+    "takeover": "Assumir o controle",
+    "takeoverTip": "Pausa a execução e passa o teclado para você. Ao terminar, clique em “Retomar”: o mu observa a página de novo antes de decidir.",
     "pausedShort": "Pausado",
     "stopping": "Parando…",
     "paused": {
-      "user": "Pausado. Ao continuar, o mu observa a página de novo antes de decidir.",
-      "takeover": "Você assumiu: use a página diretamente e clique em “Continuar” ao terminar.",
-      "interaction": "Você mexeu na página, então o mu se pausou sozinho para não clicar ao mesmo tempo. Ao continuar, ele observa a página de novo."
+      "user": "Pausado. Ao retomar, o mu observa a página de novo antes de decidir.",
+      "takeover": "Você assumiu o controle: use a página você mesmo. Clique em “Retomar” ao terminar, e o mu observa a página de novo.",
+      "interaction": "Você mexeu na página, então o mu se pausou sozinho para não clicar ao mesmo tempo. Ao retomar, ele observa a página de novo."
     },
     "statusHint": {
       "blocked": "O mu não encontrou na página nada que aproximasse do objetivo e parou.",
@@ -241,6 +242,79 @@
       "deny": "Negar",
       "countdown": "Negado automaticamente em {{seconds}} s",
       "untrusted": "O texto acima vem da página web. Confie no que a própria página mostra."
+    },
+    "detachCause": "Causa",
+    "detachReason": {
+      "tab_closed": "A aba foi fechada.",
+      "connection": "A sessão de navegação do mu terminou antes do fim da execução.",
+      "devtools": "As ferramentas de desenvolvedor foram abertas nesta página.",
+      "crashed": "A página travou."
+    },
+    "permission": {
+      "location": "localização",
+      "media": "câmera ou microfone",
+      "notifications": "notificações",
+      "clipboard": "área de transferência",
+      "screen": "captura de tela",
+      "midi": "dispositivos MIDI",
+      "fullscreen": "tela cheia",
+      "pointerLock": "bloqueio do mouse",
+      "devices": "dispositivos USB, seriais ou HID",
+      "storage": "acesso ao armazenamento",
+      "openExternal": "abrir outro aplicativo",
+      "protectedContent": "reprodução de conteúdo protegido",
+      "windows": "gerenciamento de janelas"
+    },
+    "end": {
+      "stopped_by_user": "Quem estava acompanhando parou a execução.",
+      "max_steps": "Parou após {{count}} ações.",
+      "max_steps_one": "Parou após {{count}} ação.",
+      "max_steps_other": "Parou após {{count}} ações.",
+      "no_judge": "Nenhum juiz conseguiu escolher uma ação ({{judgeReason}}).",
+      "no_progress": "O juiz não encontrou nenhuma operação que traga progresso.",
+      "not_confirmed": "“{{label}}” parece irreversível e não houve confirmação.",
+      "no_value": "Não foi possível gerar um valor para “{{label}}”.",
+      "stuck": "{{count}} ações seguidas não mudaram nada.",
+      "stuck_one": "{{count}} ação não mudou nada.",
+      "stuck_other": "{{count}} ações seguidas não mudaram nada."
+    },
+    "judgeReason": {
+      "shadow": "modo sombra: a resposta só é registrada",
+      "abstain": "o juiz se absteve",
+      "off": "o juiz está desativado",
+      "noVerdict": "sem veredito",
+      "error": {
+        "timeout": "o juiz excedeu o tempo limite",
+        "aborted": "a chamada ao juiz foi cancelada",
+        "unreachable": "não foi possível acessar o juiz",
+        "auth": "a chave do juiz foi rejeitada",
+        "payment_required": "o juiz precisa de uma forma de pagamento",
+        "rate_limited": "o juiz atingiu o limite de taxa",
+        "bad_request": "o juiz rejeitou a solicitação",
+        "server": "houve um erro no servidor do juiz",
+        "invalid_response": "não foi possível ler a resposta do juiz",
+        "unexpected": "um erro inesperado",
+        "all": "todas as chamadas ao juiz falharam",
+        "other": "a chamada ao juiz falhou"
+      }
     }
-  }
+  },
+  "tabTitle": {
+    "image": "Imagem",
+    "diff": "Diferenças"
+  },
+  "sideBySide": "Lado a lado",
+  "diffTag": {
+    "changed": "Alterado",
+    "added": "Adicionado",
+    "deleted": "Excluído",
+    "renamed": "Renomeado"
+  },
+  "diffEmpty": "Nenhuma alteração neste arquivo",
+  "mermaidTitleWithSummary": "Diagrama Mermaid: {{summary}}",
+  "wavedromTitleWithSummary": "Diagrama WaveDrom: {{summary}}",
+  "saveFailedWithDetail": "Falha ao salvar: {{detail}}",
+  "zoomActualSize": "Redefinir zoom",
+  "zoomFit": "Ajustar",
+  "zoomFitTooltip": "Ajustar à largura do painel"
 }

@@ -100,5 +100,22 @@
   "requestDetails": "Детали запроса:",
   "delivery": {
     "pending": "Непрочитано"
-  }
+  },
+  "permissionOption": {
+    "allow_once": "Разрешить",
+    "allow_always": "Всегда разрешать",
+    "reject_once": "Отклонить",
+    "reject_always": "Всегда отклонять"
+  },
+  "permissionKind": {
+    "execute": "Запуск команды",
+    "edit": "Изменение",
+    "read": "Чтение",
+    "fetch": "Загрузка из сети",
+    "tool": "Инструмент"
+  },
+  "optionNumber": "Вариант {{number}}",
+  "copyFilesHeader": "Файлы:",
+  "exportHeaderLine": "{{label}}: {{value}}",
+  "exportSpeakerLine": "{{speaker}}:"
 }

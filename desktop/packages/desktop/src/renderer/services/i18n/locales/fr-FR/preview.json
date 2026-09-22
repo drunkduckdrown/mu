@@ -138,7 +138,8 @@
     "printedToConsole": "Informations de l'élément enregistrées dans la console",
     "inspectElement": "Inspecter l'élément",
     "inspectElementEnable": "Activer l'inspecteur d'éléments",
-    "inspectElementDisable": "Désactiver l'inspecteur d'éléments"
+    "inspectElementDisable": "Désactiver l'inspecteur d'éléments",
+    "frameTitle": "Aperçu HTML"
   },
   "ppt": {
     "loading": "Démarrage de l'aperçu PPT...",
@@ -241,6 +242,79 @@
       "deny": "Refuser",
       "countdown": "Refus automatique dans {{seconds}} s",
       "untrusted": "Le texte ci-dessus vient de la page web. Fiez-vous à ce que la page affiche réellement."
+    },
+    "detachCause": "Cause",
+    "detachReason": {
+      "tab_closed": "L’onglet a été fermé.",
+      "connection": "La session de navigation de mu s’est terminée avant la fin de l’exécution.",
+      "devtools": "Les outils de développement ont été ouverts sur cette page.",
+      "crashed": "La page a planté."
+    },
+    "permission": {
+      "location": "localisation",
+      "media": "caméra ou micro",
+      "notifications": "notifications",
+      "clipboard": "presse-papiers",
+      "screen": "capture d’écran",
+      "midi": "appareils MIDI",
+      "fullscreen": "plein écran",
+      "pointerLock": "verrouillage de la souris",
+      "devices": "appareils USB, série ou HID",
+      "storage": "accès au stockage",
+      "openExternal": "ouverture d’une autre application",
+      "protectedContent": "lecture de contenu protégé",
+      "windows": "gestion des fenêtres"
+    },
+    "end": {
+      "stopped_by_user": "Arrêt demandé par la personne qui observait.",
+      "max_steps": "Arrêt après {{count}} actions.",
+      "max_steps_one": "Arrêt après {{count}} action.",
+      "max_steps_other": "Arrêt après {{count}} actions.",
+      "no_judge": "Aucun juge n’a pu choisir d’action ({{judgeReason}}).",
+      "no_progress": "Le juge n’a trouvé aucune opération permettant de progresser.",
+      "not_confirmed": "L’action « {{label}} » semble irréversible et n’a pas été confirmée.",
+      "no_value": "Aucune valeur n’a pu être produite pour « {{label}} ».",
+      "stuck": "{{count}} actions d’affilée n’ont rien changé.",
+      "stuck_one": "{{count}} action n’a rien changé.",
+      "stuck_other": "{{count}} actions d’affilée n’ont rien changé."
+    },
+    "judgeReason": {
+      "shadow": "mode fantôme : sa réponse est seulement enregistrée",
+      "abstain": "le juge s’est abstenu",
+      "off": "le juge est désactivé",
+      "noVerdict": "aucun jugement",
+      "error": {
+        "timeout": "le juge a dépassé le délai",
+        "aborted": "l’appel au juge a été annulé",
+        "unreachable": "le juge était injoignable",
+        "auth": "la clé du juge a été refusée",
+        "payment_required": "le juge requiert un moyen de paiement",
+        "rate_limited": "la limite de requêtes du juge est atteinte",
+        "bad_request": "le juge a rejeté la requête",
+        "server": "le serveur du juge a rencontré une erreur",
+        "invalid_response": "la réponse du juge était illisible",
+        "unexpected": "une erreur inattendue",
+        "all": "tous les appels au juge ont échoué",
+        "other": "l’appel au juge a échoué"
+      }
     }
-  }
+  },
+  "tabTitle": {
+    "image": "Image",
+    "diff": "Différences"
+  },
+  "sideBySide": "Côte à côte",
+  "diffTag": {
+    "changed": "Modifié",
+    "added": "Ajouté",
+    "deleted": "Supprimé",
+    "renamed": "Renommé"
+  },
+  "diffEmpty": "Aucune modification dans ce fichier",
+  "mermaidTitleWithSummary": "Diagramme Mermaid : {{summary}}",
+  "wavedromTitleWithSummary": "Diagramme WaveDrom : {{summary}}",
+  "saveFailedWithDetail": "Échec de l’enregistrement : {{detail}}",
+  "zoomActualSize": "Réinitialiser le zoom",
+  "zoomFit": "Ajuster",
+  "zoomFitTooltip": "Ajuster à la largeur du panneau"
 }

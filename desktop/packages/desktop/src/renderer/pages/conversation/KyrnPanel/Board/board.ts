@@ -35,6 +35,14 @@ export type BoardUpdate = {
   ended: boolean;
   /** The last board, shown again as the session opened: not news. */
   restored: boolean;
+  /** The text of the acceptance item being worked on (the task's own words), from a harness that sends it. */
+  focusText?: string;
+  /**
+   * One per `confirm` line of a fixed board: `waiting_reply` for the harness's "It waits for your reply", null for a
+   * line quoted from the agent. A harness that sends codes sends this with every fixed board, empty when nothing
+   * waits: its presence says the board can be rebuilt from its facts.
+   */
+  confirmCodes?: (string | null)[];
 };
 
 export type BoardView = {
@@ -56,6 +64,8 @@ const line = (value: unknown) => {
   const text = str(value).trim();
   return text.length > LINE_LIMIT ? `${text.slice(0, LINE_LIMIT)}…` : text;
 };
+/** A code is a lowercase word or words joined by underscores. */
+const CODE = /^[a-z][a-z_]{0,47}$/;
 const count = (value: unknown) =>
   typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
 
@@ -65,13 +75,22 @@ export function toBoardUpdate(event: Activity): BoardUpdate | undefined {
   const progress = line(payload.progress);
   if (!now && !progress) return undefined;
   const phase = BOARD_PHASES.find((known) => known === payload.phase);
-  const confirm = (Array.isArray(payload.confirm) ? payload.confirm : []).map(line).filter(Boolean);
+  // Each line keeps its code through the filtering: the codes are the lines' own, in the same order.
+  const coded = Array.isArray(payload.confirmCodes);
+  const codes: unknown[] = coded ? (payload.confirmCodes as unknown[]) : [];
+  const confirmed = (Array.isArray(payload.confirm) ? payload.confirm : [])
+    .map((item, index) => ({ text: line(item), code: CODE.test(str(codes[index])) ? str(codes[index]) : null }))
+    .filter((item) => item.text)
+    .slice(0, CONFIRM_LIMIT);
   const total = count(payload.total);
+  const focusText = line(payload.focusText);
   return {
     id: event.id,
     progress,
     now,
-    confirm: confirm.slice(0, CONFIRM_LIMIT),
+    confirm: confirmed.map((item) => item.text),
+    ...(coded ? { confirmCodes: confirmed.map((item) => item.code) } : {}),
+    ...(focusText ? { focusText } : {}),
     ...(phase ? { phase } : {}),
     needsUser: payload.needsUser === true,
     done: Math.min(count(payload.done), total),

@@ -83,13 +83,20 @@
     "archive": "Archivieren",
     "archiveSuccess": "Archiviert",
     "archiveFailed": "Archivieren fehlgeschlagen",
-    "batchArchive": "Batch archive",
-    "batchArchiveConfirm": "Archive {{count}} selected topics? You can restore or delete them from Archived in Settings.",
-    "batchArchiveSuccess": "Archived {{count}} topics",
-    "archiveProject": "Archive project",
-    "archiveProjectTitle": "Archive project",
-    "archiveProjectConfirm": "Archive project \"{{name}}\"? Its {{count}} conversation(s) will be archived too. You can restore or delete them from Archived in Settings.",
-    "archiving": "Archiving..."
+    "batchArchive": "Stapelarchivierung",
+    "batchArchiveConfirm": "{{count}} ausgewählte Themen archivieren? Du kannst sie in den Einstellungen unter „Archiviert“ wiederherstellen oder löschen.",
+    "batchArchiveSuccess": "{{count}} Themen archiviert",
+    "archiveProject": "Projekt archivieren",
+    "archiveProjectTitle": "Projekt archivieren",
+    "archiveProjectConfirm": "Projekt „{{name}}“ archivieren? Die {{count}} Unterhaltungen darin werden ebenfalls archiviert. Du kannst sie in den Einstellungen unter „Archiviert“ wiederherstellen oder löschen.",
+    "archiving": "Wird archiviert…",
+    "batchArchiveConfirm_one": "{{count}} ausgewähltes Thema archivieren? Du kannst es in den Einstellungen unter „Archiviert“ wiederherstellen oder löschen.",
+    "batchArchiveConfirm_other": "{{count}} ausgewählte Themen archivieren? Du kannst sie in den Einstellungen unter „Archiviert“ wiederherstellen oder löschen.",
+    "batchArchiveSuccess_one": "{{count}} Thema archiviert",
+    "batchArchiveSuccess_other": "{{count}} Themen archiviert",
+    "archiveProjectConfirm_one": "Projekt „{{name}}“ archivieren? Die {{count}} Unterhaltung darin wird ebenfalls archiviert. Du kannst sie in den Einstellungen unter „Archiviert“ wiederherstellen oder löschen.",
+    "archiveProjectConfirm_other": "Projekt „{{name}}“ archivieren? Die {{count}} Unterhaltungen darin werden ebenfalls archiviert. Du kannst sie in den Einstellungen unter „Archiviert“ wiederherstellen oder löschen.",
+    "projectActions": "Projektaktionen"
   },
   "historySearch": {
     "tooltip": "Nachrichten durchsuchen",
@@ -114,9 +121,10 @@
       "WORKSPACE_PATH_UNAVAILABLE": "Der ausgewählte Arbeitsbereichspfad ist nicht verfügbar. Stelle sicher, dass der Arbeitsbereichspfad \"{{workspacePath}}\" vorhanden und zugänglich ist."
     },
     "codes": {
-      "TEAM_ASSISTANT_ID_REQUIRED": "Please select an assistant before creating the team.",
-      "TEAM_ASSISTANT_NOT_FOUND": "Assistant {{assistantId}} is no longer available. Refresh the assistant list and choose another one.",
-      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Use assistant_id instead of {{field}}."
+      "TEAM_ASSISTANT_ID_REQUIRED": "Wähle einen Assistenten aus, bevor du das Team erstellst.",
+      "TEAM_ASSISTANT_NOT_FOUND": "Assistent {{assistantId}} ist nicht mehr verfügbar. Aktualisiere die Assistentenliste und wähle einen anderen aus.",
+      "TEAM_ASSISTANT_FIELD_UNSUPPORTED": "Verwende assistant_id statt {{field}}.",
+      "WORKSPACE_PATH_UNAVAILABLE": "Der ausgewählte Arbeitsbereichspfad ist nicht verfügbar. Stelle sicher, dass er existiert und zugänglich ist."
     }
   },
   "agentError": {
@@ -317,38 +325,39 @@
         "body": "Die App hat einen Upstream-Fehler erhalten, konnte aber nicht sicher bestimmen, ob er vom Agenten, Provider, Netzwerk oder der lokalen Umgebung kam."
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
-        "title": "Failed to read the team helper response",
-        "body": "AionUi could not read the local team helper response. Retry once, and if it keeps happening, restart the app."
+        "title": "Antwort des Team-Hilfsprozesses konnte nicht gelesen werden",
+        "body": "AionUi konnte die Antwort des lokalen Team-Hilfsprozesses nicht lesen. Versuche es einmal erneut; wenn es weiter passiert, starte die App neu."
       },
       "MCP_TOOL_REMOTE_ERROR": {
-        "title": "The local team helper rejected the request",
-        "body": "The local team helper returned an error while processing this request. Review the details below and retry after adjusting the team action."
+        "title": "Der lokale Team-Hilfsprozess hat die Anfrage abgelehnt",
+        "body": "Der lokale Team-Hilfsprozess hat bei der Verarbeitung dieser Anfrage einen Fehler zurückgegeben. Sieh dir die Details unten an, passe die Team-Aktion an und versuche es erneut."
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
-        "title": "The team helper returned an unexpected response",
-        "body": "AionUi received an unexpected response from the local team helper. Retry once, and report it if the problem persists."
+        "title": "Der Team-Hilfsprozess hat eine unerwartete Antwort zurückgegeben",
+        "body": "AionUi hat eine unerwartete Antwort vom lokalen Team-Hilfsprozess erhalten. Versuche es einmal erneut und melde das Problem, wenn es bestehen bleibt."
       },
       "MCP_TCP_READ_FAILED": {
-        "title": "Failed to read from the local team helper",
-        "body": "AionUi could not read the local team helper TCP response. Retry once, and restart the app if it keeps failing."
+        "title": "Lesen vom lokalen Team-Hilfsprozess fehlgeschlagen",
+        "body": "AionUi konnte die TCP-Antwort des lokalen Team-Hilfsprozesses nicht lesen. Versuche es einmal erneut und starte die App neu, wenn es weiter fehlschlägt."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
-        "title": "Team service is not ready yet",
-        "body": "The local team session is still starting or has been interrupted. Wait a moment and retry."
+        "title": "Team-Dienst ist noch nicht bereit",
+        "body": "Die lokale Teamsitzung startet noch oder wurde unterbrochen. Warte einen Moment und versuche es erneut."
       },
       "TEAM_ASSISTANT_ID_REQUIRED": {
-        "title": "A teammate assistant must be selected",
-        "body": "Choose a real assistant from the available assistant catalog before creating or spawning a teammate."
+        "title": "Für das Teammitglied muss ein Assistent ausgewählt werden",
+        "body": "Wähle einen echten Assistenten aus dem verfügbaren Assistentenkatalog, bevor du ein Teammitglied erstellst oder startest."
       },
       "TEAM_ASSISTANT_NOT_FOUND": {
-        "title": "The selected assistant is no longer available",
-        "body": "Refresh the assistant catalog, then choose another assistant for this teammate."
+        "title": "Der ausgewählte Assistent ist nicht mehr verfügbar",
+        "body": "Aktualisiere den Assistentenkatalog und wähle dann einen anderen Assistenten für dieses Teammitglied."
       },
       "TEAM_ASSISTANT_FIELD_UNSUPPORTED": {
-        "title": "The request used a legacy team identity field",
-        "body": "This team action must use assistant_id instead of legacy backend or agent fields."
+        "title": "Die Anfrage hat ein veraltetes Team-Identitätsfeld verwendet",
+        "body": "Diese Team-Aktion muss assistant_id verwenden statt der veralteten Felder backend oder agent."
       }
-    }
+    },
+    "errorCodeValue": "Fehlercode: {{code}}"
   },
   "workspace": {
     "title": "Arbeitsbereich",
@@ -432,7 +441,10 @@
       "terminal": "Terminal",
       "explorer": "Datei-Explorer",
       "browser": "Browser"
-    }
+    },
+    "collapsePanel": "Projektbereich ausblenden",
+    "togglePanel": "Projektbereich ein- oder ausblenden",
+    "expandPanel": "Projektbereich einblenden"
   },
   "minimap": {
     "searchAria": "Gespräch durchsuchen",
@@ -441,7 +453,9 @@
     "noMatch": "Keine übereinstimmenden Inhalte gefunden",
     "count": "{{count}} Runden",
     "count_one": "{{count}} Runde",
-    "count_other": "{{count}} Runden"
+    "count_other": "{{count}} Runden",
+    "questionLabel": "F:",
+    "answerLabel": "A:"
   },
   "chat": {
     "noModelSelected": "Kein Modell für die aktuelle Sitzung ausgewählt, Nachricht kann nicht gesendet werden",
@@ -476,8 +490,11 @@
       "permissionDenied": "Mikrofonberechtigung verweigert",
       "recordingUnsupported": "Live-Aufnahme wird hier nicht unterstützt. Bitte lade stattdessen eine Audiodatei hoch",
       "transcriptionFailed": "Audio-Transkription fehlgeschlagen",
-      "genericError": "Spracheingabe fehlgeschlagen. Bitte erneut versuchen"
-    }
+      "genericError": "Spracheingabe fehlgeschlagen. Bitte erneut versuchen",
+      "transcriptionFailedStatus": "Transkription fehlgeschlagen (HTTP {{status}})"
+    },
+    "archivedCannotSend": "Diese Unterhaltung ist archiviert und nimmt keine neuen Nachrichten an.",
+    "awaitingConfirmation": "Wartet auf Bestätigung"
   },
   "sideQuestion": {
     "title": "Nebenfrage",
@@ -531,9 +548,9 @@
     "addToQueueShortcut": "⌘ + Enter / Ctrl + Enter",
     "midturnBlocked": "Ein Einwurf wird nicht unterstützt, während dieser Agent antwortet. Verwende stattdessen „Zum Entwurfsfach hinzufügen“.",
     "enterShortcut": "Enter",
-    "actionMode": "Choose send action",
-    "midturnBlockedSendHint": "This agent is still working, so the message can’t be sent directly. Save it to Draft box and send it later.",
-    "addToQueueBusyHint": "Save to Draft box and send it later."
+    "actionMode": "Sendeaktion wählen",
+    "midturnBlockedSendHint": "Dieser Agent arbeitet noch, daher kann die Nachricht nicht direkt gesendet werden. Speichere sie in der Entwurfsbox und sende sie später.",
+    "addToQueueBusyHint": "In der Entwurfsbox speichern und später senden."
   },
   "contextUsage": {
     "tokensUsed": "{{tokens}} Tokens verwendet",
@@ -569,8 +586,11 @@
     "preset_registered": "Agenten-Voreinstellung erfolgreich registriert!"
   },
   "thinking": {
-    "label": "Wird gedacht...",
-    "history": "Denkverlauf"
+    "label": "Denkt nach…",
+    "history": "Denkverlauf",
+    "labelWithTime": "{{label}} · {{time}}",
+    "completeWithTime": "Denken abgeschlossen · {{time}}",
+    "elapsed": "({{time}})"
   },
   "skills": {
     "loaded": "Geladene Skills",
@@ -585,7 +605,9 @@
       "failed": "Fehlgeschlagen",
       "unsupported": "Nicht unterstützt"
     },
-    "selected": "Ausgewählte MCP"
+    "selected": "Ausgewählte MCP",
+    "statusWithReason": "{{status}} · {{reason}}",
+    "selectedWithCount": "Ausgewählte MCP · {{count}}"
   },
   "runtimePreparing": {
     "sendboxHint": "Laufzeit-Umgebung wird vorbereitet. Der erste Start kann etwas länger dauern."
@@ -631,15 +653,15 @@
   },
   "notFound": "Unterhaltung nicht gefunden oder wurde gelöscht",
   "explorer": {
-    "addFolder": "Add folder to project",
+    "addFolder": "Ordner zum Projekt hinzufügen",
     "refreshFiles": "Dateien aktualisieren",
     "refreshChanges": "Änderungen aktualisieren",
     "collapseAll": "Alle einklappen",
-    "removeFolder": "Remove from project",
-    "attachDuplicate": "This folder is already in the project",
-    "attachOverlap": "This folder overlaps a folder already in the project",
-    "attachFailed": "Couldn't add the folder",
-    "removeFailed": "Couldn't remove the folder",
+    "removeFolder": "Aus dem Projekt entfernen",
+    "attachDuplicate": "Dieser Ordner ist bereits im Projekt",
+    "attachOverlap": "Dieser Ordner überschneidet sich mit einem Ordner im Projekt",
+    "attachFailed": "Ordner konnte nicht hinzugefügt werden",
+    "removeFailed": "Ordner konnte nicht entfernt werden",
     "contextMenu": {
       "rename": "Umbenennen",
       "addToChat": "Zum Chat hinzufügen",
@@ -658,7 +680,7 @@
       "changes": "Änderungen"
     },
     "addedToChat": "{{name}} zum Chat hinzugefügt",
-    "imported": "{{count}} Datei(en) importiert",
+    "imported": "{{count}} Dateien importiert",
     "importPartialFailed": "{{copied}} kopiert, {{failed}} fehlgeschlagen (Namenskonflikte oder nicht unterstützt)",
     "importFailed": "Import der Dateien fehlgeschlagen",
     "copyNodeFailed": "Kopieren fehlgeschlagen",
@@ -728,7 +750,7 @@
         "confirmDiscardTitle": "Änderungen verwerfen?",
         "confirmDiscardTracked": "Die Änderungen an {{count}} Dateien gehen verloren. Das kann nicht rückgängig gemacht werden.",
         "confirmDiscardUntracked": "{{count}} neue Dateien werden in den Papierkorb verschoben.",
-        "confirmDiscardMixed": "Änderungen an {{tracked}} Datei(en) gehen unwiderruflich verloren; {{untracked}} neue Datei(en) landen im Papierkorb.",
+        "confirmDiscardMixed": "Geänderte Dateien, deren Änderungen unwiderruflich verloren gehen: {{tracked}}. Neue Dateien, die in den Papierkorb verschoben werden: {{untracked}}.",
         "discardConfirmButton": "Verwerfen",
         "okStage": "{{count}} Dateien vorgemerkt",
         "okStage_one": "{{count}} Datei vorgemerkt",
@@ -749,17 +771,23 @@
         "outcomeUnknown": "Die Verbindung wurde vor einer Antwort zurückgesetzt — diese Aktion kann abgeschlossen sein oder auch nicht. Aktualisieren und die Dateiliste prüfen, bevor Sie es erneut versuchen.",
         "allFailed": "Keine der {{count}} Datei(en) konnte verarbeitet werden",
         "allFailed_one": "{{count}} Datei konnte nicht verarbeitet werden",
-        "allFailed_other": "Keine der {{count}} Dateien konnte verarbeitet werden"
+        "allFailed_other": "Keine der {{count}} Dateien konnte verarbeitet werden",
+        "confirmDiscardTracked_one": "Die Änderungen an {{count}} Datei gehen verloren. Das kann nicht rückgängig gemacht werden.",
+        "confirmDiscardTracked_other": "Die Änderungen an {{count}} Dateien gehen verloren. Das kann nicht rückgängig gemacht werden.",
+        "confirmDiscardUntracked_one": "{{count}} neue Datei wird in den Papierkorb verschoben.",
+        "confirmDiscardUntracked_other": "{{count}} neue Dateien werden in den Papierkorb verschoben."
       }
     },
     "pathCopied": "Pfad kopiert",
-    "copyFailed": "Pfad konnte nicht kopiert werden"
+    "copyFailed": "Pfad konnte nicht kopiert werden",
+    "imported_one": "{{count}} Datei importiert",
+    "imported_other": "{{count}} Dateien importiert"
   },
   "terminal": {
     "running": "Läuft",
     "stopped": "Gestoppt",
-    "exited": "Exit {{code}}",
-    "stop": "Stopp",
+    "exited": "Exit-Code {{code}}",
+    "stop": "Stoppen",
     "truncated": "(frühere Ausgabe gekürzt)"
   },
   "emptyState": {
@@ -782,5 +810,7 @@
     "progress": "{{completed}}/{{total}}",
     "expand": "Plan ausklappen",
     "collapse": "Plan einklappen"
-  }
+  },
+  "createFailedWithDetail": "Die Unterhaltung konnte nicht erstellt werden: {{error}}",
+  "agentStartFailedWithDetail": "Der Agent konnte nicht gestartet werden: {{error}}"
 }

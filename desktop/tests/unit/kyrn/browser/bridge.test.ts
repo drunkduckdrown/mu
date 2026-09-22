@@ -313,6 +313,24 @@ describe('the browser bridge', () => {
     expect(app.of('finished')).toMatchObject([{ status: 'blocked', reason: 'three actions changed nothing' }]);
   });
 
+  it('passes the code and params of Mu.run on, so the step bar can say it in the app language', async () => {
+    const app = setup();
+    const harness = app.client();
+    const { targetId } = await harness.open();
+    await harness.call('Mu.run', { state: 'started', goal: 'book a table', url: 'https://a.test/' });
+    await harness.call('Mu.run', {
+      state: 'finished',
+      status: 'blocked',
+      reason: 'no judge could choose an action (error:timeout)',
+      code: 'no_judge',
+      params: { judgeReason: 'error:timeout', nested: { dropped: true } },
+    });
+    await harness.call('Target.closeTarget', { targetId });
+    const [finished] = app.of('finished');
+    expect(finished).toMatchObject({ status: 'blocked', code: 'no_judge', params: { judgeReason: 'error:timeout' } });
+    expect(finished.params).not.toHaveProperty('nested');
+  });
+
   describe('pause, resume, stop', () => {
     it('answers Mu.control from the person’s buttons and starts every run fresh', async () => {
       const app = setup();

@@ -6,6 +6,7 @@ import type { Activity } from '@/common/kyrn/types';
 import { formatNumber } from '@/renderer/services/i18n/format';
 import { emitter, type SendBoxCommandState } from '@/renderer/utils/emitter';
 import { asksUser, boardView, share, type BoardUpdate } from './board';
+import { boardWords, type BoardWords } from './wording';
 import styles from './Board.module.css';
 
 /** How long a sent switch waits for the session to say it switched before it can be used again. */
@@ -22,8 +23,21 @@ type Pending = { to: boolean; stage: 'waiting' | 'sent' };
  * it has a board: anywhere else the command would reach a model as a message.
  */
 export default function Board({ events, conversationId }: { events: Activity[]; conversationId: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const view = useMemo(() => boardView(events), [events]);
+  // A fixed board is rebuilt in the reader's language; a model's board is shown as it wrote it.
+  const words = useMemo(
+    () =>
+      view.update
+        ? boardWords(
+            view.update,
+            t,
+            (key) => i18n.exists(key),
+            (value) => formatNumber(value, i18n.language)
+          )
+        : undefined,
+    [i18n, t, view.update]
+  );
   const [pending, setPending] = useState<Pending>();
   const on = view.on ?? false;
   // The board that was there when the panel opened is not news (give the panel `key={conversationId}`), nor is the
@@ -74,7 +88,7 @@ export default function Board({ events, conversationId }: { events: Activity[]; 
       ) : !on ? (
         <Off switching={switching} onOpen={() => turn(true)} />
       ) : view.update ? (
-        <Current update={view.update} fresh={news === view.update} />
+        <Current update={view.update} words={words ?? view.update} fresh={news === view.update} />
       ) : (
         <p className={styles.empty} data-testid='mu-board-empty'>
           {t('common.kyrn.boardView.empty')}
@@ -83,8 +97,8 @@ export default function Board({ events, conversationId }: { events: Activity[]; 
       {/* In place from the start, so what changes in it is announced; only news goes in. One paragraph per part,
           read with a pause between them in any language: the model's lines bring their own punctuation. */}
       <div className={styles.announce} aria-live='polite' aria-atomic='true' data-testid='mu-board-announce'>
-        {on && news
-          ? [news.phase ? t(`common.kyrn.boardView.phases.${news.phase}`) : '', news.now, news.progress]
+        {on && news && words
+          ? [news.phase ? t(`common.kyrn.boardView.phases.${news.phase}`) : '', words.now, words.progress]
               .filter(Boolean)
               .map((part, index) => <p key={index}>{part}</p>)
           : null}
@@ -110,7 +124,7 @@ function Off({ switching, onOpen }: { switching: boolean; onOpen: () => void }) 
  * The latest board, top to bottom: the stage, what the agent does now (the largest line), how far it is, and what
  * it needs from the person. A new one (`fresh`) fades in.
  */
-function Current({ update, fresh }: { update: BoardUpdate; fresh: boolean }) {
+function Current({ update, words, fresh }: { update: BoardUpdate; words: BoardWords; fresh: boolean }) {
   const { t, i18n } = useTranslation();
   const part = share(update);
   const checks = t('common.kyrn.boardView.checks', {
@@ -140,14 +154,14 @@ function Current({ update, fresh }: { update: BoardUpdate; fresh: boolean }) {
         ) : null}
       </div>
       <div key={update.id} className={classNames(fresh && styles.fresh)} data-fresh={fresh ? 'true' : undefined}>
-        {update.now ? (
+        {words.now ? (
           <p className={styles.now} data-testid='mu-board-now'>
-            {update.now}
+            {words.now}
           </p>
         ) : null}
-        {update.progress ? (
+        {words.progress ? (
           <p className={styles.progress} data-testid='mu-board-progress'>
-            {update.progress}
+            {words.progress}
           </p>
         ) : null}
       </div>
@@ -169,10 +183,10 @@ function Current({ update, fresh }: { update: BoardUpdate; fresh: boolean }) {
       {asksUser(update) ? (
         <div className={styles.ask} data-testid='mu-board-ask'>
           <div className={styles.askTitle}>{t('common.kyrn.boardView.needsYou')}</div>
-          {update.confirm.length ? (
+          {words.confirm.length ? (
             <>
               <ul className={styles.askList}>
-                {update.confirm.map((item, index) => (
+                {words.confirm.map((item, index) => (
                   <li key={`${index}:${item}`}>
                     <button
                       type='button'

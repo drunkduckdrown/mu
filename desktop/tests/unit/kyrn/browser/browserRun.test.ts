@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   plainText,
   reduceBrowserRuns,
+  runEnding,
   runsOfConversation,
   type BrowserRunEvent,
   type BrowserRuns,
@@ -153,5 +154,78 @@ describe('the browser run store', () => {
     expect(plainText('x'.repeat(500)).endsWith('…')).toBe(true);
     expect(plainText(undefined)).toBe('');
     expect(plainText({ toString: () => 'sneaky' })).toBe('');
+  });
+});
+
+describe('how the harness says a run ended', () => {
+  it('keeps the code and the params the step bar translates, with the English reason beside them', () => {
+    const finished = play([
+      started('t1'),
+      {
+        type: 'finished',
+        tabId: 't1',
+        status: 'blocked',
+        reason: 'no judge could choose an action (error:timeout)',
+        code: 'no_judge',
+        params: { judgeReason: 'error:timeout' },
+        at: 900,
+      },
+    ]);
+    expect(finished.t1).toMatchObject({
+      status: 'blocked',
+      reason: 'no judge could choose an action (error:timeout)',
+      code: 'no_judge',
+      params: { judgeReason: 'error:timeout' },
+    });
+    // A tab handed out again starts without the verdict of the run before it.
+    const reused = play([started('t1', 1_000)], finished);
+    expect(reused.t1.code).toBeUndefined();
+    expect(reused.t1.params).toBeUndefined();
+  });
+
+  it('reads a Mu.run report: the coded fields that are what they claim to be, and nothing else', () => {
+    expect(
+      runEnding({
+        state: 'finished',
+        status: 'needs_confirmation',
+        reason: '"Delete account" looks irreversible and was not confirmed',
+        code: 'not_confirmed',
+        params: { label: 'Delete\naccount', maxSteps: 40 },
+      })
+    ).toEqual({ code: 'not_confirmed', params: { label: 'Delete account', maxSteps: 40 } });
+    expect(runEnding({ code: 'error', errorCode: 'browser_exited_on_start', errorParams: { exitCode: 1 } })).toEqual({
+      code: 'error',
+      errorCode: 'browser_exited_on_start',
+      errorParams: { exitCode: 1 },
+    });
+    // An older harness sends no code at all.
+    expect(runEnding({ state: 'finished', status: 'done' })).toEqual({});
+  });
+
+  it('drops a code that is not a plain word, params that are not flat, and params without a code', () => {
+    expect(runEnding({ code: 'preview.muBrowser.status.done' })).toEqual({});
+    expect(runEnding({ code: 'No Judge' })).toEqual({});
+    expect(runEnding({ code: 42, params: { maxSteps: 40 } })).toEqual({});
+    expect(runEnding({ code: 'stuck', params: [3] })).toEqual({ code: 'stuck' });
+    expect(runEnding({ code: 'stuck', params: 'actions=3' })).toEqual({ code: 'stuck' });
+    expect(
+      runEnding({
+        code: 'stuck',
+        params: JSON.parse(
+          '{"actions":3,"__proto__":{"polluted":1},"nested":{"a":1},"list":[1],"nan":null,"bad key":"x","big":1e999}'
+        ),
+      })
+    ).toEqual({ code: 'stuck', params: { actions: 3 } });
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(runEnding({ errorParams: { exitCode: 1 } })).toEqual({});
+  });
+
+  it('bounds what it keeps of a page’s text inside the params', () => {
+    const ending = runEnding({
+      code: 'no_value',
+      params: Object.fromEntries(Array.from({ length: 20 }, (_unused, index) => [`p${index}`, 'x'.repeat(900)])),
+    });
+    expect(Object.keys(ending.params ?? {})).toHaveLength(12);
+    expect(String(ending.params?.p0)).toHaveLength(300);
   });
 });

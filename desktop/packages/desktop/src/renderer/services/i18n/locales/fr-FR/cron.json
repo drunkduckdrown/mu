@@ -42,7 +42,8 @@
     "noHistory": "Aucune exécution pour l'instant",
     "notFound": "Tâche introuvable",
     "executionModeDescriptionNew": "Chaque exécution démarre une nouvelle conversation, sans contexte précédent. Idéal pour des rapports ou vérifications périodiques indépendants.",
-    "executionModeDescriptionExisting": "Chaque exécution continue dans la même conversation, conservant le contexte. Idéal pour des tâches de suivi qui s'appuient sur les exécutions précédentes."
+    "executionModeDescriptionExisting": "Chaque exécution continue dans la même conversation, conservant le contexte. Idéal pour des tâches de suivi qui s'appuient sur les exécutions précédentes.",
+    "lastRunFailed": "La dernière exécution a échoué"
   },
   "notification": {
     "taskComplete": "Tâche terminée",
@@ -126,7 +127,19 @@
       "hourly": "Toutes les heures",
       "dailyAt": "Chaque jour à {{time}}",
       "weekdaysAt": "Jours ouvrables à {{time}}",
-      "weeklyAt": "Chaque {{day}} à {{time}}"
+      "weeklyAt": "Chaque {{day}} à {{time}}",
+      "everyMinute": "Toutes les minutes",
+      "everyNMinutes": "Toutes les {{count}} minutes",
+      "everyNMinutes_one": "Intervalle de {{count}} minute",
+      "everyNMinutes_other": "Toutes les {{count}} minutes",
+      "everyNHours": "Toutes les {{count}} heures",
+      "everyNHours_one": "Intervalle de {{count}} heure",
+      "everyNHours_other": "Toutes les {{count}} heures",
+      "weeklyOnDaysAt": "Chaque {{days}} à {{time}}",
+      "monthlyAt": "Le {{day}} de chaque mois à {{time}}",
+      "everyInterval": "Toutes les {{interval}}",
+      "onceAt": "Une fois, le {{time}}",
+      "customExpr": "Planification personnalisée ({{expr}})"
     },
     "custom": {
       "modeLabel": "Motif de répétition",
@@ -142,6 +155,8 @@
       "monthDay": "Jour du mois",
       "preview": "Cron généré"
     },
+    "createFailed": "Impossible de créer la tâche : {{error}}",
+    "updateFailed": "Impossible d’enregistrer la tâche : {{error}}",
     "searchPlaceholder": "Rechercher des tâches...",
     "noSearchResults": "Aucune tâche planifiée correspondante."
   },
@@ -163,5 +178,11 @@
     "conversationNotFound": "Conversation introuvable",
     "scheduledTimePassed": "L'heure planifiée est dépassée",
     "conversationBusy": "Conversation occupée après {{count}} tentatives"
-  }
+  },
+  "nextRunAt": "Prochaine exécution : {{time}}",
+  "keepAwakeFailed": "Impossible de modifier le maintien en éveil : {{error}}",
+  "pauseFailed": "Impossible de mettre la tâche en pause : {{error}}",
+  "resumeFailed": "Impossible de reprendre la tâche : {{error}}",
+  "deleteFailed": "Impossible de supprimer la tâche : {{error}}",
+  "runNowFailed": "Impossible d’exécuter la tâche : {{error}}"
 }

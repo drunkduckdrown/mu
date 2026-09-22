@@ -24,7 +24,7 @@
   "loading": "Lütfen bekleyin...",
   "copy": "Kopyala",
   "reply": "Alıntı",
-  "openInBuiltinBrowser": "Yerleşik tarayıcıda aç",
+  "openInBuiltinBrowser": "Uygulama içi tarayıcıda aç",
   "openInSystemBrowser": "Sistem tarayıcısında aç",
   "copySuccess": "Kopyalandı",
   "copyFailed": "Kopyalama başarısız",
@@ -92,16 +92,16 @@
       "runtimeComponentDescription": "Bu kurulumda gerekli yerleşik çalışma zamanı bileşenleri eksik olduğu için {{resource}} başlatılamıyor. En son AionUi paketini yeniden yükleyin. Yeniden yükledikten sonra da devam ederse güvenlik veya antivirüs yazılımının AionUi bileşenlerini karantinaya alıp almadığını kontrol edin."
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi package architecture mismatch",
-      "description": "This AionUi package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "AionUi paket mimarisi uyuşmuyor",
+      "description": "Bu AionUi paketi {{packageArch}} içindir, ancak bu Mac {{deviceArch}} mimarisinde. Yanlış paketi indirmiş olabilirsiniz. Lütfen {{expectedArch}} paketini indirip kurun."
     },
     "dataMigration": {
-      "title": "Local data migration failed",
-      "description": "AionUi opened, but AionCore stopped while initializing local data. Reinstalling AionUi may not fix this. Send a diagnostics report or contact support so the local database migration can be inspected.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "title": "Yerel veriler taşınamadı",
+      "description": "AionUi açıldı, ancak AionCore yerel verileri başlatırken durdu. AionUi'yi yeniden yüklemek bu sorunu çözmeyebilir. Yerel veritabanı taşımasının incelenebilmesi için tanılama raporu gönderin veya destek ekibiyle iletişime geçin.",
+      "sendDiagnostics": "Tanılama gönder",
+      "diagnosticsSent": "Tanılama gönderildi",
+      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
+      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi"
     },
     "databaseNewerThanApp": {
       "title": "Daha yeni bir AionUi sürümü gerekli",
@@ -109,20 +109,20 @@
       "descriptionWithVersion": "Yerel verileriniz şu an yüklü olandan (v{{currentVersion}}) daha yeni bir AionUi sürümü tarafından oluşturuldu; bu sürüm bunları açamıyor. Devam etmek için AionUi'yi en son sürüme güncelleyin; verileriniz sağlam, yeniden yükleme veya sıfırlama gerekmez."
     },
     "localDataRepair": {
-      "title": "Local data repair failed",
+      "title": "Yerel veriler onarılamadı",
       "description": "AionUi açıldı, ancak AionCore assistant veya agent kayıtları gibi yerel başlangıç verilerini hazırlarken durdu. AionUi'yi yeniden yüklemek bu sorunu çözmeyebilir. Yerel veritabanının incelenebilmesi için tanılama raporu gönderin veya destek ekibiyle iletişime geçin.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "sendDiagnostics": "Tanılama gönder",
+      "diagnosticsSent": "Tanılama gönderildi",
+      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
+      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi"
     },
     "startupDirectory": {
-      "title": "Startup directory is unavailable",
-      "description": "AionUi opened, but AionCore could not start because the configured work or log directory is missing, unavailable, or blocked by permissions. Check that the configured directories exist and are writable, then restart AionUi.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "title": "Başlangıç dizini kullanılamıyor",
+      "description": "AionUi açıldı, ancak yapılandırılan çalışma veya günlük dizini eksik, erişilemez ya da izinler nedeniyle engellendiği için AionCore başlatılamadı. Yapılandırılan dizinlerin var olduğunu ve yazılabilir olduğunu kontrol edin, ardından AionUi'yi yeniden başlatın.",
+      "sendDiagnostics": "Tanılama gönder",
+      "diagnosticsSent": "Tanılama gönderildi",
+      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
+      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi"
     },
     "recoverableDatabaseCorruption": {
       "title": "Yerel veriler bozulmuş",
@@ -144,10 +144,10 @@
     "transientConcurrentStartup": {
       "title": "AionUi başlatılıyor",
       "description": "Bu pencere açıldığında başka bir AionUi başlatma işlemi yerel verileri hâlâ kullanıyordu. Bu geçicidir ve verileriniz güvende — yeniden yükleme gerekmez. Lütfen biraz bekleyip tekrar deneyin veya AionUi'yi yeniden başlatın.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report",
+      "sendDiagnostics": "Tanılama gönder",
+      "diagnosticsSent": "Tanılama gönderildi",
+      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
+      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi",
       "diagnosticsHint": "Bu durum tekrar ederse bir tanılama raporu gönderebilirsiniz."
     },
     "pendingSlow": {
@@ -200,10 +200,10 @@
   "aiAssistant": "Yapay Zekâ Asistanı",
   "kyrn": {
     "settings": "mu ayarları",
-    "judge": "Yargıç yapılandırması",
+    "judge": "Hakem yapılandırması",
     "reload": "Yeniden yükle",
     "starting": "mu başlatılıyor…",
-    "startingHint": "Yerel mu çekirdeğine bağlanılıyor, model ve yargıç yapılandırması okunuyor.",
+    "startingHint": "Yerel mu çekirdeğine bağlanılıyor, model ve hakem yapılandırması okunuyor.",
     "startupError": "mu başlatılamadı",
     "activity": "İş birliği",
     "files": "Dosyalar",
@@ -235,7 +235,7 @@
       "assistant": "Arı mesajı",
       "thinking": "Yayımlanmış düşünce",
       "user": "Görev girdisi",
-      "custom": "Koşum mesajı",
+      "custom": "Çalışma zamanı mesajı",
       "tool": "Araç",
       "waitingOutput": "Tamamlanmış araç çıktısı bekleniyor.",
       "noText": "Metin çıktısı yok.",
@@ -249,11 +249,54 @@
       "recordedAt": "{{time}} tarihinde kaydedildi",
       "beeMissing": "Bu arı, kaydedilmiş anlık görüntüde yok.",
       "snapshot": "Son bildirilen durum",
-      "updated": "Son güncelleme {{time}}"
+      "updated": "Son güncelleme {{time}}",
+      "runTitle": {
+        "tasks": "{{count}} görev",
+        "tasks_one": "{{count}} görev",
+        "tasks_other": "{{count}} görev",
+        "chain": "{{count}} adımlık bir zincir",
+        "chain_one": "{{count}} adımlık bir zincir",
+        "chain_other": "{{count}} adımlık bir zincir"
+      },
+      "choosingRoles": "{{count}} alt ajan için rol, model ve düşünme düzeyi seçiliyor…",
+      "choosingRoles_one": "{{count}} alt ajan için rol, model ve düşünme düzeyi seçiliyor…",
+      "choosingRoles_other": "{{count}} alt ajan için rol, model ve düşünme düzeyi seçiliyor…",
+      "activity": {
+        "notesReceived": "← diğerlerinden {{count}} bulgu",
+        "notesReceived_one": "← diğerlerinden {{count}} bulgu",
+        "notesReceived_other": "← diğerlerinden {{count}} bulgu",
+        "askedFindings": "← şimdiye kadar neler bulduğu soruldu",
+        "toldWrapUp": "← toparlayıp rapor vermesi istendi",
+        "toolFailed": "{{tool}} başarısız oldu",
+        "retry": "yeniden deneme {{attempt}}/{{maxAttempts}}: {{message}}",
+        "modelError": "model hatası: {{message}}",
+        "compacting": "bağlamını sıkıştırıyor",
+        "lateNotes": "← son çağrı: {{count}} geç gelen bulgu",
+        "lateNotes_one": "← son çağrı: {{count}} geç gelen bulgu",
+        "lateNotes_other": "← son çağrı: {{count}} geç gelen bulgu"
+      },
+      "errors": {
+        "cancelled": "çalışma iptal edildi",
+        "stoppedByUser": "kullanıcı tarafından durduruldu",
+        "endedByUser": "kullanıcı tarafından sonlandırıldı",
+        "stalledModel": "model {{duration}} boyunca hiç hayat belirtisi göstermedi",
+        "stalledTool": "{{tool}} çağrısı {{duration}} boyunca hiç hayat belirtisi göstermedi",
+        "timeBudget": "zaman bütçesi ({{duration}}) doldu",
+        "timeBudgetReached": "zaman bütçesi doldu",
+        "noReportInTime": "{{reason}}; istendikten sonra {{duration}} içinde rapor gelmedi",
+        "modelFailed": "model isteği başarısız oldu",
+        "modelAborted": "model isteği yarıda kesildi",
+        "retriesExhausted": "model isteği defalarca başarısız oldu",
+        "exitedCode": "alt ajan işini bitirmeden {{exitCode}} koduyla çıktı",
+        "exitedSignal": "alt ajan işini bitirmeden {{signal}} ile sonlandırıldı",
+        "exitedKilled": "alt ajan işini bitirmeden bir sinyalle sonlandırıldı",
+        "chainBroken": "başlatılmadı: önceki adım (“{{step}}”) tamamlanmadı",
+        "detail": "{{reason}}: {{detail}}"
+      }
     },
     "judgeView": {
       "title": "Kararlar ve etkileri",
-      "description": "Karar katmanının neyi değerlendirdiğini ve gerçekte ne olduğunu görün. Öneriler ile onaylanmış eylemler ayrı gösterilir.",
+      "description": "Hakemin neyi değerlendirdiğini ve gerçekte ne olduğunu görün. Öneriler ile onaylanmış eylemler ayrı gösterilir.",
       "empty": "Bu oturumda henüz kaydedilmiş bir karar yok.",
       "question": "Neye karar verildi",
       "result": "Karar sonucu",
@@ -267,8 +310,8 @@
       "returnedCount": "Yürütme katmanına iletildi",
       "receiptCount": "Onaylanmış teslimler",
       "runtimeEvents": "Diğer çalışma zamanı olayları",
-      "filter": "Karar konusuna göre filtrele",
-      "allQuestions": "Tüm kararlar",
+      "filter": "Soruya göre filtrele",
+      "allQuestions": "Tüm sorular",
       "scoreValue": "Puan: {{value}}",
       "latency": "{{ms}} ms",
       "more": "+{{count}} tane daha",
@@ -316,14 +359,24 @@
         "publish": "Bu bulgu diğer arılarla paylaşılmaya değer mi?",
         "deliver": "Bu bulgu alıcı arıya yardımcı olur mu?",
         "browser": "Tarayıcı bundan sonra ne yapmalı?",
-        "recall": "Geçmiş derslerden hangileri şu anda geçerli?",
+        "recall": "Geçmiş deneyimlerden hangileri şu anda geçerli?",
         "capture": "Bu kalıcı bir düzeltme veya tercih mi?",
         "risk": "Bu işlem kullanıcı onayı gerektiriyor mu?",
         "drift": "Çalışma hâlâ doğru yolda mı?",
         "completion": "Bu değişikliğin hâlâ doğrulanması gerekiyor mu?",
         "notify": "Bu bildirim modele ne zaman ulaşmalı?",
         "cache": "Oturum önbelleği sıcak tutulmalı mı?",
-        "other": "Kaydedilmiş karar"
+        "other": "Kaydedilmiş karar",
+        "rewind": "Bu yaklaşım geri sarmaya değer bir çıkmaz mı?",
+        "goalMet": "Hedefe ulaşıldı mı?",
+        "outputDrift": "Çıktı kurallarınızdan birini çiğniyor mu?",
+        "taskFrame": "Bu mesaj görev çerçevesini değiştiriyor mu?",
+        "constraint": "Bu çağrı kısıtlarınızdan birini çiğniyor mu?",
+        "capabilities": "Bu görevin hangi yeteneklere ihtiyacı var?",
+        "diagnostics": "Bu tanılama modele ne zaman ulaşmalı?",
+        "patch": "Alt ajanın yaması görev kapsamında kalıyor mu?",
+        "review": "Her inceleme bulgusu ne kadar ciddi?",
+        "board": "İş ne durumda?"
       },
       "fields": {
         "turnType": "Görev türü",
@@ -337,14 +390,26 @@
         "score": "Puan",
         "hide": "Gizlenmesi önerilen beceriler",
         "relevant": "İlgili beceriler",
-        "apply": "Önerilen dersler",
+        "apply": "Önerilen deneyimler",
         "publish": "Yayımlamaya izin",
         "deliver": "Teslime izin",
         "path": "Aday dosya",
         "result": "Sonuç",
         "reason": "Neden",
         "keepResult": "Sonucu tut",
-        "keepCall": "Çağrıyı tut"
+        "keepCall": "Çağrıyı tut",
+        "broken": "Çiğnenen kurallar",
+        "open": "Açılacak yetenekler",
+        "errors": "Hatalar",
+        "warnings": "Uyarılar",
+        "withinTask": "Görev kapsamında",
+        "unrelated": "İlgisiz dosyalar",
+        "judged": "Değerlendirilen dosyalar",
+        "priorities": "Öncelikler",
+        "phase": "Aşama",
+        "focus": "Üzerinde çalışılan öğe",
+        "needsUser": "Kullanıcı gerekiyor",
+        "update": "Panoyu yeniden yaz"
       },
       "values": {
         "true": "Evet",
@@ -396,20 +461,67 @@
         "dead_end": "Çıkmaz",
         "decision": "Karar",
         "blocker": "Engel",
-        "abstain": "Karar modeli çekimser kaldı",
+        "abstain": "Hakem çekimser kaldı",
         "shadow": "Gölge modu",
         "skipped": "Kullanıcı atladı",
         "timeout": "Zaman aşımı",
         "all": "Tüm adaylar başarısız oldu",
-        "unreachable": "Karar modeline ulaşılamıyor",
+        "unreachable": "Hakeme ulaşılamıyor",
         "unexpected": "Beklenmeyen hata",
-        "off": "Kapalı"
+        "off": "Kapalı",
+        "continue": "Devam et",
+        "propose": "Geri sarmayı öner",
+        "met": "Karşılandı",
+        "ask": "Kullanıcıya sor",
+        "unjudged": "Değerlendirilmedi",
+        "none": "Yok",
+        "new_task": "Yeni görev",
+        "constraint": "Yeni kısıt",
+        "correction": "Düzeltme",
+        "subgoal": "Yeni alt hedef",
+        "unclear": "Belirsiz değişiklik",
+        "hold": "Beklet",
+        "no_answer": "Zamanında yanıt gelmedi",
+        "aborted": "İptal edildi",
+        "auth": "Hakem anahtarı reddedildi",
+        "payment_required": "Hakem için ödeme yöntemi gerekli",
+        "rate_limited": "Hakem hız sınırına ulaştı",
+        "bad_request": "Hakem isteği reddetti",
+        "server": "Hakem sunucusu hatası",
+        "invalid_response": "Hakem yanıtı okunamadı",
+        "verdict": "Hakem yanıt verdi"
+      },
+      "probabilityValue": "Evet olasılığı: {{percent}}",
+      "optionProbability": "{{option}} {{percent}}",
+      "reasonValue": "Neden: {{reason}}",
+      "fieldValue": "{{field}}: {{value}}",
+      "errorValue": "Hata · {{kind}}",
+      "noAnswerAfter": "{{duration}} içinde yanıt gelmedi",
+      "hints": {
+        "clarify": "İstek yeterince net görünmüyor: önce odaklı tek bir soru sorun.",
+        "side_question": "Bu bir yan soru: kısaca yanıtlayın, ardından ana göreve devam edin.",
+        "plan_first": "Bu iş büyük veya riskli görünüyor: düzenlemeden önce kısa bir plan yazın ve onaylatın.",
+        "try_hive": "Bu iş zor görünüyor: neden bilinmiyorsa ya da doğrudan deneme başarısız olursa Hive'ı kullanın.",
+        "try_delegate": "Bu iş bağımsız parçalara ayrılabiliyor: parçaları paralel çalışacak alt ajanlara vermeyi düşünün."
+      },
+      "answerIds": {
+        "turn_type": "Görev türü",
+        "is_side_question": "Yan soru",
+        "needs_clarification": "Başlamak için fazla belirsiz",
+        "needs_files_changed": "Kod değişikliği gerekiyor",
+        "needs_memory": "Geçmiş deneyimler işe yarar",
+        "swarm_worthy": "Bağımsız parçalar",
+        "plan_first": "Büyük veya riskli",
+        "task_complexity": "Kapsam",
+        "reasoning_depth": "Akıl yürütme derinliği",
+        "tool_complexity": "Araç kullanımı"
       }
     },
     "decisions": "Jev",
     "memory": "Deneyim",
     "images": "Görseller",
     "empty": "Bu oturumda henüz kaydedilmiş bir olay yok.",
+    "quiet": "{{duration}} süredir etkinlik yok",
     "passed": "Geçti",
     "filtered": "Filtrelendi",
     "image": "Bir aracın döndürdüğü görsel",
@@ -429,7 +541,7 @@
       "preflight.pending": "Sınıflandırılıyor",
       "preflight.verdict": "Sınıflandırma",
       "preflight.wait_end": "Sınıflandırma beklemesi sona erdi",
-      "decision": "Yargı",
+      "decision": "Karar",
       "progress": "İlerleme",
       "agent_start": "Görev başladı",
       "agent_settled": "Görev bitti",
@@ -437,7 +549,7 @@
       "auto_compaction_start": "Bağlam sıkıştırılıyor",
       "auto_compaction_end": "Sıkıştırma tamamlandı",
       "hive.note": "Paylaşılan bulgu",
-      "hive.delivery": "Teslimat onaylandı",
+      "hive.delivery": "Teslim onaylandı",
       "hive.gate": "Jev kapısı",
       "hive.manifest": "Hive görevi",
       "bee.event": "Arı olayı",
@@ -447,8 +559,73 @@
       "compaction_start": "Bağlam sıkıştırılıyor…",
       "compaction_end": "Sıkıştırma sona erdi",
       "context.usage": "Bağlam kullanımı",
-      "context.policy": "Otomatik sıkıştırma eşiği (token)",
-      "compaction.plan": "Beta sıkıştırma planı"
+      "context.policy": "Beta sıkıştırma modu",
+      "compaction.plan": "Beta sıkıştırma planı",
+      "goal": {
+        "state": "Hedef durumu"
+      },
+      "board": {
+        "update": "Pano güncellendi",
+        "switched": "Pano açıldı veya kapatıldı"
+      },
+      "checkpoint": {
+        "taken": "Kontrol noktası kaydedildi"
+      },
+      "rewind": {
+        "proposed": "Geri sarma önerildi",
+        "done": "Geri sarıldı",
+        "undone": "Geri sarma geri alındı"
+      },
+      "ttsr": {
+        "interrupted": "Çıktı bir kural nedeniyle durduruldu"
+      },
+      "frame": {
+        "updated": "Görev çerçevesi güncellendi"
+      },
+      "capability": {
+        "opened": "Yetenek açıldı"
+      },
+      "inherit": {
+        "found": "Aktarılabilir kurulum bulundu",
+        "rule": "Aktarılan kural kullanıldı"
+      },
+      "mcp": {
+        "started": "MCP sunucusu başlatıldı",
+        "failed": "MCP sunucusu hata verdi",
+        "tools_changed": "MCP araçları değişti"
+      },
+      "constraint": {
+        "blocked": "Kısıtınız nedeniyle engellendi"
+      },
+      "browser": {
+        "run": "Tarayıcı görevi",
+        "step": "Tarayıcı adımı"
+      },
+      "diagnostics": {
+        "delivered": "Tanılama iletildi",
+        "held": "Tanılama bekletildi",
+        "dropped": "Tanılama atıldı"
+      },
+      "background": {
+        "start": "Arka plan işi başladı",
+        "exit": "Arka plan işi sonlandı",
+        "stop": "Arka plan işi durduruldu",
+        "match": "Arka plan çıktısı eşleşti"
+      },
+      "web": {
+        "fetch": "Sayfa getirildi",
+        "search": "Web araması"
+      },
+      "swarm": {
+        "worktree": {
+          "created": "Worktree oluşturuldu",
+          "removed": "Worktree kaldırıldı"
+        },
+        "patch": {
+          "ready": "Yama hazır",
+          "applied": "Yama uygulandı"
+        }
+      }
     },
     "contextUsage": "Bağlam kullanımı",
     "contextPending": "Yeni bir bağlam ölçümü bekleniyor",
@@ -465,17 +642,18 @@
     "summaryApplied": "Özetle sıkıştırma uygulandı",
     "compactionAborted": "Sıkıştırma iptal edildi",
     "compactionFailed": "Sıkıştırma başarısız oldu",
+    "compactionSavings": "Bağlamda azalma ≈{{saved}}",
     "compactionEstimate": "Sıkıştırma sonrası token sayısı tahminidir; bir sonraki model yanıtı kullanımı günceller.",
     "cacheHit": "Önbellek isabetleri",
     "cachePending": "Henüz önbellek kullanımı bildirilmedi",
     "cacheLabel": "Oturum önbellek isabet oranı: {{percent}}",
     "cacheDetail": "Oturum toplamı: {{read}} önbellekten / {{total}} girdi token’ı. Girdi; önbelleksiz, önbellekten okunan ve önbelleğe yazılan token’ları kapsar; çıktı dahil değildir. Sıkıştırma toplamları sıfırlamaz.",
     "brand": {
-      "tagline": "Yargı çekirdeğine sahip bir kodlama ajanı",
+      "tagline": "Karar çekirdeğine sahip bir kodlama ajanı",
       "judge": {
-        "idle": "Yargıç beklemede",
-        "judging": "Yargıç değerlendiriyor",
-        "off": "Yargıç kapalı"
+        "idle": "Hakem beklemede",
+        "judging": "Hakem değerlendiriyor",
+        "off": "Hakem kapalı"
       },
       "starters": {
         "hint": "Nereden başlayacağınızı bilmiyor musunuz? Şunlardan birini deneyin:",
@@ -530,15 +708,203 @@
         "waiting": "Sizi bekliyor",
         "wrapping_up": "Topluyor",
         "stuck": "Takılmış görünüyor"
+      },
+      "checks_one": "{{total}} kontrolden {{done}} tanesi tamam",
+      "checks_other": "{{total}} kontrolden {{done}} tanesi tamam",
+      "codes": {
+        "progress": {
+          "none": "Henüz yapılacaklar listesi yok.",
+          "all": "Yapılacaklar listesindeki {{total}} işin hepsi tamamlandı.",
+          "all_one": "Yapılacaklar listesindeki {{total}} iş tamamlandı.",
+          "all_other": "Yapılacaklar listesindeki {{total}} işin hepsi tamamlandı.",
+          "some": "Yapılacaklar listesindeki {{total}} işten {{done}} tanesi tamamlandı.",
+          "some_one": "Yapılacaklar listesindeki {{total}} işten {{done}} tanesi tamamlandı.",
+          "some_other": "Yapılacaklar listesindeki {{total}} işten {{done}} tanesi tamamlandı."
+        },
+        "confirm": {
+          "waiting_reply": "Yanıtınızı bekliyor."
+        },
+        "now": {
+          "understanding": "Ne yapacağını anlamak için kodu ve notları okuyor.",
+          "changing": "Kodu değiştiriyor.",
+          "checking": "Değişikliğin işe yarayıp yaramadığını görmek için testleri veya kontrolleri çalıştırıyor.",
+          "fixing": "Bir kontrolde sorun çıktı; onu düzeltiyor.",
+          "waiting": "Durdu, yanıtınızı bekliyor.",
+          "wrapping_up": "İş bitti; şimdi toparlıyor.",
+          "stuck": "Döngüye girmiş gibi görünüyor; sizden bir ipucuna ihtiyacı olabilir.",
+          "unclear": "Çalışıyor.",
+          "focus": "{{now}} (Şu anki iş: {{focus}})",
+          "planning": "Nasıl yapacağını düşünüyor; henüz hiçbir şeyi değiştirmedi."
+        }
       }
     },
+    "activityLoadFailed": "İş birliği etkinliği yüklenemedi. Yeniden deneniyor…",
+    "beeFailed": "Bu arı bir hata bildirdi.",
+    "beeCounts": {
+      "turns": "{{count}} tur",
+      "turns_one": "{{count}} tur",
+      "turns_other": "{{count}} tur",
+      "received": "{{count}} alındı",
+      "received_one": "{{count}} alındı",
+      "received_other": "{{count}} alındı",
+      "shared": "{{count}} paylaşıldı",
+      "shared_one": "{{count}} paylaşıldı",
+      "shared_other": "{{count}} paylaşıldı",
+      "tools": "{{count}} araç çağrısı",
+      "tools_one": "{{count}} araç çağrısı",
+      "tools_other": "{{count}} araç çağrısı"
+    },
+    "compactionTokens": "{{before}} → ≈{{after}} token",
+    "compactionKept": "{{count}} sonuç tutuldu",
+    "compactionKept_one": "{{count}} sonuç tutuldu",
+    "compactionKept_other": "{{count}} sonuç tutuldu",
+    "compactionPruned": "{{count}} budandı",
+    "compactionPruned_one": "{{count}} budandı",
+    "compactionPruned_other": "{{count}} budandı",
+    "compactionDropped": "{{count}} çağrı kaldırıldı",
+    "compactionDropped_one": "{{count}} çağrı kaldırıldı",
+    "compactionDropped_other": "{{count}} çağrı kaldırıldı",
     "jevLine": {
       "classifying": "Jev mesajı sınıflandırıyor…",
       "classified": "Jev sınıflandırması: {{type}}",
       "byRule": "Kuralla sınıflandırıldı: {{type}}",
       "shadow": "{{line}} (yalnızca izleniyor, uygulanmadı)",
       "late": "{{line}} (bu tur için geç kaldı)",
-      "fallback": "Bu kez Jev sınıf vermedi; her zamanki gibi devam ediliyor"
+      "fallback": "Jev bu kez sınıflandırmadı; her zamanki gibi devam ediliyor"
+    },
+    "eventLine": {
+      "detail": "Ayrıntılar: {{detail}}",
+      "progress": {
+        "frame": "Görev çerçevesi güncelleniyor",
+        "lessons": "Önceki oturumlardaki deneyimler kontrol ediliyor",
+        "skills": "Bu oturum için gereken beceriler seçiliyor",
+        "capabilities": "Bu görev için gereken yetenekler seçiliyor",
+        "permissionReview": "JeV inceliyor: {{summary}}"
+      },
+      "goal": {
+        "paused": "Duraklatıldı: {{reason}}",
+        "reason": {
+          "interrupted": "çalışmayı siz yarıda kestiniz",
+          "modelCallFailed": "bir model çağrısı başarısız oldu",
+          "needsUser": "ajanın sizden bir şeye ihtiyacı var",
+          "needsUserDetail": "ajanın sizden bir şeye ihtiyacı var: {{detail}}",
+          "unjudged": "hiçbir hakem hedefe ulaşılıp ulaşılmadığını anlayamadı ve bitmediği kanıtlanabilen bir şey de yok",
+          "continuationsUsedUp": "{{count}} devam hakkının tümü kullanıldı",
+          "continuationsUsedUp_one": "{{count}} devam hakkının tümü kullanıldı",
+          "continuationsUsedUp_other": "{{count}} devam hakkının tümü kullanıldı",
+          "minutesUsedUp": "süre hakkı ({{duration}}) doldu",
+          "sessionReopened": "oturum yeniden açıldı",
+          "idle": "ajan art arda {{count}} çalışmayı hiçbir şey yapmadan bitirdi",
+          "idle_one": "ajan {{count}} çalışmayı hiçbir şey yapmadan bitirdi",
+          "idle_other": "ajan art arda {{count}} çalışmayı hiçbir şey yapmadan bitirdi",
+          "noProgress": "art arda {{count}} çalışmada ilerleme olmadı; nasıl devam edileceğini söyleyin",
+          "noProgress_one": "{{count}} çalışmada ilerleme olmadı; nasıl devam edileceğini söyleyin",
+          "noProgress_other": "art arda {{count}} çalışmada ilerleme olmadı; nasıl devam edileceğini söyleyin",
+          "noProgressDetail": "art arda {{count}} çalışmada ilerleme olmadı ({{detail}}); nasıl devam edileceğini söyleyin",
+          "noProgressDetail_one": "{{count}} çalışmada ilerleme olmadı ({{detail}}); nasıl devam edileceğini söyleyin",
+          "noProgressDetail_other": "art arda {{count}} çalışmada ilerleme olmadı ({{detail}}); nasıl devam edileceğini söyleyin"
+        }
+      },
+      "frame": {
+        "unclearChange": "“{{message}}” mesajı görevi nasıl değiştiriyor?"
+      },
+      "search": {
+        "notConfigured": "“{{source}}” bir arama kaynağı değil (features.web.search)",
+        "failed": "{{source}} hata verdi: {{message}}",
+        "robotPage": "{{source}} bir doğrulama sayfasıyla yanıt verdi: bu istemciyi robot sanıyor",
+        "httpError": "{{source}} HTTP {{status}} ile yanıt verdi",
+        "noResults": "{{source}} sonuç içermeyen bir sayfa döndürdü (sonuç bulunamadı ya da sayfanın yapısı değişti)",
+        "unrelated": "{{source}} sorguyla hiç ilgisi olmayan sonuçlar döndürdü; arama motorları robot sandıkları istemcilere böyle yapar"
+      },
+      "mcp": {
+        "line": "{{name}}: {{reason}}",
+        "projectUntrusted": "proje güvenilir değil ve bu sunucu proje tarafından tanımlanmış",
+        "needsApproval": "proje tarafından tanımlanmış ({{source}}) ve onaylanmamış; bu klasörü mu'da açıp bir kez izin verin ya da sunucuyu mu.json içinde tanımlayın",
+        "aborted": "başlatma iptal edildi",
+        "rpc": "bir hatayla yanıt verdi",
+        "protocol": "MCP protokolüne uymayan bir yanıt verdi",
+        "startFailed": "başlatılamadı",
+        "crashedRestarting": "çalışırken çöktü; mu onu bir kez yeniden başlatıyor",
+        "crashedAgain": "yine çöktü ve yeniden başlatılmayacak",
+        "restartFailed": "çöktü ve yeniden başlatma da başarısız oldu",
+        "restartFailedCause": "çöktü ve yeniden başlatma da başarısız oldu: {{cause}}",
+        "closed": "mu hâlâ yanıt beklerken bağlantısı kapandı",
+        "timeout": "zamanında yanıt vermedi",
+        "denied": "bu projenin sunucusunun başlamasına izin vermediniz",
+        "unreachable": "başlatılamadı ya da ona ulaşılamadı"
+      },
+      "rewind": {
+        "sameCommandFailed": "Başarısız olan aynı komut {{count}} kez çalıştırıldı: {{command}}",
+        "sameCommandFailed_one": "Başarısız olan aynı komut {{count}} kez çalıştırıldı: {{command}}",
+        "sameCommandFailed_other": "Başarısız olan aynı komut {{count}} kez çalıştırıldı: {{command}}",
+        "monitorTrouble": "Sapma izleme bu turda {{count}} kez uyardı ({{kind}}: {{detail}})",
+        "monitorTrouble_one": "Sapma izleme bu turda {{count}} kez uyardı ({{kind}}: {{detail}})",
+        "monitorTrouble_other": "Sapma izleme bu turda {{count}} kez uyardı ({{kind}}: {{detail}})",
+        "trouble": {
+          "loop": "döngüye girme",
+          "drift": "görevden sapma"
+        }
+      },
+      "browser": {
+        "finished": "{{status}}: {{reason}}",
+        "openFailed": "Sayfa tarayıcıda açılamadı.",
+        "openFailedPanel": "Sayfa uygulama içi tarayıcı panelinde açılamadı.",
+        "launch": {
+          "noBrowser": {
+            "mac": "/Applications içinde Chrome, Chromium, Edge veya Brave bulunamadı. Bunlardan birini kurun ya da MU_CHROME değişkenini Chromium tabanlı bir tarayıcının yürütülebilir dosyasına ayarlayın.",
+            "windows": "Program Files veya %LOCALAPPDATA% altında Chrome, Chromium, Edge veya Brave bulunamadı. Bunlardan birini kurun ya da MU_CHROME değişkenini tarayıcının .exe dosyasına ayarlayın.",
+            "wsl": "WSL içinde tarayıcı bulunamadı. WSL içine bir tarayıcı kurun ya da WSL'nin yansıtılmış ağ modunu açın; adımlar aşağıdaki reason alanında.",
+            "other": "Chrome, Chromium, Edge veya Brave bulunamadı. Bunlardan birini kurun ya da MU_CHROME değişkenini tarayıcının yürütülebilir dosyasına ayarlayın; kurulum komutları aşağıdaki reason alanında."
+          },
+          "windowsBrowserUnusable": "{{executable}} kullanılamıyor: Windows tarafındaki bir tarayıcıya WSL'den yalnızca yansıtılmış ağ modunda ulaşılabilir.",
+          "profileNoWindowsPath": "{{profileDir}} profil klasörünün bir Windows yolu yok (WSL_DISTRO_NAME ayarlanmamış).",
+          "browserExitedOnStart": "Tarayıcı başlatılırken kapandı (çıkış kodu {{exitCode}}).",
+          "devtoolsPortTimeout": "Tarayıcı DevTools portunu zamanında açmadı.",
+          "cdpConnectTimeout": "Tarayıcıya bağlantı zaman aşımına uğradı.",
+          "cdpConnectFailed": "Tarayıcıya bağlanılamadı.",
+          "browserSpawnFailed": "{{command}} başlatılamadı."
+        }
+      }
     }
-  }
+  },
+  "menu": {
+    "about": "{{name}} hakkında",
+    "services": "Hizmetler",
+    "hide": "{{name}} uygulamasını gizle",
+    "hideOthers": "Diğerlerini gizle",
+    "unhide": "Tümünü göster",
+    "quit": "{{name}} uygulamasından çık",
+    "edit": "Düzen",
+    "undo": "Geri al",
+    "redo": "Yinele",
+    "cut": "Kes",
+    "copy": "Kopyala",
+    "paste": "Yapıştır",
+    "pasteAndMatchStyle": "Yapıştır ve stili eşleştir",
+    "delete": "Sil",
+    "selectAll": "Tümünü seç",
+    "view": "Görünüm",
+    "reload": "Yeniden yükle",
+    "forceReload": "Zorla yeniden yükle",
+    "toggleDevTools": "Geliştirici araçlarını aç/kapat",
+    "resetZoom": "Gerçek boyut",
+    "zoomIn": "Yakınlaştır",
+    "zoomOut": "Uzaklaştır",
+    "toggleFullScreen": "Tam ekranı aç/kapat",
+    "help": "Yardım",
+    "checkForUpdates": "Güncellemeleri kontrol et…"
+  },
+  "trayMenu": {
+    "runningTasks": "Çalışan görevler: {{count}}"
+  },
+  "noData": "Veri yok",
+  "labelWithSelectedCount": "{{label}} ({{selected}}/{{total}})",
+  "selectedSkillsWithCount": "Seçili beceriler · {{count}}",
+  "window": {
+    "minimize": "Küçült",
+    "maximize": "Büyüt",
+    "restore": "Geri yükle"
+  },
+  "collapseSidebar": "Kenar çubuğunu daralt",
+  "expandSidebar": "Kenar çubuğunu genişlet"
 }

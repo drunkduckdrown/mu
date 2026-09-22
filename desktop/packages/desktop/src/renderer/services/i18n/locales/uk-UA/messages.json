@@ -83,7 +83,7 @@
     "no": "Ні (esc)"
   },
   "copyLastOutput": {
-    "empty": "No response to copy yet"
+    "empty": "Ще немає відповіді для копіювання"
   },
   "fork": {
     "action": "Відгалузити звідси",
@@ -102,5 +102,22 @@
   "requestDetails": "Деталі запиту:",
   "delivery": {
     "pending": "Непрочитано"
-  }
+  },
+  "permissionOption": {
+    "allow_once": "Дозволити",
+    "allow_always": "Завжди дозволяти",
+    "reject_once": "Відхилити",
+    "reject_always": "Завжди відхиляти"
+  },
+  "permissionKind": {
+    "execute": "Запуск команди",
+    "edit": "Редагування",
+    "read": "Читання",
+    "fetch": "Мережевий запит",
+    "tool": "Інструмент"
+  },
+  "optionNumber": "Варіант {{number}}",
+  "copyFilesHeader": "Файли:",
+  "exportHeaderLine": "{{label}}: {{value}}",
+  "exportSpeakerLine": "{{speaker}}:"
 }

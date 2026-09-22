@@ -71,5 +71,15 @@
     "normal": "Обычный",
     "high": "Высокий",
     "urgent": "Срочный"
-  }
+  },
+  "toolCount": "{{count}} инструментов",
+  "toolCount_one": "{{count}} инструмент",
+  "toolCount_other": "{{count}} инструмента",
+  "toolCount_few": "{{count}} инструмента",
+  "toolCount_many": "{{count}} инструментов",
+  "serverWithToolCount": "{{name}} ({{count}} инструментов)",
+  "serverWithToolCount_one": "{{name}} ({{count}} инструмент)",
+  "serverWithToolCount_other": "{{name}} ({{count}} инструмента)",
+  "serverWithToolCount_few": "{{name}} ({{count}} инструмента)",
+  "serverWithToolCount_many": "{{name}} ({{count}} инструментов)"
 }

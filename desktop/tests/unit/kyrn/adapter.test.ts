@@ -504,6 +504,62 @@ describe('KYRN ACP bridge', () => {
       f.cleanup();
     }
   });
+  it('gives the card mu’s codes and its answers by id, so the desktop words them in any language', async () => {
+    const f = fixture({ mode: 'jev' });
+    try {
+      await f.agent.newSession({ cwd: tmpdir(), mcpServers: [] });
+      const answers = ['允许这一次', '这次对话都允许（git push）', '不允许'];
+      const ask = (id: string, optionId: string) => {
+        f.answer({ outcome: { outcome: 'selected', optionId } });
+        f.emit(
+          shown('permissions.request', {
+            id: `permission-${id}`,
+            mode: 'jev',
+            tool: 'bash',
+            kind: 'shell',
+            summary: 'git push --force',
+            reason: 'flagged',
+            flag: 'force push',
+            flagCode: 'force_push',
+            grant: { key: 'shell:git push', label: 'git push' },
+            answers,
+            answerIds: ['once', 'session', 'deny'],
+          })
+        );
+        f.emit({
+          type: 'extension_ui_request',
+          id,
+          method: 'select',
+          title: 'mu 想运行命令，需要你授权\ngit push --force\n危险操作：强制推送。',
+          options: answers,
+        });
+      };
+      ask('ui-1', 'mu:session');
+      await tick();
+      expect(f.permissions[0].toolCall.rawInput).toEqual({
+        command: 'git push --force',
+        description: '危险操作：强制推送。',
+        mu: { kind: 'shell', reason: 'flagged', flagCode: 'force_push', grantLabel: 'git push' },
+      });
+      expect(f.permissions[0].options).toEqual([
+        { optionId: 'mu:once', name: answers[0], kind: 'allow_once' },
+        { optionId: 'mu:session', name: answers[1], kind: 'allow_always' },
+        { optionId: 'mu:deny', name: answers[2], kind: 'reject_once' },
+      ]);
+      // The answer goes back to mu as its own text; a position or an unknown id is no answer.
+      ask('ui-2', '1');
+      await tick();
+      ask('ui-3', 'mu:always');
+      await tick();
+      expect(f.responses).toEqual([
+        { id: 'ui-1', value: answers[1] },
+        { id: 'ui-2', cancelled: true },
+        { id: 'ui-3', cancelled: true },
+      ]);
+    } finally {
+      f.cleanup();
+    }
+  });
   it('offers mu’s slash commands to the send box once the session is answered, and again when it is reopened', async () => {
     const f = fixture({
       commands: [

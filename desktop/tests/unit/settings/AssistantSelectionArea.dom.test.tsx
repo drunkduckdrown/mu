@@ -96,6 +96,8 @@ describe('AssistantSelectionArea', () => {
               team_selectable: true,
               deletable: false,
             },
+            // A second assistant: with one, there is no picker to draw.
+            ...assistants(),
           ]}
           localeKey='zh-CN'
           onSelectAssistant={vi.fn()}
@@ -105,6 +107,22 @@ describe('AssistantSelectionArea', () => {
 
     expect(screen.getByText('学术论文助手')).toBeInTheDocument();
     expect(screen.queryByText('Academic Paper')).not.toBeInTheDocument();
+  });
+
+  it('draws no picker for a single assistant, which has nothing to pick', () => {
+    const { container } = render(
+      <ConfigProvider>
+        <AssistantSelectionArea
+          selectedAssistantId='writer'
+          assistants={assistants().filter((assistant) => assistant.id === 'writer')}
+          localeKey='en-US'
+          onSelectAssistant={vi.fn()}
+        />
+      </ConfigProvider>
+    );
+
+    expect(screen.queryByTestId('preset-pill-writer')).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('finds an overflow assistant by its runtime agent command (ag → agy → Antigravity)', () => {

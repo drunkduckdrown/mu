@@ -7,6 +7,7 @@ import type { Activity } from '@/common/kyrn/types';
 import { thinkingLevelLabel } from '@/renderer/utils/model/thinkingLevel';
 import { beeRecords } from './activity';
 import BeeAvatar from './BeeAvatar';
+import { beeErrorText } from './codes';
 import styles from './Hive.module.css';
 import { useClock } from '../clock';
 import { beeCounters, ErrorNotice, quietLabel } from '../text';
@@ -52,7 +53,7 @@ export default function BeeInspector({ bee, focus, events }: { bee: HiveBee; foc
       </div>
       <p className={styles.hint}>{beeCounters(t, bee)}</p>
       {bee.quietMs > 0 && <Alert type='warning' content={quietLabel(t, bee.quietMs, i18n.language)} />}
-      {bee.error && <ErrorNotice title={t('common.kyrn.beeFailed')} detail={bee.error} />}
+      {bee.error && <ErrorNotice title={t('common.kyrn.beeFailed')} detail={beeErrorText(t, bee, i18n.language)} />}
       <div className={styles.current}>
         <div className={styles.sectionLabel}>{t('common.kyrn.hiveView.current')}</div>
         <div className='flex gap-6px items-start'>

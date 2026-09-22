@@ -12,6 +12,7 @@ import {
   normalizePermissionOperationKind,
   PermissionRequestPanel,
 } from '../components/MessagePermission';
+import { muPermissionWording } from './muPermissionWording';
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -23,8 +24,13 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
   const content = message.content || ({} as IMessageAcpPermission['content']);
   const { tool_call } = content;
   const options = Array.isArray(content.options) ? content.options : [];
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toolCallId = tool_call?.tool_call_id;
+  // mu's own question, worded by its codes in the reader's language (mu writes it in Chinese or English only).
+  const muWording = useMemo(
+    () => muPermissionWording(tool_call?.raw_input, t, (key) => i18n?.exists(key) ?? false),
+    [i18n, tool_call?.raw_input, t]
+  );
 
   const panelOptions = useMemo(
     () =>
@@ -37,12 +43,14 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
         return {
           id: `${value}:${index}`,
           value,
-          label: labelKey ? t(labelKey) : option?.name || t('messages.optionNumber', { number: index + 1 }),
+          label:
+            muWording?.answer(value) ??
+            (labelKey ? t(labelKey) : option?.name || t('messages.optionNumber', { number: index + 1 })),
           intent: classifyAcpPermission(option?.kind || ''),
           testId: `message-acp-permission-option-${value}`,
         };
       }),
-    [options, t]
+    [muWording, options, t]
   );
 
   const handleConfirm = useCallback(
@@ -61,8 +69,9 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
     return null;
   }
 
-  const title = tool_call.title || tool_call.raw_input?.description || t('messages.permissionRequest');
-  const description = tool_call.raw_input?.description;
+  const title =
+    muWording?.title || tool_call.title || tool_call.raw_input?.description || t('messages.permissionRequest');
+  const description = muWording?.description ?? tool_call.raw_input?.description;
   // Fallback A (2026-08-04 spec): when raw_input carries no `command`, render the
   // raw_input itself as readable JSON instead of echoing the title (the old echo
   // produced cards like「命令: AskUserQuestion」with the actual question text —
@@ -74,7 +83,10 @@ const MessageAcpPermission: React.FC<MessageAcpPermissionProps> = React.memo(({ 
       : undefined;
   let rawDump: string | undefined;
   if (!command && tool_call.raw_input && typeof tool_call.raw_input === 'object') {
-    const rest = Object.fromEntries(Object.entries(tool_call.raw_input).filter(([key]) => key !== 'description'));
+    // mu's codes are for wording the card, not a detail to read.
+    const rest = Object.fromEntries(
+      Object.entries(tool_call.raw_input).filter(([key]) => key !== 'description' && !(muWording && key === 'mu'))
+    );
     if (Object.keys(rest).length > 0) {
       try {
         rawDump = JSON.stringify(rest, null, 2);

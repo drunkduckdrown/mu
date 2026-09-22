@@ -96,5 +96,22 @@
   "requestDetails": "İstek ayrıntıları:",
   "delivery": {
     "pending": "Okunmadı"
-  }
+  },
+  "permissionOption": {
+    "allow_once": "İzin ver",
+    "allow_always": "Her zaman izin ver",
+    "reject_once": "Reddet",
+    "reject_always": "Her zaman reddet"
+  },
+  "permissionKind": {
+    "execute": "Komut çalıştırma",
+    "edit": "Düzenleme",
+    "read": "Okuma",
+    "fetch": "Ağdan getirme",
+    "tool": "Araç"
+  },
+  "optionNumber": "Seçenek {{number}}",
+  "copyFilesHeader": "Dosyalar:",
+  "exportHeaderLine": "{{label}}: {{value}}",
+  "exportSpeakerLine": "{{speaker}}:"
 }
