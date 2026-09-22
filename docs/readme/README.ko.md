@@ -141,5 +141,5 @@ KYRN_ROOT="$(cd .. && pwd)" bun run start     # Windows (PowerShell): $env:KYRN_
 ## 크레딧과 라이선스
 
 - **pi**는 Mario Zechner와 기여자들이 만들었으며 MIT 라이선스로 배포됩니다. 루트의 [LICENSE](../../LICENSE)는 `packages/`와 `kyrn/`에 적용됩니다.
-- **AionUi**는 iOfficeAI가 만들었으며 Apache 2.0 라이선스로 배포됩니다. `desktop/`에는 AionUi의 [LICENSE](../../desktop/LICENSE)가 그대로 남아 있습니다.
+- **데스크톱 앱은 iOfficeAI의 [AionUi](https://github.com/iOfficeAI/AionUi)를 기반으로 합니다**(Apache 2.0 라이선스). 앱 안에서는 mu라고 부르지만 코드의 상당 부분은 AionUi에서 왔으며, 이에 감사드립니다. `desktop/`에는 AionUi의 [LICENSE](../../desktop/LICENSE)가 그대로 남아 있습니다.
 - 판정 레이어에 포함된 서드파티 코드는 [packages/kyrn-judge/THIRD_PARTY_NOTICES.md](../../packages/kyrn-judge/THIRD_PARTY_NOTICES.md)에 나열되어 있습니다.

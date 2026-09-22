@@ -141,5 +141,5 @@ GitHub Actions がすべての push をチェックします。主要なすべ�
 ## クレジットとライセンス
 
 - **pi**（Mario Zechner およびコントリビューター）は MIT ライセンスです。ルートの [LICENSE](../../LICENSE) は `packages/` と `kyrn/` に適用されます。
-- **AionUi**（iOfficeAI）は Apache 2.0 ライセンスです。`desktop/` には AionUi の [LICENSE](../../desktop/LICENSE) をそのまま残しています。
+- **デスクトップアプリは iOfficeAI の [AionUi](https://github.com/iOfficeAI/AionUi) をベースにしています**（Apache 2.0 ライセンス）。アプリ内での名前は mu ですが、コードの多くは AionUi に由来します。感謝します。`desktop/` には AionUi の [LICENSE](../../desktop/LICENSE) をそのまま残しています。
 - 判定レイヤー内のサードパーティコードは、[packages/kyrn-judge/THIRD_PARTY_NOTICES.md](../../packages/kyrn-judge/THIRD_PARTY_NOTICES.md) に記載されています。

@@ -141,5 +141,5 @@ Read [AGENTS.md](AGENTS.md) first. In short: tab indentation, relative imports w
 ## Credits and license
 
 - **pi**, by Mario Zechner and contributors, is MIT-licensed. The root [LICENSE](LICENSE) covers `packages/` and `kyrn/`.
-- **AionUi**, by iOfficeAI, is licensed under Apache 2.0. `desktop/` keeps its [LICENSE](desktop/LICENSE).
+- **The desktop app is based on [AionUi](https://github.com/iOfficeAI/AionUi)** by iOfficeAI, licensed under Apache 2.0. It is called mu inside the app, but much of its code comes from AionUi, and we are grateful for it. `desktop/` keeps AionUi's [LICENSE](desktop/LICENSE).
 - Third-party code in the judgment layer is listed in [packages/kyrn-judge/THIRD_PARTY_NOTICES.md](packages/kyrn-judge/THIRD_PARTY_NOTICES.md).

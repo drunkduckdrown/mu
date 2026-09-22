@@ -141,5 +141,5 @@ KYRN_ROOT="$(cd .. && pwd)" bun run start     # Windows (PowerShell): $env:KYRN_
 ## 致谢与许可证
 
 - **pi** 由 Mario Zechner 及贡献者开发，采用 MIT 许可证。根目录的 [LICENSE](../../LICENSE) 适用于 `packages/` 和 `kyrn/`。
-- **AionUi** 由 iOfficeAI 开发，采用 Apache 2.0 许可证。`desktop/` 保留它自己的 [LICENSE](../../desktop/LICENSE)。
+- **桌面应用基于 [AionUi](https://github.com/iOfficeAI/AionUi) 开发**，作者是 iOfficeAI，采用 Apache 2.0 许可证。应用里它叫 mu，但很多代码来自 AionUi，在此致谢。`desktop/` 保留 AionUi 的 [LICENSE](../../desktop/LICENSE)。
 - 判定层中的第三方代码列在 [packages/kyrn-judge/THIRD_PARTY_NOTICES.md](../../packages/kyrn-judge/THIRD_PARTY_NOTICES.md) 里。

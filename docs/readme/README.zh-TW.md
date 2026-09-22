@@ -141,5 +141,5 @@ GitHub Actions 會檢查每一次 push。它會為所有常見平台建置桌面
 ## 致謝與授權
 
 - **pi** 由 Mario Zechner 與貢獻者開發，採用 MIT 授權。根目錄的 [LICENSE](../../LICENSE) 涵蓋 `packages/` 和 `kyrn/`。
-- **AionUi** 由 iOfficeAI 開發，採用 Apache 2.0 授權。`desktop/` 保留原有的 [LICENSE](../../desktop/LICENSE)。
+- **桌面應用程式以 [AionUi](https://github.com/iOfficeAI/AionUi) 為基礎開發**，作者是 iOfficeAI，採用 Apache 2.0 授權。在應用程式裡它叫 mu，但許多程式碼來自 AionUi，在此致謝。`desktop/` 保留 AionUi 的 [LICENSE](../../desktop/LICENSE)。
 - 判定層中的第三方程式碼列於 [packages/kyrn-judge/THIRD_PARTY_NOTICES.md](../../packages/kyrn-judge/THIRD_PARTY_NOTICES.md)。
