@@ -5,6 +5,7 @@ import { failOpen, type KyrnRuntime } from "../runtime.ts";
 import { CAPABILITY_ENTRY } from "./catalog.ts";
 import { astGrepPack } from "./packs/ast-grep.ts";
 import { registerCommit } from "./packs/commit.ts";
+import { conflictsPack } from "./packs/conflicts.ts";
 import { githubPack } from "./packs/github.ts";
 import type { Pack, PackShared } from "./packs/pack.ts";
 import { reviewPack } from "./packs/review.ts";
@@ -41,6 +42,11 @@ export function registerPacks(runtime: KyrnRuntime): void {
 		review: true,
 		/** Findings one triage sorts at most; the rest are reported after them, unsorted. */
 		maxFindings: 40,
+		/** Conflict resolution for a merge, rebase or cherry-pick that stopped. */
+		conflicts: true,
+		/** Lines of each side of a conflict block that conflicts_show returns. */
+		maxSideLines: 80,
+		maxConflictChars: 20000,
 	});
 	if (!options.enabled) return;
 	const { pi, catalog } = runtime;
@@ -72,6 +78,9 @@ export function registerPacks(runtime: KyrnRuntime): void {
 	if (options.github) packs.push(githubPack(shared, { command: options.ghCommand }));
 	if (options.commit) registerCommit(shared, { maxPlanChars: options.maxPlanChars });
 	if (options.review) packs.push(reviewPack(shared, { maxFindings: options.maxFindings }));
+	if (options.conflicts) {
+		packs.push(conflictsPack(shared, { maxSideLines: options.maxSideLines, maxChars: options.maxConflictChars }));
+	}
 
 	const starting = new Map<string, Promise<void>>();
 	const start = (pack: Pack): Promise<void> => {

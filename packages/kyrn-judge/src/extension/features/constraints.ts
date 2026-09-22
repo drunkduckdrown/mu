@@ -3,7 +3,16 @@ import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
 import { isShellTool } from "../shell-tools.ts";
 
 /** Tools that change something. Reading and searching never go against "do not modify". */
-const MUTATING = new Set(["edit", "write", "bash", "powershell", "sg_rewrite", "bg_start", "apply_patch_from"]);
+const MUTATING = new Set([
+	"edit",
+	"write",
+	"bash",
+	"powershell",
+	"sg_rewrite",
+	"bg_start",
+	"apply_patch_from",
+	"conflicts_resolve",
+]);
 
 /** What a call would do, short enough for a judge: where, and the beginning of what. */
 export function describeCall(toolName: string, input: unknown): string {

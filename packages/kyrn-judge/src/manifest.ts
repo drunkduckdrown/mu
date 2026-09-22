@@ -1697,6 +1697,32 @@ export const MANIFEST: HarnessManifest = {
 					label: { zh: "/review：评审并按 P0–P3 分级", en: "/review, with findings sorted P0 to P3" },
 				},
 				{
+					key: "conflicts",
+					kind: "boolean",
+					default: true,
+					label: { zh: "冲突解决", en: "Conflict resolution" },
+					help: {
+						zh: "合并、变基、拣选停在冲突上时，逐个文件显示双方和共同基线，按块写入解决结果并标记为已解决。从不提交，也不执行 --continue。",
+						en: "When a merge, rebase or cherry-pick stops on conflicts: both sides and their base per file, the resolution written block by block and the file marked resolved. Never commits, never runs --continue.",
+					},
+				},
+				{
+					key: "maxSideLines",
+					kind: "number",
+					default: 80,
+					min: 10,
+					max: 1000,
+					label: { zh: "每块冲突每一侧最多显示几行", en: "Lines shown per side of a conflict block" },
+				},
+				{
+					key: "maxConflictChars",
+					kind: "number",
+					default: 20000,
+					min: 2000,
+					max: 200000,
+					label: { zh: "一个文件的冲突最多显示多少字符", en: "Characters of one file's conflicts shown" },
+				},
+				{
 					key: "maxFindings",
 					kind: "number",
 					default: 40,
