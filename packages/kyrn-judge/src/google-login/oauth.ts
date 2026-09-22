@@ -120,7 +120,8 @@ interface Callback {
 	readonly cancel: () => void;
 }
 
-function listen(config: GoogleLoginConfig): Promise<Callback> {
+/** Only the callback of this sign-in counts: anything else that reaches the port (a stale tab, another page) is turned away. */
+function listen(config: GoogleLoginConfig, state: string): Promise<Callback> {
 	return new Promise((resolve, reject) => {
 		let settle: (value: { code: string; state: string } | undefined) => void = () => {};
 		const wait = new Promise<{ code: string; state: string } | undefined>((done) => {
@@ -141,10 +142,17 @@ function listen(config: GoogleLoginConfig): Promise<Callback> {
 			const error = url.searchParams.get("error");
 			if (error) return send(400, "Sign-in did not complete", `Google said: ${error.replace(/[<>&]/g, "")}`);
 			const code = url.searchParams.get("code");
-			const state = url.searchParams.get("state");
-			if (!code || !state) return send(400, "Sign-in did not complete", "The code or the state is missing.");
+			const given = url.searchParams.get("state");
+			if (!code || !given) return send(400, "Sign-in did not complete", "The code or the state is missing.");
+			if (given !== state) {
+				return send(
+					400,
+					"Not this sign-in",
+					"This address belongs to another sign-in. Use the tab mu opened last.",
+				);
+			}
 			send(200, "Signed in", "You can close this window and go back to mu.");
-			settle({ code, state });
+			settle({ code, state: given });
 		});
 		server.once("error", (error: NodeJS.ErrnoException) =>
 			reject(
@@ -349,7 +357,7 @@ async function login(config: GoogleLoginConfig, interaction: ProviderAuthInterac
 	await consent(config, interaction);
 	const { verifier, challenge } = await pkce();
 	const redirectUri = `http://localhost:${config.callbackPort}${config.callbackPath}`;
-	const callback = await listen(config);
+	const callback = await listen(config, verifier);
 	const pasting = new AbortController();
 	const onAbort = () => callback.cancel();
 	interaction.signal.addEventListener("abort", onAbort, { once: true });

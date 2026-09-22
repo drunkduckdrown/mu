@@ -171,14 +171,21 @@ describe("Google sign-in", () => {
 			"/v1internal:loadCodeAssist": () => ({ json: { cloudaicompanionProject: "ag-project" } }),
 		});
 		const config = await configFor(ANTIGRAVITY_LOGIN, google.url);
+		let forged = 0;
 		const them = person({
 			consent: "continue",
 			browser: (authUrl) => {
 				const state = authUrl.searchParams.get("state") ?? "";
-				void fetch(`http://127.0.0.1:${config.callbackPort}${config.callbackPath}?code=cb-code&state=${state}`);
+				const base = `http://127.0.0.1:${config.callbackPort}${config.callbackPath}`;
+				void (async () => {
+					// Another page reaching the port first is turned away, and the sign-in goes on.
+					forged = (await fetch(`${base}?code=evil&state=someone-else`)).status;
+					await fetch(`${base}?code=cb-code&state=${state}`);
+				})();
 			},
 		});
 		const credential = await googleOAuth(config).login(them.interaction);
+		expect(forged).toBe(400);
 
 		const shown = them.events.find((event) => event.type === "auth_url");
 		expect(shown?.type).toBe("auth_url");

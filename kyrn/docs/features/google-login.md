@@ -88,11 +88,11 @@ Grok（`xai`）用设备码：`notify({ type: "device_code", userCode, verificat
 
 `test/google-login.test.ts`，19 个用例，全部在本机假服务器上跑，不连 Google：
 
-- 登录：拒绝风险说明时不开浏览器、不起回调、不发请求、端口仍空着；浏览器回调登录（授权地址的 client_id / 回调地址 / S256 / offline / scope，PKCE 的 challenge 与 verifier 对得上，换令牌的每个字段，凭据带项目和邮箱，过期时间提前 5 分钟，粘贴框被取消，回调服务关掉）；粘贴地址登录；伪造 state 被拒；Gemini CLI 免费档自动开项目、付费档没设项目时报错；Antigravity 找不到项目时用默认项目；刷新保留项目和没轮换的 refresh token；请求用的 key 带令牌和项目。
+- 登录：拒绝风险说明时不开浏览器、不起回调、不发请求、端口仍空着；浏览器回调登录（别的页面先打到回调端口、state 不对时被拒掉，登录照常继续；授权地址的 client_id / 回调地址 / S256 / offline / scope，PKCE 的 challenge 与 verifier 对得上，换令牌的每个字段，凭据带项目和邮箱，过期时间提前 5 分钟，粘贴框被取消，回调服务关掉）；粘贴地址登录；伪造 state 被拒；Gemini CLI 免费档自动开项目、付费档没设项目时报错；Antigravity 找不到项目时用默认项目；刷新保留项目和没轮换的 refresh token；请求用的 key 带令牌和项目。
 - 流式：思考、正文、工具调用和用量都读对；Gemini CLI 与 Antigravity 的请求格式（头、系统提示、`requestType`、Claude 的 `parameters`、`anthropic-beta`）；403 换地址；400 不重试；要等太久时直接报；空回答再问；没登录或凭据不全时不发请求；四种思考设置；地址顺序和等待时间的解析。
 - 提供商：Gemini CLI 的模型筛选；Antigravity 模型列表的解析（已知模型保留已知的，新的按家族，非对话模型去掉，格式不对时为空）；只有登录后才去问，第一个地址失败换下一个。
 - 通过 pi：两个登录出现在 pi 的提供商里，`ModelRuntime.login` 在风险确认选 cancel 时结束；存好的凭据经过 pi 的鉴权变成请求里的令牌和项目；关掉一项后它不再出现。
 
-做过变异检查：去掉风险确认、去掉粘贴时的 state 检查、刷新时丢项目、去掉 403 换地址、不重试空回答、Claude 不用 `parameters`、不筛模型，都有用例失败。另外在 tsx 加根 `tsconfig.json`（`mu` 的真实启动方式）下加载过这些模块，路径都能解析。
+做过变异检查：去掉风险确认、去掉回调和粘贴时的 state 检查、刷新时丢项目、去掉 403 换地址、不重试空回答、Claude 不用 `parameters`、不筛模型，都有用例失败。另外在 tsx 加根 `tsconfig.json`（`mu` 的真实启动方式）下加载过这些模块，路径都能解析。
 
 未验证：真实的 Google 登录和接口（特别是 `fetchAvailableModels` 的回答格式，是按 CLIProxyAPI 的读法写的，并做了防御）；Windows；桌面端。
