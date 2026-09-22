@@ -54,6 +54,8 @@ Tools the agent can use (and you can ask for)
 
 Session and model (from pi)
   /model  /thinking  /login  /logout  /settings  /hotkeys
+                           /login also signs in with Grok, and with a Google account through Gemini CLI or
+                           Antigravity (experimental: it says the risk and asks before the browser opens)
   /new  /resume  /tree  /fork  /clone  /compact  /name  /session
   /copy  /export  /import  /share  /reload  /changelog  /quit
 

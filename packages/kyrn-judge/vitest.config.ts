@@ -7,8 +7,15 @@ export default mergeConfig(
 	baseConfig,
 	defineConfig({
 		resolve: {
-			// The extension imports runtime values from pi, which the base config does not alias.
-			alias: [{ find: /^@earendil-works\/pi-coding-agent$/, replacement: workspaceSourcePaths.codingAgentIndex }],
+			// The extension imports runtime values from pi, which the base config does not alias,
+			// and the Google sign-in reuses pi-ai's Google message conversion from its api/ modules.
+			alias: [
+				{ find: /^@earendil-works\/pi-coding-agent$/, replacement: workspaceSourcePaths.codingAgentIndex },
+				{
+					find: /^@earendil-works\/pi-ai\/api\/(.+)$/,
+					replacement: `${workspaceSourcePaths.aiIndex.replace(/index\.ts$/, "api")}/$1.ts`,
+				},
+			],
 		},
 		test: {
 			environment: "node",

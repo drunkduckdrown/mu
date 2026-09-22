@@ -2788,6 +2788,47 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "googleLogin",
+			"title": {
+				"zh": "用 Google 账号登录（实验）",
+				"en": "Sign in with Google (experimental)"
+			},
+			"summary": {
+				"zh": "在 /login 里多出两项：借 Gemini CLI 的登录用 Gemini 模型，借 Antigravity 的登录用 Gemini、Claude 和 GPT-OSS。这是 Google 给自家工具的登录，别的程序用它可能违反 Google 的条款、被限制或封号，所以登录前会先说明风险，你同意才继续。官方的方式不需要这一项：Gemini API key（提供商 google）和 Vertex AI（提供商 google-vertex，用 gcloud 登录）。",
+				"en": "Adds two entries to /login: Gemini CLI's sign-in for the Gemini models, and Antigravity's for Gemini, Claude and GPT-OSS. These are Google's logins for its own tools; another program using them may break Google's terms and get the account limited or suspended, so the sign-in states the risk first and goes on only if you agree. The official routes need none of this: a Gemini API key (provider google) and Vertex AI (provider google-vertex, signed in with gcloud)."
+			},
+			"defaultEnabled": true,
+			"beta": true,
+			"options": [
+				{
+					"key": "geminiCli",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "Gemini CLI 登录",
+						"en": "Gemini CLI sign-in"
+					},
+					"help": {
+						"zh": "Gemini 模型；个人账号走免费额度，有 Code Assist 许可的走许可。",
+						"en": "The Gemini models, on the free tier for a personal account or on a Code Assist licence."
+					}
+				},
+				{
+					"key": "antigravity",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "Antigravity 登录",
+						"en": "Antigravity sign-in"
+					},
+					"help": {
+						"zh": "Gemini、Claude 和 GPT-OSS；登录后按账号实际能用的模型更新列表。",
+						"en": "Gemini, Claude and GPT-OSS; once signed in, the list follows what the account can use."
+					}
+				}
+			]
 		}
 	]
 }

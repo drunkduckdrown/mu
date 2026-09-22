@@ -34,6 +34,7 @@ import { registerConstraints } from "./features/constraints.ts";
 import { registerForgetting } from "./features/forgetting.ts";
 import { registerFrame } from "./features/frame.ts";
 import { registerGoal } from "./features/goal.ts";
+import { registerGoogleLogin } from "./features/google-login.ts";
 import { registerGuard } from "./features/guard.ts";
 import { registerHive } from "./features/hive.ts";
 import { type HarnessRoots, registerInherit } from "./features/inherit.ts";
@@ -113,7 +114,8 @@ export type FeatureName =
 	| "mcp"
 	| "background"
 	| "web"
-	| "packs";
+	| "packs"
+	| "googleLogin";
 
 export function createKyrnJudgeExtension(options: KyrnJudgeExtensionOptions = {}): (pi: ExtensionAPI) => void {
 	return (pi) => registerKyrn(pi, options);
@@ -196,6 +198,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["background", registerBackground],
 		["web", registerWeb],
 		["packs", registerPacks],
+		["googleLogin", registerGoogleLogin],
 	];
 	for (const [name, register] of features) {
 		if (!options.only || options.only.includes(name)) register(runtime);
