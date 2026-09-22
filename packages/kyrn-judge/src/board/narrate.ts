@@ -23,6 +23,8 @@ export interface BoardFacts {
 	readonly keyEvents?: readonly string[];
 	/** The run is over: the board sums it up. */
 	readonly ended?: boolean;
+	/** Sub-agents at work right now, one line each. */
+	readonly swarm?: string;
 }
 
 export interface BoardText {
@@ -64,6 +66,7 @@ export function narratorRequest(facts: BoardFacts): string {
 		}`,
 		`WHAT IT IS DOING (as read from its steps): ${facts.phase ?? "unclear"}${facts.focus ? `, on: ${facts.focus}` : ""}`,
 		`WAITING FOR THE PERSON: ${facts.needsUser ? "yes" : "no"}`,
+		...(facts.swarm ? [`HELPERS IT SENT OUT TO WORK IN PARALLEL (what each one is doing):\n${facts.swarm}`] : []),
 		...(facts.ended ? ["THE RUN HAS ENDED: sum it up."] : []),
 		...(facts.keyEvents
 			? [
@@ -145,7 +148,12 @@ export function plainBoard(facts: BoardFacts): BoardText {
 				: zh
 					? `清单上 ${total} 件事，做完了 ${done} 件。`
 					: `${done} of ${total} things on the checklist are done.`;
-	const base = NOW[facts.language][facts.phase ?? "unclear"];
+	const base =
+		facts.swarm && !facts.ended
+			? zh
+				? "派了几个助手分头干，在等它们回来。"
+				: "Sent helpers to work on parts of it in parallel; waiting for them to come back."
+			: NOW[facts.language][facts.phase ?? "unclear"];
 	const now = facts.focus ? `${base}${zh ? `（在做：${facts.focus}）` : ` (On: ${facts.focus})`}` : base;
 	const question = facts.latest.trim();
 	const confirm = facts.needsUser

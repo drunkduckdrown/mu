@@ -378,6 +378,8 @@ export function registerGoal(runtime: KyrnRuntime): void {
 				finalMessage: clip(textOf(last.content), 1500),
 			};
 			const checked = goal;
+			// A model call at the end of the run: the person sees the agent stop and should know what the pause is.
+			runtime.progress(say({ zh: "正在检查目标是否达成", en: "checking whether the goal holds" }), "goal_check");
 			const { outcome, by } = await check(ctx, evidence);
 			// The goal may have been cleared or replaced while the check was reading: that verdict was about another goal.
 			if (goal !== checked || goal?.status !== "active") return undefined;

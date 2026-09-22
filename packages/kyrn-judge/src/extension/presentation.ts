@@ -57,7 +57,7 @@ export interface KyrnPresentationEvent {
  * What a `progress` event is about, for a client that translates: `step` stays
  * the English sentence, `code` says which one it is, `params` what it names.
  */
-export type ProgressCode = "frame" | "lessons" | "skills" | "capabilities" | "permission_review";
+export type ProgressCode = "frame" | "lessons" | "skills" | "capabilities" | "permission_review" | "goal_check";
 
 export const PRESENTATION_STATUS_KEY = "kyrn.presentation.v1";
 export type PresentationListener = (event: KyrnPresentationEvent) => void;

@@ -202,6 +202,8 @@ export class KyrnRuntime {
 	private judgeHttp: JudgeFetch | undefined;
 	private presentationSequence = 0;
 	onPresentation?: PresentationListener;
+	/** Features that show the person what another feature announced: the board says a permission is waiting. */
+	private readonly observers = new Map<KyrnPresentationEvent["kind"], Set<(payload: unknown) => void>>();
 
 	constructor(pi: ExtensionAPI, config: KyrnConfig, judge?: JudgeLike, problem?: string) {
 		this.pi = pi;
@@ -441,6 +443,16 @@ export class KyrnRuntime {
 		}
 	}
 
+	/**
+	 * Hears every `present` of one kind, inside the harness. Presentation, not control: a listener that
+	 * fails changes nothing, and what it hears is what the app hears.
+	 */
+	observe(kind: KyrnPresentationEvent["kind"], listener: (payload: unknown) => void): void {
+		const listeners = this.observers.get(kind) ?? new Set();
+		listeners.add(listener);
+		this.observers.set(kind, listeners);
+	}
+
 	/** A display failure must never affect execution. RPC transports this over its existing status channel. */
 	present(kind: KyrnPresentationEvent["kind"], payload: unknown, turnId = this.userTurns): void {
 		const event: KyrnPresentationEvent = {
@@ -462,6 +474,13 @@ export class KyrnRuntime {
 				this.latestCtx.ui.setStatus(PRESENTATION_STATUS_KEY, JSON.stringify(event));
 		} catch {
 			/* A disconnected presentation does not stop the agent. */
+		}
+		for (const listener of this.observers.get(kind) ?? []) {
+			try {
+				listener(payload);
+			} catch {
+				/* One feature's view of another is never that other's problem. */
+			}
 		}
 	}
 

@@ -39,11 +39,15 @@ import {
 	type BoardUpdate,
 	boardWidget,
 	describeBoard,
+	describeSwarmCall,
+	describeSwarms,
 	parseBoardEntry,
 } from "../src/extension/features/board.ts";
-import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
+import { createKyrnJudgeExtension, type FeatureName } from "../src/extension/kyrn-judge.ts";
 import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
 import { MockJudgeProvider, type MockResponder } from "../src/providers/mock.ts";
+import { SwarmRun } from "../src/swarm/run.ts";
+import { type BeeState, newBee } from "../src/swarm/state.ts";
 import type { Answer, JudgeRequest } from "../src/types.ts";
 
 const yes: Answer = { type: "boolean", probability: 0.96 };
@@ -436,16 +440,19 @@ describe("board feature", () => {
 		board: Record<string, unknown> = {},
 		agentDir?: string,
 		overrides: Record<string, unknown> = {},
+		extra: { tools?: AgentTool[]; only?: FeatureName[]; features?: Record<string, unknown> } = {},
 	): Promise<{ harness: Harness; events: KyrnPresentationEvent[]; notes: string[] }> {
 		const events: KyrnPresentationEvent[] = [];
 		const harness = await createHarness({
-			tools: [tool("edit"), tool("bash"), tool("read")],
+			tools: [tool("edit"), tool("bash"), tool("read"), ...(extra.tools ?? [])],
 			extensionFactories: [
 				createKyrnJudgeExtension({
 					provider: new MockJudgeProvider(responder),
 					mode: "active",
-					config: parseConfig({ features: { memory: false, board: { minIntervalMs: 0, ...board } } }),
-					only: ["preflight", "board"],
+					config: parseConfig({
+						features: { memory: false, board: { minIntervalMs: 0, ...board }, ...(extra.features ?? {}) },
+					}),
+					only: ["preflight", "board", ...(extra.only ?? [])],
 					onPresentation: (event) => events.push(event),
 					...(agentDir ? { roots: { home: agentDir, agentDir } } : {}),
 				}),
@@ -891,5 +898,219 @@ describe("board feature", () => {
 		expect(boards(harness)).toEqual([]);
 		expect(events.some((event) => event.kind === "board.update")).toBe(false);
 		expect(asked).toEqual([]);
+	});
+	it("puts a permission the agent waits for on the board at once, and takes it off once answered", async () => {
+		vi.stubEnv("MU_PERMISSIONS", "ask");
+		const judged: string[] = [];
+		const whileAsked: string[] = [];
+		let events: KyrnPresentationEvent[] = [];
+		const started = await start(
+			(request) => {
+				if ("phase" in request.questions) judged.push(eventsOf(request));
+				return reading(() => ({ phase: choice("checking"), needs_user: no, changed: yes }))(request);
+			},
+			{},
+			undefined,
+			{
+				select: async (_title: string, options: string[]) => {
+					const shown = events.filter((event) => event.kind === "board.update").at(-1)?.payload as
+						| BoardUpdate
+						| undefined;
+					whileAsked.push(...(shown?.confirm ?? []));
+					return options[0];
+				},
+			},
+			{ only: ["permissions"] },
+		);
+		events = started.events;
+		const { harness } = started;
+		await harness.session.prompt("/board on");
+		const agent = [work("bash", { command: "npm test" }), fauxAssistantMessage("Tests pass.")];
+		harness.setResponses(Array.from({ length: 6 }, () => router(agent, [], [])));
+		await harness.session.prompt("Run the tests.");
+		await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 5000 });
+		// While the picker was open, the board already said what waits on the person, from fixed sentences.
+		expect(whileAsked).toEqual(["mu wants to run a command: npm test. It waits for your permission."]);
+		const updates = events
+			.filter((event) => event.kind === "board.update")
+			.map((event) => event.payload as BoardUpdate);
+		const asked = updates.findIndex((update) => update.needsUser && update.confirm.length > 0);
+		expect(asked).toBeGreaterThanOrEqual(0);
+		expect(updates[asked]).toMatchObject({ by: "rules", confirmCodes: [null] });
+		expect(updates[asked + 1]).toMatchObject({ needsUser: false, confirm: [] });
+		// Answered, it is a thing that happened, for the judge to weigh as news.
+		expect(judged.join("\n")).toContain("asked the person's permission for: npm test -> allowed");
+	});
+
+	it("does not sum up while a goal sends the agent back to work, and tells the person that it did", async () => {
+		const judged: string[] = [];
+		const { harness } = await start(
+			(request) => {
+				if ("achieved" in request.questions) return { achieved: no, needs_user: no };
+				if ("phase" in request.questions) judged.push(eventsOf(request));
+				return reading(() => ({ phase: choice("changing"), needs_user: no, changed: yes }))(request);
+			},
+			{},
+			undefined,
+			{},
+			{ only: ["goal"], features: { goal: { checker: "jev", maxContinuations: 1 } } },
+		);
+		await harness.session.prompt("/board on");
+		const agent = [
+			work("edit", { path: "a.ts" }),
+			fauxAssistantMessage("Changed a.ts."),
+			work("edit", { path: "b.ts" }),
+			fauxAssistantMessage("Changed b.ts too."),
+		];
+		harness.setResponses(Array.from({ length: 10 }, () => router(agent, [], [])));
+		await harness.session.prompt("/goal every test passes");
+		await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 8000 });
+		// The first run's end was no end for the person: the goal sent the agent back, and the board said so.
+		expect(boards(harness).filter((update) => update.ended)).toHaveLength(1);
+		expect(judged.join("\n")).toContain("mu sent it back to work, round 1");
+		expect(judged.at(-1)).toContain("the goal is paused");
+	});
+
+	it("looks at what the sub-agents do while they work, on a clock, and tells the person about them", async () => {
+		const judged: JudgeRequest[] = [];
+		const dir = mkdtempSync(join(tmpdir(), "mu-board-swarm-"));
+		temporary.push(dir);
+		const delegate: AgentTool = {
+			name: "delegate",
+			label: "delegate",
+			description: "delegate",
+			parameters: Type.Object({ tasks: Type.Array(Type.Object({ title: Type.String() })) }),
+			execute: async (_id, params) => {
+				const run = new SwarmRun<object>({
+					kind: "delegate",
+					title: "2 tasks",
+					dir,
+					bees: (params as { tasks: { title: string }[] }).tasks.map((task) => ({
+						name: task.title,
+						task: { title: task.title, instructions: "look" },
+						assignment: {},
+						role: "scout",
+					})),
+				});
+				const outcomes = await run.run(async () => {
+					await new Promise((resolve) => setTimeout(resolve, 1500));
+					return "found it";
+				});
+				return {
+					content: [{ type: "text", text: outcomes.map((outcome) => outcome.report).join("\n") }],
+					details: {},
+				};
+			},
+		};
+		const { harness } = await start(
+			(request) => {
+				if ("phase" in request.questions) judged.push(request);
+				return reading(() => ({ phase: choice("understanding"), needs_user: no, changed: yes }))(request);
+			},
+			{},
+			undefined,
+			{},
+			{ tools: [delegate] },
+		);
+		await harness.session.prompt("/board on");
+		const agent = [
+			fauxAssistantMessage([fauxToolCall("delegate", { tasks: [{ title: "scout" }, { title: "fixer" }] })], {
+				stopReason: "toolUse",
+			}),
+			fauxAssistantMessage("They found it."),
+		];
+		harness.setResponses(Array.from({ length: 6 }, () => router(agent, [], [])));
+		await harness.session.prompt("Find the bug.");
+		await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 8000 });
+		const stateOf = (request: JudgeRequest | undefined) => (request?.state ?? {}) as Record<string, unknown>;
+		// A look while they worked, from the clock: the judge saw who was out and what each was doing.
+		const during = judged.find((request) => "sub_agents" in stateOf(request));
+		expect(String(stateOf(during).sub_agents)).toContain("delegate, 2 sub-agents");
+		expect(String(stateOf(during).sub_agents)).toContain("scout (scout)");
+		const shown = boards(harness).find((update) => !update.ended && update.now.includes("helpers"));
+		expect(shown?.now).toBe("Sent helpers to work on parts of it in parallel; waiting for them to come back.");
+		// Sending them out and their coming back are events, in a person's words, not the JSON of the call.
+		expect(String(stateOf(during).events)).toContain("sent out 2 sub-agents: scout, fixer");
+		expect(String(stateOf(judged.at(-1)).events)).toContain("delegate 2 sub-agents: scout, fixer -> ok");
+	});
+
+	it("hears from the monitor that the agent goes in circles, and looks at once", async () => {
+		const judged: string[] = [];
+		const { harness } = await start(
+			(request) => {
+				if ("phase" in request.questions) judged.push(eventsOf(request));
+				return reading(() => ({ phase: choice("stuck"), needs_user: no, changed: yes }))(request);
+			},
+			{ everyTools: 50 },
+			undefined,
+			{},
+			{ only: ["monitor"], features: { monitor: { repeats: 2, every: 100 } } },
+		);
+		await harness.session.prompt("/board on");
+		const agent = [
+			work("bash", { command: "npm test" }),
+			work("bash", { command: "npm test" }),
+			fauxAssistantMessage("I keep getting the same result."),
+		];
+		harness.setResponses(Array.from({ length: 8 }, () => router(agent, [], [])));
+		await harness.session.prompt("Fix the tests.");
+		await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 5000 });
+		expect(judged.join("\n")).toContain("mu noticed it repeating the same step: bash: npm test -> ok");
+		expect(boards(harness).some((update) => !update.ended && update.phase === "stuck")).toBe(true);
+	});
+});
+
+describe("board and sub-agents", () => {
+	it("describes a delegation and the sub-agents at work as a person hears of them", () => {
+		expect(describeSwarmCall("delegate", { tasks: [{ title: "scout" }, { title: " fixer " }, {}] })).toBe(
+			"3 sub-agents: scout, fixer, a task",
+		);
+		expect(describeSwarmCall("hive", { goal: "why the login fails", bees: [{ name: "repro" }] })).toBe(
+			"1 investigator on: why the login fails",
+		);
+		expect(describeSwarmCall("bash", { command: "ls" })).toBeUndefined();
+
+		const now = 1000;
+		const bee = (name: string, status: BeeState["status"], extra: Partial<BeeState> = {}): BeeState => ({
+			...newBee(name, now, { role: "scout" }),
+			status,
+			...extra,
+		});
+		const snapshot = {
+			kind: "delegate" as const,
+			title: "3 tasks",
+			startedAt: now,
+			now,
+			dir: "/tmp/x",
+			bees: [
+				bee("scout", "tool", { tool: { name: "read", summary: "src/a.ts", startedAt: now } }),
+				bee("fixer", "done", { said: "Fixed it." }),
+				bee("tests", "queued"),
+			],
+		};
+		expect(describeSwarms([snapshot])).toBe(
+			"delegate, 3 sub-agents (1 finished): scout (scout): read src/a.ts; fixer (scout): back, said: Fixed it.; tests (scout): waiting for a slot",
+		);
+		expect(describeSwarms([])).toBeUndefined();
+	});
+
+	it("tells the writer and the fixed sentences about the helpers", () => {
+		const facts = {
+			language: "en" as const,
+			goal: "find the bug",
+			items: [],
+			needsUser: false,
+			steps: [],
+			latest: "",
+			swarm: "delegate, 2 sub-agents (0 finished): a (scout): starting; b (scout): starting",
+		};
+		expect(narratorRequest(facts)).toContain(
+			"HELPERS IT SENT OUT TO WORK IN PARALLEL (what each one is doing):\ndelegate, 2 sub-agents",
+		);
+		expect(plainBoard(facts).now).toBe(
+			"Sent helpers to work on parts of it in parallel; waiting for them to come back.",
+		);
+		expect(plainBoard({ ...facts, language: "zh" }).now).toBe("派了几个助手分头干，在等它们回来。");
+		expect(plainBoard({ ...facts, ended: true, phase: "wrapping_up" }).now).toBe("The work is done; wrapping up.");
 	});
 });

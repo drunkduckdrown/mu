@@ -40,6 +40,8 @@ import {
 } from "../../decisions/board-read.ts";
 import { appLanguage, say } from "../../language.ts";
 import type { LlmCompletion } from "../../providers/llm.ts";
+import { activeRuns, type SwarmSnapshot } from "../../swarm/run.ts";
+import { isOver } from "../../swarm/state.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
 import { isShellTool } from "../shell-tools.ts";
 import { describeCall } from "./constraints.ts";
@@ -63,6 +65,59 @@ const ROUTINE_TOOLS = new Set([
 	"web_search",
 	"web_fetch",
 ]);
+
+/** Tools that send sub-agents out: while they work the agent takes no step of its own, so the board looks on a clock. */
+const SWARM_TOOLS = new Set(["delegate", "hive"]);
+
+/** What a permission asks for, in the person's words: the kinds the permissions feature names. */
+const PERMISSION_KINDS: Readonly<Record<string, { zh: string; en: string }>> = {
+	edit: { zh: "改文件", en: "edit a file" },
+	shell: { zh: "运行命令", en: "run a command" },
+	run: { zh: "运行程序", en: "run a program" },
+	outside: { zh: "改动项目外的文件", en: "change a file outside the project" },
+	delegate: { zh: "派出子代理", en: "start sub-agents" },
+	other: { zh: "对外操作", en: "act outside" },
+};
+
+/** A delegation as a person hears of it: how many were sent and for what, not the JSON of the call. */
+export function describeSwarmCall(name: string, input: Record<string, unknown>): string | undefined {
+	if (name === "delegate" && Array.isArray(input.tasks)) {
+		const titles = input.tasks.map((task) => {
+			const title = (task as { title?: unknown } | null)?.title;
+			return typeof title === "string" && title.trim() ? title.trim() : "a task";
+		});
+		return `${titles.length} sub-agent${titles.length === 1 ? "" : "s"}: ${titles.join(", ")}`;
+	}
+	if (name === "hive" && Array.isArray(input.bees)) {
+		return `${input.bees.length} investigator${input.bees.length === 1 ? "" : "s"} on: ${clip(String(input.goal ?? ""), 120)}`;
+	}
+	return undefined;
+}
+
+/** The sub-agents at work, a line per run, for the judge and the writer: who is doing what, who is back. */
+export function describeSwarms(snapshots: readonly SwarmSnapshot[]): string | undefined {
+	if (snapshots.length === 0) return undefined;
+	return snapshots
+		.map((snapshot) => {
+			const bees = snapshot.bees;
+			const finished = bees.filter((bee) => isOver(bee.status)).length;
+			const each = bees.map((bee) => {
+				const who = bee.role ? `${bee.name} (${bee.role})` : bee.name;
+				if (bee.status === "done") return `${who}: back${bee.said ? `, said: ${clip(bee.said, 120)}` : ""}`;
+				if (isOver(bee.status)) return `${who}: ${bee.status}${bee.error ? ` (${clip(bee.error, 80)})` : ""}`;
+				if (bee.status === "queued") return `${who}: waiting for a slot`;
+				const doing = bee.tool
+					? `${bee.tool.name} ${clip(bee.tool.summary, 60)}`
+					: bee.said
+						? `said: ${clip(bee.said, 80)}`
+						: bee.status;
+				return `${who}: ${doing}`;
+			});
+			const kind = snapshot.kind === "hive" ? "hive" : "delegate";
+			return `${kind}, ${bees.length} sub-agent${bees.length === 1 ? "" : "s"} (${finished} finished): ${each.join("; ")}`;
+		})
+		.join("\n");
+}
 
 interface LoggedEvent extends BoardEvent {
 	readonly sequence: number;
@@ -197,6 +252,12 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	let toolsSinceLook = 0;
 	let lastLookAt = 0;
 	let board: BoardUpdate | undefined;
+	/** The clock the board looks by while sub-agents work. */
+	let following: ReturnType<typeof setInterval> | undefined;
+	/** The person's turn the current run belongs to: a run mu starts itself (a goal continuation, a nudge) carries it on. */
+	let turnSeen = -1;
+	/** A permission the agent is waiting for, shown the moment it is asked. */
+	let pendingAsk: { id: string; summary: string } | undefined;
 	let looking: Promise<void> | undefined;
 	/** A look asked for while another ran: done right after it, once. */
 	let again: boolean | undefined;
@@ -386,6 +447,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		const weighed = candidates(ended);
 		const frame = runtime.frame;
 		const items = (frame?.acceptance ?? []).map((item) => ({ id: item.id, text: item.text, done: item.done }));
+		const swarm = describeSwarms(activeRuns().map((run) => run.snapshot()));
 		const input: BoardInput = {
 			goal: frame?.goal ?? runtime.turn.userMessage,
 			items,
@@ -394,6 +456,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			ended,
 			events: weighed,
 			last: board ? { phase: board.phase, focus: board.focus, now: board.now } : undefined,
+			...(swarm ? { swarm } : {}),
 		};
 		const reading = (await runtime.engine.decide(boardRead, input)).outcome;
 		if (at !== epoch) return;
@@ -417,6 +480,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			latest: clip(latest, 1200),
 			...(weighed.length > 0 ? { keyEvents: news.map(describeEvent) } : {}),
 			ended,
+			...(swarm ? { swarm } : {}),
 		};
 		let text: BoardText | undefined;
 		const complete = writerModel(ctx);
@@ -469,11 +533,130 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			});
 	};
 
+	const unfollow = () => {
+		if (following) clearInterval(following);
+		following = undefined;
+	};
+	/** While sub-agents work, a look every interval at what they are doing, until they are back. */
+	const follow = (ctx: ExtensionContext) => {
+		if (following) return;
+		following = setInterval(
+			() => {
+				if (activeRuns().length === 0) {
+					unfollow();
+					return;
+				}
+				if (on(ctx)) schedule(ctx, false);
+			},
+			Math.max(options.minIntervalMs, 1000),
+		);
+		following.unref?.();
+	};
+
+	/** The board as fixed sentences, for a line that cannot wait for a look: nothing has been said yet. */
+	const emptyBoard = (): BoardUpdate => {
+		const items = (runtime.frame?.acceptance ?? []).map((item) => ({
+			id: item.id,
+			text: item.text,
+			done: item.done,
+		}));
+		const text = plainBoard({
+			language: language(),
+			goal: runtime.frame?.goal ?? runtime.turn.userMessage,
+			items,
+			needsUser: false,
+			steps: [],
+			latest: "",
+		});
+		return {
+			...text,
+			needsUser: false,
+			done: items.filter((item) => item.done).length,
+			total: items.length,
+			by: "rules",
+			ended: false,
+		};
+	};
+	/** Says something on the board now, without a look: what the person has to act on cannot wait for the next one. */
+	const sayNow = (update: BoardUpdate) => {
+		board = update;
+		runtime.present("board.update", update);
+		showWidget(runtime.ctx);
+	};
+
+	// A permission the agent waits for is the one thing the person must act on: it is on the board the moment it is asked.
+	runtime.observe("permissions.request", (payload) => {
+		const ctx = runtime.ctx;
+		const ask = payload as { id?: unknown; kind?: unknown; summary?: unknown };
+		if (!ctx || !on(ctx) || typeof ask.id !== "string" || typeof ask.summary !== "string") return;
+		pendingAsk = { id: ask.id, summary: ask.summary };
+		const kind = PERMISSION_KINDS[String(ask.kind)] ?? PERMISSION_KINDS.other;
+		const line = words({
+			zh: `mu 想${kind.zh}：${ask.summary}。在等你允许。`,
+			en: `mu wants to ${kind.en}: ${ask.summary}. It waits for your permission.`,
+		});
+		sayNow({ ...(board ?? emptyBoard()), confirm: [line], confirmCodes: [null], needsUser: true, ended: false });
+	});
+	runtime.observe("permissions.resolved", (payload) => {
+		const answer = payload as { id?: unknown; answer?: unknown };
+		if (!pendingAsk || answer.id !== pendingAsk.id) return;
+		const { summary } = pendingAsk;
+		pendingAsk = undefined;
+		const denied = answer.answer === "deny";
+		log({
+			kind: "step",
+			text: `asked the person's permission for: ${summary} -> ${denied ? "not allowed" : "allowed"}`,
+			...(denied ? { failed: true } : {}),
+		});
+		if (board?.needsUser) sayNow({ ...board, confirm: [], confirmCodes: [], needsUser: false });
+	});
+
+	// Goal mode: a run mu sends back to work has not ended for the person; what the check said is news.
+	runtime.observe("goal.state", (payload) => {
+		const state = payload as {
+			status?: unknown;
+			text?: unknown;
+			reason?: unknown;
+			next?: unknown;
+			continuations?: unknown;
+		};
+		const reason = typeof state.reason === "string" && state.reason ? clip(state.reason, 160) : "";
+		if (state.status === "active" && typeof state.continuations === "number" && state.continuations > 0) {
+			const next = typeof state.next === "string" && state.next ? ` (next: ${clip(state.next, 160)})` : "";
+			log({
+				kind: "step",
+				text: `mu sent it back to work, round ${state.continuations}${reason ? `: ${reason}` : ""}${next}`,
+			});
+		} else if (state.status === "met") {
+			log({ kind: "ticked", text: `the goal holds: ${clip(String(state.text ?? ""), 200)}` });
+		} else if (state.status === "paused") {
+			log({ kind: "step", text: `the goal is paused${reason ? `: ${reason}` : ""}`, failed: true });
+		} else return;
+		moment = true;
+	});
+
+	// The monitor's word that the agent goes in circles is what a person would most want to hear, and at once.
+	runtime.onTrouble((kind, detail) => {
+		log({
+			kind: "step",
+			text:
+				kind === "loop"
+					? `mu noticed it repeating the same step: ${clip(detail, 160)}`
+					: `mu noticed: ${clip(detail, 160)}`,
+			failed: true,
+		});
+		moment = true;
+		const ctx = runtime.ctx;
+		if (ctx && on(ctx)) schedule(ctx, false);
+	});
+
 	pi.on(
 		"session_start",
 		failOpen((_event, ctx) => {
 			runtime.touch(ctx);
 			retire();
+			unfollow();
+			pendingAsk = undefined;
 			board = undefined;
 			for (const entry of ctx.sessionManager.getBranch()) {
 				if (entry.type === "custom" && entry.customType === BOARD_ENTRY)
@@ -499,17 +682,24 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		"session_shutdown",
 		failOpen(() => {
 			retire();
+			unfollow();
 			return undefined;
 		}),
 	);
 
 	pi.on(
 		"tool_execution_start",
-		failOpen<ToolExecutionStartEvent, undefined>((event) => {
-			calls.set(event.toolCallId, {
-				name: event.toolName,
-				input: (typeof event.args === "object" && event.args !== null ? event.args : {}) as Record<string, unknown>,
-			});
+		failOpen<ToolExecutionStartEvent, undefined>((event, ctx) => {
+			const input = (typeof event.args === "object" && event.args !== null ? event.args : {}) as Record<
+				string,
+				unknown
+			>;
+			calls.set(event.toolCallId, { name: event.toolName, input });
+			if (SWARM_TOOLS.has(event.toolName)) {
+				log({ kind: "step", text: `sent out ${describeSwarmCall(event.toolName, input) ?? "sub-agents"}` });
+				moment = true;
+				if (announce(ctx)) follow(ctx);
+			}
 			return undefined;
 		}),
 	);
@@ -522,10 +712,11 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			calls.delete(event.toolCallId);
 			const name = call?.name ?? event.toolName;
 			const input = call?.input ?? {};
+			if (SWARM_TOOLS.has(name)) unfollow();
 			const command = isShellTool(name) ? String(input.command ?? "") : "";
 			const step: BoardStep = {
 				tool: name,
-				what: clip(describeCall(name, input), 160),
+				what: clip(describeSwarmCall(name, input) ?? describeCall(name, input), 160),
 				failed: event.isError,
 				check: command !== "" && isCheckCommand(command),
 			};
@@ -556,7 +747,11 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	pi.on(
 		"agent_start",
 		failOpen<AgentStartEvent, undefined>(() => {
-			runStart = sequence;
+			// A run mu starts itself (a goal continuation, a nudge) carries the person's turn on: one summing up covers it all.
+			if (runtime.userTurns !== turnSeen) {
+				turnSeen = runtime.userTurns;
+				runStart = sequence;
+			}
 			return undefined;
 		}),
 	);
@@ -565,7 +760,8 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		"agent_end",
 		failOpen<AgentEndEvent, undefined>((_event, ctx) => {
 			runtime.touch(ctx);
-			if (announce(ctx)) schedule(ctx, true);
+			// With a goal still running, the goal check has just sent the agent back: nothing has ended for the person.
+			if (announce(ctx)) schedule(ctx, !runtime.goalActive);
 			return undefined;
 		}),
 	);

@@ -60,6 +60,8 @@ export interface BoardInput {
 	readonly events?: readonly BoardEvent[];
 	/** What the board said last time, when it said anything. */
 	readonly last?: { readonly phase?: BoardPhase; readonly focus?: string; readonly now: string };
+	/** Sub-agents at work right now, one line each: while they work the agent takes no step of its own. */
+	readonly swarm?: string;
 }
 
 export type BoardReading = {
@@ -137,8 +139,8 @@ export function phaseByRule(input: BoardInput): BoardPhase {
 
 export const boardRead = defineDecision({
 	id: "board.read",
-	// 2: the judge also picks, among what happened, the news the writer is given.
-	version: 2,
+	// 2: the judge also picks, among what happened, the news the writer is given. 3: it sees the sub-agents at work.
+	version: 3,
 	cacheImpact: "none",
 	latency: "background",
 	capabilities: "relate",
@@ -148,7 +150,8 @@ export const boardRead = defineDecision({
 		const questions: Record<string, Question> = {
 			phase: {
 				type: "choice",
-				instructions: "What is the agent doing right now, judging by `steps` and `latest`?",
+				instructions:
+					"What is the agent doing right now, judging by `steps`, `latest` and, when present, `sub_agents`?",
 				criteria: PHASES,
 			},
 			needs_user: {
@@ -193,6 +196,7 @@ export const boardRead = defineDecision({
 			steps: input.steps.map(stepLine).join("\n") || "(no tool calls yet)",
 			latest: input.latest.slice(0, 800),
 			agent_stopped: input.ended,
+			...(input.swarm ? { sub_agents: input.swarm.slice(0, 1200) } : {}),
 			...(input.events?.length
 				? { events: input.events.slice(-MAX_EVENTS).map(eventLine).join("\n").slice(0, 6000) }
 				: {}),

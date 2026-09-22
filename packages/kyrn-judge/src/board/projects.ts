@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 /**
@@ -18,6 +18,8 @@ interface BoardFile {
 export class BoardProjects {
 	private readonly file: string | undefined;
 	private memory: BoardFile = { version: 1, projects: {} };
+	/** The file as last read, by its modification time: it is asked about on every step of the agent. */
+	private cached: { stamp: string; value: BoardFile } | undefined;
 
 	constructor(dir: string | undefined) {
 		this.file = dir ? join(dir, "board.json") : undefined;
@@ -25,19 +27,33 @@ export class BoardProjects {
 
 	private read(): BoardFile {
 		if (!this.file) return this.memory;
+		let stamp: string;
 		try {
-			const parsed = JSON.parse(readFileSync(this.file, "utf8")) as Partial<BoardFile>;
-			if (parsed.version !== 1) return { version: 1, projects: {} };
-			return {
-				version: 1,
-				projects: typeof parsed.projects === "object" && parsed.projects !== null ? parsed.projects : {},
-				...(typeof parsed.model === "string" && (parsed.model.includes("/") || parsed.model === "session")
-					? { model: parsed.model }
-					: {}),
-			};
+			const stat = statSync(this.file);
+			stamp = `${stat.mtimeMs}:${stat.size}`;
 		} catch {
+			this.cached = undefined;
 			return { version: 1, projects: {} };
 		}
+		if (this.cached?.stamp === stamp) return this.cached.value;
+		let value: BoardFile;
+		try {
+			const parsed = JSON.parse(readFileSync(this.file, "utf8")) as Partial<BoardFile>;
+			value =
+				parsed.version !== 1
+					? { version: 1, projects: {} }
+					: {
+							version: 1,
+							projects: typeof parsed.projects === "object" && parsed.projects !== null ? parsed.projects : {},
+							...(typeof parsed.model === "string" && (parsed.model.includes("/") || parsed.model === "session")
+								? { model: parsed.model }
+								: {}),
+						};
+		} catch {
+			value = { version: 1, projects: {} };
+		}
+		this.cached = { stamp, value };
+		return value;
 	}
 
 	private write(next: BoardFile): void {
