@@ -29,6 +29,15 @@ export interface BoardStep {
 	readonly check: boolean;
 }
 
+/** Something that happened, for the judge to weigh: a step, something the agent said, an item ticked. */
+export interface BoardEvent {
+	readonly kind: "step" | "said" | "ticked";
+	/** One line: `edit src/a.ts -> ok`, what the agent said, the item and its evidence. */
+	readonly text: string;
+	readonly failed?: boolean;
+	readonly check?: boolean;
+}
+
 export interface BoardItem {
 	readonly id: string;
 	readonly text: string;
@@ -44,6 +53,11 @@ export interface BoardInput {
 	readonly latest: string;
 	/** The agent stopped: its run ended and it waits for the user. */
 	readonly ended: boolean;
+	/**
+	 * What happened since the board last spoke, or over the whole run once it ended: the candidates the judge
+	 * picks the news from. Routine reading is left out before it gets here.
+	 */
+	readonly events?: readonly BoardEvent[];
 	/** What the board said last time, when it said anything. */
 	readonly last?: { readonly phase?: BoardPhase; readonly focus?: string; readonly now: string };
 }
@@ -56,7 +70,28 @@ export type BoardReading = {
 	readonly needsUser: boolean;
 	/** Worth writing the board again. */
 	readonly update: boolean;
+	/** Indexes into `events` the person would miss if the update left them out, oldest first. */
+	readonly key: readonly number[];
 };
+
+/** Candidates asked about per look: one question each. */
+export const MAX_EVENTS = 16;
+/** The most the writer is given. */
+export const MAX_KEY = 6;
+
+/** One line, as the judge and the writer read it. */
+export const describeEvent = (event: BoardEvent): string =>
+	`${event.kind === "said" ? "the agent said: " : event.kind === "ticked" ? "item done: " : ""}${event.text}`;
+const eventLine = (event: BoardEvent, index: number) => `${index + 1}. ${describeEvent(event)}`;
+
+/** By rule, when the judge cannot pick: failures, checks, items done, and the last thing the agent said. */
+export function keyByRule(events: readonly BoardEvent[]): number[] {
+	const lastSaid = events.map((event) => event.kind).lastIndexOf("said");
+	const picked = events.flatMap((event, index) =>
+		event.failed || event.check || event.kind === "ticked" || index === lastSaid ? [index] : [],
+	);
+	return picked.slice(-MAX_KEY);
+}
 
 const MAX_ITEMS = 8;
 const READ_ONLY_TOOLS = new Set(["read", "grep", "find", "ls", "web_fetch", "web_search", "browse", "locate"]);
@@ -76,6 +111,11 @@ const PHASES: Record<BoardPhase | "other", string> = {
 
 const stepLine = (step: BoardStep) => `${step.tool} ${step.what} -> ${step.failed ? "error" : "ok"}`;
 const choiceOf = (answer: Answer | undefined) => (answer?.type === "choice" ? pickChoice(answer) : undefined);
+const EVENT_KINDS = {
+	key: "News the person would want: a result, a finding, a decision, a failure, a check passing or failing, an item done",
+	routine: "A routine step that tells them nothing new",
+	unclear: "Cannot tell",
+};
 const verdict = (answer: Answer | undefined) => (answer?.type === "boolean" ? threeZone(answer) : "unsure");
 
 /** Asks like a person would: questions end with a question mark, in either script. */
@@ -97,7 +137,8 @@ export function phaseByRule(input: BoardInput): BoardPhase {
 
 export const boardRead = defineDecision({
 	id: "board.read",
-	version: 1,
+	// 2: the judge also picks, among what happened, the news the writer is given.
+	version: 2,
 	cacheImpact: "none",
 	latency: "background",
 	capabilities: "relate",
@@ -125,6 +166,14 @@ export const boardRead = defineDecision({
 				},
 			};
 		}
+		// Asked as sufficiency, not relevance: the board shows the checklist and the phase anyway.
+		(input.events ?? []).slice(-MAX_EVENTS).forEach((_event, index) => {
+			questions[`event_${index}`] = {
+				type: "choice",
+				instructions: `A progress update for the person will show the checklist and what the agent is doing now. What is event ${index + 1} of \`events\` to that person?`,
+				criteria: EVENT_KINDS,
+			};
+		});
 		if (input.last) {
 			questions.changed = {
 				type: "boolean",
@@ -144,6 +193,9 @@ export const boardRead = defineDecision({
 			steps: input.steps.map(stepLine).join("\n") || "(no tool calls yet)",
 			latest: input.latest.slice(0, 800),
 			agent_stopped: input.ended,
+			...(input.events?.length
+				? { events: input.events.slice(-MAX_EVENTS).map(eventLine).join("\n").slice(0, 6000) }
+				: {}),
 			...(input.last ? { last_board: `${input.last.phase ?? "?"}: ${input.last.now}`.slice(0, 400) } : {}),
 		};
 	},
@@ -159,7 +211,25 @@ export const boardRead = defineDecision({
 			verdict(answers.changed) !== "no" ||
 			(picked !== undefined && picked !== last.phase) ||
 			focus !== (last.focus ?? null);
-		return { phase: picked ?? phaseByRule(input), focus, needsUser, update: changed || needsUser };
+		const events = (input.events ?? []).slice(-MAX_EVENTS);
+		// Picked when the judge said news or routine about any of them, not "cannot tell" about all.
+		const answered = events.some((_event, index) => choiceOf(answers[`event_${index}`]) !== undefined);
+		const key = answered
+			? events
+					.flatMap((_event, index) => (choiceOf(answers[`event_${index}`]) === "key" ? [index] : []))
+					.slice(-MAX_KEY)
+			: keyByRule(events);
+		// A run that ended with work in it is always told once more, as a summing up; a chat reply is not work.
+		const summingUp = input.ended && events.some((event) => event.kind !== "said");
+		// News the judge picked is worth telling, whatever it said about the board as a whole.
+		const news = answered && key.length > 0;
+		return {
+			phase: picked ?? phaseByRule(input),
+			focus,
+			needsUser,
+			update: changed || needsUser || summingUp || news,
+			key,
+		};
 	},
 	fallback(input): BoardReading {
 		const phase = phaseByRule(input);
@@ -169,6 +239,7 @@ export const boardRead = defineDecision({
 			focus: open.length === 1 ? open[0].id : null,
 			needsUser: input.ended && asksSomething(input.latest),
 			update: !input.last || input.last.phase !== phase || input.ended,
+			key: keyByRule((input.events ?? []).slice(-MAX_EVENTS)),
 		};
 	},
 });

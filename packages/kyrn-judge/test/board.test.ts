@@ -6,21 +6,32 @@ import {
 	type AssistantMessage,
 	type FauxResponseFactory,
 	fauxAssistantMessage,
+	fauxText,
 	fauxToolCall,
 } from "@earendil-works/pi-ai";
 import type { ExtensionUIContext } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHarness, type Harness } from "../../coding-agent/test/suite/harness.ts";
+import {
+	addModelHelp,
+	boardModelChoices,
+	otherModelChoices,
+	RECOMMENDED_BOARD_MODELS,
+	SESSION_MODEL,
+} from "../src/board/model.ts";
 import { languageOf, narratorRequest, narratorSystem, parseBoardText, plainBoard } from "../src/board/narrate.ts";
 import { BoardProjects } from "../src/board/projects.ts";
 import { parseConfig } from "../src/config.ts";
 import {
 	asksSomething,
+	type BoardEvent,
 	type BoardInput,
 	type BoardReading,
 	type BoardStep,
 	boardRead,
+	keyByRule,
+	MAX_EVENTS,
 	phaseByRule,
 } from "../src/decisions/board-read.ts";
 import {
@@ -33,7 +44,7 @@ import {
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
 import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
 import { MockJudgeProvider, type MockResponder } from "../src/providers/mock.ts";
-import type { Answer } from "../src/types.ts";
+import type { Answer, JudgeRequest } from "../src/types.ts";
 
 const yes: Answer = { type: "boolean", probability: 0.96 };
 const no: Answer = { type: "boolean", probability: 0.03 };
@@ -123,6 +134,71 @@ describe("board reading", () => {
 			update: true,
 		});
 	});
+
+	const said = (text: string): BoardEvent => ({ kind: "said", text });
+	const did = (text: string, extra: Partial<BoardEvent> = {}): BoardEvent => ({ kind: "step", text, ...extra });
+
+	it("asks about each thing that happened, as news or routine, and shows them numbered", () => {
+		const events = [did("edit src/a.ts -> ok"), said("Found it: empty files crash the parser."), did("x", {})];
+		const questions = boardRead.questionsFor?.(input({ events })) ?? {};
+		expect(Object.keys(questions).filter((id) => id.startsWith("event_"))).toEqual(["event_0", "event_1", "event_2"]);
+		const first = questions.event_0;
+		expect(first?.type === "choice" ? Object.keys(first.criteria) : []).toEqual(["key", "routine", "unclear"]);
+		expect((boardRead.buildState(input({ events })) as Record<string, unknown>).events).toBe(
+			"1. edit src/a.ts -> ok\n2. the agent said: Found it: empty files crash the parser.\n3. x",
+		);
+		// Only the latest are weighed.
+		const many = Array.from({ length: MAX_EVENTS + 4 }, (_, index) => did(`step ${index}`));
+		expect(
+			Object.keys(boardRead.questionsFor?.(input({ events: many })) ?? {}).filter((id) => id.startsWith("event_")),
+		).toHaveLength(MAX_EVENTS);
+	});
+
+	it("gives the writer the news the judge picked, and writes for news even when the phase did not change", () => {
+		const last = { phase: "changing" as const, now: "Changing the code." };
+		const events = [
+			did("edit a.ts -> ok"),
+			said("Found it: the parser chokes on empty files."),
+			did("edit b.ts -> ok"),
+		];
+		const read = (answers: Record<string, Answer>) =>
+			boardRead.policy(answers as never, input({ last, events })) as BoardReading;
+		const quiet = { phase: choice("changing"), needs_user: no, changed: no };
+		expect(
+			read({ ...quiet, event_0: choice("routine"), event_1: choice("key"), event_2: choice("routine") }),
+		).toMatchObject({ key: [1], update: true });
+		expect(
+			read({ ...quiet, event_0: choice("routine"), event_1: choice("routine"), event_2: choice("routine") }),
+		).toMatchObject({ key: [], update: false });
+		// "Cannot tell" about every one: the rule picks, and that alone is no reason to write.
+		const unclear = { type: "choice", choice: "unclear" } as Answer;
+		expect(read({ ...quiet, event_0: unclear, event_1: unclear, event_2: unclear })).toMatchObject({
+			key: [1],
+			update: false,
+		});
+	});
+
+	it("sums up a run that did work once it ends, but not a chat reply", () => {
+		const last = { phase: "wrapping_up" as const, now: "Summing up." };
+		const quiet = { phase: choice("wrapping_up"), needs_user: no, changed: no };
+		const read = (events: BoardEvent[]) =>
+			boardRead.policy(quiet as never, input({ last, events, ended: true })) as BoardReading;
+		expect(read([did("edit a.ts -> ok"), said("Done.")]).update).toBe(true);
+		expect(read([said("Hello! What should I look at?")]).update).toBe(false);
+	});
+
+	it("picks by rule what a person would miss when the judge cannot: failures, checks, items done, the last word", () => {
+		expect(
+			keyByRule([
+				did("edit a.ts -> ok"),
+				did("bash npm test -> error", { failed: true, check: true }),
+				said("Looking again."),
+				{ kind: "ticked", text: "a1 empty files are skipped (npm test passes)" },
+				did("edit b.ts -> ok"),
+				said("Both fixed."),
+			]),
+		).toEqual([1, 3, 5]);
+	});
 });
 
 describe("board words", () => {
@@ -150,6 +226,18 @@ describe("board words", () => {
 		expect(request).toContain("CHECKLIST (1 of 2 done):\n- [x] 空文件被跳过\n- [ ] 有测试");
 		expect(request).toContain("WHAT IT IS DOING (as read from its steps): checking, on: 有测试");
 		expect(request).toContain("WAITING FOR THE PERSON: no");
+		expect(request).not.toContain("NEWS SINCE");
+
+		const news = narratorRequest({ ...facts, keyEvents: ["the agent said: found the cause"] });
+		expect(news).toContain(
+			"NEWS SINCE THE LAST UPDATE (picked from what happened, oldest first):\n- the agent said: found the cause",
+		);
+		const summing = narratorRequest({ ...facts, keyEvents: [], ended: true });
+		expect(summing).toContain("THE RUN HAS ENDED: sum it up.");
+		expect(summing).toContain(
+			"WHAT MATTERED IN THIS RUN (picked from what happened, oldest first):\n- (nothing new)",
+		);
+		expect(narratorSystem("en")).toContain("leave out routine steps");
 	});
 
 	it("reads only the reply it asked for, and speaks from fixed sentences without a model", () => {
@@ -191,6 +279,10 @@ describe("board words", () => {
 	it("reads back only board entries it wrote, and shows them in the user's language", () => {
 		const board = parseBoardEntry({ progress: "p", now: "n", confirm: ["c", 1], by: "model", done: 1, total: 2 });
 		expect(board).toMatchObject({ progress: "p", now: "n", confirm: ["c"], by: "model", needsUser: false });
+		expect(board).not.toHaveProperty("news");
+		expect(parseBoardEntry({ progress: "p", now: "n", news: ["edit a.ts -> ok", 2] })?.news).toEqual([
+			"edit a.ts -> ok",
+		]);
 		expect(parseBoardEntry({ now: "n" })).toBeUndefined();
 		expect(describeBoard(board, "zh")).toBe("进展: p\n正在做: n\n需要你确认:\n  - c");
 		expect(describeBoard(undefined, "en")).toContain("Nothing on the board yet");
@@ -222,11 +314,88 @@ describe("board switches", () => {
 		writeFileSync(join(dir, "board.json"), "{broken");
 		expect(new BoardProjects(dir).get("/p")).toBeUndefined();
 	});
+
+	it("keeps the model picked for the board once, for every project, beside the switches", () => {
+		const dir = mkdtempSync(join(tmpdir(), "mu-board-model-"));
+		temporary.push(dir);
+		const store = new BoardProjects(dir);
+		expect(store.model()).toBeUndefined();
+		store.set("/p", true);
+		store.setModel("anthropic/claude-opus-4-6");
+		store.set("/q", false);
+		expect(new BoardProjects(dir).model()).toBe("anthropic/claude-opus-4-6");
+		expect(JSON.parse(readFileSync(join(dir, "board.json"), "utf8"))).toEqual({
+			version: 1,
+			projects: { "/p": true, "/q": false },
+			model: "anthropic/claude-opus-4-6",
+		});
+		store.setModel(SESSION_MODEL);
+		expect(new BoardProjects(dir).model()).toBe("session");
+		// Anything else in the file is not a model.
+		writeFileSync(join(dir, "board.json"), JSON.stringify({ version: 1, projects: {}, model: "opus" }));
+		expect(new BoardProjects(dir).model()).toBeUndefined();
+		const memory = new BoardProjects(undefined);
+		memory.setModel("google/gemini-3.8-flash");
+		expect(memory.model()).toBe("google/gemini-3.8-flash");
+	});
+});
+
+describe("board model picker", () => {
+	const model = (provider: string, id: string, name?: string) => ({ provider, id, ...(name ? { name } : {}) });
+
+	it("puts the recommended models first, from their maker, and says how to get one that is not set up", () => {
+		const available = [
+			model("openrouter", "anthropic/claude-opus-4.6"),
+			model("anthropic", "claude-opus-4-6", "Claude Opus 4.6"),
+			model("openai", "gpt-5.5"),
+		];
+		const choices = boardModelChoices(available, available[2], "en");
+		expect(choices.map((choice) => choice.kind)).toEqual(["model", "add", "model", "other", "add"]);
+		expect(choices[0]).toMatchObject({ ref: "anthropic/claude-opus-4-6" });
+		expect(choices[0].label).toBe("Recommended · Claude Opus 4.6: the most natural and steady (anthropic)");
+		expect(choices[1]).toMatchObject({ recommended: RECOMMENDED_BOARD_MODELS[1] });
+		expect(choices[1].label).toContain("Gemini 3.8 Flash");
+		expect(choices[1].label).toContain("not set up yet");
+		expect(choices[2]).toMatchObject({ ref: SESSION_MODEL });
+		expect(choices[2].label).toBe("Whatever model the conversation uses (now openai/gpt-5.5)");
+
+		const zh = boardModelChoices([model("google", "gemini-3.8-flash")], undefined, "zh");
+		expect(zh.map((choice) => choice.label)).toEqual([
+			"推荐 · Claude Opus 4.6：讲得最自然、最稳（还没有，选它看怎么添加）",
+			"推荐 · Gemini 3.8 Flash：更快，也更省（google）",
+			"跟着对话用的模型",
+			"添加一个模型…",
+		]);
+	});
+
+	it("lists every other model by name, and explains adding one", () => {
+		expect(otherModelChoices([model("z", "b"), model("a", "c", "C")])).toEqual([
+			{ label: "C (a/c)", ref: "a/c" },
+			{ label: "b (z/b)", ref: "z/b" },
+		]);
+		const help = addModelHelp("zh", RECOMMENDED_BOARD_MODELS[0]);
+		expect(help.split("\n")[0]).toBe("要用 Claude Opus 4.6，先登录 Anthropic（/login）。");
+		expect(help).toContain("/board model");
+		expect(addModelHelp("en")).toMatch(/^To add a model: \/login/);
+	});
 });
 
 describe("board feature", () => {
 	const harnesses: Harness[] = [];
+	beforeEach(() => {
+		// Only the fake model is there to call: whatever credentials the shell has must not make a real one usable.
+		for (const name of [
+			"ANTHROPIC_AUTH_TOKEN",
+			"ANTHROPIC_OAUTH_TOKEN",
+			"ANTHROPIC_API_KEY",
+			"GEMINI_API_KEY",
+			"OPENAI_API_KEY",
+		]) {
+			vi.stubEnv(name, undefined);
+		}
+	});
 	afterEach(() => {
+		vi.unstubAllEnvs();
 		while (harnesses.length > 0) harnesses.pop()?.cleanup();
 	});
 
@@ -245,12 +414,18 @@ describe("board feature", () => {
 	 * The board writes in the background, so its model call can come between two of the agent's.
 	 * Every queued step routes by who is asking: the writer gets the next writer reply, the agent the next of its own.
 	 */
-	function router(agent: AssistantMessage[], writer: string[], asked: string[]): FauxResponseFactory {
+	function router(
+		agent: AssistantMessage[],
+		writer: string[] | ((request: string) => string),
+		asked: string[],
+	): FauxResponseFactory {
 		return (context) => {
 			const request = JSON.stringify(context.messages);
 			if (request.includes(WRITER)) {
 				asked.push(request);
-				return fauxAssistantMessage(writer.shift() ?? "no more writer replies");
+				return fauxAssistantMessage(
+					typeof writer === "function" ? writer(request) : (writer.shift() ?? "no more writer replies"),
+				);
 			}
 			return agent.shift() ?? fauxAssistantMessage("no more agent replies");
 		};
@@ -260,6 +435,7 @@ describe("board feature", () => {
 		responder: MockResponder,
 		board: Record<string, unknown> = {},
 		agentDir?: string,
+		overrides: Record<string, unknown> = {},
 	): Promise<{ harness: Harness; events: KyrnPresentationEvent[]; notes: string[] }> {
 		const events: KyrnPresentationEvent[] = [];
 		const harness = await createHarness({
@@ -280,6 +456,9 @@ describe("board feature", () => {
 		const known: Record<string, unknown> = {
 			notify: (message: string) => notes.push(message),
 			setStatus: () => undefined,
+			// Closed without an answer, as a person may.
+			select: async () => undefined,
+			...overrides,
 		};
 		const ui = new Proxy(known, {
 			get: (target, key) => (key in target ? target[key as string] : () => undefined),
@@ -319,7 +498,7 @@ describe("board feature", () => {
 		expect(boards(harness)).toEqual([]);
 		// All it ever says is that it is off here, when the session opens.
 		expect(events.filter((event) => event.kind.startsWith("board.")).map((event) => event.payload)).toEqual([
-			{ on: false, cwd: harness.tempDir },
+			{ on: false, cwd: harness.tempDir, model: expect.any(String), modelChosen: false },
 		]);
 	});
 
@@ -341,22 +520,23 @@ describe("board feature", () => {
 			work("bash", { command: "npm test -- importer" }),
 			fauxAssistantMessage("The importer skips empty files and its tests pass."),
 		];
-		const writer = [
-			JSON.stringify({ progress: "Halfway.", now: "It changed the importer.", confirm: [] }),
-			JSON.stringify({ progress: "Done.", now: "It finished and checked its work.", confirm: [] }),
-		];
+		const writer = (request: string) =>
+			request.includes("THE RUN HAS ENDED")
+				? JSON.stringify({ progress: "Done.", now: "It finished and checked its work.", confirm: [] })
+				: JSON.stringify({ progress: "Halfway.", now: "It changed the importer.", confirm: [] });
 		harness.setResponses(Array.from({ length: 10 }, () => router(agent, writer, asked)));
 		await harness.session.prompt("Make the importer skip empty files.");
-		await vi.waitFor(() => expect(boards(harness)).toHaveLength(2), { timeout: 5000 });
+		await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 5000 });
 
-		const [during, after] = boards(harness);
+		const during = boards(harness)[0];
+		const after = boards(harness).at(-1);
 		expect(during).toMatchObject({ now: "It changed the importer.", phase: "changing", by: "model", ended: false });
 		expect(after).toMatchObject({ now: "It finished and checked its work.", by: "model", ended: true });
 		// The writer read the steps and what the agent said, in the user's language.
 		expect(asked[0]).toContain("edit src/importer.ts -> ok");
 		expect(asked.at(-1)).toContain("The importer skips empty files and its tests pass.");
 		expect(asked.at(-1)).toContain("Write in English");
-		expect(events.filter((event) => event.kind === "board.update")).toHaveLength(2);
+		expect(events.filter((event) => event.kind === "board.update")).toHaveLength(boards(harness).length);
 		// Nothing of the board reached the agent.
 		expect(JSON.stringify(harness.session.messages)).not.toContain("It changed the importer.");
 
@@ -396,11 +576,12 @@ describe("board feature", () => {
 		const writer = [JSON.stringify({ progress: "Started.", now: "Changing files.", confirm: [] })];
 		harness.setResponses(Array.from({ length: 10 }, () => router(agent, writer, asked)));
 		await harness.session.prompt("Rename the helper everywhere.");
-		await vi.waitFor(() => expect(count.reads).toBeGreaterThanOrEqual(2), { timeout: 5000 });
-		await new Promise((resolve) => setTimeout(resolve, 100));
-		// The first look writes the board; the rest saw the same phase and nothing new.
-		expect(boards(harness)).toHaveLength(1);
-		expect(asked).toHaveLength(1);
+		await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 5000 });
+		expect(count.reads).toBeGreaterThanOrEqual(2);
+		// While it worked, the first look wrote the board and the rest saw the same phase and nothing new.
+		// Once it stopped, the run is summed up.
+		expect(boards(harness).map((board) => board.ended)).toEqual([false, true]);
+		expect(asked).toHaveLength(2);
 
 		await harness.session.prompt("/board off");
 		const before = count.reads;
@@ -446,7 +627,7 @@ describe("board feature", () => {
 
 			events.length = 0;
 			await harness.session.reload();
-			expect(events.find((event) => event.kind === "board.switched")?.payload).toEqual({
+			expect(events.find((event) => event.kind === "board.switched")?.payload).toMatchObject({
 				on: true,
 				cwd: harness.tempDir,
 			});
@@ -469,7 +650,13 @@ describe("board feature", () => {
 				{},
 				dir,
 			);
-			const switches = () => events.filter((event) => event.kind === "board.switched").map((event) => event.payload);
+			const switches = () =>
+				events
+					.filter((event) => event.kind === "board.switched")
+					.map((event) => {
+						const { on, cwd } = event.payload as { on: boolean; cwd: string };
+						return { on, cwd };
+					});
 			expect(switches()).toEqual([{ on: false, cwd: harness.tempDir }]);
 			// The other conversation's /board on, through the same file.
 			new BoardProjects(join(dir, "mu")).set(harness.tempDir, true);
@@ -493,6 +680,186 @@ describe("board feature", () => {
 			await harness.session.prompt("And c.ts.");
 			expect(switches().at(-1)).toEqual({ on: false, cwd: harness.tempDir });
 			expect(switches()).toHaveLength(3);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	const eventsOf = (request: JudgeRequest) => String((request.state as Record<string, unknown>).events ?? "");
+	/** Answers "key" for the events whose text matches, "routine" for the rest. */
+	const picking =
+		(news: RegExp, extra: () => Record<string, Answer>): MockResponder =>
+		(request) => {
+			if (!("phase" in request.questions)) return {};
+			const lines = eventsOf(request).split("\n");
+			const answers: Record<string, Answer> = { ...extra() };
+			for (const id of Object.keys(request.questions).filter((id) => id.startsWith("event_"))) {
+				const line = lines[Number(id.slice(6))] ?? "";
+				answers[id] = choice(news.test(line) ? "key" : "routine");
+			}
+			return answers;
+		};
+
+	it("tells the writer the news the judge picked, and sums up the whole run from it once the run ends", async () => {
+		const judged: string[] = [];
+		const { harness } = await start(
+			(request) => {
+				if ("phase" in request.questions) judged.push(eventsOf(request));
+				return picking(/Found it|npm test/, () => ({ phase: choice("changing"), needs_user: no, changed: no }))(
+					request,
+				);
+			},
+			{ everyTools: 3 },
+		);
+		await harness.session.prompt("/board on");
+		const asked: string[] = [];
+		const agent = [
+			fauxAssistantMessage([fauxToolCall("read", { path: "src/importer.ts" })], { stopReason: "toolUse" }),
+			fauxAssistantMessage(
+				[fauxText("Found it: empty files crash the parser."), fauxToolCall("edit", { path: "src/importer.ts" })],
+				{
+					stopReason: "toolUse",
+				},
+			),
+			work("edit", { path: "src/parser.ts" }),
+			work("edit", { path: "src/util.ts" }),
+			work("edit", { path: "src/other.ts" }),
+			work("edit", { path: "src/last.ts" }),
+			fauxAssistantMessage("Changed five files."),
+		];
+		const writer = (request: string) =>
+			JSON.stringify({
+				progress: request.includes("THE RUN HAS ENDED") ? "All done." : "Found it.",
+				now: "x",
+				confirm: [],
+			});
+		harness.setResponses(Array.from({ length: 12 }, () => router(agent, writer, asked)));
+		await harness.session.prompt("Make the importer skip empty files.");
+		await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 5000 });
+
+		// Reading that went fine never reaches the judge; what the agent said does.
+		expect(judged.join("\n")).not.toContain("read src/importer.ts");
+		expect(judged[0]).toContain("the agent said: Found it: empty files crash the parser.");
+		const first = boards(harness)[0];
+		expect(first.news).toEqual(["the agent said: Found it: empty files crash the parser."]);
+		expect(asked[0]).toContain(
+			"NEWS SINCE THE LAST UPDATE (picked from what happened, oldest first):\\n- the agent said: Found it",
+		);
+		// The summing up weighs the news picked earlier in the run again, beside what came after.
+		const last = judged.at(-1) ?? "";
+		expect(last.split("\n")[0]).toBe("1. the agent said: Found it: empty files crash the parser.");
+		expect(last).toContain("the agent said: Changed five files.");
+		expect(last).not.toContain("edit src/importer.ts");
+		expect(asked.at(-1)).toContain("THE RUN HAS ENDED: sum it up.");
+		expect(asked.at(-1)).toContain(
+			"WHAT MATTERED IN THIS RUN (picked from what happened, oldest first):\\n- the agent said: Found it",
+		);
+		expect(boards(harness).at(-1)).toMatchObject({ progress: "All done.", ended: true });
+	});
+
+	it("looks right after a check runs, without waiting for the next few steps", async () => {
+		const count = { reads: 0 };
+		const { harness } = await start(
+			reading(() => ({ phase: choice("checking"), needs_user: no, changed: no }), count),
+			{ everyTools: 50 },
+		);
+		await harness.session.prompt("/board on");
+		const agent = [
+			work("bash", { command: "npm test" }),
+			work("edit", { path: "a.ts" }),
+			fauxAssistantMessage("Ok."),
+		];
+		harness.setResponses(Array.from({ length: 8 }, () => router(agent, [], [])));
+		await harness.session.prompt("Run the tests.");
+		await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 5000 });
+		// The check, then the end: the edit alone is not a moment.
+		expect(count.reads).toBe(2);
+		expect(boards(harness)[0]).toMatchObject({ ended: false, phase: "checking" });
+	});
+
+	it("asks once which model writes the board, recommended ones first, and keeps the answer for every project", async () => {
+		const dir = mkdtempSync(join(tmpdir(), "mu-board-pick-"));
+		try {
+			const offered: string[][] = [];
+			const answers = ["Whatever model the conversation uses"];
+			const select = async (_title: string, options: string[]) => {
+				offered.push(options);
+				const wanted = answers.shift();
+				return options.find((option) => wanted !== undefined && option.startsWith(wanted));
+			};
+			const { harness, events, notes } = await start(
+				reading(() => ({ phase: choice("changing"), needs_user: no, changed: yes })),
+				{},
+				dir,
+				{ select },
+			);
+			await harness.session.prompt("/board on");
+			expect(offered).toHaveLength(1);
+			expect(offered[0][0]).toContain("Recommended · Claude Opus 4.6");
+			expect(offered[0][1]).toContain("Recommended · Gemini 3.8 Flash");
+			expect(offered[0].at(-1)).toBe("Add a model…");
+			expect(new BoardProjects(join(dir, "mu")).model()).toBe("session");
+			expect(events.filter((event) => event.kind === "board.switched").at(-1)?.payload).toMatchObject({
+				on: true,
+				modelChosen: true,
+			});
+			expect(notes.at(-1)).toContain("written by the conversation's model (now ");
+
+			// Switched off and on again: nobody is asked twice.
+			await harness.session.prompt("/board off");
+			await harness.session.prompt("/board on");
+			expect(offered).toHaveLength(1);
+
+			// A model that is not there is refused, with how to add one.
+			await harness.session.prompt("/board model nowhere/nothing");
+			expect(notes.at(-1)).toContain("nowhere/nothing cannot be used here.");
+			expect(new BoardProjects(join(dir, "mu")).model()).toBe("session");
+
+			// Asking for a recommended model that is not set up explains how, and keeps nothing.
+			answers.push("Recommended · Gemini 3.8 Flash");
+			await harness.session.prompt("/board model");
+			expect(notes.at(-1)).toContain("To use Gemini 3.8 Flash, first sign in with Google (/login).");
+			expect(events.filter((event) => event.kind === "board.model_needed").at(-1)?.payload).toMatchObject({
+				reason: "add",
+				name: "Gemini 3.8 Flash",
+				recommended: [
+					{ name: "Claude Opus 4.6", ref: null },
+					{ name: "Gemini 3.8 Flash", ref: null },
+				],
+			});
+			expect(new BoardProjects(join(dir, "mu")).model()).toBe("session");
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	it("stands in for a picked model that cannot be used here, and says so once", async () => {
+		const dir = mkdtempSync(join(tmpdir(), "mu-board-gone-"));
+		try {
+			new BoardProjects(join(dir, "mu")).setModel("gone/a-model-that-left");
+			const { harness, events, notes } = await start(
+				reading(() => ({ phase: choice("changing"), needs_user: no, changed: yes })),
+				{ everyTools: 1 },
+				dir,
+			);
+			await harness.session.prompt("/board on");
+			const asked: string[] = [];
+			const agent = [
+				work("edit", { path: "a.ts" }),
+				work("edit", { path: "b.ts" }),
+				fauxAssistantMessage("Edited."),
+			];
+			const writer = () => JSON.stringify({ progress: "p", now: "n", confirm: [] });
+			harness.setResponses(Array.from({ length: 8 }, () => router(agent, writer, asked)));
+			await harness.session.prompt("Change a.ts and b.ts.");
+			await vi.waitFor(() => expect(boards(harness).at(-1)?.ended).toBe(true), { timeout: 5000 });
+			// The conversation's model wrote it instead.
+			expect(boards(harness).every((board) => board.by === "model")).toBe(true);
+			const needed = events.filter((event) => event.kind === "board.model_needed");
+			expect(needed.map((event) => event.payload)).toEqual([
+				expect.objectContaining({ reason: "unusable", model: "gone/a-model-that-left" }),
+			]);
+			expect(notes.filter((note) => note.includes("cannot be used here"))).toHaveLength(1);
 		} finally {
 			rmSync(dir, { recursive: true, force: true });
 		}

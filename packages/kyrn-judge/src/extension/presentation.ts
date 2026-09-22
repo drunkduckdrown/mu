@@ -23,6 +23,7 @@ export interface KyrnPresentationEvent {
 		| "goal.state"
 		| "board.update"
 		| "board.switched"
+		| "board.model_needed"
 		| "permissions.mode"
 		| "permissions.request"
 		| "permissions.resolved"

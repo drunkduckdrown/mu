@@ -379,8 +379,8 @@
 				"en": "Plain-language board: where things stand"
 			},
 			"summary": {
-				"zh": "打开人话看板的项目里，代理每做几步、以及每次停下时，用选择题读出它处在哪个阶段、在做哪条验收条件、是不是在等你、和上次比有没有新情况。只有出现新情况，才请会说人话的模型重写看板。",
-				"en": "In a project with the board on, every few tool calls and whenever the agent stops, multiple-choice questions read its phase, the acceptance item it works on, whether it waits for you, and whether anything changed since last time. Only something new has a plain-speaking model write the board again."
+				"zh": "打开人话看板的项目里，代理每做几步、跑完检查或勾掉一条验收条件时、以及每次停下时，用选择题读出它处在哪个阶段、在做哪条验收条件、是不是在等你，并把这段时间发生的事逐条分成“你会想知道的”和“例行步骤”。只有出现新情况，才把挑出来的要点交给会说人话的模型重写看板；一轮结束时再挑一次整轮的要点，做个总结。",
+				"en": "In a project with the board on, every few tool calls, after a check or a ticked acceptance item, and whenever the agent stops, multiple-choice questions read its phase, the acceptance item it works on and whether it waits for you, and sort what happened since the last board into news and routine. Only something new has a plain-speaking model write the board again, from the news picked; when a run ends, the news of the whole run is picked again for a summing up."
 			}
 		},
 		{
@@ -1694,8 +1694,8 @@
 				"en": "Plain-language board"
 			},
 			"summary": {
-				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。Jev 用选择题读出要点，会说人话的模型来写；只给人看，不进模型的上下文。每个项目单独开关（/board on、/board off）。",
-				"en": "Tells you in plain words how far the work is, what is happening now and what waits on you. Jev reads the facts by multiple choice, a plain-speaking model writes; for you only, never in the model's context. Switched per project (/board on, /board off)."
+				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。Jev 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关（/board on、/board off）；第一次打开时选一个模型来讲（/board model 可以换）。",
+				"en": "Tells you in plain words how far the work is, what is happening now and what waits on you. Jev picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it)."
 			},
 			"defaultEnabled": true,
 			"options": [
@@ -1721,8 +1721,8 @@
 						"en": "Model that writes the board"
 					},
 					"help": {
-						"zh": "写成“提供商/模型”，选一个表达好的，比如 Gemini Flash。留空用 writer 模型，再没有就用当前会话的模型。",
-						"en": "As provider/model; pick one that explains well. Empty: the writer model, else the session's model."
+						"zh": "写成“提供商/模型”，填了就不再问。留空：第一次打开看板时让你挑一个（推荐 Claude Opus 4.6，其次 Gemini 3.8 Flash），挑好的记在 mu/board.json 里；没挑就用 writer 模型，再没有就用当前会话的模型。",
+						"en": "As provider/model; set here, nobody is asked. Empty: you pick one the first time the board is switched on (Claude Opus 4.6 recommended, then Gemini 3.8 Flash), kept in mu/board.json; none picked: the writer model, else the session's."
 					}
 				},
 				{
