@@ -159,7 +159,7 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 		hints: true,
 		/** Show the wait and the verdict in the terminal UI. */
 		show: true,
-		waitMs: 6000,
+		waitMs: 4000,
 	});
 	if (!options.enabled) return;
 	const { pi } = runtime;

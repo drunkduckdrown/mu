@@ -1,6 +1,7 @@
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { contextForget } from "../../decisions/context-forget.ts";
-import { failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
+import type { Decision } from "../../decision.ts";
+import { contextForget, type ForgetOutcome } from "../../decisions/context-forget.ts";
+import { failOpen, type KyrnRuntime, textOf, within } from "../runtime.ts";
 import { describeCall } from "./admission.ts";
 
 interface ToolResultLike {
@@ -65,6 +66,8 @@ export function registerForgetting(runtime: KyrnRuntime): void {
 		minChars: 6000,
 		minAgeTurns: 2,
 		maxPerBatch: 12,
+		/** The next request waits this long for the verdicts; later ones are applied at the request after they land. */
+		waitMs: 4000,
 	});
 	if (!options.enabled) return;
 	let replaced = new Map<string, string>();
@@ -162,7 +165,42 @@ export function registerForgetting(runtime: KyrnRuntime): void {
 					.slice(-4)
 					.map((message) => textOf(message.content).replace(/\s+/g, " ").slice(0, 160))
 					.filter(Boolean);
-				const decisions = await runtime.engine.decideMany(
+				/**
+				 * Takes the verdicts into the state, whether they arrive in time for this request or later. The set of
+				 * shrunk results only ever grows, so a late batch adds to what a later crossing established meanwhile.
+				 */
+				const settle = (decisions: readonly Decision<ForgetOutcome>[]) => {
+					if (epoch !== generation) return;
+					const shrunk = new Map(replaced);
+					for (const [toolCallId, replacement] of nextReplaced) {
+						if (!shrunk.has(toolCallId)) shrunk.set(toolCallId, replacement);
+					}
+					decisions.forEach((decision, index) => {
+						if (
+							decision.source === "judge" &&
+							decision.outcome === "shrink" &&
+							!shrunk.has(batch[index].toolCallId)
+						)
+							shrunk.set(batch[index].toolCallId, "shrink");
+					});
+					// An empty crossing stays armed. Spend all levels already crossed in this one batch,
+					// rather than invalidating the prefix again on each following request at the same usage.
+					if (batch.length === 0 && shrunk.size === replaced.size) return;
+					const allJudged = new Set([...judged, ...nextJudged]);
+					const nextCrossed = new Set([...crossed, ...levels]);
+					const state: ForgettingState = {
+						version: 1,
+						replaced: [...shrunk],
+						judged: [...allJudged],
+						crossed: [...nextCrossed],
+					};
+					// Persist before applying: a failed write must not silently produce an un-restorable prefix.
+					runtime.pi.appendEntry(STATE_ENTRY_TYPE, state);
+					replaced = shrunk;
+					judged = allJudged;
+					crossed = nextCrossed;
+				};
+				const pending = runtime.engine.decideMany(
 					contextForget,
 					batch.map((candidate) => ({
 						goal,
@@ -173,26 +211,16 @@ export function registerForgetting(runtime: KyrnRuntime): void {
 					})),
 					{ signal: ctx.signal },
 				);
+				// This request goes out on time either way: the verdicts shape the next one when they are late.
+				const decisions = await within(pending, options.waitMs);
 				if (epoch !== generation || ctx.signal?.aborted) return undefined;
-				decisions.forEach((decision, index) => {
-					if (decision.source === "judge" && decision.outcome === "shrink")
-						nextReplaced.set(batch[index].toolCallId, "shrink");
-				});
-				// An empty crossing stays armed. Spend all levels already crossed in this one batch,
-				// rather than invalidating the prefix again on each following request at the same usage.
-				if (batch.length > 0 || nextReplaced.size > replaced.size) {
-					const nextCrossed = new Set([...crossed, ...levels]);
-					const state: ForgettingState = {
-						version: 1,
-						replaced: [...nextReplaced],
-						judged: [...nextJudged],
-						crossed: [...nextCrossed],
-					};
-					// Persist before applying: a failed write must not silently produce an un-restorable prefix.
-					runtime.pi.appendEntry(STATE_ENTRY_TYPE, state);
-					replaced = nextReplaced;
-					judged = nextJudged;
-					crossed = nextCrossed;
+				if (decisions) settle(decisions);
+				else {
+					// The crossing is spent now, as it would be with the verdicts in hand: the requests in between ask nothing
+					// more. What lands is written down then; until it does, a reload rearms the crossing, and that is all.
+					judged = new Set([...judged, ...nextJudged]);
+					crossed = new Set([...crossed, ...levels]);
+					pending.then(settle).catch(() => {});
 				}
 			}
 

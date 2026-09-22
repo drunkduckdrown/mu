@@ -1,14 +1,29 @@
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createJudgeFetch } from "../src/extension/judge-fetch.ts";
 
 describe("judge fetch", () => {
 	const servers: Server[] = [];
 	const closers: (() => Promise<void>)[] = [];
 	afterEach(async () => {
+		vi.unstubAllEnvs();
 		for (const close of closers.splice(0)) await close();
 		for (const server of servers.splice(0)) await new Promise((resolve) => server.close(resolve));
+	});
+
+	it("offers HTTP/2 to the judge unless told not to", () => {
+		const offered = createJudgeFetch();
+		closers.push(offered.close);
+		expect(offered.http2).toBe(true);
+		const declined = createJudgeFetch({ http2: false });
+		closers.push(declined.close);
+		expect(declined.http2).toBe(false);
+		// A proxy that cannot carry HTTP/2 is switched off from the environment, without a config file.
+		vi.stubEnv("MU_JUDGE_HTTP2", "off");
+		const fromEnv = createJudgeFetch();
+		closers.push(fromEnv.close);
+		expect(fromEnv.http2).toBe(false);
 	});
 
 	it("keeps the connection to the judge open between calls, so only the first call pays for a handshake", async () => {

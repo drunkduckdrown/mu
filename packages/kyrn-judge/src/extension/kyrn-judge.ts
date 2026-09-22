@@ -54,6 +54,7 @@ import { registerSwarmChild } from "./features/swarm-child.ts";
 import { registerTools } from "./features/tools.ts";
 import { registerTtsr } from "./features/ttsr.ts";
 import { registerWarming } from "./features/warming.ts";
+import { registerWarmup } from "./features/warmup.ts";
 import { registerWeb } from "./features/web.ts";
 import { registerWelcome } from "./features/welcome.ts";
 import type { PresentationListener } from "./presentation.ts";
@@ -109,6 +110,7 @@ export type FeatureName =
 	| "checkpoint"
 	| "notify"
 	| "warming"
+	| "warmup"
 	| "swarm"
 	| "hive"
 	| "tools"
@@ -194,6 +196,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["checkpoint", (shared) => registerCheckpoint(shared, roots, options.checkpoint)],
 		["notify", registerNotify],
 		["warming", registerWarming],
+		["warmup", registerWarmup],
 		["swarm", (shared) => registerSwarm(shared, options.swarmRunner)],
 		["hive", (shared) => registerHive(shared, options.swarmRunner)],
 		["tools", registerTools],

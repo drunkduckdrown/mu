@@ -1,7 +1,7 @@
 import type { AgentEndEvent } from "@earendil-works/pi-coding-agent";
 import { turnCompletion } from "../../decisions/turn-completion.ts";
 import { openItems } from "../../frame/frame.ts";
-import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
+import { clip, failOpen, type KyrnRuntime, textOf, within } from "../runtime.ts";
 import { isShellTool } from "../shell-tools.ts";
 
 const EDIT_TOOLS = ["edit", "write"];
@@ -12,7 +12,7 @@ const EDIT_TOOLS = ["edit", "write"];
  * the judge reads the closing message. At most one nudge per user turn.
  */
 export function registerCompletion(runtime: KyrnRuntime): void {
-	const options = runtime.options("completion", { enabled: true });
+	const options = runtime.options("completion", { enabled: true, waitMs: 3000 });
 	if (!options.enabled) return;
 	const { pi } = runtime;
 
@@ -58,8 +58,9 @@ export function registerCompletion(runtime: KyrnRuntime): void {
 				void runtime.engine.decide(turnCompletion, input).catch(() => {});
 				return undefined;
 			}
-			const decision = await runtime.engine.decide(turnCompletion, input);
-			if (decision.source !== "judge" || decision.outcome !== "nudge") return undefined;
+			// The run is over as far as the user can see; a nudge that comes later than this is not worth the wait.
+			const decision = await within(runtime.engine.decide(turnCompletion, input), options.waitMs);
+			if (decision?.source !== "judge" || decision.outcome !== "nudge") return undefined;
 			turn.nudgedForCompletion = true;
 			const said: string[] = [];
 			if (unverified) {

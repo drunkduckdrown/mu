@@ -42,12 +42,13 @@ describe("forgetting cache boundaries", () => {
 	async function start(
 		mode: "active" | "shadow" = "active",
 		responder: MockResponder = () => ({ still_needed: { type: "boolean", probability: 0.01 } }),
+		forgetting: Record<string, unknown> = {},
 	) {
 		const provider = new MockJudgeProvider(responder);
 		const factory = (pi: ConstructorParameters<typeof KyrnRuntime>[0]) => {
 			const runtime = new KyrnRuntime(
 				pi,
-				parseConfig({ modes: { default: mode }, features: { forgetting: { maxPerBatch: 1 } } }),
+				parseConfig({ modes: { default: mode }, features: { forgetting: { maxPerBatch: 1, ...forgetting } } }),
 				new Judge({ provider }),
 			);
 			registerForgetting(runtime);
@@ -93,6 +94,31 @@ describe("forgetting cache boundaries", () => {
 		expect(await project()).toEqual(first);
 		expect(provider.calls).toHaveLength(1);
 		expect(JSON.stringify(messages)).not.toContain("chars of old output");
+	});
+
+	it("does not hold a request for a slow verdict, and applies it to the next one", async () => {
+		let release: () => void = () => {};
+		const held = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const { provider, messages, project } = await start(
+			"active",
+			async () => {
+				await held;
+				return { still_needed: { type: "boolean", probability: 0.01 } };
+			},
+			{ waitMs: 40 },
+		);
+		// The request goes out unchanged rather than waiting; the verdict is asked once.
+		expect(await project()).toEqual(messages);
+		expect(await project()).toEqual(messages);
+		expect(provider.calls).toHaveLength(1);
+		release();
+		await new Promise((resolve) => setTimeout(resolve, 20));
+		const shrunk = await project();
+		expect(shrunk).not.toEqual(messages);
+		expect(await project()).toEqual(shrunk);
+		expect(provider.calls).toHaveLength(1);
 	});
 
 	it("keeps a higher, not-yet-crossed threshold armed", async () => {

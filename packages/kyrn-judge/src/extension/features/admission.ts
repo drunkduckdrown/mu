@@ -2,8 +2,11 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { isTestLog, planTestLog, renderTestLog, type TestLogStrategy } from "../../admission/test-log.ts";
-import { toolAdmission } from "../../decisions/tool-admission.ts";
-import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
+import { type AdmissionOutcome, toolAdmission, toolAdmissionBatch } from "../../decisions/tool-admission.ts";
+import { clip, failOpen, type KyrnRuntime, textOf, within } from "../runtime.ts";
+
+/** What one batched request may carry in chunks: the judge takes 64 KiB, and the call and the questions need room too. */
+const BATCH_STATE_CHARS = 48_000;
 
 /** Splits on line boundaries into pieces of at most `size` characters; an over-long line becomes its own piece. */
 export function chunkLines(text: string, size: number): string[] {
@@ -50,8 +53,12 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 		judgeMinChars: 6000,
 		chunkChars: 1200,
 		maxChunks: 48,
-		/** Chunk verdicts asked at once. Each is one small request, so a batch is bounded by connections, not by the judge. */
-		concurrency: 8,
+		/** Chunks put to a hosted judge in one request. The local sidecar is asked one chunk at a time whatever this says. */
+		batchChunks: 16,
+		/** Requests in flight at once: batches for a hosted judge, chunks for the local sidecar. */
+		concurrency: 4,
+		/** A verdict later than this is not worth holding the result for: the output goes in whole, the verdict is only recorded. */
+		waitMs: 4000,
 		passThrough: ["read", "edit", "write"],
 		/** "rules" omits exact repeats in test-runner output; "jev" also asks the judge about what is left. */
 		testLog: "off" as TestLogStrategy | "off",
@@ -74,6 +81,36 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 			return undefined;
 		}),
 	);
+
+	/**
+	 * One verdict per chunk, in order. A hosted judge takes many chunks in one request, the state billed once
+	 * (measured 2026-09-23 on jev: 16 chunks in 0.44 s and 7.6k tokens, against 1.4 s and 11.6k tokens as 16
+	 * requests, with the same verdicts). The local sidecar's window holds one chunk, so it is asked one at a time.
+	 */
+	const judgeChunks = async (
+		call: string,
+		middle: readonly string[],
+		signal: AbortSignal | undefined,
+	): Promise<readonly AdmissionOutcome[]> => {
+		if (!runtime.judgeParallel) {
+			const decisions = await runtime.engine.decideMany(
+				toolAdmission,
+				middle.map((chunk) => ({ call, chunk })),
+				{ signal, concurrency: options.concurrency },
+			);
+			return decisions.map((decision) => decision.outcome);
+		}
+		const size = Math.max(1, Math.min(options.batchChunks, Math.floor(BATCH_STATE_CHARS / options.chunkChars)));
+		const batches: { call: string; chunks: string[] }[] = [];
+		for (let start = 0; start < middle.length; start += size) {
+			batches.push({ call, chunks: middle.slice(start, start + size) });
+		}
+		const decisions = await runtime.engine.decideMany(toolAdmissionBatch, batches, {
+			signal,
+			concurrency: options.concurrency,
+		});
+		return decisions.flatMap((decision) => decision.outcome);
+	};
 
 	pi.on(
 		"tool_result",
@@ -116,18 +153,17 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 			const chunks = chunkLines(text, options.chunkChars);
 			if (chunks.length < 3 || chunks.length > options.maxChunks) return undefined;
 			const middle = chunks.slice(1, -1);
-			const inputs = middle.map((chunk) => ({ call, chunk }));
 			// Shadow records what it would have dropped; only an active verdict is worth holding the result for.
 			if (mode !== "active") {
-				void runtime.engine.decideMany(toolAdmission, inputs, { concurrency: options.concurrency }).catch(() => {});
+				void judgeChunks(call, middle, undefined).catch(() => {});
 				return undefined;
 			}
-			const decisions = await runtime.engine.decideMany(toolAdmission, inputs, {
-				signal: ctx.signal,
-				concurrency: options.concurrency,
-			});
+			// Measured in real sessions before batching: up to 30 s in front of one result. Past the limit the output
+			// goes in whole; the verdicts still land in the ledger, where the wait they would have cost can be read.
+			const outcomes = await within(judgeChunks(call, middle, ctx.signal), options.waitMs);
+			if (!outcomes) return undefined;
 
-			const dropped = decisions.map((decision) => decision.source === "judge" && decision.outcome.drop);
+			const dropped = outcomes.map((outcome) => outcome.drop);
 			if (!dropped.some(Boolean)) return undefined;
 
 			mkdirSync(archiveDir, { recursive: true });
@@ -151,7 +187,7 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 			middle.forEach((chunk, index) => {
 				if (dropped[index]) {
 					run.push(chunk);
-					kinds.add(decisions[index].outcome.kind);
+					kinds.add(outcomes[index].kind);
 				} else {
 					flush();
 					kept.push(chunk);

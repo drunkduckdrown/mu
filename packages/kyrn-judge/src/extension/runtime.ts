@@ -173,6 +173,8 @@ export class KyrnRuntime {
 	toolCalls = 0;
 	/** The assistant's latest prose, used as the stated intent of the tool calls that follow it. */
 	lastAssistantText = "";
+	/** When an event last reached a feature: what "in use" means to whoever keeps the judge's connection warm. */
+	lastActivityAt = Date.now();
 	/** The task frame as the frame feature keeps it. Undefined while that feature is off: the stand-in answers then. */
 	frameState: FrameState | undefined;
 	/** A goal is set and running: deciding whether the agent may stop is the goal feature's job, nobody else's. */
@@ -302,6 +304,7 @@ export class KyrnRuntime {
 
 	touch(ctx: ExtensionContext): void {
 		this.latestCtx = ctx;
+		this.lastActivityAt = Date.now();
 	}
 
 	get ctx(): ExtensionContext | undefined {
@@ -482,6 +485,22 @@ function emptyTurn(userMessage: string): TurnState {
 		ranCommandAfterLastEdit: false,
 		nudgedForCompletion: false,
 	};
+}
+
+/**
+ * `work` within `waitMs`, or undefined: for a verdict that is only worth having now. The work carries on and
+ * is recorded when it lands; a rejection after the time is up is nobody's concern here.
+ */
+export function within<T>(work: Promise<T>, waitMs: number): Promise<T | undefined> {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	return Promise.race([
+		work,
+		new Promise<undefined>((resolve) => {
+			timer = setTimeout(() => resolve(undefined), waitMs);
+		}),
+	]).finally(() => {
+		if (timer) clearTimeout(timer);
+	});
 }
 
 /** Wraps a handler so a bug in a feature can never block a tool or a prompt: pi treats a throw as a veto. */

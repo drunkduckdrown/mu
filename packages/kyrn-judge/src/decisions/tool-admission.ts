@@ -1,5 +1,6 @@
 import { defineDecision } from "../decision.ts";
 import { pickChoice } from "../policy.ts";
+import type { Answer, Question, Questions } from "../types.ts";
 
 /**
  * B1, admission control for tool output: tokens that never enter the context
@@ -27,36 +28,93 @@ export type AdmissionOutcome = {
 	readonly drop: boolean;
 };
 
+const KINDS: readonly AdmissionKind[] = ["error", "result", "progress", "warning", "passing"];
 const NOISE: readonly AdmissionKind[] = ["progress", "warning", "passing"];
+
+/** The one question, about the chunk held in `field` of the state. */
+function kindQuestion(field: string): Question {
+	return {
+		type: "choice",
+		instructions: `What kind of output is \`${field}\`?`,
+		criteria: {
+			error: "An error, a failure or a stack trace",
+			result: "Search results, file contents or data",
+			progress: "Progress, downloads or build status",
+			warning: "Repeated warnings or deprecation notices",
+			passing: "Tests or checks that passed",
+			other: "Something else",
+		},
+	};
+}
+
+function outcomeOf(answer: Answer | undefined): AdmissionOutcome {
+	if (answer?.type !== "choice") return { kind: "unknown", drop: false };
+	const picked = pickChoice(answer);
+	const kind = KINDS.find((known) => known === picked) ?? "unknown";
+	return { kind, drop: kind !== "unknown" && NOISE.includes(kind) };
+}
 
 export const toolAdmission = defineDecision({
 	id: "tool.admission",
 	version: 2,
 	cacheImpact: "none",
 	latency: "inline",
-	questions: {
-		kind: {
-			type: "choice",
-			instructions: "What kind of output is `chunk`?",
-			criteria: {
-				error: "An error, a failure or a stack trace",
-				result: "Search results, file contents or data",
-				progress: "Progress, downloads or build status",
-				warning: "Repeated warnings or deprecation notices",
-				passing: "Tests or checks that passed",
-				other: "Something else",
-			},
-		},
-	},
+	questions: { kind: kindQuestion("chunk") },
 	// The chunk is the long field, so it goes last: a bounded-window judge cuts the tail.
 	buildState(input: AdmissionInput) {
 		return { call: input.call, chunk: input.chunk };
 	},
 	policy(answers): AdmissionOutcome {
-		const kind = pickChoice(answers.kind) ?? "unknown";
-		return { kind, drop: kind !== "unknown" && NOISE.includes(kind) };
+		return outcomeOf(answers.kind);
 	},
 	fallback(): AdmissionOutcome {
 		return { kind: "unknown", drop: false };
+	},
+});
+
+/**
+ * The same classification for many chunks of one output in a single request:
+ * the chunks sit in the state as `c1`, `c2`, … and each has its own question.
+ * The state is billed once, and the verdicts come back together. Measured on
+ * jev (2026-09-23): 16 chunks in 0.44 s and 7.6k tokens, against 1.4 s and
+ * 11.6k tokens as 16 requests, with the same verdicts. Only for a judge whose
+ * window holds the chunks; the local sidecar takes them one at a time.
+ */
+export interface AdmissionBatchInput {
+	readonly call: string;
+	readonly chunks: readonly string[];
+}
+
+export function chunkField(index: number): string {
+	return `c${index + 1}`;
+}
+
+function chunkQuestionId(index: number): string {
+	return `k${index + 1}`;
+}
+
+export const toolAdmissionBatch = defineDecision({
+	id: "tool.admission",
+	version: 3,
+	cacheImpact: "none",
+	latency: "inline",
+	questions: {} as Questions,
+	questionsFor(input: AdmissionBatchInput): Questions {
+		return Object.fromEntries(
+			input.chunks.map((_, index) => [chunkQuestionId(index), kindQuestion(chunkField(index))]),
+		);
+	},
+	buildState(input: AdmissionBatchInput) {
+		const state: Record<string, string> = { call: input.call };
+		input.chunks.forEach((chunk, index) => {
+			state[chunkField(index)] = chunk;
+		});
+		return state;
+	},
+	policy(answers, input): readonly AdmissionOutcome[] {
+		return input.chunks.map((_, index) => outcomeOf(answers[chunkQuestionId(index)]));
+	},
+	fallback(input): readonly AdmissionOutcome[] {
+		return input.chunks.map(() => ({ kind: "unknown", drop: false }));
 	},
 });

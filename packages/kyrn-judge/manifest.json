@@ -1341,7 +1341,7 @@
 				{
 					"key": "waitMs",
 					"kind": "number",
-					"default": 6000,
+					"default": 4000,
 					"min": 500,
 					"max": 30000,
 					"unit": {
@@ -2311,6 +2311,40 @@
 					}
 				},
 				{
+					"key": "batchChunks",
+					"kind": "number",
+					"default": 16,
+					"min": 1,
+					"max": 32,
+					"label": {
+						"zh": "一次请求判断几块",
+						"en": "Chunks per request"
+					},
+					"help": {
+						"zh": "托管判定器把多块放进一个请求，状态只计费一次；本地判定器始终一次一块。",
+						"en": "A hosted judge takes many chunks in one request, the state billed once; the local judge takes one at a time."
+					}
+				},
+				{
+					"key": "waitMs",
+					"kind": "number",
+					"default": 4000,
+					"min": 500,
+					"max": 30000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "最多等待",
+						"en": "Wait at most"
+					},
+					"help": {
+						"zh": "超时就整段放行，判定只记账。",
+						"en": "After this the output goes in whole; the verdict is only recorded."
+					}
+				},
+				{
 					"key": "passThrough",
 					"kind": "list",
 					"default": [
@@ -2584,6 +2618,25 @@
 						"uk-UA": "Оцінювати щонайбільше за пакет",
 						"tr-TR": "Grup başına en fazla değerlendirilen sonuç",
 						"fa-IR": "حداکثر داوری در هر دسته"
+					}
+				},
+				{
+					"key": "waitMs",
+					"kind": "number",
+					"default": 4000,
+					"min": 500,
+					"max": 30000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "最多等待",
+						"en": "Wait at most"
+					},
+					"help": {
+						"zh": "这次请求最多等这么久；来晚的判定在下一次请求生效。",
+						"en": "This request waits this long; verdicts that come later apply at the next request."
 					}
 				}
 			]
@@ -4626,7 +4679,27 @@
 				"fa-IR": "پیش از اینکه کار تمام‌شده اعلام شود، بررسی می‌کند که چیزی آن را راستی‌آزمایی کرده باشد."
 			},
 			"defaultEnabled": true,
-			"options": []
+			"options": [
+				{
+					"key": "waitMs",
+					"kind": "number",
+					"default": 3000,
+					"min": 500,
+					"max": 30000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "最多等待",
+						"en": "Wait at most"
+					},
+					"help": {
+						"zh": "超时就不催了，判定只记账。",
+						"en": "After this there is no nudge; the verdict is only recorded."
+					}
+				}
+			]
 		},
 		{
 			"name": "notify",
@@ -4721,6 +4794,54 @@
 			},
 			"defaultEnabled": true,
 			"options": []
+		},
+		{
+			"name": "warmup",
+			"title": {
+				"zh": "判定连接保温",
+				"en": "Judge connection warm-up"
+			},
+			"summary": {
+				"zh": "会话在用时每隔一会儿问判定器一个小问题，让连接一直热着：一轮开始前的判定省下 1–3 秒的建连。",
+				"en": "While the session is in use, one tiny question keeps the judge's connection warm: the questions before a turn skip 1-3 s of connecting."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "intervalMs",
+					"kind": "number",
+					"default": 50000,
+					"min": 10000,
+					"max": 85000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "间隔",
+						"en": "Every"
+					},
+					"help": {
+						"zh": "服务端空闲约 90 秒断开，间隔要短于它。",
+						"en": "The server drops a connection idle for about 90 s; stay under that."
+					}
+				},
+				{
+					"key": "idleMs",
+					"kind": "number",
+					"default": 900000,
+					"min": 60000,
+					"max": 7200000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "多久没动静就停",
+						"en": "Stop after this much quiet"
+					}
+				}
+			]
 		},
 		{
 			"name": "swarm",
