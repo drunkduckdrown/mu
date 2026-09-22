@@ -300,18 +300,20 @@ describe("kyrn judge extension", () => {
 		expect(userWords("plain")).toBe("plain");
 	});
 
-	it("in active mode raises thinking for a heavy turn, hints at a plan, then restores the user's level", async () => {
-		const heavyVerdict: Record<string, Answer> = {
-			...chatVerdict,
-			turn_type: { type: "choice", choice: "multi_step_task", probabilities: { multi_step_task: 0.9 } },
-			needs_files_changed: yes,
-			plan_first: yes,
-			task_complexity: { type: "score", score: 2.8 },
-		};
+	const heavyVerdict: Record<string, Answer> = {
+		...chatVerdict,
+		turn_type: { type: "choice", choice: "multi_step_task", probabilities: { multi_step_task: 0.9 } },
+		needs_files_changed: yes,
+		plan_first: yes,
+		task_complexity: { type: "score", score: 2.8 },
+	};
+
+	/** A heavy turn in active mode: what reasoning level the model was called with, and what it was told. */
+	async function heavyTurn(config?: ReturnType<typeof parseConfig>) {
 		const harness = await createHarness({
 			models: [{ id: "faux-reasoner", reasoning: true }],
 			extensionFactories: [
-				createKyrnJudgeExtension({ provider: new MockJudgeProvider(() => heavyVerdict), mode: "active" }),
+				createKyrnJudgeExtension({ provider: new MockJudgeProvider(() => heavyVerdict), mode: "active", config }),
 			],
 		});
 		harnesses.push(harness);
@@ -325,12 +327,22 @@ describe("kyrn judge extension", () => {
 				return fauxAssistantMessage("Here is the plan.");
 			},
 		]);
-
 		await harness.session.prompt("Rewrite the authentication module to use OAuth2 across the whole app.");
+		return { reasoningSent, promptSeen, levelAfter: harness.session.thinkingLevel };
+	}
 
-		expect(reasoningSent).toBe("high");
-		expect(promptSeen).toContain("Write a short plan");
-		expect(harness.session.thinkingLevel).toBe("low");
+	it("in active mode hints at a plan for a heavy turn and leaves the user's thinking level alone: a switch loses the cache", async () => {
+		const turn = await heavyTurn();
+		expect(turn.promptSeen).toContain("Write a short plan");
+		expect(turn.reasoningSent).toBe("low");
+		expect(turn.levelAfter).toBe("low");
+	});
+
+	it("raises thinking for a heavy turn only when asked to, then restores the user's level", async () => {
+		const turn = await heavyTurn(parseConfig({ features: { preflight: { thinking: true } } }));
+		expect(turn.reasoningSent).toBe("high");
+		expect(turn.promptSeen).toContain("Write a short plan");
+		expect(turn.levelAfter).toBe("low");
 	});
 
 	it("never blocks or breaks a prompt when the judge is down", async () => {

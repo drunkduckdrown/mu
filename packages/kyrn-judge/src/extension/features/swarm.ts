@@ -33,7 +33,7 @@ import {
 } from "../../swarm/run.ts";
 import { type BeeEvent, codedError } from "../../swarm/state.ts";
 import { renderSwarm } from "../../swarm/view.ts";
-import { type AgentDefinition, type AgentThinking, loadAgents } from "../agents.ts";
+import { type AgentDefinition, type AgentThinking, loadAgents, THINKING_LEVELS } from "../agents.ts";
 import { clip, type KyrnRuntime } from "../runtime.ts";
 import { Isolation, type IsolationOutcome, type Placement, patchesOf } from "./swarm-isolation.ts";
 
@@ -70,6 +70,30 @@ export function exitedEarly(code: number | null, signal: NodeJS.Signals | null, 
 export function pickModel(ladder: readonly string[], strength: number): string | undefined {
 	if (ladder.length === 0) return undefined;
 	return ladder[Math.round(Math.min(1, Math.max(0, strength)) * (ladder.length - 1))];
+}
+
+/**
+ * The thinking level a sub-agent starts with. A role's pin wins. Otherwise a
+ * sub-agent on the session's own model keeps the session's level: its system
+ * prompt and tools are the parent's, so with the same level its first call
+ * reads them from the parent's prompt cache, and most providers key that cache
+ * on the thinking level (user rule, 2026-09-23). Only a different model takes
+ * the level the judge chose for the task.
+ */
+export function thinkingForRoute(route: {
+	pinned?: AgentThinking;
+	model?: string;
+	sessionModel?: string;
+	sessionThinking: string;
+	judged: AgentThinking;
+}): AgentThinking {
+	if (route.pinned) return route.pinned;
+	const sameModel =
+		route.model === undefined || route.sessionModel === undefined || route.model === route.sessionModel;
+	if (sameModel && (THINKING_LEVELS as readonly string[]).includes(route.sessionThinking)) {
+		return route.sessionThinking as AgentThinking;
+	}
+	return route.judged;
 }
 
 function piInvocation(args: string[]): { command: string; args: string[] } {
@@ -503,16 +527,24 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 				{ signal },
 			);
 			const current = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
+			const sessionThinking = pi.getThinkingLevel();
 			const assignments: SwarmAssignment[] = routes.map((route, index) => {
 				const named = tasks[index].agent ? byName.get(tasks[index].agent ?? "") : undefined;
 				// The judge routes whatever the decision mode: a delegated task has no "unchanged behaviour" to fall back to.
 				const judged = route.judged?.agent ? byName.get(route.judged.agent) : undefined;
 				const agent = named ?? judged ?? byName.get(options.defaultAgent);
 				const verdict = route.judged ?? route.outcome;
+				const model = agent?.model ?? pickModel(options.models, verdict.strength) ?? current;
 				return {
 					agent,
-					model: agent?.model ?? pickModel(options.models, verdict.strength) ?? current,
-					thinking: agent?.thinking ?? verdict.thinking,
+					model,
+					thinking: thinkingForRoute({
+						pinned: agent?.thinking,
+						model,
+						sessionModel: current,
+						sessionThinking,
+						judged: verdict.thinking,
+					}),
 					routedBy: named ? "caller" : judged ? "judge" : "default",
 				};
 			});

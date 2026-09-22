@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadAgents, parseAgent } from "../src/extension/agents.ts";
-import { childArgs, exitedEarly, forwardedExtensionArgs } from "../src/extension/features/swarm.ts";
+import { childArgs, exitedEarly, forwardedExtensionArgs, thinkingForRoute } from "../src/extension/features/swarm.ts";
 import { codeOf } from "../src/language.ts";
 
 describe("agent definitions", () => {
@@ -117,5 +117,22 @@ describe("sub-agent command line", () => {
 			"/tmp/prompt.md",
 		]);
 		expect(args.at(-1)).toBe("Task: Find the session store");
+	});
+});
+
+describe("the thinking level a sub-agent starts with", () => {
+	it("keeps the session's level on the session's own model, so the first call reads the parent's cached prefix", () => {
+		const route = { model: "p/big", sessionModel: "p/big", sessionThinking: "high", judged: "low" as const };
+		expect(thinkingForRoute(route)).toBe("high");
+		// No ladder configured: every sub-agent runs on the session's model.
+		expect(thinkingForRoute({ ...route, model: undefined })).toBe("high");
+		expect(thinkingForRoute({ ...route, sessionThinking: "max" })).toBe("max");
+	});
+
+	it("takes the judge's level on a different model, and a role's pin over both", () => {
+		const route = { model: "p/small", sessionModel: "p/big", sessionThinking: "high", judged: "low" as const };
+		expect(thinkingForRoute(route)).toBe("low");
+		expect(thinkingForRoute({ ...route, pinned: "medium" })).toBe("medium");
+		expect(thinkingForRoute({ ...route, model: "p/big", pinned: "medium" })).toBe("medium");
 	});
 });

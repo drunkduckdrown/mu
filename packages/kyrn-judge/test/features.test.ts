@@ -257,7 +257,7 @@ describe("kyrn features", () => {
 		expect(pickModel([], 0.9)).toBeUndefined();
 	});
 
-	it("swarm: with no configuration a sub-agent gets the session's model and a built-in role", async () => {
+	it("swarm: with no configuration a sub-agent gets the session's model, its thinking level and a built-in role", async () => {
 		const runs: SwarmAssignment[] = [];
 		const harness = await start(() => ({}), {
 			runner: async (_task, assignment) => {
@@ -276,9 +276,10 @@ describe("kyrn features", () => {
 
 		const model = harness.getModel();
 		expect(runs).toHaveLength(1);
+		// The session's own level, not the judge's pick: on the same model that is what keeps the parent's cache warm.
 		expect(runs[0]).toMatchObject({
 			model: `${model.provider}/${model.id}`,
-			thinking: "medium",
+			thinking: harness.session.thinkingLevel,
 			routedBy: "default",
 		});
 		expect(runs[0].agent).toMatchObject({ name: "worker", source: "built-in" });

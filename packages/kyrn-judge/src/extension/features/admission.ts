@@ -59,7 +59,8 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 		concurrency: 4,
 		/** A verdict later than this is not worth holding the result for: the output goes in whole, the verdict is only recorded. */
 		waitMs: 4000,
-		passThrough: ["read", "edit", "write"],
+		/** Tools whose output is never judged: file contents the model asked for, and sub-agent reports the bees already shaped. */
+		passThrough: ["read", "edit", "write", "delegate", "hive"],
 		/** "rules" omits exact repeats in test-runner output; "jev" also asks the judge about what is left. */
 		testLog: "off" as TestLogStrategy | "off",
 		/** Tell test runners an agent is reading: Vitest then prints failures and the summary only. */

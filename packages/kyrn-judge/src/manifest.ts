@@ -116,8 +116,8 @@ export const MANIFEST: HarnessManifest = {
 			feature: "preflight",
 			title: { zh: "消息预判", en: "Message preflight" },
 			summary: {
-				zh: "每条消息先判断是什么类型、要多深的思考，据此设定本回合的思考等级并给出一行提示。",
-				en: "Classifies each message and how much thinking it needs, then sets the turn's thinking level and a one-line hint.",
+				zh: "每条消息先判断是什么类型、要多深的思考，据此给出一行提示；可选按判定设定本回合的思考等级。",
+				en: "Classifies each message and how much thinking it needs, then gives a one-line hint; optionally sets the turn's thinking level.",
 			},
 		},
 		{
@@ -434,8 +434,11 @@ export const MANIFEST: HarnessManifest = {
 				{
 					key: "thinking",
 					kind: "boolean",
-					default: true,
-					label: { zh: "按判定设置思考等级", en: "Set the thinking level from the verdict" },
+					default: false,
+					label: {
+						zh: "按判定设置思考等级（切换会丢缓存）",
+						en: "Set the thinking level from the verdict (a switch loses the cache)",
+					},
 				},
 				{
 					key: "hints",

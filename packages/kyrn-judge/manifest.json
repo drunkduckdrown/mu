@@ -199,19 +199,8 @@
 				"fa-IR": "پیش‌بررسی پیام"
 			},
 			"summary": {
-				"zh": "每条消息先判断是什么类型、要多深的思考，据此设定本回合的思考等级并给出一行提示。",
-				"en": "Classifies each message and how much thinking it needs, then sets the turn's thinking level and a one-line hint.",
-				"zh-TW": "為每則訊息分類，並判斷它需要多深的思考，據此設定這一輪的思考強度，再給出一行提示。",
-				"ja-JP": "各メッセージの種類と必要な思考の深さを分類し、そのターンの思考レベルと 1 行のヒントを設定します。",
-				"ko-KR": "각 메시지의 유형과 필요한 사고의 깊이를 분류한 뒤, 해당 턴의 사고 수준과 한 줄 힌트를 정합니다.",
-				"de-DE": "Ordnet jede Nachricht ein und schätzt, wie viel Nachdenken sie braucht. Daraus ergeben sich die Denkstufe der Runde und ein einzeiliger Hinweis.",
-				"fr-FR": "Classe chaque message et estime la réflexion qu’il demande, puis règle le niveau de réflexion du tour et donne une indication d’une ligne.",
-				"es-ES": "Clasifica cada mensaje y estima cuánto razonamiento necesita; con eso fija el nivel de razonamiento del turno y una indicación de una línea.",
-				"pt-BR": "Classifica cada mensagem e quanto raciocínio ela exige; depois define o nível de raciocínio do turno e uma dica de uma linha.",
-				"ru-RU": "Определяет тип каждого сообщения и то, сколько размышлений ему нужно, а затем задаёт уровень размышлений для хода и подсказку в одну строку.",
-				"uk-UA": "Визначає тип кожного повідомлення й те, скільки міркування воно потребує, а потім задає рівень міркування для ходу й додає однорядкову підказку.",
-				"tr-TR": "Her mesajı ve ne kadar düşünme gerektirdiğini sınıflandırır, ardından turun düşünme düzeyini ve tek satırlık bir ipucunu belirler.",
-				"fa-IR": "هر پیام را دسته‌بندی می‌کند و می‌سنجد چقدر به تفکر نیاز دارد، سپس سطح تفکر نوبت و یک راهنمایی یک‌خطی را تعیین می‌کند."
+				"zh": "每条消息先判断是什么类型、要多深的思考，据此给出一行提示；可选按判定设定本回合的思考等级。",
+				"en": "Classifies each message and how much thinking it needs, then gives a one-line hint; optionally sets the turn's thinking level."
 			}
 		},
 		{
@@ -1281,21 +1270,10 @@
 				{
 					"key": "thinking",
 					"kind": "boolean",
-					"default": true,
+					"default": false,
 					"label": {
-						"zh": "按判定设置思考等级",
-						"en": "Set the thinking level from the verdict",
-						"zh-TW": "依判定結果設定思考強度",
-						"ja-JP": "判定に応じて思考レベルを設定",
-						"ko-KR": "판정에 따라 사고 수준 설정",
-						"de-DE": "Denkstufe nach dem Urteil festlegen",
-						"fr-FR": "Régler le niveau de réflexion selon le jugement",
-						"es-ES": "Fijar el nivel de razonamiento según el veredicto",
-						"pt-BR": "Definir o nível de raciocínio pelo veredito",
-						"ru-RU": "Задавать уровень размышлений по решению",
-						"uk-UA": "Задавати рівень міркування за рішенням",
-						"tr-TR": "Düşünme düzeyini karara göre ayarla",
-						"fa-IR": "تعیین سطح تفکر بر اساس نتیجهٔ داوری"
+						"zh": "按判定设置思考等级（切换会丢缓存）",
+						"en": "Set the thinking level from the verdict (a switch loses the cache)"
 					}
 				},
 				{

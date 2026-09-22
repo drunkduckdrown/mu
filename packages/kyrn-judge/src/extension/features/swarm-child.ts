@@ -30,12 +30,14 @@ export function registerSwarmChild(runtime: KyrnRuntime, path: string, frameOutP
 	const state: ChildState = { wrapping: false, reason: "" };
 	states.set(runtime, state);
 
-	/** "Report now" is a request for what is already known, not for more thought: the report should come quickly. */
+	/**
+	 * "Report now" is a request for what is already known, not for more thought. The thinking level stays where it
+	 * is all the same: lowering it for the last call would drop the prompt cache on most providers, and re-reading
+	 * the whole context cold costs more than the thinking it saves.
+	 */
 	const beginWrapUp = (reason: string) => {
 		state.wrapping = true;
 		state.reason = reason;
-		const level = runtime.pi.getThinkingLevel();
-		if (level !== "off" && level !== "minimal" && level !== "low") runtime.pi.setThinkingLevel("low");
 	};
 
 	const requested = (): string | undefined => {

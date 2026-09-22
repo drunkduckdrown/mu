@@ -145,7 +145,10 @@ export function verdictStateOf(staged: {
 /**
  * A1-A7: one batched judgment per user message decides the gear of the turn.
  * In shadow mode it only records; in active mode the prompt waits for it
- * (bounded) and the gear sets the thinking level and adds one-line hints.
+ * (bounded) and the gear adds one-line hints. With `thinking` on it also sets
+ * the turn's thinking level; that is off by default, because most providers
+ * drop the prompt cache when the thinking level changes, and a cold read of
+ * the whole context costs more than the gear saves (user rule, 2026-09-23).
  *
  * The wait is on screen: the message sits in a panel above the editor while
  * the judge reads it, the verdict shows there the moment it lands, and only
@@ -155,7 +158,8 @@ export function verdictStateOf(staged: {
 export function registerPreflight(runtime: KyrnRuntime): void {
 	const options = runtime.options("preflight", {
 		enabled: true,
-		thinking: true,
+		/** Set the turn's thinking level from the gear. Off: a change of level loses the prompt cache on most providers. */
+		thinking: false,
 		hints: true,
 		/** Show the wait and the verdict in the terminal UI. */
 		show: true,
