@@ -298,6 +298,16 @@ export const MANIFEST: HarnessManifest = {
 			},
 		},
 		{
+			id: "review.triage",
+			group: "tools",
+			feature: "packs",
+			title: { zh: "评审发现分级", en: "Review triage" },
+			summary: {
+				zh: "/review 的评审子代理交回发现之后，逐条判断两件事：会不会改变程序行为，是不是这次改动引起的；再结合评审自己标的轻重，排成 P0–P3。一条都不丢，P3 折叠显示；评审坚持必须改的永远不会落到 P3。",
+				en: "After the reviewer of /review reports, each finding gets two questions: does it change how the program behaves, and is it about this change; with the reviewer's own severity that orders them P0 to P3. None is dropped, P3 is collapsed, and a finding the reviewer insisted on never lands in P3.",
+			},
+		},
+		{
 			id: "output.drift",
 			group: "turn",
 			feature: "ttsr",
@@ -1679,6 +1689,24 @@ export const MANIFEST: HarnessManifest = {
 					min: 5000,
 					max: 400000,
 					label: { zh: "提议拆分时模型最多读多少字符的改动", en: "Characters of the change the model reads" },
+				},
+				{
+					key: "review",
+					kind: "boolean",
+					default: true,
+					label: { zh: "/review：评审并按 P0–P3 分级", en: "/review, with findings sorted P0 to P3" },
+				},
+				{
+					key: "maxFindings",
+					kind: "number",
+					default: 40,
+					min: 5,
+					max: 200,
+					label: { zh: "一次最多分级多少条发现", en: "Findings sorted per triage at most" },
+					help: {
+						zh: "超出的照样报告，只是不参与分级。",
+						en: "The rest are still reported, just not sorted.",
+					},
 				},
 			],
 		},

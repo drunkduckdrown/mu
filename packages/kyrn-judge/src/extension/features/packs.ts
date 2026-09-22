@@ -7,6 +7,7 @@ import { astGrepPack } from "./packs/ast-grep.ts";
 import { registerCommit } from "./packs/commit.ts";
 import { githubPack } from "./packs/github.ts";
 import type { Pack, PackShared } from "./packs/pack.ts";
+import { reviewPack } from "./packs/review.ts";
 
 /**
  * Capability packs: installed with mu, out of the model's sight until a task
@@ -36,6 +37,10 @@ export function registerPacks(runtime: KyrnRuntime): void {
 		commit: true,
 		/** Characters of the change the model reads to propose the split. */
 		maxPlanChars: 60000,
+		/** `/review`, and the triage of its findings P0 to P3. */
+		review: true,
+		/** Findings one triage sorts at most; the rest are reported after them, unsorted. */
+		maxFindings: 40,
 	});
 	if (!options.enabled) return;
 	const { pi, catalog } = runtime;
@@ -66,6 +71,7 @@ export function registerPacks(runtime: KyrnRuntime): void {
 
 	if (options.github) packs.push(githubPack(shared, { command: options.ghCommand }));
 	if (options.commit) registerCommit(shared, { maxPlanChars: options.maxPlanChars });
+	if (options.review) packs.push(reviewPack(shared, { maxFindings: options.maxFindings }));
 
 	const starting = new Map<string, Promise<void>>();
 	const start = (pack: Pack): Promise<void> => {

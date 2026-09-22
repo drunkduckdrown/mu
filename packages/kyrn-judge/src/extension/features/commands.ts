@@ -46,7 +46,7 @@ Tools the agent can use (and you can ask for)
                            several investigators, the judge passing findings between them)
   /swarm                   what every running sub-agent is doing right now; /swarm stop [name] has it report
                            now and keeps what it found, /swarm kill [name] ends it at once
-  /review [what]           hand a review to the reviewer role
+  /review [what]           hand a review to the reviewer role; the judge sorts its findings P0 to P3
   /commit [guidance]       split the uncommitted change into commits; shows the plan first, never pushes
 
 Session and model (from pi)
@@ -226,7 +226,7 @@ export function registerCommands(runtime: KyrnRuntime): void {
 		},
 	});
 
-	// /init and /review are prompts, so they ship as pi prompt templates rather than code.
+	// /init is a prompt, so it ships as a pi prompt template rather than code. (/review is a command of the review pack.)
 	pi.on(
 		"resources_discover",
 		failOpen(() => (existsSync(PROMPTS_DIR) ? { promptPaths: [PROMPTS_DIR] } : undefined)),

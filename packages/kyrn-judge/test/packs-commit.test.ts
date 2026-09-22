@@ -26,7 +26,7 @@ const git = gitOver(run);
 const LOCAL = { "user.name": "t", "user.email": "t@t", "commit.gpgsign": "false", "core.hooksPath": ".git/no-hooks" };
 
 const numbered = (count: number, change: Record<number, string> = {}) =>
-	Array.from({ length: count }, (_line, index) => change[index + 1] ?? `line ${index + 1}`).join("\n") + "\n";
+	`${Array.from({ length: count }, (_line, index) => change[index + 1] ?? `line ${index + 1}`).join("\n")}\n`;
 
 /** The two hunks of a.txt, top first. */
 const hunksOfA = (change: Change) =>
