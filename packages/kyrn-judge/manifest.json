@@ -649,7 +649,7 @@
 				"fa-IR": "محافظ دستورهای پرخطر"
 			},
 			"summary": {
-				"zh": "规则先挑出看起来危险的命令，判定器只负责确认“这是不是你要求的”；拿不准就问你。",
+				"zh": "规则先挑出看起来危险的命令，判定器只负责确认「这是不是你要求的」；拿不准就问你。",
 				"en": "Rules flag dangerous-looking commands; the judge only vouches that you asked for it. Unsure means asking you.",
 				"zh-TW": "規則先挑出看起來危險的指令，判定器只負責確認「這是不是你要求的」；拿不準就問你。",
 				"ja-JP": "危険そうなコマンドはルールで検出し、判定器はそれがあなたの依頼したものかどうかだけを見極めます。確信が持てなければ、あなたに確認します。",
@@ -684,7 +684,7 @@
 				"fa-IR": "JeV به‌جای شما تأیید می‌کند"
 			},
 			"summary": {
-				"zh": "在“JeV 审批”模式下，命令、项目外的改动、对外操作和子代理先交给 JeV：它确信这是任务需要、也是你会预期的做法才放行，否则在状态栏问你。",
+				"zh": "在「JeV 审批」模式下，命令、项目外的改动、对外操作和子代理先交给 JeV：它确信这是任务需要、也是你会预期的做法才放行，否则在状态栏问你。",
 				"en": "In JeV-approves mode, commands, changes outside the project, outside actions and sub-agents go to JeV first: only what it is sure the task needs, done as you would expect, runs without you; anything else asks you in the status bar.",
 				"zh-TW": "在「JeV 審批」模式下，指令、專案外的改動、對外操作和子代理都先交給 JeV：它確信是任務需要、做法也符合你預期的，才不問你直接執行；其餘都會在狀態列問你。",
 				"ja-JP": "「JeV が承認」モードでは、コマンド、プロジェクト外の変更、外部への操作、サブエージェントをまず JeV が審査します。タスクに必要で、あなたが期待するやり方だと確信できるものだけをそのまま実行し、それ以外はステータスバーであなたに確認します。",
@@ -719,7 +719,7 @@
 				"fa-IR": "دروازهٔ محدودیت‌های قطعی"
 			},
 			"summary": {
-				"zh": "你说过“先别改 X”“不要加依赖”这类话会原文记在任务帧里；每次要改动东西之前，逐条判断这次调用是否违反，确信违反才拦下，并用你的原话告诉模型。",
+				"zh": "你说过「先别改 X」「不要加依赖」这类话会原文记在任务帧里；每次要改动东西之前，逐条判断这次调用是否违反，确信违反才拦下，并用你的原话告诉模型。",
 				"en": "What you ruled out is kept word for word in the task frame; before a call that changes something, each constraint is checked, and only a confident violation is stopped, in your own words.",
 				"zh-TW": "你說過的「先別改 X」「不要新增相依套件」這類話，會一字不差地記在任務框架裡；每次要改動東西之前，逐條檢查這次呼叫有沒有違反，確信違反才攔下，並用你的原話說明。",
 				"ja-JP": "あなたが禁止したことは、言葉どおりにタスクフレームに記録されます。何かを変更する呼び出しの前に制約を 1 つずつ確認し、違反が確実な場合だけ止めて、あなた自身の言葉でモデルに伝えます。",
@@ -789,7 +789,7 @@
 				"fa-IR": "گام‌های مرورگر"
 			},
 			"summary": {
-				"zh": "内置浏览器每一步“观察 → 一次判定 → 动作”，由判定器选择下一步操作和目标。",
+				"zh": "内置浏览器每一步「观察 → 一次判定 → 动作」，由判定器选择下一步操作和目标。",
 				"en": "Each browser step is observe, one judgment, act: the judge picks the next operation and its target.",
 				"zh-TW": "瀏覽器的每一步都是「觀察 → 一次判定 → 動作」：由判定器選出下一個操作和目標。",
 				"ja-JP": "ブラウザーの各ステップは「観察 → 1 回の判定 → 操作」で進みます。次の操作とその対象は判定器が選びます。",
@@ -894,7 +894,7 @@
 				"fa-IR": "بررسی پایان کار"
 			},
 			"summary": {
-				"zh": "模型说“做完了”时，判断是否真的验证过；没验证就提醒一次。",
+				"zh": "模型说「做完了」时，判断是否真的验证过；没验证就提醒一次。",
 				"en": "When the model says it is done, checks whether anything verified that; one nudge if not.",
 				"zh-TW": "模型說「做完了」時，判斷是否真的驗證過；沒有就提醒一次。",
 				"ja-JP": "モデルが完了したと言ったときに、それが検証されたかを確認します。検証されていなければ 1 回だけ促します。",
@@ -964,7 +964,7 @@
 				"fa-IR": "اصلاح در میانهٔ خروجی (آزمایشی)"
 			},
 			"summary": {
-				"zh": "模型边输出，判定器边每隔几百字对照一次你的硬约束和下面配置的规则；确信写偏了就立刻掐断输出，告诉模型是哪一条，让它从断点接着写。只有开启了“写偏即停”功能才会运行。",
+				"zh": "模型边输出，判定器边每隔几百字对照一次你的硬约束和下面配置的规则；确信写偏了就立刻掐断输出，告诉模型是哪一条，让它从断点接着写。只有开启了「写偏即停」功能才会运行。",
 				"en": "While the model writes, the judge reads the tail of its output against your hard constraints and the configured rules every few hundred characters; on a confident violation the output is cut, the rule is named, and the model carries on from there. Runs only with the feature switched on.",
 				"zh-TW": "模型一邊輸出，判定器一邊每隔幾百個字元，對照一次你的硬性約束和設定的規則；確信寫偏了就截斷輸出，指出是哪一條規則，讓模型從斷點接著寫。只有開啟「寫偏即停」功能時才會執行。",
 				"ja-JP": "モデルが書いている間、判定器が数百文字ごとに出力の末尾を、あなたが設定した制約と設定済みのルールに照らして確認します。違反が確実なら出力を止め、該当するルールを示して、モデルにそこから続けさせます。この機能をオンにしたときだけ動作します。",
@@ -1019,34 +1019,12 @@
 			"group": "turn",
 			"feature": "goal",
 			"title": {
-				"zh": "目标是否达成（Jev 兜底）",
-				"en": "Goal reached (Jev fallback)",
-				"zh-TW": "目標是否達成（Jev 備援）",
-				"ja-JP": "目標の達成（Jev による予備判定）",
-				"ko-KR": "목표 달성(Jev 보조)",
-				"de-DE": "Ziel erreicht (Jev als Reserve)",
-				"fr-FR": "Objectif atteint (repli sur Jev)",
-				"es-ES": "Objetivo alcanzado (Jev de reserva)",
-				"pt-BR": "Objetivo alcançado (Jev como apoio)",
-				"ru-RU": "Достижение цели (Jev на подстраховке)",
-				"uk-UA": "Чи досягнуто мети (підстраховка Jev)",
-				"tr-TR": "Hedefe ulaşıldı mı (yedek olarak Jev)",
-				"fa-IR": "تحقق هدف (Jev در نقش پشتیبان)"
+				"zh": "目标是否达成（JeV 兜底）",
+				"en": "Goal reached (JeV fallback)"
 			},
 			"summary": {
-				"zh": "目标模式默认由大模型判断；这个判定点只在选了 Jev、或大模型没答上来时用：读结束语，判断目标是否达成、是否需要你拿主意。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
-				"en": "Goal mode is checked by a model by default; this decision is used when Jev is chosen or the model gives no answer: it reads the closing message for whether the goal holds and whether you are needed. An open acceptance item or an unverified edit always means not yet.",
-				"zh-TW": "目標模式預設由大模型判斷；只有選了 Jev，或大模型沒給出答案時，才用這個判定點：讀最後的結束語，判斷目標是否達成、是否需要你。只要還有未完成的驗收項目，或有改動沒驗證過，一律算還沒達成。",
-				"ja-JP": "目標モードの達成チェックは、既定ではモデルが行います。この判定ポイントは、Jev を選んだ場合か、モデルが回答しなかった場合に使われます。最後のメッセージから、目標を達成したか、あなたの判断が必要かを読み取ります。未完了の受け入れ条件や未検証の編集が残っていれば、必ず未達成とします。",
-				"ko-KR": "목표 모드는 기본적으로 모델이 확인합니다. 이 판정 지점은 Jev를 선택했거나 모델이 답하지 않을 때 쓰이며, 마무리 메시지를 읽고 목표가 달성되었는지, 사용자가 나서야 하는지 판정합니다. 완료되지 않은 확인 항목이나 검증되지 않은 편집이 있으면 항상 아직 달성되지 않은 것으로 봅니다.",
-				"de-DE": "Im Zielmodus prüft standardmäßig ein Modell; dieser Entscheidungspunkt kommt zum Zug, wenn Jev gewählt ist oder das Modell keine Antwort gibt: Er liest aus der Abschlussnachricht, ob das Ziel erreicht ist und ob du gebraucht wirst. Ein offenes Abnahmekriterium oder eine nicht überprüfte Änderung heißt immer: noch nicht.",
-				"fr-FR": "Par défaut, le mode objectif est vérifié par un modèle ; ce point de décision sert quand Jev est choisi ou que le modèle ne répond pas : il lit le message de clôture pour savoir si l’objectif est atteint et si l’on a besoin de vous. Un critère d’acceptation encore ouvert ou une modification non vérifiée signifie toujours « pas encore ».",
-				"es-ES": "El modo objetivo lo comprueba un modelo de forma predeterminada; este punto de decisión se usa cuando se elige Jev o el modelo no responde: lee el mensaje final para ver si el objetivo se cumple y si te necesita. Un criterio de aceptación pendiente o una edición sin verificar siempre significa que aún no.",
-				"pt-BR": "Por padrão, o modo de objetivo é verificado por um modelo; este ponto de decisão é usado quando o Jev é escolhido ou o modelo não responde: ele lê a mensagem final para ver se o objetivo foi alcançado e se precisa de você. Um critério de aceitação em aberto ou uma edição não verificada sempre significa “ainda não”.",
-				"ru-RU": "В режиме цели проверку по умолчанию выполняет модель; эта точка решения используется, если выбран Jev или модель не ответила: Jev читает заключительное сообщение и решает, достигнута ли цель и нужно ли ваше участие. Невыполненный критерий приёмки или непроверенная правка всегда означают «ещё нет».",
-				"uk-UA": "У режимі мети перевірку типово виконує модель; ця точка рішення потрібна, коли вибрано Jev або модель не дала відповіді: тоді за заключним повідомленням визначається, чи досягнуто мети і чи потрібні ви. Невиконаний критерій приймання чи неперевірена правка завжди означають «ще ні».",
-				"tr-TR": "Hedef modunu varsayılan olarak bir model kontrol eder; bu karar noktası Jev seçildiğinde ya da model yanıt vermediğinde kullanılır: kapanış mesajını okuyarak hedefin karşılanıp karşılanmadığına ve size ihtiyaç olup olmadığına bakar. Açık bir kabul ölçütü ya da doğrulanmamış bir düzenleme her zaman “henüz değil” anlamına gelir.",
-				"fa-IR": "حالت هدف به‌طور پیش‌فرض با یک مدل بررسی می‌شود؛ این نقطهٔ تصمیم وقتی به کار می‌رود که Jev انتخاب شده باشد یا مدل پاسخی ندهد: پیام پایانی را می‌خواند تا ببیند هدف محقق شده است یا نه و آیا به شما نیاز هست. یک معیار پذیرشِ باز یا ویرایشی که راستی‌آزمایی نشده همیشه یعنی «هنوز نه»."
+				"zh": "目标模式默认由大模型判断；这个判定点只在选了 JeV、或大模型没答上来时用：读结束语，判断目标是否达成、是否需要你拿主意。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
+				"en": "Goal mode is checked by a model by default; this decision is used when JeV is chosen or the model gives no answer: it reads the closing message for whether the goal holds and whether you are needed. An open acceptance item or an unverified edit always means not yet."
 			}
 		},
 		{
@@ -1069,7 +1047,7 @@
 				"fa-IR": "تابلوی ساده: کار به کجا رسیده"
 			},
 			"summary": {
-				"zh": "打开人话看板的项目里，代理每做几步、跑完检查或勾掉一条验收条件时、以及每次停下时，用选择题读出它处在哪个阶段、在做哪条验收条件、是不是在等你，并把这段时间发生的事逐条分成“你会想知道的”和“例行步骤”。只有出现新情况，才把挑出来的要点交给会说人话的模型重写看板；一轮结束时再挑一次整轮的要点，做个总结。",
+				"zh": "打开人话看板的项目里，代理每做几步、跑完检查或勾掉一条验收条件时、以及每次停下时，用选择题读出它处在哪个阶段、在做哪条验收条件、是不是在等你，并把这段时间发生的事逐条分成「你会想知道的」和「例行步骤」。只有出现新情况，才把挑出来的要点交给会说人话的模型重写看板；一轮结束时再挑一次整轮的要点，做个总结。",
 				"en": "In a project with the board on, every few tool calls, after a check or a ticked acceptance item, and whenever the agent stops, multiple-choice questions read its phase, the acceptance item it works on and whether it waits for you, and sort what happened since the last board into news and routine. Only something new has a plain-speaking model write the board again, from the news picked; when a run ends, the news of the whole run is picked again for a summing up.",
 				"zh-TW": "在開啟人話看板的專案裡，代理每做幾次工具呼叫、跑完檢查或勾掉一項驗收項目之後，以及每次停下時，都用選擇題讀出它處在哪個階段、正在處理哪個驗收項目、是不是在等你，並把上次更新看板以來發生的事分成「你會想知道的」和「例行步驟」。只有出現新情況，才把挑出的要點交給會說人話的模型重寫看板；一次執行結束時，再從整次執行中挑一次要點，做個總結。",
 				"ja-JP": "ボードがオンのプロジェクトでは、ツールを数回呼び出すごと、チェックの実行後や受け入れ条件の完了後、そしてエージェントが停止するたびに、選択式の質問でフェーズ、対応中の受け入れ条件、あなたを待っているかを読み取り、前回のボード以降の出来事を「知らせるべきこと」と「定型の作業」に分けます。新しいことがあったときだけ、選んだ要点をもとに、わかりやすい言葉で話すモデルがボードを書き直します。実行が終わると、実行全体の要点を改めて選んでまとめます。",
@@ -1670,7 +1648,7 @@
 				"fa-IR": "چارچوب وظیفه و فهرست کارها"
 			},
 			"summary": {
-				"zh": "记住你到底要什么：目标、你的硬约束（原话加出处）、当前子目标、验收条件。验收条件就是待办清单，模型用 todo 工具勾选。所有“和目标相关吗”的判断都以它为准，回退会话时它跟着回退。",
+				"zh": "记住你到底要什么：目标、你的硬约束（原话加出处）、当前子目标、验收条件。验收条件就是待办清单，模型用 todo 工具勾选。所有「和目标相关吗」的判断都以它为准，回退会话时它跟着回退。",
 				"en": "Keeps what you actually want: the goal, your hard constraints (your own words, with their source), the current subgoal and the acceptance items. Those items are the to-do list the model ticks with the todo tool. Every goal-relevance judgment reads it, and it rewinds with the session.",
 				"zh-TW": "記住你真正想要的：目標、你的硬性約束（你的原話，附出處）、目前的子目標和驗收項目。這些驗收項目就是待辦清單，模型用 todo 工具勾選。所有「和目標有關嗎」的判斷都以它為準，回退對話時它也跟著回退。",
 				"ja-JP": "あなたが本当に求めていることを記録します。目標、あなたが設定した制約（あなたの言葉のまま、出典つき）、現在のサブ目標、受け入れ条件です。受け入れ条件はそのまま ToDo リストになり、モデルが todo ツールでチェックを付けます。「目標に関係するか」の判定はすべてこれに基づき、セッションを巻き戻すとこれも一緒に巻き戻ります。",
@@ -2532,7 +2510,7 @@
 					"kind": "boolean",
 					"default": true,
 					"label": {
-						"zh": "告诉测试工具“读者是代理”",
+						"zh": "告诉测试工具「读者是代理」",
 						"en": "Tell test runners an agent is reading",
 						"zh-TW": "告訴測試工具「讀者是代理」",
 						"ja-JP": "エージェントが読むことをテストランナーに伝える",
@@ -3845,7 +3823,7 @@
 						"fa-IR": "قوانینی که همیشه باید رعایت شوند"
 					},
 					"help": {
-						"zh": "一行一条，用平常的话写，例如“用中文回答”“不要写占位实现”。任务帧里你的硬约束会自动加入，不必重复。",
+						"zh": "一行一条，用平常的话写，例如「用中文回答」「不要写占位实现」。任务帧里你的硬约束会自动加入，不必重复。",
 						"en": "One per line, in plain words, e.g. “Answer in Chinese”, “No placeholder implementations”. Your hard constraints from the task frame are added automatically.",
 						"zh-TW": "一行一條，用平常的話寫，例如「用中文回答」「不要寫佔位實作」。任務框架裡你的硬性約束會自動加入。",
 						"ja-JP": "1 行に 1 つ、普段の言葉で書きます。例:「日本語で回答する」「仮の実装を書かない」。タスクフレームにある、あなたが設定した制約は自動的に追加されます。",
@@ -3997,19 +3975,8 @@
 						"fa-IR": "بررسی‌کنندهٔ تحقق هدف"
 					},
 					"help": {
-						"zh": "大模型读目标、这一轮做了什么、最后一次测试的结果和结束语，给出结论和下一步；它没答上来时才退回 Jev。无论哪种，没勾的验收条件、改完没跑都算没达成。",
-						"en": "A model reads the goal, what the run did, the last test run and the closing message, and gives a verdict and the next step; Jev only when it gives no answer. Either way an open acceptance item or an unverified edit means not yet.",
-						"zh-TW": "大模型讀取目標、這次執行做了什麼、最後一次測試結果和結束語，給出結論和下一步；只有它沒給出答案時才改由 Jev 判斷。無論哪種，只要還有未完成的驗收項目，或有改動沒驗證過，都算還沒達成。",
-						"ja-JP": "モデルが目標、この実行で行ったこと、最後のテスト結果、最後のメッセージを読み、判断と次のステップを返します。Jev を使うのは、モデルが回答しなかった場合だけです。どちらの場合も、未完了の受け入れ条件や未検証の編集があれば未達成とします。",
-						"ko-KR": "모델이 목표, 이번 실행에서 한 일, 마지막 테스트 실행, 마무리 메시지를 읽고 결론과 다음 단계를 제시합니다. Jev는 모델이 답하지 않을 때만 씁니다. 어느 쪽이든 완료되지 않은 확인 항목이나 검증되지 않은 편집이 있으면 아직 달성되지 않은 것입니다.",
-						"de-DE": "Ein Modell liest das Ziel, was der Lauf getan hat, den letzten Testlauf und die Abschlussnachricht und gibt ein Urteil und den nächsten Schritt; Jev nur, wenn es keine Antwort gibt. In beiden Fällen heißt ein offenes Abnahmekriterium oder eine nicht überprüfte Änderung: noch nicht.",
-						"fr-FR": "Un modèle lit l’objectif, ce qu’a fait l’exécution, le dernier lancement des tests et le message de clôture, puis donne un jugement et l’étape suivante ; Jev seulement s’il ne répond pas. Dans les deux cas, un critère d’acceptation encore ouvert ou une modification non vérifiée signifie « pas encore ».",
-						"es-ES": "Un modelo lee el objetivo, lo que ha hecho la ejecución, la última ejecución de las pruebas y el mensaje final, y da un veredicto y el siguiente paso; Jev solo entra si el modelo no responde. En ambos casos, un criterio de aceptación pendiente o una edición sin verificar significa que aún no.",
-						"pt-BR": "Um modelo lê o objetivo, o que a execução fez, a última execução dos testes e a mensagem final, e dá um veredito e a próxima etapa; o Jev só entra quando o modelo não responde. De todo modo, um critério de aceitação em aberto ou uma edição não verificada significa “ainda não”.",
-						"ru-RU": "Модель читает цель, сделанное за запуск, результат последнего прогона тестов и заключительное сообщение, а затем выносит решение и называет следующий шаг; Jev — только если она не ответила. В обоих случаях невыполненный критерий приёмки или непроверенная правка означают «ещё нет».",
-						"uk-UA": "Модель читає мету, що зроблено під час запуску, останній запуск тестів і заключне повідомлення та дає рішення й наступний крок; Jev — лише коли вона не відповіла. В обох випадках невиконаний критерій приймання чи неперевірена правка означають «ще ні».",
-						"tr-TR": "Bir model hedefi, çalışmanın ne yaptığını, son test çalıştırmasını ve kapanış mesajını okur; bir karar verir ve sonraki adımı söyler. Jev yalnızca model yanıt vermediğinde devreye girer. Her iki durumda da açık bir kabul ölçütü ya da doğrulanmamış bir düzenleme “henüz değil” anlamına gelir.",
-						"fa-IR": "یک مدل هدف، کارهای انجام‌شده در این اجرا، آخرین اجرای آزمون و پیام پایانی را می‌خواند و نتیجه و گام بعدی را اعلام می‌کند؛ Jev فقط وقتی به کار می‌آید که مدل پاسخی ندهد. در هر دو حالت، یک معیار پذیرشِ باز یا ویرایشی که راستی‌آزمایی نشده یعنی «هنوز نه»."
+						"zh": "大模型读目标、这一轮做了什么、最后一次测试的结果和结束语，给出结论和下一步；它没答上来时才退回 JeV。无论哪种，没勾的验收条件、改完没跑都算没达成。",
+						"en": "A model reads the goal, what the run did, the last test run and the closing message, and gives a verdict and the next step; JeV only when it gives no answer. Either way an open acceptance item or an unverified edit means not yet."
 					},
 					"choices": [
 						{
@@ -4033,19 +4000,8 @@
 						{
 							"value": "jev",
 							"label": {
-								"zh": "Jev 判定器",
-								"en": "The Jev judge",
-								"zh-TW": "Jev 判定器",
-								"ja-JP": "Jev 判定器",
-								"ko-KR": "Jev 판정기",
-								"de-DE": "Der Jev-Judge",
-								"fr-FR": "Le juge Jev",
-								"es-ES": "El juez Jev",
-								"pt-BR": "O juiz Jev",
-								"ru-RU": "Судья Jev",
-								"uk-UA": "Суддя Jev",
-								"tr-TR": "Jev hakemi",
-								"fa-IR": "داور Jev"
+								"zh": "JeV 判定器",
+								"en": "The JeV judge"
 							}
 						}
 					]
@@ -4070,7 +4026,7 @@
 						"fa-IR": "مدل بررسی"
 					},
 					"help": {
-						"zh": "写成“提供商/模型”。留空就用当前会话的模型。",
+						"zh": "写成「提供商/模型」。留空就用当前会话的模型。",
 						"en": "As provider/model. Empty: the session's current model.",
 						"zh-TW": "格式為 provider/model。留空則使用這個對話目前的模型。",
 						"ja-JP": "provider/model の形式で指定します。空欄の場合は、セッションの現在のモデルを使います。",
@@ -4234,19 +4190,8 @@
 						"fa-IR": "حداکثر انتظار برای بررسی"
 					},
 					"help": {
-						"zh": "超时就退回 Jev 判定器，再退回只看事实。",
-						"en": "After that, Jev decides, and failing that the facts alone.",
-						"zh-TW": "逾時就改由 Jev 判斷，Jev 也不行就只看事實。",
-						"ja-JP": "それを過ぎると Jev が判定し、それもできなければ事実だけで判断します。",
-						"ko-KR": "이 시간이 지나면 Jev가 판정하고, 그것도 안 되면 사실만 보고 정합니다.",
-						"de-DE": "Danach entscheidet Jev, und wenn auch das nicht klappt, allein die Fakten.",
-						"fr-FR": "Au-delà, Jev décide, et à défaut les faits seuls.",
-						"es-ES": "Después decide Jev y, si tampoco responde, solo los hechos.",
-						"pt-BR": "Depois disso, quem decide é o Jev e, se ele falhar, apenas os fatos.",
-						"ru-RU": "После этого решает Jev, а если и он не ответит — одни факты.",
-						"uk-UA": "Після цього вирішує Jev, а якщо не вийде й у нього — самі факти.",
-						"tr-TR": "Sonrasında Jev karar verir; o da olmazsa yalnızca olgulara bakılır.",
-						"fa-IR": "پس از آن Jev داوری می‌کند، و اگر آن هم نشد، فقط واقعیت‌ها ملاک است."
+						"zh": "超时就退回 JeV 判定器，再退回只看事实。",
+						"en": "After that, JeV decides, and failing that the facts alone."
 					}
 				},
 				{
@@ -4417,19 +4362,8 @@
 				"fa-IR": "تابلوی ساده"
 			},
 			"summary": {
-				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。Jev 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关（/board on、/board off）；第一次打开时选一个模型来讲（/board model 可以换）。",
-				"en": "Tells you in plain words how far the work is, what is happening now and what waits on you. Jev picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it).",
-				"zh-TW": "用白話告訴你工作做到哪、現在在做什麼、有什麼在等你。Jev 從發生的事裡挑出要點，由會說人話的模型來寫；一次執行做完後再總結一遍。只給你看，不進模型的上下文。每個專案各自開關（/board on、/board off）；第一次開啟時選一個寫看板的模型（/board model 可以更換）。",
-				"ja-JP": "作業の進み具合、今起きていること、あなたの対応を待っていることを、やさしい言葉で伝えます。起きたことから Jev が要点を選び、わかりやすい言葉で話すモデルが書き、実行が終わるともう一度まとめます。あなただけに表示され、モデルのコンテキストには入りません。プロジェクトごとに切り替えます（/board on、/board off）。初回は書き手のモデルを選びます（/board model で変更できます）。",
-				"ko-KR": "작업이 어디까지 왔는지, 지금 무슨 일이 일어나고 있는지, 무엇이 사용자를 기다리는지 쉬운 말로 알려 줍니다. Jev가 일어난 일에서 새 소식을 고르고 쉬운 말 모델이 글을 쓰며, 끝난 실행은 한 번 더 정리합니다. 사용자에게만 보이며 모델의 컨텍스트에는 들어가지 않습니다. 프로젝트마다 켜고 끕니다(/board on, /board off). 처음 켤 때 보드를 작성할 모델을 고릅니다(/board model로 변경).",
-				"de-DE": "Sagt dir in einfachen Worten, wie weit die Arbeit ist, was gerade passiert und was auf dich wartet. Jev wählt die Neuigkeiten aus dem Geschehen aus, ein Klartext-Modell schreibt, und ein abgeschlossener Lauf wird noch einmal zusammengefasst. Nur für dich, nie im Kontext des Modells. Pro Projekt schaltbar (/board on, /board off); beim ersten Mal wählst du das Modell, das es schreibt (/board model ändert es).",
-				"fr-FR": "Vous dit en mots simples où en est le travail, ce qui se passe en ce moment et ce qui vous attend. Jev choisit les nouveautés parmi ce qui s’est passé, un modèle qui parle simplement rédige, et une exécution terminée est résumée une dernière fois. Pour vous seul, jamais dans le contexte du modèle. S’active par projet (/board on, /board off) ; la première fois, vous choisissez le modèle qui le rédige (/board model permet d’en changer).",
-				"es-ES": "Te cuenta con palabras sencillas cuánto ha avanzado el trabajo, qué está pasando ahora y qué espera de ti. Jev elige las novedades entre lo ocurrido, un modelo que habla en lenguaje claro redacta el tablero y, cuando termina una ejecución, se resume una vez más. Solo para ti: nunca entra en el contexto del modelo. Se activa por proyecto (/board on, /board off); la primera vez eliges el modelo que lo escribe (/board model lo cambia).",
-				"pt-BR": "Conta em palavras simples até onde o trabalho chegou, o que está acontecendo agora e o que depende de você. O Jev escolhe as novidades entre o que aconteceu, um modelo que fala em linguagem simples escreve, e uma execução concluída ganha mais um resumo. Só para você, nunca entra no contexto do modelo. Ativado por projeto (/board on, /board off); na primeira vez, você escolhe o modelo que o escreve (/board model muda isso).",
-				"ru-RU": "Простыми словами рассказывает, насколько продвинулась работа, что происходит сейчас и что нужно от вас. Jev отбирает новости из произошедшего, модель пишет обычным языком, а по завершении запуска подводится итог. Только для вас, в контекст модели не попадает. Включается для каждого проекта отдельно (/board on, /board off); при первом включении вы выбираете модель, которая её пишет (сменить — /board model).",
-				"uk-UA": "Простими словами розповідає, наскільки просунулася робота, що відбувається зараз і що чекає на вас. Jev відбирає новини з того, що сталося, а текст пише модель, що говорить простими словами; завершений запуск ще раз підсумовується. Лише для вас і ніколи не потрапляє в контекст моделі. Вмикається окремо для кожного проєкту (/board on, /board off); першого разу ви вибираєте модель, яка його пише (/board model її змінює).",
-				"tr-TR": "İşin ne kadar ilerlediğini, şu an ne olduğunu ve neyin sizi beklediğini sade bir dille anlatır. Olanlardan haberleri Jev seçer, sade konuşan bir model yazar; biten bir çalışma bir kez daha özetlenir. Yalnızca sizin içindir, asla modelin bağlamına girmez. Proje başına açılıp kapatılır (/board on, /board off); ilk seferde panoyu yazacak modeli siz seçersiniz (/board model ile değiştirilir).",
-				"fa-IR": "با زبان ساده به شما می‌گوید کار تا کجا پیش رفته، الان چه اتفاقی می‌افتد و چه چیزی منتظر شماست. Jev خبرها را از میان رویدادها انتخاب می‌کند، مدلی که ساده حرف می‌زند می‌نویسد، و اجرای تمام‌شده یک بار دیگر جمع‌بندی می‌شود. فقط برای شماست و هرگز وارد زمینهٔ مدل نمی‌شود. برای هر پروژه جداگانه روشن و خاموش می‌شود (/board on، /board off)؛ بار اول، مدلی را که آن را می‌نویسد انتخاب می‌کنید (/board model آن را عوض می‌کند)."
+				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。JeV 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关（/board on、/board off）；第一次打开时选一个模型来讲（/board model 可以换）。",
+				"en": "Tells you in plain words how far the work is, what is happening now and what waits on you. JeV picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it)."
 			},
 			"defaultEnabled": true,
 			"options": [
@@ -4488,7 +4422,7 @@
 						"fa-IR": "مدلی که تابلو را می‌نویسد"
 					},
 					"help": {
-						"zh": "写成“提供商/模型”，填了就不再问。留空：第一次打开看板时让你挑一个（推荐 Claude Opus 4.6，其次 Gemini 3.8 Flash），挑好的记在 mu/board.json 里；没挑就用 writer 模型，再没有就用当前会话的模型。",
+						"zh": "写成「提供商/模型」，填了就不再问。留空：第一次打开看板时让你挑一个（推荐 Claude Opus 4.6，其次 Gemini 3.8 Flash），挑好的记在 mu/board.json 里；没挑就用 writer 模型，再没有就用当前会话的模型。",
 						"en": "As provider/model; set here, nobody is asked. Empty: you pick one the first time the board is switched on (Claude Opus 4.6 recommended, then Gemini 3.8 Flash), kept in mu/board.json; none picked: the writer model, else the session's.",
 						"zh-TW": "格式為 provider/model；在這裡填了就不會再問。留空：第一次開啟看板時讓你挑一個（推薦 Claude Opus 4.6，其次 Gemini 3.8 Flash），記在 mu/board.json 裡；沒挑的話用 writer 模型，再沒有就用這個對話的模型。",
 						"ja-JP": "provider/model の形式で指定します。ここで指定すると、確認はしません。空欄の場合は、初めてボードをオンにしたときに選びます（おすすめは Claude Opus 4.6、次点は Gemini 3.8 Flash）。選んだモデルは mu/board.json に保存されます。選ばなかった場合は writer モデルを、それもなければセッションのモデルを使います。",
@@ -4747,7 +4681,7 @@
 				"fa-IR": "بررسی پایان کار"
 			},
 			"summary": {
-				"zh": "“做完了”之前确认有没有验证过。",
+				"zh": "「做完了」之前确认有没有验证过。",
 				"en": "Checks that something verified the work before it is called done.",
 				"zh-TW": "說「做完了」之前，確認有沒有驗證過。",
 				"ja-JP": "完了とする前に、作業が検証されたかを確認します。",
@@ -5702,7 +5636,7 @@
 				"fa-IR": "دستورهای پس‌زمینه"
 			},
 			"summary": {
-				"zh": "bg_start / bg_output / bg_stop：开发服务器、长时间构建不占用回合；结束时是否打断交给“通知分流”；会话结束时全部终止。",
+				"zh": "bg_start / bg_output / bg_stop：开发服务器、长时间构建不占用回合；结束时是否打断交给「通知分流」；会话结束时全部终止。",
 				"en": "bg_start / bg_output / bg_stop: dev servers and long builds without blocking the turn. Whether the end of a job interrupts is decided by notification routing; every job stops with the session.",
 				"zh-TW": "bg_start / bg_output / bg_stop：開發伺服器和長時間的建置不會卡住這一輪。工作結束時要不要打斷，交給「通知分流」決定；對話結束時，所有工作一起停止。",
 				"ja-JP": "bg_start / bg_output / bg_stop: 開発サーバーや長いビルドを、ターンをブロックせずに実行します。ジョブの終了時に割り込むかどうかは「通知の振り分け」が決めます。すべてのジョブはセッションとともに停止します。",
@@ -5968,7 +5902,7 @@
 						"fa-IR": "پایان یک کار می‌تواند عامل بیکار را بیدار کند"
 					},
 					"help": {
-						"zh": "只有判定为“立刻”时才会开始新回合；关闭时只留一条消息。",
+						"zh": "只有判定为「立刻」时才会开始新回合；关闭时只留一条消息。",
 						"en": "Only a verdict of \"now\" starts a turn; when off the notice is only appended.",
 						"zh-TW": "只有判定為「立刻」時才會開始新的一輪；關閉時只附上一則通知。",
 						"ja-JP": "判定が「すぐに届ける」の場合だけ新しいターンを始めます。オフの場合は、通知を追加するだけです。",
@@ -6604,7 +6538,7 @@
 				"fa-IR": "سرورهای MCP"
 			},
 			"summary": {
-				"zh": "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：Jev 认定任务需要，或模型用 find_capability 要，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 Jev 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在 mu.json 的 mcp.servers 里给服务器写 \"exposure\": \"always\" 可以让它常开。",
+				"zh": "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：JeV 认定任务需要，或模型用 find_capability 要，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 JeV 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在 mu.json 的 mcp.servers 里给服务器写 \"exposure\": \"always\" 可以让它常开。",
 				"en": "A built-in MCP client (stdio and Streamable HTTP). Each server is a catalog entry that stays hidden: its process starts and its tools register only when the judge finds the task needs it or the model asks through find_capability. Tool lists are cached, so the judge has a description before a server ever ran. A server defined by a project asks before its first start, and again when its definition changes. \"exposure\": \"always\" under mcp.servers in mu.json keeps a server open.",
 				"zh-TW": "內建的 MCP 用戶端（stdio 與 Streamable HTTP）。每個伺服器都是能力目錄裡的一項，預設隱藏：判定器認定任務需要它，或模型透過 find_capability 要求時，才啟動它的程序並註冊它的工具。工具清單會快取，所以伺服器即使從未執行過，判定器也有描述可以判斷。專案定義的伺服器第一次啟動前會先問你，定義變了也會再問。在 mu.json 的 mcp.servers 下為伺服器加上 \"exposure\": \"always\"，就能讓它常駐開啟。",
 				"ja-JP": "組み込みの MCP クライアントです（stdio と Streamable HTTP）。各サーバーはカタログの項目として非表示になっており、タスクに必要だと判定器が判定したとき、またはモデルが find_capability で求めたときにだけ、プロセスが起動してツールが登録されます。ツール一覧はキャッシュされるため、サーバーを一度も起動していなくても判定器は説明を参照できます。プロジェクトで定義されたサーバーは、初回の起動前と、定義が変わったときに確認します。mu.json の mcp.servers で \"exposure\": \"always\" を指定すると、そのサーバーは常に開いたままになります。",
