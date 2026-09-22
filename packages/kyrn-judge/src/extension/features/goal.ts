@@ -9,7 +9,7 @@ import {
 	goalCheckRequest,
 	parseGoalJudgement,
 } from "../../goal/check.ts";
-import { say } from "../../language.ts";
+import { type Coded, say } from "../../language.ts";
 import type { LlmCompletion } from "../../providers/llm.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
 import { isShellTool } from "../shell-tools.ts";
@@ -34,6 +34,13 @@ export interface GoalState {
 	readonly text: string;
 	/** Why it is not running, or why the last check said what it said, for the user to read. */
 	readonly reason?: string;
+	/**
+	 * Why it paused, as a code for a client that translates (`reason` is the zh/en of it):
+	 * interrupted, model_call_failed, needs_user {detail?}, unjudged, idle {runs}, no_progress {runs, detail?},
+	 * continuations_used_up {max}, minutes_used_up {minutes}, session_reopened. Unset when `reason` is the model's own.
+	 */
+	readonly reasonCode?: string;
+	readonly reasonParams?: Readonly<Record<string, string | number>>;
 	/** Times mu sent the agent back to work since the user last spoke. */
 	readonly continuations: number;
 	/** The next step the last check named. */
@@ -43,13 +50,24 @@ export interface GoalState {
 
 export function parseGoalEntry(data: unknown): GoalState | undefined {
 	if (typeof data !== "object" || data === null) return undefined;
-	const { status, text, reason, continuations, next, checkedBy } = data as Record<string, unknown>;
+	const { status, text, reason, reasonCode, reasonParams, continuations, next, checkedBy } = data as Record<
+		string,
+		unknown
+	>;
 	if (status !== "active" && status !== "paused" && status !== "met" && status !== "cleared") return undefined;
 	if (typeof text !== "string" || !text.trim()) return undefined;
 	return {
 		status,
 		text,
 		reason: typeof reason === "string" ? reason : undefined,
+		...(typeof reasonCode === "string"
+			? {
+					reasonCode,
+					...(typeof reasonParams === "object" && reasonParams !== null
+						? { reasonParams: reasonParams as Record<string, string | number> }
+						: {}),
+				}
+			: {}),
 		continuations: typeof continuations === "number" && continuations >= 0 ? Math.floor(continuations) : 0,
 		next: typeof next === "string" && next ? next : undefined,
 		checkedBy: checkedBy === "model" || checkedBy === "jev" || checkedBy === "rules" ? checkedBy : undefined,
@@ -181,14 +199,19 @@ export function registerGoal(runtime: KyrnRuntime): void {
 		runtime.goalActive = next?.status === "active";
 		status();
 	};
-	const save = (next: GoalState) => {
-		adopt(next);
-		pi.appendEntry<GoalState>(GOAL_ENTRY, next);
-		runtime.present("goal.state", { ...next, maxContinuations: options.maxContinuations });
+	/** Only a pause says why in a code: every other state's reason is the model's, so an old code must not linger. */
+	const save = (next: GoalState, coded?: Coded) => {
+		const { reasonCode: _code, reasonParams: _params, ...rest } = next;
+		const stored: GoalState = coded
+			? { ...rest, reasonCode: coded.code, ...(coded.params ? { reasonParams: coded.params } : {}) }
+			: rest;
+		adopt(stored);
+		pi.appendEntry<GoalState>(GOAL_ENTRY, stored);
+		runtime.present("goal.state", { ...stored, maxContinuations: options.maxContinuations });
 	};
-	const pause = (ctx: ExtensionContext, reason: string) => {
+	const pause = (ctx: ExtensionContext, reason: string, coded: Coded) => {
 		if (!goal) return;
-		save({ ...goal, status: "paused", reason, next: undefined });
+		save({ ...goal, status: "paused", reason, next: undefined }, coded);
 		show(
 			ctx,
 			say({ zh: `mu 目标已暂停：${reason}。\n${goal.text}`, en: `mu goal paused: ${reason}.\n${goal.text}` }),
@@ -212,7 +235,13 @@ export function registerGoal(runtime: KyrnRuntime): void {
 		// A goal that was running when the session closed does not start by itself: the user may be elsewhere now.
 		adopt(
 			restored?.status === "active"
-				? { ...restored, status: "paused", reason: say({ zh: "会话重新打开了", en: "the session was reopened" }) }
+				? {
+						...restored,
+						status: "paused",
+						reason: say({ zh: "会话重新打开了", en: "the session was reopened" }),
+						reasonCode: "session_reopened",
+						reasonParams: undefined,
+					}
 				: restored,
 		);
 		fresh();
@@ -320,11 +349,11 @@ export function registerGoal(runtime: KyrnRuntime): void {
 			// Cut by the harness itself, which also sends the model back to work: not an interruption by the user.
 			if (runtime.harnessAbort) return undefined;
 			if (last?.stopReason === "aborted") {
-				pause(ctx, say({ zh: "你打断了这次运行", en: "you interrupted the run" }));
+				pause(ctx, say({ zh: "你打断了这次运行", en: "you interrupted the run" }), { code: "interrupted" });
 				return undefined;
 			}
 			if (!last || last.stopReason === "error") {
-				pause(ctx, say({ zh: "一次模型调用失败了", en: "a model call failed" }));
+				pause(ctx, say({ zh: "一次模型调用失败了", en: "a model call failed" }), { code: "model_call_failed" });
 				return undefined;
 			}
 			const run = stepsOf(event.messages);
@@ -372,6 +401,7 @@ export function registerGoal(runtime: KyrnRuntime): void {
 								en: `the agent needs something from you: ${outcome.reason}`,
 							})
 						: say({ zh: "代理在等你回复", en: "the agent needs something from you" }),
+					{ code: "needs_user", ...(outcome.reason ? { params: { detail: outcome.reason } } : {}) },
 				);
 				return undefined;
 			}
@@ -382,6 +412,7 @@ export function registerGoal(runtime: KyrnRuntime): void {
 						zh: "没有判定器能读出目标是否达成，也没有能证明还没做完的事",
 						en: "no judge could read whether the goal holds, and nothing is provably unfinished",
 					}),
+					{ code: "unjudged" },
 				);
 				return undefined;
 			}
@@ -393,6 +424,7 @@ export function registerGoal(runtime: KyrnRuntime): void {
 						zh: `代理连续 ${idle} 次什么都没做就停下了`,
 						en: `the agent ended ${idle} runs in a row without doing anything`,
 					}),
+					{ code: "idle", params: { runs: idle } },
 				);
 				return undefined;
 			}
@@ -404,6 +436,7 @@ export function registerGoal(runtime: KyrnRuntime): void {
 						zh: `连续 ${stalls} 次没有进展${why}，告诉它接下来怎么做`,
 						en: `no progress in ${stalls} runs in a row${why}; say how to go on`,
 					}),
+					{ code: "no_progress", params: { runs: stalls, ...(outcome.reason ? { detail: outcome.reason } : {}) } },
 				);
 				return undefined;
 			}
@@ -414,6 +447,7 @@ export function registerGoal(runtime: KyrnRuntime): void {
 						zh: `续跑次数（${options.maxContinuations} 次）用完了`,
 						en: `the allowance of ${options.maxContinuations} continuations is used up`,
 					}),
+					{ code: "continuations_used_up", params: { max: options.maxContinuations } },
 				);
 				return undefined;
 			}
@@ -424,6 +458,7 @@ export function registerGoal(runtime: KyrnRuntime): void {
 						zh: `时间额度（${options.maxMinutes} 分钟）用完了`,
 						en: `the allowance of ${options.maxMinutes} minutes is used up`,
 					}),
+					{ code: "minutes_used_up", params: { minutes: options.maxMinutes } },
 				);
 				return undefined;
 			}

@@ -1,5 +1,6 @@
 import { expandPlaceholders } from "../inherit/mcp-config.ts";
 import type { McpServerDefinition } from "../inherit/types.ts";
+import { type Coded, codeOf, withCode } from "../language.ts";
 import { McpClient } from "./client.ts";
 import { StreamableHttpTransport } from "./http.ts";
 import { type McpCallResult, McpError, type McpTool, type McpTransport, redact } from "./protocol.ts";
@@ -36,7 +37,11 @@ export class McpServer {
 	tools: McpTool[] = [];
 	/** The tools were listed again: after a restart, or because the server said they changed. */
 	onToolsChanged?: (tools: readonly McpTool[]) => void;
-	onCrash?: (reason: string, willRestart: boolean) => void;
+	/**
+	 * It crashed (`crashed` {willRestart}), or the restart after a crash failed (`restart_failed`, whose
+	 * `reason` is why): the code is for a client that translates, `reason` stays the English of it.
+	 */
+	onCrash?: (reason: string, willRestart: boolean, coded?: Coded) => void;
 	private readonly host: McpServerHost;
 	private client: McpClient | undefined;
 	private starting: Promise<McpTool[]> | undefined;
@@ -66,7 +71,10 @@ export class McpServer {
 				.catch((error: unknown) => {
 					this.state = "failed";
 					this.lastError = this.explain(error);
-					throw new Error(this.lastError);
+					// McpError says what went wrong as a kind: it stays a code once the message is rewritten.
+					throw withCode(new Error(this.lastError), {
+						code: error instanceof McpError ? error.kind : (codeOf(error)?.code ?? "start_failed"),
+					});
 				})
 				.finally(() => {
 					this.starting = undefined;
@@ -144,11 +152,14 @@ export class McpServer {
 
 	private crashed(client: McpClient, reason: string): void {
 		if (client !== this.client || this.stopped) return;
+		// Dying before it ever ran is a failed start, and the start says so itself: not a crash with a restart
+		// (which would only have waited on the same failing start, and used up the one restart there is).
+		if (this.state === "starting") return;
 		this.client = undefined;
 		const tail = lastLine(client.diagnostics());
 		const detail = redact(`${reason}${tail ? `; its last words: ${tail}` : ""}`, this.secrets);
 		const willRestart = this.restarts < 1;
-		this.onCrash?.(detail, willRestart);
+		this.onCrash?.(detail, willRestart, { code: "crashed", params: { willRestart: willRestart ? 1 : 0 } });
 		if (!willRestart) {
 			this.state = "failed";
 			this.lastError = `crashed again and was not restarted (${detail})`;
@@ -159,7 +170,13 @@ export class McpServer {
 		this.lastError = `crashed (${detail})`;
 		this.start()
 			.then((tools) => this.onToolsChanged?.(tools))
-			.catch(() => {});
+			// Without this the app would keep showing "restarting" for a server that is gone.
+			.catch((error: unknown) =>
+				this.onCrash?.(error instanceof Error ? error.message : String(error), false, {
+					code: "restart_failed",
+					params: { cause: codeOf(error)?.code ?? "start_failed" },
+				}),
+			);
 	}
 
 	async call(tool: string, args: Record<string, unknown>, signal?: AbortSignal): Promise<McpCallResult> {

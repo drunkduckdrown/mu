@@ -214,7 +214,7 @@ describe("permission modes in a session", () => {
 		expect(asked).toHaveLength(1);
 		expect(asked[0].title).toContain("mu wants to edit a file");
 		expect(asked[0].title).toContain("Minimal permissions");
-		expect(asked[0].options).toEqual(["Allow once", "Allow for this conversation（edit）", "Don't allow"]);
+		expect(asked[0].options).toEqual(["Allow once", "Allow for this conversation (edit)", "Don't allow"]);
 		// Shown while it waited, gone once answered.
 		expect(status).toEqual(["Waiting for your permission: edit src/a.ts", undefined]);
 		expect(of("permissions.request")).toEqual([
@@ -224,6 +224,7 @@ describe("permission modes in a session", () => {
 				kind: "edit",
 				reason: "ask",
 				grant: { key: "edit", label: "edit" },
+				answerIds: ["once", "session", "deny"],
 			}),
 		]);
 		expect(of("permissions.resolved")).toEqual([{ id: "permission-1", answer: "session" }]);
@@ -293,6 +294,20 @@ describe("permission modes in a session", () => {
 		await harness.session.prompt("Delete the build folder with rm -rf");
 		expect(ran).toEqual(["bash rm -rf build"]);
 		expect(of("permissions.approved")).toEqual([expect.objectContaining({ by: "jev" })]);
+
+		// Asked instead, the flag comes with its code, and the call can only be allowed once.
+		const asked = await start(
+			(request): Record<string, Answer> => ("requested" in request.questions ? { destructive: yes } : {}),
+			{ mode: "jev", pick: (options) => options[0] },
+		);
+		asked.harness.setResponses([call("bash", { command: "rm -rf dist" }), fauxAssistantMessage("Cleaned.")]);
+		await asked.harness.session.prompt("Clean up");
+		expect(asked.of("permissions.request")[0]).toMatchObject({
+			reason: "flagged",
+			flag: "recursive or forced delete",
+			flagCode: "recursive_or_forced_delete",
+			answerIds: ["once", "deny"],
+		});
 	});
 
 	it("full access asks nobody and asks no judge", async () => {

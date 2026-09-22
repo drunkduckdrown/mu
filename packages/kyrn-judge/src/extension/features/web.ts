@@ -1,4 +1,5 @@
 import { Type } from "typebox";
+import type { Coded } from "../../language.ts";
 import { decodeBody, type FetchLimits, fetchBody, readUrl } from "../../web/fetch.ts";
 import { resolveSource, type SearchSource, SOURCES, searchWeb } from "../../web/search.ts";
 import { FetchRefusal } from "../../web/ssrf.ts";
@@ -25,6 +26,8 @@ interface SearchDetails {
 	source: string | undefined;
 	results: number;
 	problems: readonly string[];
+	/** One code per problem, same order: see `SearchOutcome.problemCodes`, plus source_not_configured {source}. */
+	problemCodes: readonly Coded[];
 }
 
 const host = (url: string): string => {
@@ -159,11 +162,15 @@ export function registerWeb(runtime: KyrnRuntime): void {
 			const problems = chosen
 				? outcome.problems
 				: [`"${options.search}" is not a search source (features.web.search)`, ...outcome.problems];
+			const problemCodes: Coded[] = chosen
+				? [...outcome.problemCodes]
+				: [{ code: "source_not_configured", params: { source: options.search } }, ...outcome.problemCodes];
 			const details: SearchDetails = {
 				query: params.query.slice(0, 300),
 				source: outcome.source,
 				results: outcome.results.length,
 				problems,
+				problemCodes,
 			};
 			runtime.present("web.search", details);
 			if (outcome.results.length === 0) {

@@ -33,6 +33,8 @@ export interface BoardUpdate extends BoardText {
 	readonly phase?: BoardPhase;
 	/** The id of the acceptance item being worked on. */
 	readonly focus?: string;
+	/** That item's text (the user's or the model's words), so a client can say what is being worked on. */
+	readonly focusText?: string;
 	readonly needsUser: boolean;
 	/** Acceptance items done, and in all. */
 	readonly done: number;
@@ -53,6 +55,12 @@ export function parseBoardEntry(data: unknown): BoardUpdate | undefined {
 		confirm: Array.isArray(value.confirm) ? value.confirm.filter((item) => typeof item === "string") : [],
 		phase: typeof value.phase === "string" ? (value.phase as BoardPhase) : undefined,
 		focus: typeof value.focus === "string" ? value.focus : undefined,
+		...(typeof value.focusText === "string" ? { focusText: value.focusText } : {}),
+		...(Array.isArray(value.confirmCodes)
+			? {
+					confirmCodes: value.confirmCodes.map((code) => (typeof code === "string" ? code : null)),
+				}
+			: {}),
 		needsUser: value.needsUser === true,
 		done: typeof value.done === "number" ? value.done : 0,
 		total: typeof value.total === "number" ? value.total : 0,
@@ -219,6 +227,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			...(text ?? plainBoard(facts)),
 			phase: reading.phase,
 			focus: reading.focus ?? undefined,
+			...(focusItem ? { focusText: focusItem.text } : {}),
 			needsUser: reading.needsUser,
 			done: items.filter((item) => item.done).length,
 			total: items.length,

@@ -166,7 +166,13 @@ describe("goal mode", () => {
 		]);
 		await harness.session.prompt("/goal the importer handles empty files");
 		await settled(harness, 1);
-		expect(states(harness).at(-1)).toMatchObject({ status: "paused", reason: "代理连续 2 次什么都没做就停下了" });
+		expect(states(harness).at(-1)).toMatchObject({
+			status: "paused",
+			reason: "代理连续 2 次什么都没做就停下了",
+			// The same, for a client in a language mu has no words for.
+			reasonCode: "idle",
+			reasonParams: { runs: 2 },
+		});
 		// What the model reads stays in English.
 		expect(sent(harness)[1]).toContain("not met yet");
 	});
@@ -203,9 +209,17 @@ describe("goal mode", () => {
 		// Nothing was sent after the question: the agent is not told to keep going past it.
 		expect(sent(harness)).toHaveLength(1);
 
+		expect(states(harness).at(-1)?.reasonCode).toBe("needs_user");
+
 		await harness.session.prompt("Postgres.");
 		await settled(harness, 1);
 		expect(states(harness).map((state) => state.status)).toEqual(["active", "paused", "active", "met"]);
+		// A code belongs to the pause it explains, and goes with it.
+		expect(
+			states(harness)
+				.slice(2)
+				.map((state) => state.reasonCode),
+		).toEqual([undefined, undefined]);
 	});
 
 	it("keeps to its allowance of continuations", async () => {
@@ -224,6 +238,7 @@ describe("goal mode", () => {
 		const last = states(harness).at(-1);
 		expect(last).toMatchObject({ status: "paused", continuations: 1 });
 		expect(last?.reason).toContain("allowance of 1 continuations");
+		expect(last).toMatchObject({ reasonCode: "continuations_used_up", reasonParams: { max: 1 } });
 	});
 
 	it("goes by the facts alone when no judge is acted on, and leaves the rest to the user", async () => {
@@ -395,6 +410,10 @@ describe("goal mode", () => {
 			const last = states(harness).at(-1);
 			expect(last?.status).toBe("paused");
 			expect(last?.reason).toContain("no progress in 2 runs in a row (the same test run again)");
+			expect(last).toMatchObject({
+				reasonCode: "no_progress",
+				reasonParams: { runs: 2, detail: "the same test run again" },
+			});
 		});
 
 		it("falls back to the judge when the model does not answer in the form asked", async () => {

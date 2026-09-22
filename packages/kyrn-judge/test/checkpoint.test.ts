@@ -379,6 +379,8 @@ describe("checkpoints and the judged rewind", () => {
 			id: 1,
 			restore: 1,
 			paths: ["app.ts"],
+			triggerCode: "same_command_failed",
+			triggerParams: { times: 3 },
 		});
 	});
 

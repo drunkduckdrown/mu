@@ -43,6 +43,31 @@ export function say(texts: { readonly zh: string; readonly en: string }, languag
 	return language?.wording === "zh" ? texts.zh : texts.en;
 }
 
+/**
+ * A line a person reads, as a stable code and what it names, for a client
+ * that translates into a language mu has no wording for. The English (or the
+ * zh/en) text always stays beside it; see docs/features/presentation-codes.md.
+ */
+export interface Coded {
+	readonly code: string;
+	readonly params?: Readonly<Record<string, string | number>>;
+}
+
+/** An error that also says what it is as a code. `coded`, not `code`: Node's own errors use that for ENOENT. */
+export function codedError(message: string, coded: Coded): Error & { coded: Coded } {
+	return withCode(new Error(message), coded);
+}
+
+/** Gives an error of any class its code. */
+export function withCode<E extends Error>(error: E, coded: Coded): E & { coded: Coded } {
+	return Object.assign(error, { coded });
+}
+
+export function codeOf(error: unknown): Coded | undefined {
+	const coded = (error as { coded?: Coded } | undefined)?.coded;
+	return coded && typeof coded.code === "string" ? coded : undefined;
+}
+
 /** "1 commit", "3 commits": English needs the plural, Chinese does not. */
 export function count(n: number, one: string, many = `${one}s`): string {
 	return `${n} ${n === 1 ? one : many}`;

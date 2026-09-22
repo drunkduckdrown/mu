@@ -1,3 +1,5 @@
+import { withCode } from "../language.ts";
+
 /**
  * A minimal Chrome DevTools Protocol client over Node's built-in WebSocket.
  * No dependencies: mu ships its browser without pulling in Playwright.
@@ -27,7 +29,7 @@ export class CdpConnection {
 			const socket = new WebSocket(url);
 			const timer = setTimeout(() => {
 				socket.close();
-				reject(new CdpError("Timed out connecting to the browser"));
+				reject(withCode(new CdpError("Timed out connecting to the browser"), { code: "cdp_connect_timeout" }));
 			}, timeoutMs);
 			socket.addEventListener("open", () => {
 				clearTimeout(timer);
@@ -35,7 +37,7 @@ export class CdpConnection {
 			});
 			socket.addEventListener("error", () => {
 				clearTimeout(timer);
-				reject(new CdpError("Could not connect to the browser"));
+				reject(withCode(new CdpError("Could not connect to the browser"), { code: "cdp_connect_failed" }));
 			});
 		});
 	}

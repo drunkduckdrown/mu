@@ -163,6 +163,7 @@ describe("board words", () => {
 			progress: "清单上 2 件事，做完了 1 件。",
 			now: "正在跑测试或检查，看改得对不对。（在做：有测试）",
 			confirm: [],
+			confirmCodes: [],
 		});
 		const english = plainBoard({
 			...facts,
@@ -177,6 +178,13 @@ describe("board words", () => {
 			progress: "No checklist yet.",
 			now: "Stopped, waiting for your reply.",
 			confirm: ["Postgres or SQLite?"],
+			// Quoted from the agent: data, no code.
+			confirmCodes: [null],
+		});
+		// The fixed sentence has one.
+		expect(plainBoard({ ...facts, language: "en", needsUser: true, latest: " " })).toMatchObject({
+			confirm: ["It waits for your reply."],
+			confirmCodes: ["waiting_reply"],
 		});
 	});
 

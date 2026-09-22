@@ -27,6 +27,7 @@ import {
 	sweepProjects,
 } from "../../checkpoint/store.ts";
 import { turnRewind } from "../../decisions/turn-rewind.ts";
+import type { Coded } from "../../language.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
 import { describeCall } from "./admission.ts";
 import type { HarnessRoots } from "./inherit.ts";
@@ -70,6 +71,8 @@ interface TurnTrack {
 	troubles: number;
 	failures: Map<string, number>;
 	trigger?: string;
+	/** The same as a code: `same_command_failed` {times, command} or `monitor_trouble` {times, kind, detail}. */
+	triggerCode?: Coded;
 	asked: number;
 	proposed: boolean;
 	steps: string[];
@@ -318,7 +321,10 @@ export function registerCheckpoint(
 			if (command && event.isError) {
 				const failures = (turn.failures.get(command) ?? 0) + 1;
 				turn.failures.set(command, failures);
-				if (failures === 3) turn.trigger = `the same failing command ran 3 times: ${clip(command, 120)}`;
+				if (failures === 3) {
+					turn.trigger = `the same failing command ran 3 times: ${clip(command, 120)}`;
+					turn.triggerCode = { code: "same_command_failed", params: { times: 3, command: clip(command, 120) } };
+				}
 			}
 			if (call.mutating && store && turn.checkpoint) {
 				const opened = store;
@@ -332,8 +338,13 @@ export function registerCheckpoint(
 
 	runtime.onTrouble((kind, detail) => {
 		turn.troubles++;
-		if (turn.troubles >= 2)
-			turn.trigger ??= `the monitor spoke up ${turn.troubles} times in this turn (${kind}: ${clip(detail, 120)})`;
+		if (turn.troubles >= 2 && turn.trigger === undefined) {
+			turn.trigger = `the monitor spoke up ${turn.troubles} times in this turn (${kind}: ${clip(detail, 120)})`;
+			turn.triggerCode = {
+				code: "monitor_trouble",
+				params: { times: turn.troubles, kind, detail: clip(detail, 120) },
+			};
+		}
 	});
 
 	/** Files a rewind would change that somebody changed after the agent's last action: probably the user, by hand. */
@@ -585,10 +596,12 @@ export function registerCheckpoint(
 		failOpen<TurnEndEvent, undefined>(async (_event, ctx) => {
 			runtime.touch(ctx);
 			const trigger = turn.trigger;
+			const triggerCode = turn.triggerCode;
 			const checkpoint = turn.checkpoint;
 			if (!trigger || !checkpoint || !options.propose || turn.proposed || turn.asked >= 2 || pending)
 				return undefined;
 			turn.trigger = undefined;
+			turn.triggerCode = undefined;
 			turn.asked++;
 			const decision = await runtime.engine.decide(
 				turnRewind,
@@ -608,6 +621,9 @@ export function registerCheckpoint(
 			runtime.present("rewind.proposed", {
 				id: checkpoint.id,
 				trigger,
+				...(triggerCode
+					? { triggerCode: triggerCode.code, ...(triggerCode.params ? { triggerParams: triggerCode.params } : {}) }
+					: {}),
 				restore: plan.restore.length,
 				remove: plan.remove.length,
 				bringBack: plan.bringBack.length,

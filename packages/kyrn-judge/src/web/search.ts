@@ -1,3 +1,4 @@
+import type { Coded } from "../language.ts";
 import { decodeEntities, type ElementNode, elementText, findElements, parseHtml } from "./html.ts";
 
 /**
@@ -283,6 +284,11 @@ export interface SearchOutcome {
 	readonly results: readonly SearchResult[];
 	/** Why each earlier source was passed over. */
 	readonly problems: readonly string[];
+	/**
+	 * The same, one code each, for a client that translates: source_failed {source, message}, source_robot_page,
+	 * source_http_error {source, status}, source_no_results, source_unrelated (all with {source}).
+	 */
+	readonly problemCodes: readonly Coded[];
 }
 
 /** Tries the sources in order until one answers with results that belong to the query. */
@@ -295,12 +301,18 @@ export async function searchWeb(
 	},
 ): Promise<SearchOutcome> {
 	const problems: string[] = [];
+	const problemCodes: Coded[] = [];
+	const passOver = (text: string, code: string, params: Record<string, string | number> = {}) => {
+		problems.push(text);
+		problemCodes.push({ code, params });
+	};
 	for (const source of options.sources) {
 		let page: SearchPage;
 		try {
 			page = await options.get(source.url(query, options.count), source);
 		} catch (error) {
-			problems.push(`${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+			const message = error instanceof Error ? error.message : String(error);
+			passOver(`${source.id}: ${message}`, "source_failed", { source: source.id, message });
 			continue;
 		}
 		let results: SearchResult[] = [];
@@ -310,22 +322,34 @@ export async function searchWeb(
 			/* A parser that chokes has found nothing. */
 		}
 		if (results.length === 0) {
-			problems.push(
-				looksLikeRobotPage(page.url, page.body)
-					? `${source.id} answered with a verification page: it takes this client for a robot`
-					: page.status >= 400
-						? `${source.id} answered with HTTP ${page.status}`
-						: `${source.id} returned a page without results (none found, or its markup changed)`,
-			);
+			if (looksLikeRobotPage(page.url, page.body))
+				passOver(
+					`${source.id} answered with a verification page: it takes this client for a robot`,
+					"source_robot_page",
+					{ source: source.id },
+				);
+			else if (page.status >= 400)
+				passOver(`${source.id} answered with HTTP ${page.status}`, "source_http_error", {
+					source: source.id,
+					status: page.status,
+				});
+			else
+				passOver(
+					`${source.id} returned a page without results (none found, or its markup changed)`,
+					"source_no_results",
+					{ source: source.id },
+				);
 			continue;
 		}
 		if (!related(query, results)) {
-			problems.push(
+			passOver(
 				`${source.id} returned results that have nothing to do with the query, as engines do for clients they take for robots`,
+				"source_unrelated",
+				{ source: source.id },
 			);
 			continue;
 		}
-		return { source: source.id, results: results.slice(0, options.count), problems };
+		return { source: source.id, results: results.slice(0, options.count), problems, problemCodes };
 	}
-	return { source: undefined, results: [], problems };
+	return { source: undefined, results: [], problems, problemCodes };
 }

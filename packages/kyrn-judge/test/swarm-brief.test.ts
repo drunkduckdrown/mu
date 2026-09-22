@@ -9,6 +9,7 @@ import { createHarness, type Harness } from "../../coding-agent/test/suite/harne
 import { parseConfig } from "../src/config.ts";
 import { loadAgents } from "../src/extension/agents.ts";
 import {
+	announceRouting,
 	chainRunner,
 	childArgs,
 	type SwarmAssignment,
@@ -322,6 +323,16 @@ describe("a chain of sub-agents", () => {
 			);
 			expect(result).toContain("## 1. scout");
 			expect(result).toContain("## 2. plan");
+			// The title mu wrote, as a code for a client that translates.
+			const details = (
+				harness.session.messages.filter((message) => message.role === "toolResult").at(-1) as {
+					details?: { snapshot?: { title?: string; titleCode?: unknown } };
+				}
+			).details;
+			expect(details?.snapshot).toMatchObject({
+				title: "a chain of 2 steps",
+				titleCode: { code: "delegate_chain", params: { count: 2 } },
+			});
 		} finally {
 			harness.cleanup();
 		}
@@ -349,5 +360,18 @@ describe("workflow commands", () => {
 				expect(roles, `${name}: ${role[1]}`).toContain(role[1]);
 		}
 		expect(expandPromptTemplate("/scout-and-plan x", templates)).toContain("Do not implement anything");
+	});
+});
+
+describe("what the sub-agent tools say before a run starts", () => {
+	it("says it is choosing roles as a code too, for a client that translates", () => {
+		const updates: unknown[] = [];
+		announceRouting((partial) => updates.push(partial), 3);
+		expect(updates).toEqual([
+			{
+				content: [{ type: "text", text: "choosing a role, a model and a thinking level for 3 sub-agents…" }],
+				details: { code: "choosing_roles", params: { count: 3 } },
+			},
+		]);
 	});
 });

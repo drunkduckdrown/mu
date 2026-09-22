@@ -14,6 +14,7 @@ import {
 	frameEntry,
 	inheritConstraints,
 	isStale,
+	openQuestionCode,
 	parseFrameEntry,
 	parseInheritedConstraints,
 	renderFrameNote,
@@ -159,7 +160,13 @@ export function registerFrame(runtime: KyrnRuntime): void {
 		// The user's own words and the model's one-line evidence: nothing here is a secret or a raw judge input.
 		runtime.present(
 			"frame.updated",
-			{ reason, stale: isStale(current), frame: current.frame, unmerged: current.unmerged },
+			{
+				reason,
+				stale: isStale(current),
+				frame: current.frame,
+				unmerged: current.unmerged,
+				openQuestionCodes: current.frame.openQuestions.map(openQuestionCode),
+			},
 			turn,
 		);
 	};

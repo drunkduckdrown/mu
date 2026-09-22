@@ -208,13 +208,17 @@ describe("MCP servers in the capability catalog", () => {
 		expect(results[0]).toContain("cannot open database");
 		expect(results[1]).toContain("mcp:broken");
 		expect(events.map((event) => event.kind)).toContain("mcp.failed");
+		// One failed start is one event, with what went wrong as a code; not a crash and a restart first.
+		expect(events.filter((event) => event.kind === "mcp.failed").map((event) => event.payload)).toEqual([
+			expect.objectContaining({ code: "closed", reason: expect.stringContaining("cannot open database") }),
+		]);
 		// The server printed its token on the way down. It must not travel any further.
 		expect(JSON.stringify([results, events, harness.sessionManager.getEntries()])).not.toContain(SECRET);
 	});
 
 	it("restarts a server that crashes once, tells the model, and gives up the second time", async () => {
 		const startsFile = join(home().home, "starts");
-		const { harness } = await start({
+		const { harness, events } = await start({
 			servers: { flaky: { ...fake("--starts-file", startsFile, "--leak-env", "TOKEN"), env: { TOKEN: SECRET } } },
 		});
 		harness.setResponses([
@@ -234,7 +238,40 @@ describe("MCP servers in the capability catalog", () => {
 		expect(results[3]).toContain("stopped during this call");
 		expect(results[4]).toContain("is not running");
 		expect(readFileSync(startsFile, "utf8").trim().split("\n")).toHaveLength(2);
+		expect(
+			events
+				.filter((event) => event.kind === "mcp.failed")
+				.map((event) => (event.payload as { code?: string }).code),
+		).toEqual(["crashed", "crashed"]);
+		expect(events.filter((event) => event.kind === "mcp.failed").map((event) => event.payload)).toEqual([
+			expect.objectContaining({ willRestart: true, params: { willRestart: 1 } }),
+			expect.objectContaining({ willRestart: false, params: { willRestart: 0 } }),
+		]);
 		expect(JSON.stringify(results)).not.toContain(SECRET);
+	});
+
+	it("says so when the restart after a crash fails too, so nobody waits for a server that is gone", async () => {
+		const startsFile = join(home().home, "starts");
+		const { harness, events } = await start({
+			servers: { fragile: fake("--starts-file", startsFile, "--crash-on-restart") },
+		});
+		harness.setResponses([
+			fauxAssistantMessage([fauxToolCall("find_capability", { open: "mcp:fragile" })], { stopReason: "toolUse" }),
+			fauxAssistantMessage([fauxToolCall("mcp_fragile_crash", {})], { stopReason: "toolUse" }),
+			fauxAssistantMessage("It is gone."),
+		]);
+		await harness.session.prompt("Crash it.");
+		await vi.waitFor(() =>
+			expect(events.filter((event) => event.kind === "mcp.failed").map((event) => event.payload)).toEqual([
+				expect.objectContaining({ code: "crashed", willRestart: true }),
+				expect.objectContaining({
+					code: "restart_failed",
+					willRestart: false,
+					params: { cause: "closed" },
+					reason: expect.stringContaining("cannot open database"),
+				}),
+			]),
+		);
 	});
 
 	it("follows a server whose tools change while it runs", async () => {

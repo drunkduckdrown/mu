@@ -1,5 +1,6 @@
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { count } from "../language.ts";
 import type { SwarmBrief } from "./brief.ts";
 import {
 	applyEvent,
@@ -94,6 +95,8 @@ export interface BoardSummary {
 export interface SwarmSnapshot {
 	kind: "hive" | "delegate";
 	title: string;
+	/** The title as a code, when mu wrote it (`delegate_tasks` / `delegate_chain` {count}); a hive's is the goal. */
+	titleCode?: Coded;
 	startedAt: number;
 	now: number;
 	endedAt?: number;
@@ -168,6 +171,7 @@ export function activeRuns(): SwarmRun<unknown>[] {
 export class SwarmRun<Assignment> {
 	readonly kind: "hive" | "delegate";
 	readonly title: string;
+	readonly titleCode?: Coded;
 	readonly dir: string;
 	readonly startedAt: number;
 	endedAt?: number;
@@ -184,6 +188,7 @@ export class SwarmRun<Assignment> {
 	constructor(options: {
 		kind: "hive" | "delegate";
 		title: string;
+		titleCode?: Coded;
 		dir: string;
 		bees: BeeSpec<Assignment>[];
 		limits?: Partial<SwarmLimits>;
@@ -191,6 +196,7 @@ export class SwarmRun<Assignment> {
 	}) {
 		this.kind = options.kind;
 		this.title = options.title;
+		this.titleCode = options.titleCode;
 		this.dir = options.dir;
 		this.specs = options.bees;
 		this.limits = { ...DEFAULT_LIMITS, ...options.limits };
@@ -220,6 +226,7 @@ export class SwarmRun<Assignment> {
 		return {
 			kind: this.kind,
 			title: this.title,
+			...(this.titleCode ? { titleCode: this.titleCode } : {}),
 			startedAt: this.startedAt,
 			now: this.now(),
 			endedAt: this.endedAt,
@@ -351,7 +358,7 @@ export class SwarmRun<Assignment> {
 			return { state: bee, report: bee.wrapUp ? `(Cut short: ${bee.wrapUp.reason}.)\n${body}` : body };
 		}
 
-		const spent = `after ${clock((bee.endedAt ?? this.now()) - (bee.startedAt ?? bee.queuedAt))}, ${bee.turns} turns, ${bee.toolCalls} tool calls`;
+		const spent = `after ${clock((bee.endedAt ?? this.now()) - (bee.startedAt ?? bee.queuedAt))}, ${count(bee.turns, "turn")}, ${count(bee.toolCalls, "tool call")}`;
 		const label =
 			bee.status === "failed" ? "FAILED" : bee.status === "timed-out" ? "STOPPED BY THE WATCHDOG" : "STOPPED";
 		const lines = [`${label}: ${bee.error ?? "unknown reason"} (${spent}).`];

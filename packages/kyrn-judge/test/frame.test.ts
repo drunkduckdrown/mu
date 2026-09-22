@@ -9,6 +9,7 @@ import {
 	frameEntry,
 	isStale,
 	openItems,
+	openQuestionCode,
 	parseFrameEntry,
 	renderFrameNote,
 	ruleUpdate,
@@ -72,6 +73,11 @@ describe("task frame model", () => {
 		const unclear = ruleUpdate(first, { text: "and the admin page?", turn: 2, change: "unclear" });
 		expect(unclear.goal).toBe(first.goal);
 		expect(unclear.openQuestions).toEqual(['How does this change the task: "and the admin page?"?']);
+		// The rules' question has a code for a client that translates; a question the writer wrote is its own words.
+		expect(unclear.openQuestions.map(openQuestionCode)).toEqual([
+			{ code: "unclear_change", params: { message: "and the admin page?" } },
+		]);
+		expect(openQuestionCode("Which database should the importer use?")).toBeNull();
 	});
 
 	it("rules: an over-long message is cut, never reworded, and says so", () => {

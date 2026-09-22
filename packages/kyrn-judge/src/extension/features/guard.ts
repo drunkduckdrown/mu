@@ -41,6 +41,19 @@ export const FLAG_ZH: Readonly<Record<string, string>> = {
 	"runs as root": "以 root 身份运行",
 };
 
+/** Each flag as a stable code, for a client that translates it into a language mu has no wording for. */
+export const FLAG_CODES: Readonly<Record<string, string>> = {
+	"recursive or forced delete": "recursive_or_forced_delete",
+	"discards git work": "discards_git_work",
+	"force push": "force_push",
+	"drops database objects": "drops_database_objects",
+	"overwrites a device": "overwrites_device",
+	"opens permissions recursively": "opens_permissions_recursively",
+	"runs a downloaded script": "runs_downloaded_script",
+	"runs as administrator": "runs_as_administrator",
+	"runs as root": "runs_as_root",
+};
+
 /** Tools whose `command` is a shell command line. A command is no safer for running in the background. */
 const COMMAND_TOOLS: ReadonlySet<string> = new Set([...SHELL_TOOLS, "bg_start"]);
 

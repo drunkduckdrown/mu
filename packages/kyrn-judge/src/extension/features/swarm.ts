@@ -276,7 +276,10 @@ export function uniqueNames(names: readonly string[]): string[] {
 /** What the tool shows before the first sub-agent exists: routing is a judge call, and a judge call can take seconds. */
 export function announceRouting(
 	onUpdate:
-		| ((partial: { content: { type: "text"; text: string }[]; details: SwarmDetails | undefined }) => void)
+		| ((partial: {
+				content: { type: "text"; text: string }[];
+				details: SwarmDetails | { code: string; params: { count: number } } | undefined;
+		  }) => void)
 		| undefined,
 	count: number,
 ): void {
@@ -287,7 +290,8 @@ export function announceRouting(
 				text: `choosing a role, a model and a thinking level for ${count} sub-agent${count === 1 ? "" : "s"}…`,
 			},
 		],
-		details: undefined,
+		// No snapshot yet: a client that translates says the same from the code.
+		details: { code: "choosing_roles", params: { count } },
 	});
 }
 
@@ -543,6 +547,7 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 				title: params.chain
 					? `a chain of ${tasks.length} step${tasks.length === 1 ? "" : "s"}`
 					: `${tasks.length} task${tasks.length === 1 ? "" : "s"}`,
+				titleCode: { code: params.chain ? "delegate_chain" : "delegate_tasks", params: { count: tasks.length } },
 				dir: runDir,
 				limits: { ...limitsFrom(options), ...(params.chain ? { concurrency: 1 } : {}) },
 				bees: tasks.map((task, index) => ({

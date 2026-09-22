@@ -2,6 +2,7 @@ import { type ChildProcess, spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, posix, win32 } from "node:path";
+import { codedError } from "../language.ts";
 import { muEnv, muHome } from "../naming.ts";
 import { isWsl, thisHost, wslMountRoot, wslToWindowsPath } from "../platform.ts";
 
@@ -222,11 +223,18 @@ export function planBrowserLaunch(input: {
 	let cwd: string | undefined;
 	if (browser.side === "windows") {
 		const problem = windowsSideProblem(host);
-		if (problem) throw new Error(`${browser.executable} cannot be used: ${problem}.\n${browserAdvice(host)}`);
+		if (problem)
+			throw codedError(`${browser.executable} cannot be used: ${problem}.\n${browserAdvice(host)}`, {
+				code: "windows_browser_unusable",
+				params: { executable: browser.executable },
+			});
 		// Chrome is a Windows program: it gets the folder in Windows' spelling (what `wslpath -w` would answer).
 		const translated = wslToWindowsPath(profileDir, host.wsl);
 		if (!translated)
-			throw new Error(`The profile folder ${profileDir} has no Windows spelling (WSL_DISTRO_NAME is not set).`);
+			throw codedError(`The profile folder ${profileDir} has no Windows spelling (WSL_DISTRO_NAME is not set).`, {
+				code: "profile_no_windows_path",
+				params: { profileDir },
+			});
 		spelled = translated;
 		// A Windows program cannot start in a Linux folder.
 		cwd = dirname(browser.executable);
@@ -320,7 +328,11 @@ export async function launchChrome(options: LaunchOptions = {}): Promise<Launche
 	const browser = options.executable
 		? { executable: options.executable, side: sideOf(options.executable, host) }
 		: findBrowser(host);
-	if (!browser) throw new Error(browserAdvice(host));
+	if (!browser)
+		throw codedError(browserAdvice(host), {
+			code: "no_browser",
+			params: { platform: host.platform, wsl: host.wsl ? 1 : 0 },
+		});
 	const plan = planBrowserLaunch({
 		host,
 		browser,
@@ -344,10 +356,18 @@ export async function launchChrome(options: LaunchOptions = {}): Promise<Launche
 	while (Date.now() < deadline) {
 		const endpoint = readEndpoint(profileDir);
 		if (endpoint && (await isAlive(endpoint))) return { endpoint, process: child, profileDir };
-		if (failure) throw new Error(`${plan.command} could not be started: ${failure.message}`);
-		if (child.exitCode !== null) throw new Error(`Chrome exited during startup (code ${child.exitCode})`);
+		if (failure)
+			throw codedError(`${plan.command} could not be started: ${failure.message}`, {
+				code: "browser_spawn_failed",
+				params: { command: plan.command },
+			});
+		if (child.exitCode !== null)
+			throw codedError(`Chrome exited during startup (code ${child.exitCode})`, {
+				code: "browser_exited_on_start",
+				params: { exitCode: child.exitCode },
+			});
 		await new Promise((resolve) => setTimeout(resolve, 100));
 	}
 	child.kill();
-	throw new Error("Chrome did not open its DevTools port in time");
+	throw codedError("Chrome did not open its DevTools port in time", { code: "devtools_port_timeout" });
 }

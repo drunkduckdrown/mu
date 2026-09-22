@@ -7,6 +7,7 @@ import type { Capability } from "../../catalog/catalog.ts";
 import { capabilityDisclosure } from "../../decisions/capability-disclosure.ts";
 import type { InheritanceScan } from "../../inherit/scan.ts";
 import type { McpServerDefinition } from "../../inherit/types.ts";
+import { codedError, codeOf } from "../../language.ts";
 import { allocateServerIds, allocateToolNames, capabilityId } from "../../mcp/names.ts";
 import type { McpTool, McpTransport } from "../../mcp/protocol.ts";
 import { toToolContent } from "../../mcp/result.ts";
@@ -156,15 +157,18 @@ export function registerMcp(
 		const ctx = runtime.ctx;
 		const definition = entry.server.definition;
 		if (!ctx?.isProjectTrusted())
-			throw new Error("the project is not trusted, and this server is defined by the project");
+			throw codedError("the project is not trusted, and this server is defined by the project", {
+				code: "project_untrusted",
+			});
 		if (!store.isApproved(ctx.cwd, definition)) {
 			if (!ctx.hasUI) {
-				throw new Error(
+				throw codedError(
 					`it is defined by the project (${definition.source}) and has not been approved. Start mu in this folder interactively and open it once, or define it in mu.json`,
+					{ code: "needs_approval", params: { source: definition.source } },
 				);
 			}
 			const allowed = await ctx.ui.confirm("mu MCP", approvalText(definition));
-			if (!allowed) throw new Error("you did not allow this project's server to start");
+			if (!allowed) throw codedError("you did not allow this project's server to start", { code: "denied" });
 			store.approve(ctx.cwd, definition);
 		}
 		entry.needsApproval = false;
@@ -182,7 +186,14 @@ export function registerMcp(
 			});
 		} catch (error) {
 			const reason = error instanceof Error ? error.message : String(error);
-			runtime.present("mcp.failed", { id: capabilityId(server.id), name: server.definition.name, reason });
+			const coded = codeOf(error);
+			runtime.present("mcp.failed", {
+				id: capabilityId(server.id),
+				name: server.definition.name,
+				reason,
+				code: coded?.code ?? "start_failed",
+				...(coded?.params ? { params: coded.params } : {}),
+			});
 			throw new Error(reason);
 		}
 	}
@@ -207,8 +218,14 @@ export function registerMcp(
 				registerTools(entry, tools);
 				runtime.present("mcp.tools_changed", { id: capabilityId(server.id), tools: [...entry.live.keys()] });
 			};
-			server.onCrash = (reason, willRestart) =>
-				runtime.present("mcp.failed", { id: capabilityId(server.id), name: definition.name, reason, willRestart });
+			server.onCrash = (reason, willRestart, coded) =>
+				runtime.present("mcp.failed", {
+					id: capabilityId(server.id),
+					name: definition.name,
+					reason,
+					willRestart,
+					...(coded ? { code: coded.code, ...(coded.params ? { params: coded.params } : {}) } : {}),
+				});
 			entries.set(server.id, entry);
 			const cached = store.cached(definition)?.tools ?? [];
 			const names = allocateToolNames(

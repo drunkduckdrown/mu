@@ -209,6 +209,14 @@ describe("search sources", () => {
 			"blocked answered with HTTP 403",
 			"decoy returned results that have nothing to do with the query, as engines do for clients they take for robots",
 		]);
+		// The same, one code each, for a client that translates; the error text stays data.
+		expect(outcome.problemCodes).toEqual([
+			{ code: "source_failed", params: { source: "down", message: "connect ETIMEDOUT" } },
+			{ code: "source_robot_page", params: { source: "robot" } },
+			{ code: "source_no_results", params: { source: "empty" } },
+			{ code: "source_http_error", params: { source: "blocked", status: 403 } },
+			{ code: "source_unrelated", params: { source: "decoy" } },
+		]);
 		const none = await searchWeb("x", {
 			sources: [source("robot")],
 			count: 5,

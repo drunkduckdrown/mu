@@ -212,6 +212,13 @@ describe("finding a browser under WSL", () => {
 			/cannot be used: WSL networking is nat/,
 		);
 		await expect(launchChrome({ host: host("linux", [], { mode: "nat" }) })).rejects.toThrow(/No browser inside WSL/);
+		// Each way of failing has a code, for the app to say it in the person's language.
+		await expect(
+			launchChrome({ host: nat, executable: WSL_EDGE, profileDir: "/tmp/never-created" }),
+		).rejects.toMatchObject({ coded: { code: "windows_browser_unusable", params: { executable: WSL_EDGE } } });
+		await expect(launchChrome({ host: host("linux", [], { mode: "nat" }) })).rejects.toMatchObject({
+			coded: { code: "no_browser", params: { platform: "linux", wsl: 1 } },
+		});
 	});
 });
 

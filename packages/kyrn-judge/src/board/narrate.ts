@@ -28,6 +28,12 @@ export interface BoardText {
 	readonly now: string;
 	/** What waits on the person: to confirm, decide or provide. */
 	readonly confirm: readonly string[];
+	/**
+	 * Fixed sentences only (by "rules"), one per `confirm` line: `waiting_reply` for "It waits for your reply",
+	 * null for a line quoted from the agent. `progress` and `now` need no code: a client rebuilds them from
+	 * `done`/`total` and `phase` (plus `focusText`).
+	 */
+	readonly confirmCodes?: readonly (string | null)[];
 }
 
 /** Chinese when the person writes Chinese, else English. */
@@ -139,5 +145,5 @@ export function plainBoard(facts: BoardFacts): BoardText {
 						: "It waits for your reply.",
 			]
 		: [];
-	return { progress, now, confirm };
+	return { progress, now, confirm, confirmCodes: facts.needsUser ? [question ? null : "waiting_reply"] : [] };
 }

@@ -147,6 +147,22 @@ export function parseInheritedConstraints(raw: string | undefined): readonly str
 	}
 }
 
+/** The one open question the rules write, for a message whose effect on the task nobody could tell. */
+function unclearChange(message: string): string {
+	return `How does this change the task: "${message}"?`;
+}
+
+const UNCLEAR_CHANGE = /^How does this change the task: "([\s\S]*)"\?$/;
+
+/**
+ * An open question as a code, for a client that translates: `unclear_change` {message} for the rules' own
+ * question, null for one the writer model wrote (its words are data).
+ */
+export function openQuestionCode(question: string): { code: "unclear_change"; params: { message: string } } | null {
+	const match = UNCLEAR_CHANGE.exec(question);
+	return match ? { code: "unclear_change", params: { message: match[1] } } : null;
+}
+
 /**
  * The update when no model can write one. It never rephrases: a constraint or
  * a correction is kept word for word, and a message whose effect is unclear
@@ -176,7 +192,7 @@ export function ruleUpdate(frame: Frame, said: UserText): Frame {
 		return { ...next, constraints: [...frame.constraints, added] };
 	}
 	if (said.change === "subgoal") return { ...next, currentSubgoal: flat(said.text, SUBGOAL_CHARS) };
-	const question = `How does this change the task: "${flat(said.text, 200)}"?`;
+	const question = unclearChange(flat(said.text, 200));
 	return { ...next, openQuestions: [...frame.openQuestions, question].slice(-MAX_OPEN_QUESTIONS) };
 }
 

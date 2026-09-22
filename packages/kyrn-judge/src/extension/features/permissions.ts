@@ -18,7 +18,7 @@ import {
 import { clip, type KyrnRuntime } from "../runtime.ts";
 import { isShellTool } from "../shell-tools.ts";
 import { describeCall } from "./constraints.ts";
-import { FLAG_ZH, riskFlag } from "./guard.ts";
+import { FLAG_CODES, FLAG_ZH, riskFlag } from "./guard.ts";
 import type { HarnessRoots } from "./inherit.ts";
 
 /** Session entry: the mode this conversation was switched to. A reopened conversation keeps it. */
@@ -210,7 +210,9 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 		}
 		const id = `permission-${++asked}`;
 		const once = say(ANSWERS.once);
-		const session = grant ? `${say(ANSWERS.session)}（${grant.label}）` : undefined;
+		const session = grant
+			? `${say(ANSWERS.session)}${say({ zh: `（${grant.label}）`, en: ` (${grant.label})` })}`
+			: undefined;
 		const deny = say(ANSWERS.deny);
 		runtime.present("permissions.request", {
 			id,
@@ -219,9 +221,11 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 			kind: need.kind,
 			summary: need.summary,
 			reason,
-			...(flag ? { flag } : {}),
+			...(flag ? { flag, flagCode: FLAG_CODES[flag] ?? flag } : {}),
 			...(grant ? { grant } : {}),
 			answers: [once, ...(session ? [session] : []), deny],
+			// The same answers by id, in the same order: what `permissions.resolved` reports back.
+			answerIds: ["once", ...(session ? ["session"] : []), "deny"],
 		});
 		ctx.ui.setStatus(
 			PENDING_STATUS,

@@ -1,3 +1,4 @@
+import { type Coded, codedError, codeOf } from "../language.ts";
 import { CHECKPOINT, HIVE_MESSAGE, LAST_CALL, NO_CHANGE, NOTES_HEADER, SWARM_MESSAGE, WRAP_UP } from "./markers.ts";
 
 /**
@@ -28,24 +29,7 @@ export function isOver(status: BeeStatus): boolean {
 	return status === "done" || status === "failed" || status === "stopped" || status === "timed-out";
 }
 
-/**
- * A line a person reads, as a stable code and what it names, for a client
- * that translates. The English text always stays beside it.
- */
-export interface Coded {
-	readonly code: string;
-	readonly params?: Readonly<Record<string, string | number>>;
-}
-
-/** An error that also says what it is as a code. `coded`, not `code`: Node's own errors use that for ENOENT. */
-export function codedError(message: string, coded: Coded): Error & { coded: Coded } {
-	return Object.assign(new Error(message), { coded });
-}
-
-export function codeOf(error: unknown): Coded | undefined {
-	const coded = (error as { coded?: Coded } | undefined)?.coded;
-	return coded && typeof coded.code === "string" ? coded : undefined;
-}
+export { type Coded, codedError, codeOf };
 
 export interface BeeActivity {
 	at: number;

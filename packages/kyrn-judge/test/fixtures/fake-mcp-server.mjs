@@ -6,6 +6,7 @@
  *   --starts-file <path>       appends a line on every start, so tests can count restarts
  *   --banner                   prints a line that is not JSON on stdout first, as sloppy servers do
  *   --crash-on-start           writes to stderr and exits before answering anything
+ *   --crash-on-restart         with --starts-file: starts once, then crashes on every later start
  *   --leak-env <NAME>          writes the value of that variable to stderr on start and when it crashes
  *   --silent-before-init       ignores anything but `initialize` until initialized, instead of answering with an error
  *   --version <v>              the legacy protocol version it answers `initialize` with
@@ -13,7 +14,7 @@
  * Tools: echo, fail, picture, hang, crash, grow (adds the tool `late` and announces the change), plus `pad_N` fillers
  * so that `tools/list` needs several pages.
  */
-import { appendFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync } from "node:fs";
 
 const args = process.argv.slice(2);
 const flag = (name) => args.includes(name);
@@ -26,9 +27,10 @@ const legacyVersion = option("--version", "2025-06-18");
 const MODERN = "2026-07-28";
 const PAGE = 3;
 
+const startedBefore = startsFile && existsSync(startsFile) && readFileSync(startsFile, "utf8").trim() !== "";
 if (startsFile) appendFileSync(startsFile, `${process.pid}\n`);
 if (leak) process.stderr.write(`starting with token ${process.env[leak]}\n`);
-if (flag("--crash-on-start")) {
+if (flag("--crash-on-start") || (flag("--crash-on-restart") && startedBefore)) {
 	process.stderr.write("fatal: cannot open database /nowhere/db.sqlite\n");
 	process.exit(2);
 }

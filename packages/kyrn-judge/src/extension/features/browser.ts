@@ -10,6 +10,7 @@ import { type LaunchedChrome, launchChrome } from "../../browser/chrome.ts";
 import { EmbeddedBrowser, findEmbeddedEndpoint } from "../../browser/embedded.ts";
 import { BrowserSession } from "../../browser/session.ts";
 import { browserStep } from "../../decisions/browser-step.ts";
+import { codeOf } from "../../language.ts";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
 
 const TEXT_RULES = `Return a JSON object with exactly one key, text: the exact string to enter in the selected field.
@@ -115,7 +116,22 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 		if (!/^https?:\/\//i.test(params.url)) {
 			return { text: "Only http and https pages can be opened.", status: "refused", url: params.url };
 		}
-		const session = await BrowserSession.open(await connect(), params.url);
+		let session: BrowserSession;
+		try {
+			session = await BrowserSession.open(await connect(), params.url);
+		} catch (error) {
+			// No browser, or none that would start: the app hears of it, not only the model.
+			const launch = codeOf(error);
+			runtime.present("browser.run", {
+				state: "failed",
+				url: params.url,
+				code: "launch_failed",
+				...(launch ? { launchCode: launch.code, ...(launch.params ? { params: launch.params } : {}) } : {}),
+				reason: error instanceof Error ? error.message : String(error),
+				embedded: false,
+			});
+			throw error;
+		}
 		const app = embedded?.forTab(session.id);
 		app?.run({ state: "started", goal: params.goal ?? "", url: params.url });
 		runtime.present("browser.run", {
@@ -129,6 +145,7 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 		/** How it ended, for a client to translate; `reason` is the English of it. */
 		let code = "error";
 		let codeParams: Readonly<Record<string, string | number>> | undefined;
+		let failure: ReturnType<typeof codeOf>;
 		try {
 			if (!params.goal?.trim()) {
 				const page = await session.observe();
@@ -188,9 +205,14 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 			return { text, status: result.status, url: result.page.url };
 		} catch (error) {
 			reason = error instanceof Error ? error.message : String(error);
+			failure = codeOf(error);
 			throw error;
 		} finally {
-			const ended = { code, ...(codeParams ? { params: codeParams } : {}) };
+			const ended = {
+				code,
+				...(codeParams ? { params: codeParams } : {}),
+				...(failure ? { errorCode: failure.code, ...(failure.params ? { errorParams: failure.params } : {}) } : {}),
+			};
 			runtime.present("browser.run", {
 				state: "finished",
 				status,
