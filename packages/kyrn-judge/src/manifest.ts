@@ -238,6 +238,16 @@ export const MANIFEST: HarnessManifest = {
 			},
 		},
 		{
+			id: "tool.approval",
+			group: "tools",
+			feature: "permissions",
+			title: { zh: "JeV 替你审批", en: "JeV approves for you" },
+			summary: {
+				zh: "在“JeV 审批”模式下，命令、项目外的改动、对外操作和子代理先交给 JeV：它确信这是任务需要、也是你会预期的做法才放行，否则在状态栏问你。",
+				en: "In JeV-approves mode, commands, changes outside the project, outside actions and sub-agents go to JeV first: only what it is sure the task needs, done as you would expect, runs without you; anything else asks you in the status bar.",
+			},
+		},
+		{
 			id: "tool.constraint",
 			group: "tools",
 			feature: "constraints",
@@ -586,6 +596,32 @@ export const MANIFEST: HarnessManifest = {
 			summary: { zh: "危险命令在执行前确认。", en: "Confirms dangerous commands before they run." },
 			defaultEnabled: true,
 			options: [],
+		},
+		{
+			name: "permissions",
+			title: { zh: "权限模式", en: "Permission modes" },
+			summary: {
+				zh: "完全访问、JeV 审批、最小权限三种模式，用 /permissions 随时切换；需要授权时在状态栏提示你，可以只允许这一次，或这次对话都允许。开着它时，危险命令的把关也归它管。",
+				en: "Full access, JeV approves, or minimal permissions, switched any time with /permissions. When a step needs your permission the status bar asks; allow it once or for the whole conversation. While it is on, it also handles the risky command guard.",
+			},
+			defaultEnabled: true,
+			options: [
+				{
+					key: "mode",
+					kind: "choice",
+					default: "jev",
+					choices: [
+						{ value: "full", label: { zh: "完全访问", en: "Full access" } },
+						{ value: "jev", label: { zh: "JeV 审批", en: "JeV approves" } },
+						{ value: "ask", label: { zh: "最小权限", en: "Minimal permissions" } },
+					],
+					label: { zh: "新对话的默认模式", en: "Mode of a new conversation" },
+					help: {
+						zh: "用 /permissions 选过之后，以你最后选的为准。",
+						en: "Once you pick one with /permissions, your last pick is used.",
+					},
+				},
+			],
 		},
 		{
 			name: "constraints",

@@ -148,7 +148,7 @@ describe("hive in a session", () => {
 						return {};
 					}),
 					mode: "active",
-					config: parseConfig({ features: { memory: false, admission: false } }),
+					config: parseConfig({ features: { memory: false, admission: false, permissions: { mode: "full" } } }),
 				}),
 			],
 		});
@@ -313,7 +313,7 @@ describe("hive in a session", () => {
 						return {};
 					}),
 					mode: "active",
-					config: parseConfig({ features: { memory: false, admission: false } }),
+					config: parseConfig({ features: { memory: false, admission: false, permissions: { mode: "full" } } }),
 				}),
 			],
 		});
@@ -366,7 +366,7 @@ describe("hive in a session", () => {
 				createKyrnJudgeExtension({
 					provider: new MockJudgeProvider(() => ({})),
 					mode: "active",
-					config: parseConfig({ features: { memory: false } }),
+					config: parseConfig({ features: { memory: false, permissions: { mode: "full" } } }),
 					swarmRunner: runner,
 				}),
 			],

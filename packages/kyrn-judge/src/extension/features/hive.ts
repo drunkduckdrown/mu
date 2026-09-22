@@ -14,6 +14,7 @@ import {
 	announceRouting,
 	compactSnapshot,
 	limitsFrom,
+	permissionEnv,
 	pickModel,
 	registerSwarmCommand,
 	renderSwarmResult,
@@ -304,6 +305,7 @@ export function registerHive(runtime: KyrnRuntime, runner: SwarmRunner = spawnRu
 						model: assignments[at].model,
 						thinking: assignments[at].thinking,
 						env: {
+							...permissionEnv(runtime),
 							KYRN_HIVE_DIR: dir,
 							KYRN_HIVE_BEE: bee.name,
 							KYRN_HIVE_GOAL: clip(params.goal, 600),

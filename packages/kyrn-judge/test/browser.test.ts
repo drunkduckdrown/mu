@@ -360,7 +360,9 @@ describe.skipIf(!findChrome())("runBrowserTask (real Chrome, local fixture)", ()
 					provider,
 					mode: "active",
 					// The same throwaway profile, so the tool attaches to the browser this suite already started.
-					config: parseConfig({ features: { memory: false, browser: { enabled: true, profileDir } } }),
+					config: parseConfig({
+						features: { memory: false, permissions: { mode: "full" }, browser: { enabled: true, profileDir } },
+					}),
 				}),
 			],
 		});

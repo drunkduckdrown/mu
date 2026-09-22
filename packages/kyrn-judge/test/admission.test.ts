@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import type { AgentTool } from "@earendil-works/pi-agent-core";
 import { fauxAssistantMessage, fauxText, fauxToolCall } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createHarness, type Harness } from "../../coding-agent/test/suite/harness.ts";
 import { chunkLines, describeCall } from "../src/extension/features/admission.ts";
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
@@ -53,6 +53,8 @@ describe("tool output admission", () => {
 	});
 
 	async function run(mode: "shadow" | "active", provider = kindJudge()): Promise<Harness> {
+		// About what a result keeps, not about who allows the command that made it.
+		vi.stubEnv("MU_PERMISSIONS", "full");
 		const harness = await createHarness({
 			tools: [runTests],
 			extensionFactories: [createKyrnJudgeExtension({ provider, mode })],

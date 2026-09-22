@@ -90,6 +90,12 @@ export function childArgs(task: SwarmTask, assignment: SwarmAssignment, promptPa
 	return args;
 }
 
+/** A sub-agent works in its parent's permission mode, as it is now, not as the parent started. */
+export function permissionEnv(runtime: KyrnRuntime): Record<string, string> {
+	const mode = runtime.permissionMode?.();
+	return mode ? { MU_PERMISSIONS: mode } : {};
+}
+
 /** Where a sub-agent leaves its acceptance list for the parent. */
 export function frameOutPath(dir: string, index: number): string {
 	return join(dir, "control", `frame-${index}.json`);
@@ -503,6 +509,8 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 					env: {
 						// What the user ruled out for the task holds for whoever works on a part of it.
 						...inheritedConstraints,
+						// So does how much it may do without asking.
+						...permissionEnv(runtime),
 						...(task.brief
 							? { [BRIEF_ENV]: briefEnv(task.brief), [FRAME_OUT_ENV]: frameOutPath(runDir, index) }
 							: {}),

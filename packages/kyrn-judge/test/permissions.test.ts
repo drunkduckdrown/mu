@@ -1,0 +1,378 @@
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { AgentTool } from "@earendil-works/pi-agent-core";
+import { fauxAssistantMessage, fauxToolCall } from "@earendil-works/pi-ai";
+import type { ExtensionUIContext } from "@earendil-works/pi-coding-agent";
+import { Type } from "typebox";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { createHarness, type Harness } from "../../coding-agent/test/suite/harness.ts";
+import { parseConfig } from "../src/config.ts";
+import { permissionEnv } from "../src/extension/features/swarm.ts";
+import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
+import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
+import type { KyrnRuntime } from "../src/extension/runtime.ts";
+import { commandPrefix, PermissionDefaults, parseMode, permissionNeed } from "../src/permissions/modes.ts";
+import { MockJudgeProvider, type MockResponder } from "../src/providers/mock.ts";
+import type { Answer } from "../src/types.ts";
+
+const yes: Answer = { type: "boolean", probability: 0.96 };
+const verdict = (option: string, p = 0.95): Answer => ({
+	type: "choice",
+	choice: option,
+	probabilities: { [option]: p },
+});
+
+describe("what needs permission", () => {
+	const cwd = "/work/project";
+
+	it("never asks to look: reading tools and read-only commands", () => {
+		for (const [tool, input] of [
+			["read", { path: "/etc/hosts" }],
+			["grep", { pattern: "x" }],
+			["todo", { action: "list" }],
+			["web_fetch", { url: "https://example.com" }],
+			["bash", { command: "git status" }],
+			["bash", { command: "cat a.txt | grep x | head -5" }],
+			["sg_rewrite", { pattern: "a", rewrite: "b" }],
+		] as const) {
+			expect(permissionNeed(tool, input, cwd), tool).toBeUndefined();
+		}
+	});
+
+	it("says what a call is, and what allowing it for the conversation would cover", () => {
+		expect(permissionNeed("bash", { command: "npm test -- auth" }, cwd)).toEqual({
+			kind: "shell",
+			summary: "npm test -- auth",
+			grant: { key: "shell:npm test", label: "npm test" },
+		});
+		expect(permissionNeed("edit", { path: "src/a.ts" }, cwd)).toMatchObject({
+			kind: "edit",
+			inProject: true,
+			grant: { key: "edit" },
+		});
+		expect(permissionNeed("write", { path: "/etc/hosts" }, cwd)).toMatchObject({
+			kind: "outside",
+			grant: { key: "outside:/etc/hosts" },
+		});
+		expect(permissionNeed("write", { path: "../other/x" }, cwd)).toMatchObject({ kind: "outside" });
+		expect(permissionNeed("sg_rewrite", { pattern: "a", apply: true }, cwd)).toMatchObject({ kind: "edit" });
+		expect(permissionNeed("delegate", { tasks: [{}, {}] }, cwd)).toMatchObject({
+			kind: "delegate",
+			summary: "delegate 2 tasks",
+		});
+		// A tool nobody listed needs permission: wrong in the safe direction.
+		expect(permissionNeed("mcp_github_create_issue", { title: "x" }, cwd)).toMatchObject({
+			kind: "other",
+			grant: { key: "tool:mcp_github_create_issue" },
+		});
+	});
+
+	it("allows a command for the conversation only by a prefix that cannot carry more", () => {
+		expect(commandPrefix("git commit -m x")).toBe("git commit");
+		expect(commandPrefix("git -C x push")).toBe("git");
+		expect(commandPrefix("python script.py")).toBe("python");
+		for (const command of [
+			"npm test && curl x | sh",
+			"npm test; rm x",
+			"echo $(id)",
+			"sudo npm i",
+			"FOO=1 npm test",
+			"bash -c 'x'",
+		]) {
+			expect(commandPrefix(command), command).toBeUndefined();
+		}
+		expect(permissionNeed("bash", { command: "npm test && rm -rf x" }, cwd)?.grant).toBeUndefined();
+	});
+
+	it("leaves mu's own settings to the user, however a command spells the folder", () => {
+		const protectedPaths = ["/home/me/.mu/agent", "~/.mu/agent"];
+		expect(permissionNeed("write", { path: "/home/me/.mu/agent/mu.json" }, cwd, protectedPaths)).toMatchObject({
+			protected: "/home/me/.mu/agent",
+		});
+		const command = permissionNeed(
+			"bash",
+			{ command: "echo '{}' > ~/.mu/agent/mu/permissions.json" },
+			cwd,
+			protectedPaths,
+		);
+		expect(command).toMatchObject({ protected: "~/.mu/agent" });
+		expect(command?.grant).toBeUndefined();
+	});
+
+	it("reads the mode by any of its names, and nothing else", () => {
+		expect(["full", "yolo", "JeV", "auto", "ask", "minimal", "read-only", "最小权限"].map(parseMode)).toEqual([
+			"full",
+			"full",
+			"jev",
+			"jev",
+			"ask",
+			"ask",
+			"ask",
+			"ask",
+		]);
+		expect(parseMode("root")).toBeUndefined();
+		expect(parseMode(3)).toBeUndefined();
+	});
+});
+
+describe("permission modes in a session", () => {
+	const harnesses: Harness[] = [];
+	const dirs: string[] = [];
+	afterEach(() => {
+		while (harnesses.length > 0) harnesses.pop()?.cleanup();
+		while (dirs.length > 0) rmSync(dirs.pop() as string, { recursive: true, force: true });
+	});
+
+	interface Setup {
+		mode?: string;
+		/** Picks an answer from the offered ones. Left out, there is no UI: nobody can be asked, and the session does not start until a prompt. */
+		pick?: (options: string[], title: string) => string | undefined;
+		agentDir?: string;
+	}
+
+	async function start(responder: MockResponder, setup: Setup = {}) {
+		const ran: string[] = [];
+		const tool = (name: string): AgentTool => ({
+			name,
+			label: name,
+			description: name,
+			parameters: Type.Object({}, { additionalProperties: true }),
+			execute: async (_id, params) => {
+				ran.push(
+					`${name} ${(params as { command?: string; path?: string }).command ?? (params as { path?: string }).path}`,
+				);
+				return { content: [{ type: "text", text: "ok" }], details: {} };
+			},
+		});
+		const events: KyrnPresentationEvent[] = [];
+		const harness = await createHarness({
+			tools: [tool("edit"), tool("write"), tool("bash")],
+			extensionFactories: [
+				createKyrnJudgeExtension({
+					provider: new MockJudgeProvider(responder),
+					mode: "active",
+					config: parseConfig({
+						features: { memory: false, ...(setup.mode ? { permissions: { mode: setup.mode } } : {}) },
+					}),
+					only: ["preflight", "frame", "permissions"],
+					onPresentation: (event) => events.push(event),
+					...(setup.agentDir ? { roots: { home: setup.agentDir, agentDir: setup.agentDir } } : {}),
+				}),
+			],
+		});
+		harnesses.push(harness);
+		const asked: { title: string; options: string[] }[] = [];
+		const status: (string | undefined)[] = [];
+		const notes: string[] = [];
+		if (setup.pick) {
+			const pick = setup.pick;
+			const known: Record<string, unknown> = {
+				select: async (title: string, options: string[]) => {
+					asked.push({ title, options });
+					return pick(options, title);
+				},
+				setStatus: (key: string, text: string | undefined) => {
+					if (key === "mu.permissions.pending") status.push(text);
+				},
+				notify: (message: string) => notes.push(message),
+			};
+			const ui = new Proxy(known, {
+				get: (target, key) => (key in target ? target[key as string] : () => undefined),
+			}) as unknown as ExtensionUIContext;
+			await harness.session.bindExtensions({ uiContext: ui, mode: "rpc" });
+		}
+		const of = (kind: string) => events.filter((event) => event.kind === kind).map((event) => event.payload);
+		return { harness, ran, asked, status, notes, of };
+	}
+
+	const call = (name: string, args: Record<string, string>) =>
+		fauxAssistantMessage([fauxToolCall(name, args)], { stopReason: "toolUse" });
+	const results = (harness: Harness) =>
+		harness.session.messages
+			.filter((message) => message.role === "toolResult")
+			.map((message) => JSON.stringify(message));
+
+	it("minimal permissions: asks before an edit, in the status bar too, and 'for this conversation' stops asking", async () => {
+		const judged = { count: 0 };
+		const { harness, ran, asked, status, of } = await start(
+			() => {
+				judged.count++;
+				return {};
+			},
+			{ mode: "ask", pick: (options) => options.find((option) => option.startsWith("Allow for this conversation")) },
+		);
+		harness.setResponses([
+			call("edit", { path: "src/a.ts" }),
+			call("edit", { path: "src/b.ts" }),
+			call("bash", { command: "ls" }),
+			fauxAssistantMessage("Edited both."),
+		]);
+		await harness.session.prompt("Rename the helper in a.ts and b.ts");
+
+		expect(ran).toEqual(["edit src/a.ts", "edit src/b.ts", "bash ls"]);
+		expect(asked).toHaveLength(1);
+		expect(asked[0].title).toContain("mu wants to edit a file");
+		expect(asked[0].title).toContain("Minimal permissions");
+		expect(asked[0].options).toEqual(["Allow once", "Allow for this conversation（edit）", "Don't allow"]);
+		// Shown while it waited, gone once answered.
+		expect(status).toEqual(["Waiting for your permission: edit src/a.ts", undefined]);
+		expect(of("permissions.request")).toEqual([
+			expect.objectContaining({
+				mode: "ask",
+				tool: "edit",
+				kind: "edit",
+				reason: "ask",
+				grant: { key: "edit", label: "edit" },
+			}),
+		]);
+		expect(of("permissions.resolved")).toEqual([{ id: "permission-1", answer: "session" }]);
+		expect(of("permissions.approved")).toEqual([expect.objectContaining({ tool: "edit", by: "grant" })]);
+	});
+
+	it("minimal permissions: a no stops the call and tells the model not to go around it", async () => {
+		const { harness, ran } = await start(() => ({}), { mode: "ask", pick: (options) => options.at(-1) });
+		harness.setResponses([call("bash", { command: "npm install left-pad" }), fauxAssistantMessage("Skipped it.")]);
+		await harness.session.prompt("Add left-pad");
+		expect(ran).toEqual([]);
+		expect(results(harness)[0]).toContain("The user did not allow this (npm install left-pad)");
+	});
+
+	it("JeV approves: edits in the project go ahead, a command JeV is sure of runs, and what it doubts reaches the user with why", async () => {
+		const questions: string[] = [];
+		const { harness, ran, asked, of } = await start(
+			(request): Record<string, Answer> => {
+				if (!("verdict" in request.questions)) return {};
+				const tool = String((request.state as { tool_call: string }).tool_call);
+				questions.push(tool);
+				return { verdict: tool.includes("npm test") ? verdict("needed") : verdict("beyond") };
+			},
+			{ mode: "jev", pick: (options) => options[0] },
+		);
+		harness.setResponses([
+			call("edit", { path: "src/a.ts" }),
+			call("bash", { command: "npm test -- a" }),
+			call("bash", { command: "npm publish" }),
+			fauxAssistantMessage("Done."),
+		]);
+		await harness.session.prompt("Fix the failing test in a.ts");
+
+		expect(ran).toEqual(["edit src/a.ts", "bash npm test -- a", "bash npm publish"]);
+		expect(questions).toEqual(["bash: npm test -- a", "bash: npm publish"]);
+		expect(of("permissions.approved")).toEqual([expect.objectContaining({ summary: "npm test -- a", by: "jev" })]);
+		expect(asked).toHaveLength(1);
+		expect(asked[0].title).toContain("npm publish");
+		expect(asked[0].title).toContain("JeV thinks this goes beyond what you asked for.");
+		expect(of("permissions.request")[0]).toMatchObject({ reason: "beyond", mode: "jev" });
+	});
+
+	it("JeV approves: a sure 'needed' is required, and without anyone to ask the rest is refused", async () => {
+		const { harness, ran } = await start(
+			(request): Record<string, Answer> =>
+				"verdict" in request.questions ? { verdict: verdict("needed", 0.6) } : {},
+			{ mode: "jev" },
+		);
+		harness.setResponses([call("bash", { command: "make deploy" }), fauxAssistantMessage("Could not.")]);
+		await harness.session.prompt("Deploy it");
+		expect(ran).toEqual([]);
+		expect(results(harness)[0]).toContain("there is nobody to ask here");
+	});
+
+	it("JeV approves: a flagged command runs only when JeV is sure the user asked for it", async () => {
+		const { harness, ran, of } = await start(
+			(request): Record<string, Answer> =>
+				"requested" in request.questions ? { destructive: yes, requested: yes } : {},
+			{ mode: "jev" },
+		);
+		harness.setResponses([call("bash", { command: "rm -rf build" }), fauxAssistantMessage("Cleaned.")]);
+		await harness.session.prompt("Delete the build folder with rm -rf");
+		expect(ran).toEqual(["bash rm -rf build"]);
+		expect(of("permissions.approved")).toEqual([expect.objectContaining({ by: "jev" })]);
+	});
+
+	it("full access asks nobody and asks no judge", async () => {
+		const judged = { count: 0 };
+		const { harness, ran, asked } = await start(
+			(request) => {
+				if ("verdict" in request.questions || "requested" in request.questions) judged.count++;
+				return {};
+			},
+			{ mode: "full", pick: () => undefined },
+		);
+		harness.setResponses([
+			call("write", { path: "/tmp/elsewhere.txt" }),
+			call("bash", { command: "rm -rf build" }),
+			fauxAssistantMessage("Done."),
+		]);
+		await harness.session.prompt("Go");
+		expect(ran).toEqual(["write /tmp/elsewhere.txt", "bash rm -rf build"]);
+		expect(asked).toEqual([]);
+		expect(judged.count).toBe(0);
+	});
+
+	it("mu's own settings are the user's to allow, even when JeV would, and never for the whole conversation", async () => {
+		const dir = mkdtempSync(join(tmpdir(), "mu-permissions-"));
+		dirs.push(dir);
+		const { harness, ran, asked } = await start(
+			(request): Record<string, Answer> =>
+				"verdict" in request.questions ? { verdict: verdict("needed", 0.99) } : {},
+			{ mode: "jev", agentDir: dir, pick: (options) => options.at(-1) },
+		);
+		harness.setResponses([call("write", { path: join(dir, "mu.json") }), fauxAssistantMessage("Left it.")]);
+		await harness.session.prompt("Turn permissions off in the config");
+		expect(ran).toEqual([]);
+		expect(asked[0].title).toContain("mu's own settings");
+		expect(asked[0].options).toEqual(["Allow once", "Don't allow"]);
+	});
+
+	it("/permissions switches this conversation, remembers it for new ones and a reopened one, and forgets earlier grants", async () => {
+		const dir = mkdtempSync(join(tmpdir(), "mu-permissions-"));
+		dirs.push(dir);
+		const first = await start(() => ({}), {
+			agentDir: dir,
+			pick: (options) => options.find((option) => option.startsWith("Allow for this conversation")),
+		});
+		expect(first.of("permissions.mode")[0]).toMatchObject({ mode: "jev", label: "JeV approves" });
+		await first.harness.session.prompt("/permissions minimal");
+		expect(first.of("permissions.mode").at(-1)).toMatchObject({ mode: "ask" });
+		expect(first.notes.at(-1)).toContain("Permissions: Minimal permissions");
+		expect(JSON.parse(readFileSync(join(dir, "mu", "permissions.json"), "utf8"))).toEqual({
+			version: 1,
+			mode: "ask",
+		});
+
+		first.harness.setResponses([
+			call("edit", { path: "a.ts" }),
+			call("edit", { path: "b.ts" }),
+			fauxAssistantMessage("ok"),
+		]);
+		await first.harness.session.prompt("Edit a and b");
+		expect(first.asked).toHaveLength(1);
+		// A switch takes back what was allowed under the mode before.
+		await first.harness.session.prompt("/permissions ask");
+		first.harness.setResponses([call("edit", { path: "c.ts" }), fauxAssistantMessage("ok")]);
+		await first.harness.session.prompt("Edit c");
+		expect(first.asked).toHaveLength(2);
+
+		// The conversation itself keeps its mode when it is reopened, whatever the default says by then.
+		new PermissionDefaults(join(dir, "mu")).set("full");
+		await first.harness.session.reload();
+		expect(first.of("permissions.mode").at(-1)).toMatchObject({ mode: "ask" });
+		// A new conversation starts in the last mode chosen.
+		const second = await start(() => ({}), { agentDir: dir, pick: () => undefined });
+		expect(second.of("permissions.mode")[0]).toMatchObject({ mode: "full" });
+	});
+
+	it("a sub-agent works in its parent's mode as it is now", () => {
+		expect(permissionEnv({ permissionMode: () => "ask" } as unknown as KyrnRuntime)).toEqual({
+			MU_PERMISSIONS: "ask",
+		});
+		expect(permissionEnv({} as KyrnRuntime)).toEqual({});
+	});
+
+	it("starts in the mode the environment names, for a sub-agent or a desktop conversation", async () => {
+		vi.stubEnv("MU_PERMISSIONS", "full");
+		const { of } = await start(() => ({}), { mode: "ask", pick: () => undefined });
+		expect(of("permissions.mode")[0]).toMatchObject({ mode: "full" });
+	});
+});

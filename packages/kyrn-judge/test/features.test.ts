@@ -58,7 +58,8 @@ describe("kyrn features", () => {
 				createKyrnJudgeExtension({
 					provider: new MockJudgeProvider(responder),
 					mode: "active",
-					config: parseConfig({ features: { memory: false, ...extra.features } }),
+					// Each test here is about one feature; asking permission is tested in permissions.test.ts.
+					config: parseConfig({ features: { memory: false, permissions: { mode: "full" }, ...extra.features } }),
 					swarmRunner: extra.runner,
 				}),
 			],
@@ -76,7 +77,8 @@ describe("kyrn features", () => {
 		const harness = await start(
 			(request): Record<string, Answer> =>
 				"requested" in request.questions ? { destructive: yes, requested: no } : {},
-			{ tools: [bash] },
+			// The guard on its own, as it runs with permission modes switched off.
+			{ tools: [bash], features: { permissions: false } },
 		);
 		harness.setResponses([
 			fauxAssistantMessage([fauxToolCall("bash", { command: "rm -rf ./build-cache-that-does-not-exist" })], {

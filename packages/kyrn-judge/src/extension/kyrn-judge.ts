@@ -46,6 +46,7 @@ import { registerMemory } from "./features/memory.ts";
 import { registerMonitor } from "./features/monitor.ts";
 import { registerNotify } from "./features/notify.ts";
 import { registerPacks } from "./features/packs.ts";
+import { registerPermissions } from "./features/permissions.ts";
 import { registerPreflight } from "./features/preflight.ts";
 import { registerSkills } from "./features/skills.ts";
 import { registerSwarm, type SwarmRunner } from "./features/swarm.ts";
@@ -95,6 +96,7 @@ export type FeatureName =
 	| "catalog"
 	| "guard"
 	| "constraints"
+	| "permissions"
 	| "goal"
 	| "board"
 	| "ttsr"
@@ -176,6 +178,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["catalog", registerCatalog],
 		["guard", registerGuard],
 		["constraints", registerConstraints],
+		// After the constraint gate: a call the user ruled out is stopped before anyone is asked to allow it.
+		["permissions", (shared) => registerPermissions(shared, roots)],
 		["admission", registerAdmission],
 		["forgetting", registerForgetting],
 		["compaction", registerCompaction],

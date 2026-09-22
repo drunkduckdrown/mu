@@ -119,6 +119,11 @@ export class KyrnRuntime {
 	 * so the frame's judge runs alongside preflight's instead of after its wait.
 	 */
 	onTurnBegin?: (userMessage: string) => void;
+	/**
+	 * Set by the permissions feature: the mode this conversation runs in. Undefined while that feature is
+	 * off, and then the guard alone looks at risky commands, as before there were modes.
+	 */
+	permissionMode?: () => "full" | "jev" | "ask";
 	private latestCtx: ExtensionContext | undefined;
 	private firstUserMessage = "";
 	private presentationSequence = 0;

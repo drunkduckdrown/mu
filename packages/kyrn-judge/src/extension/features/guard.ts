@@ -29,7 +29,7 @@ const RULES: readonly (readonly [RegExp, string])[] = [
 ];
 
 /** What each flag says to a person reading Chinese. The judge and the model read the English. */
-const FLAG_ZH: Readonly<Record<string, string>> = {
+export const FLAG_ZH: Readonly<Record<string, string>> = {
 	"recursive or forced delete": "递归或强制删除",
 	"discards git work": "丢弃 git 里的改动",
 	"force push": "强制推送",
@@ -62,6 +62,8 @@ export function registerGuard(runtime: KyrnRuntime): void {
 		"tool_call",
 		failOpen(async (event, ctx) => {
 			runtime.touch(ctx);
+			// With permission modes on, the flags are theirs to weigh: full access asks nothing, the others ask once.
+			if (runtime.permissionMode) return undefined;
 			if (!COMMAND_TOOLS.has(event.toolName)) return undefined;
 			const command = String((event.input as { command?: unknown }).command ?? "");
 			const flag = riskFlag(command);
