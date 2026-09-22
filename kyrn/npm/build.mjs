@@ -15,7 +15,8 @@
 //                      into ~/.mu/local-judge, and only when asked to
 //   dist/              pi's Node bundle (dist/bundle/cli.js), with its themes, assets, export templates and
 //                      the native clipboard helpers of pi-tui
-//   judge/             the judgment layer built to JavaScript, with its prompts, skills and agents
+//   judge/             the judgment layer built to JavaScript, with its prompts, skills and agents, and the
+//                      manifest.json the desktop app reads its settings from
 //   docs/, examples/   pi's documentation, which the agent reads when asked about itself
 //   package.json       names the app mu (piConfig), so pi keeps its files in ~/.mu
 import { execFileSync } from "node:child_process";
@@ -148,7 +149,8 @@ async function buildJudge(out) {
 			}
 		}
 	}
-	for (const name of ["agents", "prompts", "skills", "THIRD_PARTY_NOTICES.md"]) {
+	// manifest.json is what the desktop app draws its settings from, also for an mu that came from npm.
+	for (const name of ["agents", "prompts", "skills", "manifest.json", "THIRD_PARTY_NOTICES.md"]) {
 		cpSync(join(judgeSource, name), join(judgeRoot, name), { recursive: true });
 	}
 	const judgePackage = readJson(join(judgeSource, "package.json"));

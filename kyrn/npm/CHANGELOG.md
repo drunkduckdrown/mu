@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.1] - 2026-09-22
+
+### Added
+
+- `judge/manifest.json`, the description of every decision and feature the desktop app draws its settings from, so the app can run an mu that came from npm.
+- The settings texts in eleven more languages (zh-TW, ja-JP, ko-KR, de-DE, fr-FR, es-ES, pt-BR, ru-RU, uk-UA, tr-TR, fa-IR).
+
+### Fixed
+
+- `mu doctor` no longer reports a login on a fresh install, where pi has only written an empty auth.json.
+
 ## [0.1.0] - 2026-09-22
 
 ### Added
