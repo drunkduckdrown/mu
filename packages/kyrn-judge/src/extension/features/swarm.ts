@@ -17,6 +17,7 @@ import {
 	FRAME_OUT_ENV,
 	type FrameOut,
 	MAX_DONE,
+	PREVIOUS_CHARS,
 	parseFrameOut,
 } from "../../swarm/brief.ts";
 import { describeRecord } from "../../swarm/patches.ts";
@@ -88,6 +89,32 @@ export function childArgs(task: SwarmTask, assignment: SwarmAssignment, promptPa
 	if (assignment.trusted !== undefined) args.push(assignment.trusted ? "--approve" : "--no-approve");
 	args.push(...forwardedExtensionArgs(), briefMessage(task.instructions, task.brief));
 	return args;
+}
+
+/**
+ * A chain: one step at a time, each handed what the step before reported, as
+ * data in its brief. A step that does not finish ends the chain there: the
+ * steps after it were planned on its result.
+ */
+export function chainRunner(runner: SwarmRunner): SwarmRunner {
+	let previous: { title: string; report: string } | undefined;
+	let broken: string | undefined;
+	return async (task, assignment, signal, env, observer) => {
+		if (broken) throw new Error(`not started: the step before it ("${broken}") did not finish`);
+		const step = previous && task.brief ? { ...task, brief: { ...task.brief, previous } } : task;
+		try {
+			const report = await runner(step, assignment, signal, env, observer);
+			const said = report.trim() || "(it finished without a report)";
+			previous = {
+				title: task.title,
+				report: said.length > PREVIOUS_CHARS ? `${said.slice(0, PREVIOUS_CHARS)}\n… (cut)` : said,
+			};
+			return report;
+		} catch (error) {
+			broken = task.title;
+			throw error;
+		}
+	};
 }
 
 /** A sub-agent works in its parent's permission mode, as it is now, not as the parent started. */
@@ -392,7 +419,7 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 	pi.registerTool({
 		name: "delegate",
 		label: "Delegate",
-		description: `Run independent tasks in parallel, each in a fresh sub-agent with its own context window. Use it for work that splits into parts that do not depend on each other, and for side work whose details you do not need (broad code search, web research). Each sub-agent sees only its own instructions, so make them self-contained. Give each part what must be true when it is done (done) and, when it is for an item of your todo list, that item's id (serves): the sub-agent works to that list, and you get back which criteria it met with its evidence. A fitting role, model and thinking level are chosen per task; name a role only when you want a specific one (${agents()
+		description: `Run tasks in fresh sub-agents, each with its own context window: in parallel for parts that do not depend on each other and for side work whose details you do not need (broad code search, web research), or with chain: true one after another, each step handed what the step before reported (scout, then plan, then implement). Each sub-agent sees only its own instructions, so make them self-contained. Give each part what must be true when it is done (done) and, when it is for an item of your todo list, that item's id (serves): the sub-agent works to that list, and you get back which criteria it met with its evidence. A fitting role, model and thinking level are chosen per task; name a role only when you want a specific one (${agents()
 			.map((agent) => agent.name)
 			.join(
 				", ",
@@ -422,6 +449,12 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 					),
 				}),
 				{ minItems: 1 },
+			),
+			chain: Type.Optional(
+				Type.Boolean({
+					description:
+						"Run the tasks in order, one at a time; each gets the report of the one before. Stops at the first step that does not finish. Steps edit in place unless one asks for a worktree",
+				}),
 			),
 		}),
 		execute: async (_toolCallId, params, signal, onUpdate, ctx) => {
@@ -471,16 +504,18 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 			const runDir = join(tmpdir(), `kyrn-swarm-${randomUUID().slice(0, 8)}`);
 			const isolated = new Map<SwarmTask, number>();
 			tasks.forEach((task, index) => {
-				if (isolation.wanted(params.tasks[index].isolation, assignments[index].agent) === "worktree")
-					isolated.set(task, index);
+				// In a chain each step builds on the one before, so it has to see that step's edits: in place unless asked.
+				const asked = params.tasks[index].isolation ?? (params.chain ? "none" : undefined);
+				if (isolation.wanted(asked, assignments[index].agent) === "worktree") isolated.set(task, index);
 			});
 			const outcomesOfIsolation = new Map<SwarmTask, IsolationOutcome>();
-			let placedRunner = runner;
+			const stepped = params.chain ? chainRunner(runner) : runner;
+			let placedRunner = stepped;
 			if (isolated.size > 0) {
 				const { repo, problem } = await isolation.repo(ctx.cwd);
 				if (repo) {
 					placedRunner = isolation.wrap(
-						runner,
+						stepped,
 						{ repo, cwd: ctx.cwd, runDir, trusted: ctx.isProjectTrusted(), isolated },
 						outcomesOfIsolation,
 					);
@@ -496,9 +531,11 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 
 			const run = new SwarmRun<SwarmAssignment>({
 				kind: "delegate",
-				title: `${tasks.length} task${tasks.length === 1 ? "" : "s"}`,
+				title: params.chain
+					? `a chain of ${tasks.length} step${tasks.length === 1 ? "" : "s"}`
+					: `${tasks.length} task${tasks.length === 1 ? "" : "s"}`,
 				dir: runDir,
-				limits: limitsFrom(options),
+				limits: { ...limitsFrom(options), ...(params.chain ? { concurrency: 1 } : {}) },
 				bees: tasks.map((task, index) => ({
 					name: names[index],
 					task,
@@ -529,7 +566,7 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 					const { agent, model, thinking } = assignments[index];
 					const label = [agent?.name ?? "no role", model ?? "default model", `thinking ${thinking}`].join(", ");
 					const checklist = describeFrameOut(frames[index], task.brief?.serves);
-					return `## ${task.title} [${label}]\n${reports[index]}${checklist ? `\n\n${checklist}` : ""}${isolation.describe(outcomesOfIsolation.get(task))}`;
+					return `## ${params.chain ? `${index + 1}. ` : ""}${task.title} [${label}]\n${reports[index]}${checklist ? `\n\n${checklist}` : ""}${isolation.describe(outcomesOfIsolation.get(task))}`;
 				})
 				.join("\n\n");
 			return {

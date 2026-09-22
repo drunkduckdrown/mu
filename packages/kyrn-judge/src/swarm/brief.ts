@@ -27,7 +27,7 @@ export const FRAME_OUT_ENV = "KYRN_SWARM_FRAME_OUT";
 
 const GOAL_CHARS = 600;
 const ITEM_CHARS = 300;
-const PREVIOUS_CHARS = 6000;
+export const PREVIOUS_CHARS = 6000;
 export const MAX_DONE = 8;
 
 const text = (value: unknown, length: number): string | undefined =>

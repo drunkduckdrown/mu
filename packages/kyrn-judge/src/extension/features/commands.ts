@@ -39,14 +39,19 @@ Judgment layer
                            for one (or shows the running goal), /goal clear ends it
   /board on|off            the plain-language board for this project: progress, what is happening, what
                            waits on you, written for a person; /board shows it
+  /permissions [mode]      how much mu may do without asking: full (full access), jev (JeV approves for you,
+                           asks you only when it is not sure), ask (minimal: everything but reading asks)
   /capabilities            what is installed, and what the judge has opened for this task
   /ledger [n]              the last n verdicts with timing
   /remember <lesson>       keep a lesson for future sessions
 
 Tools the agent can use (and you can ask for)
   /browse <url> [goal]     drive the built-in browser yourself; the agent has it as "browse"
-  /agents                  sub-agent roles behind "delegate" (independent parts) and "hive" (one hard problem,
-                           several investigators, the judge passing findings between them)
+  /agents                  sub-agent roles behind "delegate" (independent parts, or a chain of steps) and "hive"
+                           (one hard problem, several investigators, the judge passing findings between them)
+  /implement <task>        scout, plan, implement: a chain of sub-agents, each working to its own checklist
+  /scout-and-plan <task>   scout, then plan; nothing is changed
+  /implement-and-review <task>   implement, review, fix
   /swarm                   what every running sub-agent is doing right now; /swarm stop [name] has it report
                            now and keeps what it found, /swarm kill [name] ends it at once
   /review [what]           hand a review to the reviewer role; the judge sorts its findings P0 to P3

@@ -1,11 +1,20 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { fauxAssistantMessage, fauxToolCall } from "@earendil-works/pi-ai";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { expandPromptTemplate, loadPromptTemplates } from "../../coding-agent/src/core/prompt-templates.ts";
 import { createHarness, type Harness } from "../../coding-agent/test/suite/harness.ts";
 import { parseConfig } from "../src/config.ts";
-import { childArgs, type SwarmAssignment, type SwarmTask } from "../src/extension/features/swarm.ts";
+import { loadAgents } from "../src/extension/agents.ts";
+import {
+	chainRunner,
+	childArgs,
+	type SwarmAssignment,
+	type SwarmRunner,
+	type SwarmTask,
+} from "../src/extension/features/swarm.ts";
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
 import { createFrame } from "../src/frame/frame.ts";
 import { MockJudgeProvider } from "../src/providers/mock.ts";
@@ -231,5 +240,111 @@ describe("delegate and the sub-agent's frame", () => {
 			acceptance: [{ id: "a1", text: "The query is named", done: true, evidence: "EXPLAIN shows the orders join" }],
 			openQuestions: [],
 		});
+	});
+});
+
+describe("a chain of sub-agents", () => {
+	const assignment = { thinking: "low", routedBy: "default" } as SwarmAssignment;
+	const step = (title: string): SwarmTask => ({
+		title,
+		instructions: `do ${title}`,
+		brief: briefFor({ title, instructions: `do ${title}` }, undefined),
+	});
+
+	it("hands each step what the step before reported, and starts nothing after a step that did not finish", async () => {
+		const seen: (string | undefined)[] = [];
+		const runner: SwarmRunner = async (task) => {
+			seen.push(task.brief?.previous?.report);
+			if (task.title === "plan") throw new Error("the model request was aborted");
+			return `${task.title} report`;
+		};
+		const chained = chainRunner(runner);
+		expect(await chained(step("scout"), assignment)).toBe("scout report");
+		await expect(chained(step("plan"), assignment)).rejects.toThrow("aborted");
+		await expect(chained(step("implement"), assignment)).rejects.toThrow(
+			'the step before it ("plan") did not finish',
+		);
+		expect(seen).toEqual([undefined, "scout report"]);
+		// The step itself is not changed: only what the child is handed.
+		expect(step("x").brief?.previous).toBeUndefined();
+	});
+
+	it("delegate with chain: true runs one step at a time, in order, each told what the one before found", async () => {
+		const events: string[] = [];
+		const handed: { title: string; previous?: string; message: string }[] = [];
+		const harness = await createHarness({
+			extensionFactories: [
+				createKyrnJudgeExtension({
+					provider: new MockJudgeProvider(() => ({})),
+					mode: "active",
+					config: parseConfig({ features: { memory: false, permissions: { mode: "full" } } }),
+					only: ["preflight", "frame", "swarm"],
+					swarmRunner: async (task, assignment) => {
+						events.push(`start ${task.title}`);
+						handed.push({
+							title: task.title,
+							previous: task.brief?.previous?.report,
+							message: childArgs(task, assignment).at(-1) ?? "",
+						});
+						await new Promise((resolve) => setTimeout(resolve, 20));
+						events.push(`end ${task.title}`);
+						return `${task.title}: found src/report.ts`;
+					},
+				}),
+			],
+		});
+		try {
+			harness.setResponses([
+				fauxAssistantMessage(
+					[
+						fauxToolCall("delegate", {
+							chain: true,
+							tasks: [
+								{ title: "scout", instructions: "Find the report code", agent: "scout" },
+								{ title: "plan", instructions: "Plan the change", agent: "planner" },
+							],
+						}),
+					],
+					{ stopReason: "toolUse" },
+				),
+				fauxAssistantMessage("Planned."),
+			]);
+			await harness.session.prompt("Plan a faster report page");
+
+			expect(events).toEqual(["start scout", "end scout", "start plan", "end plan"]);
+			expect(handed.map((each) => each.previous)).toEqual([undefined, "scout: found src/report.ts"]);
+			expect(handed[1].message).toContain('What the step before this one ("scout") reported');
+			const result = JSON.stringify(
+				harness.session.messages.filter((message) => message.role === "toolResult").at(-1),
+			);
+			expect(result).toContain("## 1. scout");
+			expect(result).toContain("## 2. plan");
+		} finally {
+			harness.cleanup();
+		}
+	});
+});
+
+describe("workflow commands", () => {
+	const prompts = join(dirname(fileURLToPath(import.meta.url)), "..", "prompts");
+	const roles = new Set(loadAgents(join(tmpdir(), "mu-no-user-agents")).map((agent) => agent.name));
+
+	it("/implement, /scout-and-plan and /implement-and-review load as pi prompt templates and name roles that exist", () => {
+		const templates = loadPromptTemplates({
+			cwd: tmpdir(),
+			agentDir: tmpdir(),
+			promptPaths: [prompts],
+			includeDefaults: false,
+		});
+		for (const name of ["implement", "scout-and-plan", "implement-and-review"]) {
+			const template = templates.find((each) => each.name === name);
+			expect(template?.description, name).toBeTruthy();
+			const expanded = expandPromptTemplate(`/${name} make the report page fast`, templates);
+			expect(expanded, name).toContain("make the report page fast");
+			expect(expanded, name).toContain("chain: true");
+			for (const role of expanded.matchAll(/\(agent `([a-z]+)`\)/g))
+				expect(roles, `${name}: ${role[1]}`).toContain(role[1]);
+		}
+		expect(expandPromptTemplate("/scout-and-plan x", templates)).toContain("Do not implement anything");
 	});
 });
