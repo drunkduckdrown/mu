@@ -3,7 +3,7 @@
 //
 // Reads configuration, never credentials: for the login it only checks that the
 // file exists, and for the Jev key only that the variable is set.
-import { existsSync, readFileSync, readlinkSync } from "node:fs";
+import { existsSync, readFileSync, readlinkSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -96,10 +96,15 @@ row("--", "home", tilde(agentDir));
 if (home === ".kyrn" && agentDir.startsWith(join(homedir(), ".kyrn"))) {
 	row("--", "", "this home is from before the rename: `mu migrate` moves it to ~/.mu (`--dry-run` to look first)");
 }
+// Only the size is looked at: pi writes an empty `{}` at its first start, and any stored login is far longer.
+let authBytes = 0;
+try {
+	authBytes = statSync(join(agentDir, "auth.json")).size;
+} catch {}
 row(
-	existsSync(join(agentDir, "auth.json")) ? "ok" : "fix",
+	authBytes > 8 ? "ok" : "fix",
 	"login",
-	existsSync(join(agentDir, "auth.json")) ? "credentials stored (not read here)" : "none yet: start mu and run /login",
+	authBytes > 8 ? "credentials stored (not read here)" : "none yet: start mu and run /login",
 );
 
 const settings = readJson(join(agentDir, "settings.json")) ?? {};

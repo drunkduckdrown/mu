@@ -15,8 +15,20 @@ const mu = process.argv[2] ?? "mu";
 const windows = process.platform === "win32";
 const home = mkdtempSync(join(tmpdir(), "mu-smoke-"));
 const env = { PATH: process.env.PATH ?? process.env.Path, HOME: home, USERPROFILE: home, TERM: "dumb", PI_OFFLINE: "1" };
-// What Windows itself needs to start programs.
-for (const name of ["SystemRoot", "SYSTEMROOT", "ComSpec", "PATHEXT", "TEMP", "TMP", "APPDATA", "LOCALAPPDATA"]) {
+// What Windows itself needs to start programs, and where `mu doctor` looks for a browser there.
+for (const name of [
+	"SystemRoot",
+	"SYSTEMROOT",
+	"ComSpec",
+	"PATHEXT",
+	"TEMP",
+	"TMP",
+	"APPDATA",
+	"LOCALAPPDATA",
+	"ProgramFiles",
+	"ProgramFiles(x86)",
+	"ProgramW6432",
+]) {
 	if (process.env[name]) env[name] = process.env[name];
 }
 // npm's `mu` is a .cmd shim on Windows, which only a shell can start; every argument here is fixed.
