@@ -359,6 +359,57 @@ describe("pack:debugger", () => {
 		for (let wait = 0; wait < 40 && alive(); wait++) await new Promise((resolve) => setTimeout(resolve, 50));
 		expect(alive()).toBe(false);
 	});
+
+	it.skipIf(process.platform === "win32")(
+		"ends the debugged program too when the adapter itself is already gone",
+		async () => {
+			const { root, dir } = tempArea("mu-dap-stray-");
+			cleanup.push(() => rmSync(root, { recursive: true, force: true }));
+			const strayFile = join(dir, "stray.pid");
+			const pidfile = join(dir, "adapter.pid");
+			const { harness } = await startPacks(harnesses, {
+				responder: disclosing("Debugger"),
+				packs: adapters({
+					fake: {
+						command: process.execPath,
+						args: [FAKE, "--pidfile", pidfile, "--stray", strayFile],
+						extensions: [".fake"],
+					},
+				}),
+			});
+			writeFileSync(join(harness.tempDir, "prog.fake"), `${PROGRAM.join("\n")}\n`);
+			harness.setResponses([
+				call("debug_start", { program: "prog.fake", breakpoints: [{ file: "prog.fake", line: 2 }] }),
+				fauxAssistantMessage("Stopped at line 2."),
+			]);
+			await harness.session.prompt("Debug prog.fake.");
+			const alive = (pid: number) => {
+				try {
+					process.kill(pid, 0);
+					return true;
+				} catch {
+					return false;
+				}
+			};
+			const adapter = Number(readFileSync(pidfile, "utf8"));
+			const stray = Number(readFileSync(strayFile, "utf8"));
+			try {
+				// The adapter dies on its own and leaves the program it started behind.
+				process.kill(adapter, "SIGKILL");
+				for (let wait = 0; wait < 40 && alive(adapter); wait++)
+					await new Promise((resolve) => setTimeout(resolve, 50));
+				await new Promise((resolve) => setTimeout(resolve, 100));
+				expect(alive(stray)).toBe(true);
+
+				await harness.session.extensionRunner.emit({ type: "session_shutdown", reason: "quit" });
+				for (let wait = 0; wait < 40 && alive(stray); wait++)
+					await new Promise((resolve) => setTimeout(resolve, 50));
+				expect(alive(stray)).toBe(false);
+			} finally {
+				if (alive(stray)) process.kill(stray, "SIGKILL");
+			}
+		},
+	);
 });
 
 /** A directory that surely holds no dlv. */

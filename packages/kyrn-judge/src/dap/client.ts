@@ -253,16 +253,22 @@ export class DapClient {
 	killNow(): void {
 		this.socket?.destroy();
 		const child = this.child;
-		if (child && child.exitCode === null && child.signalCode === null && child.pid !== undefined) {
+		if (child && child.pid !== undefined) {
+			const running = child.exitCode === null && child.signalCode === null;
 			const plan = stopPlan(this.options.platform ?? process.platform, child.pid, true);
 			try {
-				if (plan.kind === "command") spawnSync(plan.command, plan.args, { windowsHide: true });
-				else process.kill(-child.pid, plan.signal);
+				// taskkill walks the tree from a live process only. A POSIX group outlives its leader: an adapter that
+				// exited (or crashed) can leave the program it started running in it, and only the group reaches that.
+				if (plan.kind === "command") {
+					if (running) spawnSync(plan.command, plan.args, { windowsHide: true });
+				} else process.kill(-child.pid, plan.signal);
 			} catch {
-				try {
-					child.kill("SIGKILL");
-				} catch {
-					// Already gone.
+				if (running) {
+					try {
+						child.kill("SIGKILL");
+					} catch {
+						// Already gone.
+					}
 				}
 			}
 		}

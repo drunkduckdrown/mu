@@ -7,7 +7,9 @@
 // Flags: --port N (listen there, as delve does), --answer-launch-first (lldb-dap's order:
 // launch is answered before `initialized`; the default is debugpy's: after configurationDone),
 // --reverse (sends a runInTerminal request and prints what the client answered),
-// --pidfile P (writes its process id there).
+// --pidfile P (writes its process id there), --stray P (starts a "debuggee" that ignores the
+// disconnect and outlives the adapter, as a real one can, and writes its process id there).
+import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { basename } from "node:path";
@@ -17,6 +19,13 @@ const flag = (name) => argv.includes(name);
 const portAt = argv.indexOf("--port");
 const pidAt = argv.indexOf("--pidfile");
 if (pidAt >= 0) writeFileSync(argv[pidAt + 1], String(process.pid));
+const strayAt = argv.indexOf("--stray");
+if (strayAt >= 0) {
+	// Same process group as the adapter, no pipes of ours: only a signal to the group ends it.
+	const stray = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+	writeFileSync(argv[strayAt + 1], String(stray.pid));
+	stray.unref();
+}
 const THREAD = 7;
 
 let write = (data) => process.stdout.write(data);
