@@ -1,6 +1,6 @@
 import { defineDecision } from "../decision.ts";
-import type { NoteKind } from "../hive/board.ts";
-import { threeZone } from "../policy.ts";
+import type { NoteKind, Relation } from "../hive/board.ts";
+import { pickChoice, threeZone } from "../policy.ts";
 
 /**
  * H1/H2, the hive's two gates. Bees work in separate context windows, which
@@ -91,5 +91,63 @@ export const hiveDeliver = defineDecision({
 	},
 	fallback(): DeliverOutcome {
 		return { deliver: false, score: 0 };
+	},
+});
+
+export interface RelateInput {
+	readonly goal: string;
+	readonly earlier: { readonly bee: string; readonly kind: NoteKind; readonly text: string };
+	readonly later: { readonly bee: string; readonly kind: NoteKind; readonly text: string };
+}
+
+export type RelateOutcome = { readonly relation: Relation | null; readonly score: number };
+
+/**
+ * H3, the board's memory. A board that only grows keeps a conclusion after
+ * it stopped being true: "the tests cannot run" stays up next to "they run
+ * once the inherited env is cleared", and whoever heard the first keeps
+ * acting on it. So every note that passes H1 is held against the earlier
+ * notes it shares words with, and the judge says what it does to each of
+ * them. It never says who is right: a note that contradicts another without
+ * explaining it away leaves both standing, for a worker to settle.
+ */
+export const hiveRelate = defineDecision({
+	id: "hive.relate",
+	version: 1,
+	cacheImpact: "none",
+	latency: "background",
+	capabilities: "classify",
+	questions: {
+		relation: {
+			type: "choice",
+			instructions: "`earlier` was posted first, `later` after it. What does `later` say about `earlier`?",
+			criteria: {
+				supersedes:
+					"`later` corrects or replaces `earlier`: the situation `earlier` describes has changed or was mistaken, and `later` says why (an environment that was fixed, a cause that was ruled out, a newer measurement)",
+				contradicts:
+					"`later` states the opposite of `earlier` and does not explain `earlier` away: both stand as reported and cannot both be true",
+				supports: "`later` confirms `earlier` or adds evidence for it",
+				none: "`later` is about something else, or neither adds to nor takes from `earlier`",
+			},
+		},
+	},
+	buildState(input: RelateInput) {
+		return {
+			goal: input.goal,
+			earlier: `${input.earlier.bee} (${input.earlier.kind}): ${input.earlier.text}`,
+			later: `${input.later.bee} (${input.later.kind}): ${input.later.text}`,
+		};
+	},
+	policy(answers, input): RelateOutcome {
+		const choice = pickChoice(answers.relation);
+		const score = answers.relation.probabilities?.[answers.relation.choice] ?? 1;
+		if (!choice) return { relation: null, score };
+		// A worker that now says the opposite of what it said before has changed its mind: its later word
+		// replaces its earlier one. Nobody votes on which of its own words to keep.
+		if (choice === "contradicts" && input.earlier.bee === input.later.bee) return { relation: "supersedes", score };
+		return { relation: choice, score };
+	},
+	fallback(): RelateOutcome {
+		return { relation: null, score: 0 };
 	},
 });

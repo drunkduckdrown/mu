@@ -79,6 +79,8 @@ export interface BoardLine {
 	score: number;
 	to: string[];
 	text: string;
+	/** When the board no longer stands by it: replaced by a later note, or in an unsettled dispute. */
+	state?: "superseded" | "contested";
 }
 
 export interface BoardSummary {
@@ -86,6 +88,9 @@ export interface BoardSummary {
 	deliveries: number;
 	/** Candidates and note-to-bee pairs the judge has ruled on. */
 	judged: number;
+	/** Notes replaced by a later one, and disputes nobody has settled. */
+	corrections?: number;
+	conflicts?: number;
 	latest: BoardLine[];
 	/** Per bee name. */
 	published: Readonly<Record<string, number>>;
@@ -183,6 +188,12 @@ export class SwarmRun<Assignment> {
 	private readonly limits: SwarmLimits;
 	private readonly controllers: (AbortController | undefined)[];
 	private readonly now: () => number;
+	private runner?: BeeRunner<Assignment>;
+	private outcomes: BeeOutcome[] = [];
+	/** Slots at work; each one takes the next bee that has not been started until there is none. */
+	private workers: Promise<void>[] = [];
+	private next = 0;
+	private busy = 0;
 
 	constructor(options: {
 		kind: "hive" | "delegate";
@@ -204,14 +215,31 @@ export class SwarmRun<Assignment> {
 		this.controllers = options.bees.map(() => undefined);
 		mkdirSync(join(this.dir, "control"), { recursive: true });
 		mkdirSync(join(this.dir, "transcripts"), { recursive: true });
-		this.bees = options.bees.map((bee, index) =>
-			newBee(bee.name, this.startedAt, {
-				role: bee.role,
-				model: bee.model,
-				thinking: bee.thinking,
-				transcript: join(this.dir, "transcripts", `${index}-${bee.name.replace(/[^\w.-]+/g, "_")}.jsonl`),
-			}),
-		);
+		this.bees = options.bees.map((bee, index) => this.stateFor(bee, index, this.startedAt));
+	}
+
+	private stateFor(bee: BeeSpec<Assignment>, index: number, now: number): BeeState {
+		return newBee(bee.name, now, {
+			role: bee.role,
+			model: bee.model,
+			thinking: bee.thinking,
+			transcript: join(this.dir, "transcripts", `${index}-${bee.name.replace(/[^\w.-]+/g, "_")}.jsonl`),
+		});
+	}
+
+	/**
+	 * Adds a bee to a run in progress: it starts as soon as a slot is free, and the run waits for it like for
+	 * the others. Returns its index, or -1 once the run is over.
+	 */
+	add(spec: BeeSpec<Assignment>): number {
+		if (this.endedAt !== undefined || !this.runner) return -1;
+		const index = this.specs.length;
+		this.specs.push(spec);
+		this.controllers.push(undefined);
+		this.bees.push(this.stateFor(spec, index, this.now()));
+		if (this.busy < this.limits.concurrency) this.workers.push(this.work(this.runner));
+		this.onChange?.();
+		return index;
 	}
 
 	snapshot(): SwarmSnapshot {
@@ -363,10 +391,60 @@ export class SwarmRun<Assignment> {
 		return { state: bee, report: lines.join("\n") };
 	}
 
-	/** Runs every bee to an end. Never rejects. */
+	private async work(runner: BeeRunner<Assignment>): Promise<void> {
+		while (this.next < this.specs.length) {
+			const index = this.next++;
+			const bee = this.bees[index];
+			const spec = this.specs[index];
+			if (isOver(bee.status)) {
+				this.outcomes[index] = this.outcome(index, undefined, undefined);
+				continue;
+			}
+			this.busy++;
+			const controller = new AbortController();
+			this.controllers[index] = controller;
+			bee.status = "starting";
+			bee.startedAt = this.now();
+			bee.lastEventAt = bee.startedAt;
+			this.onChange?.();
+			const observer: BeeObserver = {
+				event: (event) => {
+					if (isOver(bee.status)) return;
+					applyEvent(bee, event, this.now());
+					if (event.type !== "message_update" && event.type !== "tool_execution_update" && bee.transcript) {
+						try {
+							appendFileSync(bee.transcript, `${JSON.stringify({ at: this.now(), ...event })}\n`);
+						} catch {
+							// The transcript is for people; losing a line of it changes nothing.
+						}
+					}
+					this.onChange?.();
+				},
+			};
+			let returned: string | undefined;
+			let failure: unknown;
+			try {
+				returned = await runner(
+					spec.task,
+					spec.assignment,
+					controller.signal,
+					{ ...spec.env, KYRN_SWARM_CONTROL: controlPath(this.dir, index) },
+					observer,
+				);
+			} catch (error) {
+				failure = error;
+			}
+			this.outcomes[index] = this.outcome(index, returned, failure);
+			this.busy--;
+			this.onChange?.();
+		}
+	}
+
+	/** Runs every bee to an end, including the ones added on the way. Never rejects. */
 	async run(runner: BeeRunner<Assignment>, signal?: AbortSignal): Promise<BeeOutcome[]> {
 		active.add(this as SwarmRun<unknown>);
-		const outcomes: BeeOutcome[] = new Array(this.specs.length);
+		this.runner = runner;
+		this.outcomes = new Array(this.specs.length);
 		const abortAll = () => this.kill(undefined, "the run was cancelled", "stopped", { code: "cancelled" });
 		if (signal?.aborted) abortAll();
 		else signal?.addEventListener("abort", abortAll, { once: true });
@@ -376,64 +454,20 @@ export class SwarmRun<Assignment> {
 		}, 1000);
 		ticker.unref?.();
 
-		let next = 0;
-		const worker = async () => {
-			while (next < this.specs.length) {
-				const index = next++;
-				const bee = this.bees[index];
-				const spec = this.specs[index];
-				if (isOver(bee.status)) {
-					outcomes[index] = this.outcome(index, undefined, undefined);
-					continue;
-				}
-				const controller = new AbortController();
-				this.controllers[index] = controller;
-				bee.status = "starting";
-				bee.startedAt = this.now();
-				bee.lastEventAt = bee.startedAt;
-				this.onChange?.();
-				const observer: BeeObserver = {
-					event: (event) => {
-						if (isOver(bee.status)) return;
-						applyEvent(bee, event, this.now());
-						if (event.type !== "message_update" && event.type !== "tool_execution_update" && bee.transcript) {
-							try {
-								appendFileSync(bee.transcript, `${JSON.stringify({ at: this.now(), ...event })}\n`);
-							} catch {
-								// The transcript is for people; losing a line of it changes nothing.
-							}
-						}
-						this.onChange?.();
-					},
-				};
-				let returned: string | undefined;
-				let failure: unknown;
-				try {
-					returned = await runner(
-						spec.task,
-						spec.assignment,
-						controller.signal,
-						{ ...spec.env, KYRN_SWARM_CONTROL: controlPath(this.dir, index) },
-						observer,
-					);
-				} catch (error) {
-					failure = error;
-				}
-				outcomes[index] = this.outcome(index, returned, failure);
-				this.onChange?.();
-			}
-		};
+		this.workers = Array.from({ length: Math.max(1, Math.min(this.limits.concurrency, this.specs.length)) }, () =>
+			this.work(runner),
+		);
 		try {
-			await Promise.all(
-				Array.from({ length: Math.max(1, Math.min(this.limits.concurrency, this.specs.length)) }, worker),
-			);
+			// A bee added while the run is live may bring a slot of its own (see `add`): wait for those too.
+			while (this.workers.length > 0) await Promise.all(this.workers.splice(0));
 		} finally {
 			clearInterval(ticker);
 			signal?.removeEventListener("abort", abortAll);
 			this.endedAt = this.now();
+			this.runner = undefined;
 			active.delete(this as SwarmRun<unknown>);
 			this.onChange?.();
 		}
-		return outcomes;
+		return this.outcomes;
 	}
 }

@@ -210,6 +210,44 @@ describe("swarm run", () => {
 		expect(activeRuns()).not.toContain(run);
 	});
 
+	it("takes a bee added while it runs, and none once it is over", async () => {
+		const gates: Record<string, () => void> = {};
+		const script =
+			(name: string): Script =>
+			(observer) =>
+				new Promise((resolve) => {
+					observer?.event({ type: "agent_start" });
+					gates[name] = () => {
+						observer?.event(assistant(`report of ${name}`));
+						resolve(`report of ${name}`);
+					};
+				});
+		const run = new SwarmRun<string>({
+			kind: "hive",
+			title: "one angle",
+			dir: tempDir(),
+			bees: [spec("a")],
+			limits: { concurrency: 2 },
+		});
+		const finished = run.run(scripted({ a: script("a"), verify: script("verify") }));
+		await vi.waitFor(() => expect(gates.a).toBeDefined());
+
+		// A free slot: the new bee starts at once, beside the running one.
+		expect(run.add(spec("verify"))).toBe(1);
+		await vi.waitFor(() => expect(gates.verify).toBeDefined());
+		expect(run.bees.map((bee) => [bee.name, bee.status])).toEqual([
+			["a", "thinking"],
+			["verify", "thinking"],
+		]);
+
+		gates.a();
+		gates.verify();
+		const outcomes = await finished;
+		expect(outcomes.map((outcome) => outcome.report)).toEqual(["report of a", "report of verify"]);
+		expect(run.add(spec("late"))).toBe(-1);
+		expect(run.bees).toHaveLength(2);
+	});
+
 	it("stops a bee that shows no sign of life instead of waiting for it forever", async () => {
 		vi.useFakeTimers();
 		const run = new SwarmRun<string>({

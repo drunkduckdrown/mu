@@ -116,8 +116,10 @@ export function renderSwarm(snapshot: SwarmSnapshot, options: SwarmViewOptions, 
 	if (snapshot.board) {
 		head.push(
 			`board ${snapshot.board.notes} note${snapshot.board.notes === 1 ? "" : "s"}, ${snapshot.board.deliveries} passed on`,
-			paint.fg("dim", `${snapshot.board.judged} judged`),
 		);
+		if (snapshot.board.corrections) head.push(`${snapshot.board.corrections} corrected`);
+		if (snapshot.board.conflicts) head.push(`${snapshot.board.conflicts} in dispute`);
+		head.push(paint.fg("dim", `${snapshot.board.judged} judged`));
 	}
 	const cost = snapshot.bees.reduce((sum, bee) => sum + bee.usage.cost, 0);
 	if (cost > 0) head.push(paint.fg("dim", `$${cost.toFixed(2)}`));
@@ -156,8 +158,11 @@ export function renderSwarm(snapshot: SwarmSnapshot, options: SwarmViewOptions, 
 		lines.push(paint.fg("muted", "board"));
 		for (const note of snapshot.board.latest.slice(expanded ? -8 : -3)) {
 			const to = note.to.length > 0 ? ` → ${note.to.join(", ")}` : "";
+			const state = note.state
+				? ` ${paint.fg("dim", note.state === "superseded" ? "(no longer stands)" : "(in dispute)")}`
+				: "";
 			lines.push(
-				`  ${paint.fg("accent", note.bee)}${paint.fg("dim", to)} ${paint.fg("muted", `${note.kind.replace("_", " ")} ${note.score.toFixed(2)}`)}  ${paint.fg("dim", flat(note.text))}`,
+				`  ${paint.fg("accent", note.bee)}${paint.fg("dim", to)} ${paint.fg("muted", `${note.kind.replace("_", " ")} ${note.score.toFixed(2)}`)}${state}  ${paint.fg("dim", flat(note.text))}`,
 			);
 		}
 	}

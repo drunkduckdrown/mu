@@ -410,6 +410,16 @@ export const MANIFEST: HarnessManifest = {
 				en: "Whether a finding on the board matters to a bee's current work; only then is it delivered.",
 			},
 		},
+		{
+			id: "hive.relate",
+			group: "team",
+			feature: "hive",
+			title: { zh: "蜂群：纠正", en: "Hive: corrections" },
+			summary: {
+				zh: "一条新发现对公告板上的旧发现意味着什么：更新了它、和它冲突、佐证它，还是无关。被更新的下线，听过它的蜂收到纠正；冲突两边都留着，交给蜂去核实。",
+				en: "What a new finding does to an earlier one on the board: replaces it, contradicts it, supports it, or nothing. A replaced finding goes down and whoever heard it is told; a contradiction keeps both sides for a bee to settle.",
+			},
+		},
 	],
 	features: [
 		{
@@ -1449,6 +1459,38 @@ export const MANIFEST: HarnessManifest = {
 					kind: "boolean",
 					default: true,
 					label: { zh: "写报告时再听一次新消息", en: "One last hearing while writing the report" },
+				},
+				{
+					key: "maxRelatedPerNote",
+					kind: "number",
+					default: 6,
+					min: 0,
+					max: 30,
+					label: { zh: "一条新发现最多对照几条旧发现", en: "Earlier findings a new one is held against, at most" },
+					help: {
+						zh: "只对照有共同词的旧发现。0 表示不做纠正。",
+						en: "Only those sharing words with it. 0 turns corrections off.",
+					},
+				},
+				{
+					key: "verifyConflicts",
+					kind: "number",
+					default: 1,
+					min: 0,
+					max: 3,
+					label: { zh: "为没解决的冲突最多加派几只验证蜂", en: "Verifier bees for unsettled disputes, at most" },
+					help: { zh: "0 表示不加派，冲突两边都留在报告里。", en: "0 adds none; both sides stay in the report." },
+				},
+				{
+					key: "verifyAfterSeconds",
+					kind: "number",
+					default: 60,
+					min: 0,
+					max: 600,
+					label: {
+						zh: "冲突挂多少秒没人解决才加派",
+						en: "Seconds a dispute may stand before a verifier is added",
+					},
 				},
 			],
 		},
