@@ -1,5 +1,6 @@
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import type { SwarmBrief } from "./brief.ts";
 import { applyEvent, type BeeEvent, type BeeState, isOver, isRunning, newBee, reportOf } from "./state.ts";
 
 /** What a sub-agent is asked to do. */
@@ -8,6 +9,8 @@ export interface BeeTask {
 	instructions: string;
 	/** A role the caller asked for by name. */
 	agent?: string;
+	/** Its part of the task frame: why it is done, and what finished means. */
+	brief?: SwarmBrief;
 }
 
 /** What the runner is told about a bee while it runs. */

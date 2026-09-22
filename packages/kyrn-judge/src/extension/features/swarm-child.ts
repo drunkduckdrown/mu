@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, renameSync, writeFileSync } from "node:fs";
+import { frameOut } from "../../swarm/brief.ts";
 import { SWARM_MESSAGE, toolsClosed, wrapUp } from "../../swarm/markers.ts";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
 
@@ -20,8 +21,12 @@ export function isWrappingUp(runtime: KyrnRuntime): boolean {
  * it leaves a request in a file the child looks at between steps. A wrap-up
  * request turns into one message ("report now") and closes the tools, so the
  * child ends with a report instead of being cut off without one.
+ *
+ * The other way round, the child keeps its acceptance list in `frameOutPath`
+ * after every step, so the parent learns which criteria were met and on what
+ * evidence even when the child was stopped before it could say so.
  */
-export function registerSwarmChild(runtime: KyrnRuntime, path: string): void {
+export function registerSwarmChild(runtime: KyrnRuntime, path: string, frameOutPath?: string): void {
 	const state: ChildState = { wrapping: false, reason: "" };
 	states.set(runtime, state);
 
@@ -43,6 +48,26 @@ export function registerSwarmChild(runtime: KyrnRuntime, path: string): void {
 			return undefined;
 		}
 	};
+
+	let saved = "";
+	const saveFrame = () => {
+		const frame = runtime.frame;
+		if (!frameOutPath || !frame) return undefined;
+		const text = JSON.stringify(frameOut(frame));
+		if (text === saved) return undefined;
+		try {
+			// Whole or not at all: the parent may read it the moment this process is stopped.
+			writeFileSync(`${frameOutPath}.tmp`, text);
+			renameSync(`${frameOutPath}.tmp`, frameOutPath);
+			saved = text;
+		} catch {
+			// The parent then reports the sub-agent without its list, as before there were lists.
+		}
+		return undefined;
+	};
+	runtime.pi.on("tool_execution_end", failOpen(saveFrame));
+	// Extensions hear "settled" before the parent does, so the list is there when the parent looks.
+	runtime.pi.on("agent_settled", failOpen(saveFrame));
 
 	runtime.pi.on(
 		"turn_end",

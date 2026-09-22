@@ -20,6 +20,7 @@ import type { Capability } from "../catalog/catalog.ts";
 import { DEFAULT_CONFIG, type KyrnConfig, loadConfig } from "../config.ts";
 import type { DecisionMode } from "../decision.ts";
 import { Judge } from "../judge.ts";
+import { FRAME_OUT_ENV } from "../swarm/brief.ts";
 import type { JudgeProvider } from "../types.ts";
 import { registerAdmission } from "./features/admission.ts";
 import { registerBackground } from "./features/background.ts";
@@ -154,7 +155,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 	}
 
 	// A sub-agent first of all listens to its parent: a wrap-up request has to be known before anything else reacts to a step.
-	if (process.env.KYRN_SWARM_CONTROL) registerSwarmChild(runtime, process.env.KYRN_SWARM_CONTROL);
+	if (process.env.KYRN_SWARM_CONTROL)
+		registerSwarmChild(runtime, process.env.KYRN_SWARM_CONTROL, process.env[FRAME_OUT_ENV]);
 
 	// Whoever injected a provider or a config owns the setup, and that includes not reading the user's home folder.
 	const roots: HarnessRoots | undefined =

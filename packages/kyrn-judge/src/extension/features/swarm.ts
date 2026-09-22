@@ -1,13 +1,24 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { getAgentDir, type Theme } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { swarmRouting } from "../../decisions/swarm-routing.ts";
 import { stopPlan } from "../../platform.ts";
+import {
+	BRIEF_ENV,
+	briefEnv,
+	briefFor,
+	briefMessage,
+	describeFrameOut,
+	FRAME_OUT_ENV,
+	type FrameOut,
+	MAX_DONE,
+	parseFrameOut,
+} from "../../swarm/brief.ts";
 import { describeRecord } from "../../swarm/patches.ts";
 import {
 	activeRuns,
@@ -75,8 +86,22 @@ export function childArgs(task: SwarmTask, assignment: SwarmAssignment, promptPa
 	if (promptPath) args.push("--append-system-prompt", promptPath);
 	// A temp checkout is a path nobody ever trusted; it is the parent's project, so the parent's answer holds.
 	if (assignment.trusted !== undefined) args.push(assignment.trusted ? "--approve" : "--no-approve");
-	args.push(...forwardedExtensionArgs(), `Task: ${task.instructions}`);
+	args.push(...forwardedExtensionArgs(), briefMessage(task.instructions, task.brief));
 	return args;
+}
+
+/** Where a sub-agent leaves its acceptance list for the parent. */
+export function frameOutPath(dir: string, index: number): string {
+	return join(dir, "control", `frame-${index}.json`);
+}
+
+async function readFrameOut(path: string): Promise<FrameOut | undefined> {
+	try {
+		return parseFrameOut(await readFile(path, "utf8"));
+	} catch {
+		// It never ticked, or never got that far: there is no list to report.
+		return undefined;
+	}
 }
 
 /** How long a child that has finished may take to exit by itself before it is told to. Idle keep-alive sockets hold it for seconds. */
@@ -361,7 +386,7 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 	pi.registerTool({
 		name: "delegate",
 		label: "Delegate",
-		description: `Run independent tasks in parallel, each in a fresh sub-agent with its own context window. Use it for work that splits into parts that do not depend on each other, and for side work whose details you do not need (broad code search, web research). Each sub-agent sees only its own instructions, so make them self-contained. A fitting role, model and thinking level are chosen per task; name a role only when you want a specific one (${agents()
+		description: `Run independent tasks in parallel, each in a fresh sub-agent with its own context window. Use it for work that splits into parts that do not depend on each other, and for side work whose details you do not need (broad code search, web research). Each sub-agent sees only its own instructions, so make them self-contained. Give each part what must be true when it is done (done) and, when it is for an item of your todo list, that item's id (serves): the sub-agent works to that list, and you get back which criteria it met with its evidence. A fitting role, model and thinking level are chosen per task; name a role only when you want a specific one (${agents()
 			.map((agent) => agent.name)
 			.join(
 				", ",
@@ -374,6 +399,15 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 						description: "Complete, self-contained instructions, including what to report back",
 					}),
 					agent: Type.Optional(Type.String({ description: "Role name. Leave out to have one chosen." })),
+					done: Type.Optional(
+						Type.Array(Type.String(), {
+							maxItems: MAX_DONE,
+							description: "What must be true when this part is done, one checkable statement each",
+						}),
+					),
+					serves: Type.Optional(
+						Type.String({ description: "Id of the item of your todo list this part is for, such as a2" }),
+					),
 					isolation: Type.Optional(
 						Type.Union([Type.Literal("worktree"), Type.Literal("none")], {
 							description:
@@ -386,8 +420,15 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 		}),
 		execute: async (_toolCallId, params, signal, onUpdate, ctx) => {
 			runtime.touch(ctx);
-			const tasks: SwarmTask[] = params.tasks.slice(0, options.maxTasks);
-			const constraints = (runtime.frame?.constraints ?? []).map((constraint) => constraint.text);
+			const parent = runtime.frame;
+			// Each part gets a frame of its own: the part as its goal, the caller's criteria as its checklist.
+			const tasks: SwarmTask[] = params.tasks.slice(0, options.maxTasks).map((task) => ({
+				title: task.title,
+				instructions: task.instructions,
+				agent: task.agent,
+				brief: briefFor(task, parent),
+			}));
+			const constraints = (parent?.constraints ?? []).map((constraint) => constraint.text);
 			const inheritedConstraints =
 				constraints.length > 0 ? { KYRN_SWARM_CONSTRAINTS: JSON.stringify(constraints.slice(-12)) } : undefined;
 			const names = uniqueNames(tasks.map((task) => task.title));
@@ -459,13 +500,19 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 					role: assignments[index].agent?.name,
 					model: assignments[index].model,
 					thinking: assignments[index].thinking,
-					// What the user ruled out for the task holds for whoever works on a part of it.
-					env: inheritedConstraints,
+					env: {
+						// What the user ruled out for the task holds for whoever works on a part of it.
+						...inheritedConstraints,
+						...(task.brief
+							? { [BRIEF_ENV]: briefEnv(task.brief), [FRAME_OUT_ENV]: frameOutPath(runDir, index) }
+							: {}),
+					},
 				})),
 			});
 			streamUpdates(run, onUpdate);
 			const outcomes = await run.run(placedRunner, signal);
 			const reports = outcomes.map((outcome) => outcome.report);
+			const frames = await Promise.all(tasks.map((_task, index) => readFrameOut(frameOutPath(runDir, index))));
 			// The judge's view of what wants to come back. It is a line of text, never a gate.
 			await isolation.review(outcomesOfIsolation, signal).catch(() => undefined);
 
@@ -473,7 +520,8 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 				.map((task, index) => {
 					const { agent, model, thinking } = assignments[index];
 					const label = [agent?.name ?? "no role", model ?? "default model", `thinking ${thinking}`].join(", ");
-					return `## ${task.title} [${label}]\n${reports[index]}${isolation.describe(outcomesOfIsolation.get(task))}`;
+					const checklist = describeFrameOut(frames[index], task.brief?.serves);
+					return `## ${task.title} [${label}]\n${reports[index]}${checklist ? `\n\n${checklist}` : ""}${isolation.describe(outcomesOfIsolation.get(task))}`;
 				})
 				.join("\n\n");
 			return {
@@ -481,6 +529,7 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 				details: {
 					snapshot: compactSnapshot(run.snapshot()),
 					reports,
+					frames: frames.map((frame) => frame ?? null),
 					patches: tasks.map((task) => outcomesOfIsolation.get(task)?.patch?.id ?? null),
 					assignments: assignments.map(({ agent, model, thinking, routedBy }) => ({
 						agent: agent?.name,

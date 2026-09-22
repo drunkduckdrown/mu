@@ -23,6 +23,7 @@ import {
 	withEntryId,
 } from "../../frame/frame.ts";
 import { mergeWriterFrame, parseWriterReply, writerRequest } from "../../frame/writer.ts";
+import { BRIEF_ENV, briefFrame, parseBrief } from "../../swarm/brief.ts";
 import { clip, failOpen, type KyrnRuntime, recentTurnDigests, textOf } from "../runtime.ts";
 import { judgedText } from "./preflight.ts";
 
@@ -233,7 +234,10 @@ export function registerFrame(runtime: KyrnRuntime): void {
 	const create = (ask: Ask) => {
 		// A sub-agent starts under what the user told its parent: the constraint gate holds there too.
 		const inherited = parseInheritedConstraints(process.env.KYRN_SWARM_CONSTRAINTS);
-		commit({ frame: inheritConstraints(createFrame(asText(ask)), inherited), unmerged: [] }, "created", ask);
+		// Its goal is its part, not the whole message it was handed, and "done" is what the parent asked of the part.
+		const brief = parseBrief(process.env[BRIEF_ENV]);
+		const first = brief ? briefFrame(brief, ask.turn) : createFrame(asText(ask));
+		commit({ frame: inheritConstraints(first, inherited), unmerged: [] }, "created", ask);
 		// The note would only repeat the prompt it rides along with.
 		notedVersion = 1;
 	};
