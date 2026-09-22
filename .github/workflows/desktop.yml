@@ -46,8 +46,6 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=8192
       npm_config_arch: ${{ matrix.arch }}
       npm_config_target_arch: ${{ matrix.arch }}
-      npm_config_runtime: electron
-      npm_config_disturl: https://electronjs.org/headers
       npm_config_cache: ${{ github.workspace }}/.cache/npm
       ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
       ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
@@ -123,10 +121,18 @@ jobs:
         with:
           vs-version: '17.0'
 
+      # The Electron header settings belong to these rebuilds only: during `bun install` they would send
+      # node-gyp to Electron's server for Node's own headers, which it does not have.
       - name: Rebuild native modules for Electron
         if: "!startsWith(matrix.platform, 'windows')"
+        env:
+          npm_config_runtime: electron
+          npm_config_disturl: https://electronjs.org/headers
         run: bunx electron-builder install-app-deps
 
+      # A prebuilt better-sqlite3 first; where none exists (Windows on arm64), compile it with
+      # @electron/rebuild, which fetches Electron's headers itself. The flags carry the target, not
+      # npm_config_* variables, which would also reach the tools' own installs.
       - name: Rebuild native modules for Electron (Windows)
         if: startsWith(matrix.platform, 'windows')
         shell: pwsh
@@ -135,9 +141,13 @@ jobs:
           GYP_MSVS_VERSION: 2022
         run: |
           $electron = (node -p "require('./package.json').devDependencies.electron.replace(/[\^~]/g, '')").Trim()
-          bun x --yes prebuild-install --runtime=electron --target=$electron --platform=win32 --arch=${{ matrix.arch }} --force
           $sqlite = "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
-          if (-not (Test-Path $sqlite)) { bunx electron-rebuild -f -w better-sqlite3 }
+          # bun install built it for Node; only a binary for Electron counts.
+          if (Test-Path $sqlite) { Remove-Item $sqlite }
+          Push-Location node_modules/better-sqlite3
+          bun x --yes prebuild-install --runtime=electron --target=$electron --platform=win32 --arch=${{ matrix.arch }}
+          Pop-Location
+          if (-not (Test-Path $sqlite)) { bunx --yes @electron/rebuild --force --only better-sqlite3 --version $electron --arch ${{ matrix.arch }} }
           if (-not (Test-Path $sqlite)) { Write-Error "better-sqlite3 was not built for Electron ($electron, ${{ matrix.arch }})"; exit 1 }
 
       - name: Setup macOS code signing
@@ -168,9 +178,17 @@ jobs:
         run: |
           hdiutil info 2>/dev/null | grep '/dev/disk' | awk '{print $1}' | while read -r disk; do hdiutil detach "$disk" -force 2>/dev/null || true; done
 
+      # electron-builder reads the homepage from the app's git remote, and desktop/ has no .git of its own
+      # here; the Linux package refuses to build without one.
+      - name: Set the project homepage
+        shell: bash
+        run: npm pkg set homepage="${{ github.server_url }}/${{ github.repository }}"
+
       - name: Build installers
         shell: bash
         env:
+          npm_config_runtime: electron
+          npm_config_disturl: https://electronjs.org/headers
           # Signing identity and notarization: used only when the secrets are set.
           CSC_IDENTITY_AUTO_DISCOVERY: false
           CSC_NAME: ${{ secrets.IDENTITY }}

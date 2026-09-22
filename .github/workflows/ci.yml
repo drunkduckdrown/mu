@@ -62,10 +62,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Node 24, as on the developers' machines: the duration and list formats in the tests follow its ICU.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
