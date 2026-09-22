@@ -10,9 +10,12 @@ The language the person reads mu in is `MU_LANG` (see `src/language.ts`). With i
 
 ### state: failed
 
-The browser could not be started or reached. Before this batch, nothing was sent at all.
+The run never started. Before this batch, nothing was sent at all.
 
-`{ state: "failed", url, code: "launch_failed", launchCode?, params?, reason, embedded: false }`
+- `code: "launch_failed"`: the browser could not be started or reached. `{ state: "failed", url, code, launchCode?, params?, reason, embedded: false }`
+- `code: "open_failed"`: the browser is there, but the page would not open in it (an address it refuses, the app's panel busy with another run). `{ state: "failed", url, code, reason, embedded }`, where `embedded` says whether it was the app's panel. Its half-opened tab is closed again.
+
+The launch codes:
 
 | launchCode | params | English |
 | --- | --- | --- |
@@ -27,7 +30,7 @@ The browser could not be started or reached. Before this batch, nothing was sent
 
 ### state: finished
 
-`{ state: "finished", status, code, params?, errorCode?, errorParams?, reason?, embedded }`. The embedded browser's `Mu.run` report carries the same `code`, `params` and `errorCode`.
+`{ state: "finished", status, code, params?, errorCode?, errorParams?, reason?, embedded }`. The embedded browser's `Mu.run` report carries the same `code`, `params`, `errorCode` and `errorParams`.
 
 | code | params | English |
 | --- | --- | --- |
@@ -41,7 +44,7 @@ The browser could not be started or reached. Before this batch, nothing was sent
 | `not_confirmed` | `label` | "…" looks irreversible and was not confirmed |
 | `no_value` | `label` | no value could be produced for "…" |
 | `stuck` | `actions` | three actions in a row changed nothing |
-| `error` | | the run threw; `reason` is the error message, and `errorCode` says what it was when known (the launch codes above) |
+| `error` | | the run threw; `reason` is the error message, and `errorCode` / `errorParams` say what it was when the error carries a code. None does today: a browser that will not start never gets this far (it is `state: "failed"` above) |
 
 ## progress
 
@@ -116,12 +119,11 @@ Next to `error`, the bee carries `errorCode` and `errorParams`. The same codes a
 | `no_report_in_time` | `seconds`, `after?` (the wrap-up's code) | …; no report within Ns of being asked |
 | `model_error` | `message` (data), `stopReason` | the model request failed |
 | `retries_exhausted` | `message` (data) | the model request kept failing |
-| `exited_early` | `exitCode` | sub-agent exited with code N before it finished |
+| `exited_early` | `exitCode`, or `signal` when it was killed | sub-agent exited with code N (or was ended by SIGTERM) before it finished |
 | `chain_broken` | `step` | not started: the step before it (…) did not finish |
 | `error` | `message` (data) | any other failure |
-| `no_report` | | it ended without a report |
 
-The run's own title (`details.snapshot.title`) has `titleCode`: `delegate_tasks` or `delegate_chain`, with `{ count }`. A hive's title is its goal, which is text to show as it is.
+The run's own title (`details.snapshot.title`) has `titleCode`, an object unlike the other `*Code` fields: `{ code: "delegate_tasks" | "delegate_chain", params: { count } }`. A hive's title is its goal, which is text to show as it is, and has no `titleCode`.
 
 Before the first snapshot, the delegate tool's partial update carries `details: { code: "choosing_roles", params: { count } }`, next to "choosing a role, a model and a thinking level for N sub-agents…".
 

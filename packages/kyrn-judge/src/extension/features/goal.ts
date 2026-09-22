@@ -188,7 +188,7 @@ export function registerGoal(runtime: KyrnRuntime): void {
 			!goal || goal.status === "cleared"
 				? undefined
 				: goal.status === "active"
-					? say({ zh: "目标", en: "goal" }) + ` ${goal.continuations}/${options.maxContinuations}`
+					? `${say({ zh: "目标", en: "goal" })} ${goal.continuations}/${options.maxContinuations}`
 					: goal.status === "met"
 						? say({ zh: "目标已达成", en: "goal met" })
 						: say({ zh: "目标已暂停", en: "goal paused" });
@@ -233,17 +233,20 @@ export function registerGoal(runtime: KyrnRuntime): void {
 			}
 		}
 		// A goal that was running when the session closed does not start by itself: the user may be elsewhere now.
-		adopt(
-			restored?.status === "active"
-				? {
-						...restored,
-						status: "paused",
-						reason: say({ zh: "会话重新打开了", en: "the session was reopened" }),
-						reasonCode: "session_reopened",
-						reasonParams: undefined,
-					}
-				: restored,
-		);
+		if (restored?.status === "active") {
+			const { reasonParams: _params, ...rest } = restored;
+			const paused: GoalState = {
+				...rest,
+				status: "paused",
+				reason: say({ zh: "会话重新打开了", en: "the session was reopened" }),
+				reasonCode: "session_reopened",
+			};
+			adopt(paused);
+			// The app last heard "active": it hears the pause, though the session keeps its entries as they were.
+			runtime.present("goal.state", { ...paused, maxContinuations: options.maxContinuations });
+		} else {
+			adopt(restored);
+		}
 		fresh();
 		lastCheck = undefined;
 	};

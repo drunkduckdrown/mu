@@ -116,9 +116,9 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 		if (!/^https?:\/\//i.test(params.url)) {
 			return { text: "Only http and https pages can be opened.", status: "refused", url: params.url };
 		}
-		let session: BrowserSession;
+		let connection: CdpConnection;
 		try {
-			session = await BrowserSession.open(await connect(), params.url);
+			connection = await connect();
 		} catch (error) {
 			// No browser, or none that would start: the app hears of it, not only the model.
 			const launch = codeOf(error);
@@ -129,6 +129,20 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 				...(launch ? { launchCode: launch.code, ...(launch.params ? { params: launch.params } : {}) } : {}),
 				reason: error instanceof Error ? error.message : String(error),
 				embedded: false,
+			});
+			throw error;
+		}
+		let session: BrowserSession;
+		try {
+			session = await BrowserSession.open(connection, params.url);
+		} catch (error) {
+			// The browser is there, the page would not open in it: an address it refuses, a panel that is busy.
+			runtime.present("browser.run", {
+				state: "failed",
+				url: params.url,
+				code: "open_failed",
+				reason: error instanceof Error ? error.message : String(error),
+				embedded: embedded !== undefined,
 			});
 			throw error;
 		}

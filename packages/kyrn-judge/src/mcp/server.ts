@@ -47,6 +47,8 @@ export class McpServer {
 	private starting: Promise<McpTool[]> | undefined;
 	private restarts = 0;
 	private stopped = false;
+	/** Counts starts, so a start that was given up on can tell it is not the current one. */
+	private starts = 0;
 	private secrets: string[] = [];
 
 	constructor(definition: McpServerDefinition, id: string, host: McpServerHost) {
@@ -60,6 +62,7 @@ export class McpServer {
 		if (this.state === "running") return Promise.resolve(this.tools);
 		if (!this.starting) {
 			this.stopped = false;
+			this.starts++;
 			this.state = "starting";
 			this.starting = this.open()
 				.then((tools) => {
@@ -168,15 +171,19 @@ export class McpServer {
 		this.restarts++;
 		this.state = "idle";
 		this.lastError = `crashed (${detail})`;
-		this.start()
+		const restart = this.start();
+		const mine = this.starts;
+		restart
 			.then((tools) => this.onToolsChanged?.(tools))
 			// Without this the app would keep showing "restarting" for a server that is gone.
-			.catch((error: unknown) =>
+			.catch((error: unknown) => {
+				// Stopped on purpose (the session ended, or /mcp restart): that is not the restart failing.
+				if (this.stopped || this.starts !== mine) return;
 				this.onCrash?.(error instanceof Error ? error.message : String(error), false, {
 					code: "restart_failed",
 					params: { cause: codeOf(error)?.code ?? "start_failed" },
-				}),
-			);
+				});
+			});
 	}
 
 	async call(tool: string, args: Record<string, unknown>, signal?: AbortSignal): Promise<McpCallResult> {

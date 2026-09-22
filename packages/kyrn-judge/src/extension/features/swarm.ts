@@ -56,6 +56,15 @@ export interface SwarmAssignment extends Placement {
  */
 export type SwarmRunner = BeeRunner<SwarmAssignment>;
 
+/** A sub-agent's process ended before its run did. Killed from outside, it has no exit code but the signal that ended it. */
+export function exitedEarly(code: number | null, signal: NodeJS.Signals | null, detail: string): Error {
+	const how = code !== null ? `exited with code ${code}` : `was ended by ${signal ?? "a signal"}`;
+	return codedError(`sub-agent ${how} before it finished${detail ? `: ${detail}` : ""}`, {
+		code: "exited_early",
+		params: code !== null ? { exitCode: code } : { signal: signal ?? "unknown" },
+	});
+}
+
 /** The model a task's difficulty maps to on a ladder ordered from cheapest to strongest. */
 export function pickModel(ladder: readonly string[], strength: number): string | undefined {
 	if (ladder.length === 0) return undefined;
@@ -245,16 +254,10 @@ export const spawnRunner: SwarmRunner = async (task, assignment, signal, env, ob
 				stderr = (stderr + data.toString()).slice(-2000);
 			});
 			child.on("error", (error) => finish(error));
-			child.on("close", (code) => {
+			child.on("close", (code, signal) => {
 				if (buffer.trim()) onLine(buffer);
 				if (settled) return;
-				const detail = stderr.trim().slice(-400);
-				finish(
-					codedError(`sub-agent exited with code ${code} before it finished${detail ? `: ${detail}` : ""}`, {
-						code: "exited_early",
-						params: { exitCode: code ?? -1 },
-					}),
-				);
+				finish(exitedEarly(code, signal, stderr.trim().slice(-400)));
 			});
 		});
 	} finally {

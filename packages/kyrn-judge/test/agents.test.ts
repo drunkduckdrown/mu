@@ -3,7 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { loadAgents, parseAgent } from "../src/extension/agents.ts";
-import { childArgs, forwardedExtensionArgs } from "../src/extension/features/swarm.ts";
+import { childArgs, exitedEarly, forwardedExtensionArgs } from "../src/extension/features/swarm.ts";
+import { codeOf } from "../src/language.ts";
 
 describe("agent definitions", () => {
 	it("ships roles that parse, each with a description the judge can route on", () => {
@@ -65,6 +66,18 @@ describe("agent definitions", () => {
 			thinking: undefined,
 		});
 		expect(parse("name: ok\ndescription: fine\nthinking: high")?.thinking).toBe("high");
+	});
+});
+
+describe("sub-agent exit", () => {
+	it("says how a sub-agent's process ended early, and puts the same in its code", () => {
+		const exited = exitedEarly(3, null, "boom");
+		expect(exited.message).toBe("sub-agent exited with code 3 before it finished: boom");
+		expect(codeOf(exited)).toEqual({ code: "exited_early", params: { exitCode: 3 } });
+		// Killed: no exit code to make up, the signal instead.
+		const killed = exitedEarly(null, "SIGTERM", "");
+		expect(killed.message).toBe("sub-agent was ended by SIGTERM before it finished");
+		expect(codeOf(killed)).toEqual({ code: "exited_early", params: { signal: "SIGTERM" } });
 	});
 });
 

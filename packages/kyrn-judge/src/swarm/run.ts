@@ -124,8 +124,8 @@ const clock = (ms: number): string => {
  * - `stalled` {what: "model" | "tool", tool?, seconds}: the watchdog saw no sign of life
  * - `no_report_in_time` {seconds, after?}: asked to wrap up (`after` = why), no report within the grace period
  * - `time_budget` {minutes}: its time budget ran out (a wrap-up, not an end)
- * - `model_error` {message}, `retries_exhausted` {message}: the model request failed
- * - `exited_early` {exitCode}, `chain_broken` {step}, `error` {message}, `no_report`: the process ended badly
+ * - `model_error` {message, stopReason}, `retries_exhausted` {message}: the model request failed
+ * - `exited_early` {exitCode} or {signal}, `chain_broken` {step}, `error` {message}: the process ended badly
  */
 export const BEE_ERROR_CODES = [
 	"cancelled",
@@ -139,7 +139,6 @@ export const BEE_ERROR_CODES = [
 	"exited_early",
 	"chain_broken",
 	"error",
-	"no_report",
 ] as const;
 
 const setError = (bee: BeeState, reason: string, coded: Coded | undefined) => {
@@ -339,14 +338,10 @@ export class SwarmRun<Assignment> {
 		if (!isOver(bee.status)) {
 			if (failure !== undefined || (bee.error && !report)) {
 				bee.status = "failed";
+				// Without an error of its own, it failed by throwing: `failure` is set.
 				if (bee.error === undefined) {
-					const message = failure instanceof Error ? failure.message : String(failure ?? "no report");
-					setError(
-						bee,
-						message,
-						codeOf(failure) ??
-							(failure === undefined ? { code: "no_report" } : { code: "error", params: { message } }),
-					);
+					const message = failure instanceof Error ? failure.message : String(failure);
+					setError(bee, message, codeOf(failure) ?? { code: "error", params: { message } });
 				}
 			} else {
 				bee.status = "done";

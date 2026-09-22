@@ -7,6 +7,7 @@
  *   --banner                   prints a line that is not JSON on stdout first, as sloppy servers do
  *   --crash-on-start           writes to stderr and exits before answering anything
  *   --crash-on-restart         with --starts-file: starts once, then crashes on every later start
+ *   --hang-on-start <n>        with --starts-file: its n-th start never answers anything, as a stuck start does
  *   --leak-env <NAME>          writes the value of that variable to stderr on start and when it crashes
  *   --silent-before-init       ignores anything but `initialize` until initialized, instead of answering with an error
  *   --version <v>              the legacy protocol version it answers `initialize` with
@@ -29,6 +30,10 @@ const PAGE = 3;
 
 const startedBefore = startsFile && existsSync(startsFile) && readFileSync(startsFile, "utf8").trim() !== "";
 if (startsFile) appendFileSync(startsFile, `${process.pid}\n`);
+const hanging =
+	startsFile !== undefined &&
+	option("--hang-on-start") !== undefined &&
+	readFileSync(startsFile, "utf8").trim().split("\n").length === Number(option("--hang-on-start"));
 if (leak) process.stderr.write(`starting with token ${process.env[leak]}\n`);
 if (flag("--crash-on-start") || (flag("--crash-on-restart") && startedBefore)) {
 	process.stderr.write("fatal: cannot open database /nowhere/db.sqlite\n");
@@ -92,6 +97,7 @@ function call(id, params) {
 }
 
 function handle(message) {
+	if (hanging) return undefined;
 	const { id, method, params } = message;
 	if (id === undefined) {
 		if (method === "notifications/initialized") initialized = true;

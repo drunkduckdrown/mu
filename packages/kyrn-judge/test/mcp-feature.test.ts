@@ -274,6 +274,63 @@ describe("MCP servers in the capability catalog", () => {
 		);
 	});
 
+	it("does not call a restart given up on a failure: /mcp restart while it restarts after a crash", async () => {
+		const startsFile = join(home().home, "starts");
+		const { harness, events, notices } = await start({
+			servers: { stuck: fake("--starts-file", startsFile, "--hang-on-start", "2") },
+		});
+		harness.setResponses([
+			fauxAssistantMessage([fauxToolCall("find_capability", { open: "mcp:stuck" })], { stopReason: "toolUse" }),
+			fauxAssistantMessage([fauxToolCall("mcp_stuck_crash", {})], { stopReason: "toolUse" }),
+			fauxAssistantMessage("It crashed."),
+		]);
+		await harness.session.prompt("Crash it.");
+		// The restart after the crash is stuck in its start.
+		await vi.waitFor(() => expect(readFileSync(startsFile, "utf8").trim().split("\n")).toHaveLength(2));
+		await harness.session.prompt("/mcp restart stuck");
+		expect(notices.at(-1)).toMatch(/^stuck is running with \d+ tools\.$/);
+		expect(events.filter((event) => event.kind === "mcp.failed").map((event) => event.payload)).toEqual([
+			expect.objectContaining({ code: "crashed", willRestart: true }),
+		]);
+		// The app hears it is running again.
+		expect(events.at(-1)).toMatchObject({ kind: "mcp.started", payload: { id: "mcp:stuck" } });
+
+		// Nor does the end of the session, while a restart is stuck.
+		harness.setResponses([
+			fauxAssistantMessage([fauxToolCall("mcp_stuck_crash", {})], { stopReason: "toolUse" }),
+			fauxAssistantMessage("Again."),
+		]);
+		writeFileSync(startsFile, "1\n");
+		await harness.session.prompt("Crash it again.");
+		await harness.session.extensionRunner.emit({ type: "session_shutdown", reason: "quit" });
+		await new Promise((resolve) => setTimeout(resolve, 100));
+		expect(events.filter((event) => event.kind === "mcp.failed").map((event) => event.payload)).toEqual([
+			expect.objectContaining({ code: "crashed", willRestart: true }),
+			expect.objectContaining({ code: "crashed", willRestart: true }),
+		]);
+	});
+
+	it("tells the app when /mcp restart fails, as it does for any other start", async () => {
+		const startsFile = join(home().home, "starts");
+		const { harness, events, notices } = await start({
+			servers: { fragile: fake("--starts-file", startsFile, "--crash-on-restart") },
+		});
+		harness.setResponses([
+			fauxAssistantMessage([fauxToolCall("find_capability", { open: "mcp:fragile" })], { stopReason: "toolUse" }),
+			fauxAssistantMessage("Open."),
+		]);
+		await harness.session.prompt("Open it.");
+		await harness.session.prompt("/mcp restart fragile");
+		expect(notices.at(-1)).toContain("fragile did not start");
+		expect(events.filter((event) => event.kind === "mcp.failed").map((event) => event.payload)).toEqual([
+			expect.objectContaining({
+				id: "mcp:fragile",
+				code: "closed",
+				reason: expect.stringContaining("cannot open database"),
+			}),
+		]);
+	});
+
 	it("follows a server whose tools change while it runs", async () => {
 		const { harness, events } = await start({ servers: { files: fake() } });
 		harness.setResponses([

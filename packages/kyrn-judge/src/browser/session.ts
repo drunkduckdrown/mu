@@ -56,19 +56,26 @@ export class BrowserSession {
 
 	static async open(cdp: CdpConnection, url: string): Promise<BrowserSession> {
 		const { targetId } = (await cdp.send("Target.createTarget", { url: "about:blank" })) as { targetId: string };
-		const { sessionId } = (await cdp.send("Target.attachToTarget", { targetId, flatten: true })) as {
-			sessionId: string;
-		};
-		const session = new BrowserSession(cdp, targetId, sessionId);
-		await session.call("Emulation.setDeviceMetricsOverride", {
-			width: 1120,
-			height: 780,
-			deviceScaleFactor: 1,
-			mobile: false,
-		});
-		// Keeps animation frames and menus rendering in a tab that is never brought to the front.
-		await session.call("Emulation.setFocusEmulationEnabled", { enabled: true });
-		await session.call("Page.navigate", { url });
+		let session: BrowserSession;
+		try {
+			const { sessionId } = (await cdp.send("Target.attachToTarget", { targetId, flatten: true })) as {
+				sessionId: string;
+			};
+			session = new BrowserSession(cdp, targetId, sessionId);
+			await session.call("Emulation.setDeviceMetricsOverride", {
+				width: 1120,
+				height: 780,
+				deviceScaleFactor: 1,
+				mobile: false,
+			});
+			// Keeps animation frames and menus rendering in a tab that is never brought to the front.
+			await session.call("Emulation.setFocusEmulationEnabled", { enabled: true });
+			await session.call("Page.navigate", { url });
+		} catch (error) {
+			// No run owns the tab yet, so nothing else would close it.
+			await cdp.send("Target.closeTarget", { targetId }).catch(() => undefined);
+			throw error;
+		}
 		// The document itself gets 15 s. Its images, fonts and trackers get 3 s more: a slow third party
 		// must not hold up a page that can already be read and operated.
 		const deadline = Date.now() + 15_000;

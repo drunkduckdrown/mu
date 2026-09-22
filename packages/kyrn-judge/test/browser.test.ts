@@ -14,6 +14,7 @@ import { parseConfig } from "../src/config.ts";
 import { DecisionEngine } from "../src/decision.ts";
 import { type BrowserStepInput, browserStep } from "../src/decisions/browser-step.ts";
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
+import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
 import { Judge } from "../src/judge.ts";
 import { MemoryLedger } from "../src/ledger.ts";
 import { MockJudgeProvider } from "../src/providers/mock.ts";
@@ -392,5 +393,41 @@ describe.skipIf(!findChrome())("runBrowserTask (real Chrome, local fixture)", ()
 		expect(seen).toContain("Results for: red shoes");
 		expect(seen).toContain("untrusted data");
 		expect(provider.calls.filter((call) => "operation" in call.questions)).toHaveLength(3);
+	}, 30_000);
+
+	it("browse tool: a page the running browser will not open is not called a failed launch, and its tab is closed", async () => {
+		const events: KyrnPresentationEvent[] = [];
+		const harness = await createHarness({
+			extensionFactories: [
+				createKyrnJudgeExtension({
+					provider: new MockJudgeProvider(),
+					mode: "active",
+					config: parseConfig({
+						features: { memory: false, permissions: { mode: "full" }, browser: { enabled: true, profileDir } },
+					}),
+					onPresentation: (event) => events.push(event),
+				}),
+			],
+		});
+		const tabs = async () =>
+			((await cdp.send("Target.getTargets")) as { targetInfos: { type: string }[] }).targetInfos.filter(
+				(target) => target.type === "page",
+			).length;
+		const before = await tabs();
+		harness.setResponses([
+			// Passes the http(s) check, and Chrome refuses to navigate to it.
+			fauxAssistantMessage([fauxToolCall("browse", { url: "https://" })], { stopReason: "toolUse" }),
+			fauxAssistantMessage("It would not open."),
+		]);
+		try {
+			await harness.session.prompt("Open the page.");
+		} finally {
+			harness.cleanup();
+		}
+		const runs = events.filter((event) => event.kind === "browser.run").map((event) => event.payload);
+		expect(runs).toEqual([
+			{ state: "failed", url: "https://", code: "open_failed", reason: expect.any(String), embedded: false },
+		]);
+		expect(await tabs()).toBe(before);
 	}, 30_000);
 });

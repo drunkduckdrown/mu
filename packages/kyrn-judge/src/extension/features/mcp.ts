@@ -174,11 +174,12 @@ export function registerMcp(
 		entry.needsApproval = false;
 	};
 
-	async function activate(entry: Entry): Promise<void> {
+	/** Starts a server, or starts it again (`restart`), and tells the app how that went either way. */
+	async function activate(entry: Entry, restart = false): Promise<void> {
 		const { server } = entry;
 		try {
 			await approve(entry);
-			registerTools(entry, await server.start());
+			registerTools(entry, await (restart ? server.restart() : server.start()));
 			runtime.present("mcp.started", {
 				id: capabilityId(server.id),
 				name: server.definition.name,
@@ -288,8 +289,7 @@ export function registerMcp(
 			if ((verb === "open" || verb === "restart") && entry) {
 				try {
 					if (verb === "restart" && entry.server.state !== "idle") {
-						await approve(entry);
-						registerTools(entry, await entry.server.restart());
+						await activate(entry, true);
 					} else if (
 						entry.server.definition.exposure === "always" ||
 						catalog.isOpen(capabilityId(entry.server.id))

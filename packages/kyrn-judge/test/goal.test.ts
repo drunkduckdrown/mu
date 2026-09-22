@@ -16,6 +16,7 @@ import {
 	stepsOf,
 } from "../src/extension/features/goal.ts";
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
+import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
 import { goalCheckRequest, parseGoalJudgement } from "../src/goal/check.ts";
 import { MockJudgeProvider, type MockResponder } from "../src/providers/mock.ts";
 import type { Answer } from "../src/types.ts";
@@ -275,6 +276,40 @@ describe("goal mode", () => {
 		const last = states(harness).at(-1);
 		expect(last?.status).toBe("paused");
 		expect(last?.reason).toContain("no judge");
+	});
+
+	it("pauses a goal that was running when the session closed, and tells the app why", async () => {
+		const events: KyrnPresentationEvent[] = [];
+		const harness = await createHarness({
+			extensionFactories: [
+				createKyrnJudgeExtension({
+					provider: new MockJudgeProvider(),
+					mode: "active",
+					config: parseConfig({ features: { memory: false, goal: { checker: "jev" } } }),
+					only: ["goal"],
+					onPresentation: (event) => events.push(event),
+				}),
+			],
+		});
+		harnesses.push(harness);
+		await harness.session.bindExtensions({
+			uiContext: { notify: () => undefined, setStatus: () => undefined } as unknown as ExtensionUIContext,
+			mode: "tui",
+		});
+		harness.sessionManager.appendCustomEntry(GOAL_ENTRY, { status: "active", text: "ship it", continuations: 3 });
+		await harness.session.reload();
+		expect(events.filter((event) => event.kind === "goal.state").map((event) => event.payload)).toEqual([
+			{
+				status: "paused",
+				text: "ship it",
+				continuations: 3,
+				reason: "the session was reopened",
+				reasonCode: "session_reopened",
+				maxContinuations: 20,
+			},
+		]);
+		// Nothing is written: the session keeps what it had.
+		expect(states(harness).map((state) => state.status)).toEqual(["active"]);
 	});
 
 	it("shows and clears the goal, and reads back only entries it wrote", async () => {
