@@ -3,12 +3,14 @@ import { join } from "node:path";
 import ts from "typescript";
 
 const ignoredDirectories = new Set([".git", "coverage", "dist", "node_modules"]);
+// mu's desktop app (an AionUi fork) has its own TypeScript setup, with .js import specifiers.
+const ignoredPaths = new Set(["desktop"]);
 const files = [];
 
 function collectTypescriptFiles(directory) {
 	for (const entry of readdirSync(directory, { withFileTypes: true })) {
 		if (entry.isDirectory()) {
-			if (!ignoredDirectories.has(entry.name)) {
+			if (!ignoredDirectories.has(entry.name) && !ignoredPaths.has(join(directory, entry.name))) {
 				collectTypescriptFiles(join(directory, entry.name));
 			}
 			continue;
