@@ -47,6 +47,7 @@ Tools the agent can use (and you can ask for)
   /swarm                   what every running sub-agent is doing right now; /swarm stop [name] has it report
                            now and keeps what it found, /swarm kill [name] ends it at once
   /review [what]           hand a review to the reviewer role
+  /commit [guidance]       split the uncommitted change into commits; shows the plan first, never pushes
 
 Session and model (from pi)
   /model  /thinking  /login  /logout  /settings  /hotkeys

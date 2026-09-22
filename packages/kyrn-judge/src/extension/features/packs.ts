@@ -4,6 +4,7 @@ import { run } from "../../packs/exec.ts";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
 import { CAPABILITY_ENTRY } from "./catalog.ts";
 import { astGrepPack } from "./packs/ast-grep.ts";
+import { registerCommit } from "./packs/commit.ts";
 import { githubPack } from "./packs/github.ts";
 import type { Pack, PackShared } from "./packs/pack.ts";
 
@@ -31,6 +32,10 @@ export function registerPacks(runtime: KyrnRuntime): void {
 		github: true,
 		/** Empty: `gh` from PATH. */
 		ghCommand: "",
+		/** `/commit`: the uncommitted change split into commits, after the user said yes. */
+		commit: true,
+		/** Characters of the change the model reads to propose the split. */
+		maxPlanChars: 60000,
 	});
 	if (!options.enabled) return;
 	const { pi, catalog } = runtime;
@@ -60,6 +65,7 @@ export function registerPacks(runtime: KyrnRuntime): void {
 	}
 
 	if (options.github) packs.push(githubPack(shared, { command: options.ghCommand }));
+	if (options.commit) registerCommit(shared, { maxPlanChars: options.maxPlanChars });
 
 	const starting = new Map<string, Promise<void>>();
 	const start = (pack: Pack): Promise<void> => {
