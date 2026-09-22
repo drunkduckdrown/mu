@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { fauxAssistantMessage } from "@earendil-works/pi-ai";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Harness } from "../../coding-agent/test/suite/harness.ts";
 import {
 	applyEdits,
@@ -99,6 +99,44 @@ describe("running programs without a shell", () => {
 		const result = await run(join(tempDir(), "no-such-program"), ["--version"]);
 		expect(result.missing).toBe(true);
 	});
+
+	const alive = (pid: number) => {
+		try {
+			process.kill(pid, 0);
+			return true;
+		} catch {
+			return false;
+		}
+	};
+	const pidIn = (file: string) => Number(readFileSync(file, "utf8").trim());
+
+	it.skipIf(process.platform === "win32")(
+		"answers when the program exits, even if something it started still holds its output",
+		async () => {
+			const pidFile = join(tempDir(), "background.pid");
+			const started = Date.now();
+			const result = await run("sh", ["-c", `sleep 30 & echo $! > "${pidFile}"; echo done`]);
+			try {
+				expect(result).toMatchObject({ code: 0, stdout: "done\n", stopped: false });
+				expect(Date.now() - started).toBeLessThan(5000);
+			} finally {
+				process.kill(pidIn(pidFile), "SIGKILL");
+			}
+		},
+	);
+
+	it.skipIf(process.platform === "win32")(
+		"a timeout ends the program and everything it started (a git hook's own children)",
+		async () => {
+			const pidFile = join(tempDir(), "hook-child.pid");
+			const started = Date.now();
+			const result = await run("sh", ["-c", `sleep 30 & echo $! > "${pidFile}"; wait`], { timeoutMs: 300 });
+			expect(result.stopped).toBe(true);
+			expect(Date.now() - started).toBeLessThan(5000);
+			const child = pidIn(pidFile);
+			await vi.waitFor(() => expect(alive(child)).toBe(false), { timeout: 3000 });
+		},
+	);
 
 	it("gives an install hint in the package manager of the platform", () => {
 		expect(installHint("ast-grep", "darwin")).toContain("brew install ast-grep");

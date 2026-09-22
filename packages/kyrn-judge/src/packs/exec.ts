@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { statSync } from "node:fs";
 import { posix, win32 } from "node:path";
+import { killPlan, runKillStep } from "../process-tree.ts";
 
 /**
  * Running the external programs the packs lean on (git, ast-grep) without a
@@ -41,6 +42,10 @@ export interface RunResult {
 export type Runner = (command: string, args: readonly string[], options?: RunOptions) => Promise<RunResult>;
 
 const STDERR_LIMIT = 64 * 1024;
+/** How long a stopped program has to end before it is ended outright. */
+const KILL_GRACE_MS = 2000;
+/** How long after the program exits its output may stay open (held by something it started) before mu stops waiting. */
+const PIPE_GRACE_MS = 500;
 
 export const run: Runner = (command, args, options = {}) =>
 	new Promise((resolve) => {
@@ -58,19 +63,33 @@ export const run: Runner = (command, args, options = {}) =>
 		let stopped = false;
 		let settled = false;
 
+		// Its own process group outside Windows, so that stopping it also stops what it started (git's hooks).
+		const host = process.platform;
 		const child = spawn(invocation.command, invocation.args, {
 			cwd: options.cwd,
 			env,
 			shell: false,
+			detached: host !== "win32",
 			windowsHide: true,
 			windowsVerbatimArguments: invocation.verbatim,
 			stdio: [options.input === undefined ? "ignore" : "pipe", "pipe", "pipe"],
 		});
+		let exited = false;
+		let force: NodeJS.Timeout | undefined;
+		let late: NodeJS.Timeout | undefined;
 
 		const stop = () => {
 			if (stopped) return;
 			stopped = true;
-			child.kill();
+			const pid = child.pid;
+			if (pid === undefined) {
+				child.kill();
+				return;
+			}
+			runKillStep(killPlan(pid, false, host));
+			force = setTimeout(() => {
+				if (!exited) runKillStep(killPlan(pid, true, host));
+			}, KILL_GRACE_MS);
 		};
 		const timer = options.timeoutMs ? setTimeout(stop, options.timeoutMs) : undefined;
 		options.signal?.addEventListener("abort", stop, { once: true });
@@ -80,6 +99,8 @@ export const run: Runner = (command, args, options = {}) =>
 			if (settled) return;
 			settled = true;
 			if (timer) clearTimeout(timer);
+			if (force && exited) clearTimeout(force);
+			if (late) clearTimeout(late);
 			options.signal?.removeEventListener("abort", stop);
 			if (options.onLine && carry && !stopped) options.onLine(carry);
 			resolve({ code, stdout: Buffer.concat(chunks).toString(encoding), stderr, missing, stopped });
@@ -107,6 +128,15 @@ export const run: Runner = (command, args, options = {}) =>
 		});
 		child.on("error", (error: NodeJS.ErrnoException) => finish(127, error.code === "ENOENT"));
 		child.on("close", (code) => finish(code ?? 1, false));
+		child.on("exit", (code) => {
+			exited = true;
+			// Something it started in the background may hold its output open: that is not the program any more.
+			late = setTimeout(() => {
+				child.stdout?.destroy();
+				child.stderr?.destroy();
+				finish(code ?? 1, false);
+			}, PIPE_GRACE_MS);
+		});
 		if (options.input !== undefined) {
 			// A program that exits without reading its input is reported by its exit code, not by EPIPE.
 			child.stdin?.on("error", () => {});
