@@ -37,6 +37,10 @@ export function resolveTsx(input: {
 	readFile(path: string): string;
 }): string | undefined;
 export function installHint(input: { root: string; platform: Platform }): string;
+export type Layout = "repo" | "package";
+export function layoutOf(input: { root: string; platform: Platform; exists(path: string): boolean }): Layout;
+export function packageEntries(input: { root: string; platform: Platform }): { cli: string; extension: string };
+export function envFilePath(input: { layout: Layout; root: string; muDir: string; platform: Platform }): string;
 export function agentDirFor(input: { env: Env; muDir: string; platform: Platform }): string;
 export function wantsLaya(input: {
 	env: Env;
@@ -57,7 +61,9 @@ export interface LaunchPlan {
 	args: string[];
 	env: Record<string, string>;
 	strategy: "exec" | "spawn";
+	layout: Layout;
 	muDir: string;
+	/** PI_PACKAGE_DIR: the view at <home>/app for a checkout, the package itself for mu-agent. */
 	appDir: string;
 	agentDir: string;
 	startJudge: boolean;

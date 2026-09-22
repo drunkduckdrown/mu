@@ -19,14 +19,17 @@ import {
 	detectWsl,
 	ensureAppView,
 	envFileAdditions,
+	envFilePath,
 	findBusy,
 	findOnPath,
 	type LaunchPlan,
 	launchStrategy,
+	layoutOf,
 	linkPath,
 	migrate,
 	muHome,
 	nodeVersionOk,
+	packageEntries,
 	parseCsv,
 	parseEnvFile,
 	parseTasklist,
@@ -392,6 +395,98 @@ describe("starting pi", () => {
 		expect(launch({ argv: ["--help"] }).preface).toContain("Agent flags:");
 		expect(launch({ argv: ["-h"] }).preface).toContain("mu link | unlink");
 		expect(launch({ argv: ["-p", "--help"] }).preface).toBeUndefined();
+	});
+});
+
+describe("the npm package (mu-agent)", () => {
+	const WIN_PACKAGE = "C:\\Users\\bai\\AppData\\Roaming\\npm\\node_modules\\mu-agent";
+	const winPackage = {
+		[`${WIN_PACKAGE}\\dist\\bundle\\cli.js`]: "",
+		[`${WIN_PACKAGE}\\judge\\dist\\kyrn-judge.js`]: "",
+	};
+	const POSIX_PACKAGE = "/usr/local/lib/node_modules/mu-agent";
+	const posixPackage = {
+		[`${POSIX_PACKAGE}/dist/bundle/cli.js`]: "",
+		[`${POSIX_PACKAGE}/judge/dist/kyrn-judge.js`]: "",
+	};
+
+	it("is told apart from a checkout, also from one without its dependencies", () => {
+		const exists = (files: Record<string, string>) => (path: string) => path in files;
+		expect(layoutOf({ root: POSIX_PACKAGE, platform: "linux", exists: exists(posixPackage) })).toBe("package");
+		expect(layoutOf({ root: WIN_PACKAGE, platform: "win32", exists: exists(winPackage) })).toBe("package");
+		expect(
+			layoutOf({
+				root: POSIX_ROOT,
+				platform: "linux",
+				exists: exists({ [`${POSIX_ROOT}/packages/coding-agent/package.json`]: "" }),
+			}),
+		).toBe("repo");
+		expect(layoutOf({ root: POSIX_ROOT, platform: "linux", exists: exists({}) })).toBe("repo");
+	});
+
+	it("runs pi's bundle with the built judgment layer: no tsx, and the package names the app itself", () => {
+		const prompt = 'say "hi" & del %USERPROFILE% | more';
+		const plan = launch({
+			platform: "win32",
+			root: WIN_PACKAGE,
+			home: WIN_HOME,
+			execPath: "C:\\Program Files\\nodejs\\node.exe",
+			argv: ["-p", prompt],
+			fs: disk(winPackage),
+		});
+		expect(plan.layout).toBe("package");
+		expect(plan.args).toEqual([
+			`${WIN_PACKAGE}\\dist\\bundle\\cli.js`,
+			"-e",
+			`${WIN_PACKAGE}\\judge\\dist\\kyrn-judge.js`,
+			"-p",
+			prompt,
+		]);
+		expect(plan.strategy).toBe("spawn");
+		expect(plan.env).toMatchObject({
+			PI_PACKAGE_DIR: WIN_PACKAGE,
+			MU_CODING_AGENT_DIR: "C:\\Users\\bai\\.mu\\agent",
+			PI_SKIP_VERSION_CHECK: "1",
+			// pi's install report goes to pi.dev; mu-agent is not a pi install.
+			PI_TELEMETRY: "0",
+		});
+		expect(plan.appDir).toBe(WIN_PACKAGE);
+	});
+
+	it("reads the Jev key from ~/.mu/.env, not from a .env beside the package, and keeps a telemetry choice", () => {
+		const plan = launch({
+			root: POSIX_PACKAGE,
+			env: { PI_TELEMETRY: "1" },
+			fs: disk({
+				...posixPackage,
+				"/home/bai/.mu/.env": "AI_GATEWAY_API_KEY=from-home\n",
+				[`${POSIX_PACKAGE}/.env`]: "TYPESAFE_API_KEY=beside-the-package\n",
+			}),
+		});
+		expect(plan.env.AI_GATEWAY_API_KEY).toBe("from-home");
+		expect(plan.env.TYPESAFE_API_KEY).toBeUndefined();
+		expect(plan.env.PI_TELEMETRY).toBe("1");
+		expect(envFilePath({ layout: "repo", root: POSIX_ROOT, muDir: "/home/bai/.mu", platform: "linux" })).toBe(
+			`${POSIX_ROOT}/.env`,
+		);
+		// A checkout keeps reporting nothing new: its telemetry is pi's own business, as before.
+		expect(launch({}).env.PI_TELEMETRY).toBeUndefined();
+	});
+
+	it("says to reinstall when the package lost its judgment layer", () => {
+		const plan = planLaunch({
+			platform: "linux",
+			env: {},
+			argv: [],
+			root: POSIX_PACKAGE,
+			home: "/home/bai",
+			execPath: "node",
+			fs: disk({ [`${POSIX_PACKAGE}/dist/bundle/cli.js`]: "" }),
+		});
+		expect(plan.error).toContain("npm i -g mu-agent");
+		expect(packageEntries({ root: POSIX_PACKAGE, platform: "linux" }).extension).toBe(
+			`${POSIX_PACKAGE}/judge/dist/kyrn-judge.js`,
+		);
 	});
 });
 

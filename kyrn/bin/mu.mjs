@@ -6,6 +6,8 @@
 // - kyrn/bin/mu      (bash) on macOS, Linux and WSL. It only finds a Node >= 22.19, from PATH or from nvm: a
 //                    machine whose default Node is older cannot be trusted to run this file at all.
 // - kyrn/bin/mu.cmd  on Windows, with whatever `node` is on PATH (mu.ps1 is the same for PowerShell).
+// - npm's own `mu` command, in the npm package mu-agent (kyrn/npm/build.mjs). The package is laid out like the
+//   repository, so this file is at kyrn/bin/mu.mjs there too, and the root is two folders up in both.
 //
 // No dependency and no TypeScript here: this runs before tsx has been found.
 //
@@ -23,6 +25,7 @@
 //   (e.g. "laya", "laya,luna", "laya,jev", "off"). When "laya" is among them the sidecar is started (macOS only).
 //   kyrn.json and every KYRN_* variable are still read when the mu spelling is absent.
 // - the repo-root .env (the Jev key), read as data and handed to the agent without ever being printed.
+//   The npm package reads ~/.mu/.env instead: there is no repository around it.
 import { spawn, spawnSync } from "node:child_process";
 import {
 	accessSync,
@@ -300,6 +303,31 @@ export function ensureAppView({ platform, app, upstream, fs = realFs }) {
 // ---------------------------------------------------------------------------------------------------------
 
 /**
+ * Where this mu comes from: "repo", a checkout that runs the TypeScript sources through tsx, or "package", the
+ * npm package mu-agent, which carries pi's bundle (dist/bundle/cli.js) and the judgment layer built to
+ * JavaScript (judge/dist/kyrn-judge.js). A checkout without its dependencies is still a checkout.
+ */
+export function layoutOf({ root, platform, exists }) {
+	const path = pathFor(platform);
+	if (exists(path.join(root, "packages", "coding-agent", "package.json"))) return "repo";
+	return exists(path.join(root, "dist", "bundle", "cli.js")) ? "package" : "repo";
+}
+
+/** The two files the npm package runs. */
+export function packageEntries({ root, platform }) {
+	const path = pathFor(platform);
+	return {
+		cli: path.join(root, "dist", "bundle", "cli.js"),
+		extension: path.join(root, "judge", "dist", "kyrn-judge.js"),
+	};
+}
+
+/** The .env the launcher reads: the checkout's, or for the npm package the one in mu's home. */
+export function envFilePath({ layout, root, muDir, platform }) {
+	return pathFor(platform).join(layout === "package" ? muDir : root, ".env");
+}
+
+/**
  * The JavaScript file behind the `tsx` command. node_modules/.bin/tsx is a `.cmd` shim on Windows, and a shim
  * can only be started through a shell, where a prompt with quotes or `&` in it is re-parsed. Running the real
  * entry with the Node that runs this file avoids the shell on every platform.
@@ -398,18 +426,37 @@ export function launchStrategy({ platform, env, canExec }) {
  */
 export function planLaunch({ platform, env, argv, root, home, execPath, fs, canExec = false, wsl = false }) {
 	const path = pathFor(platform);
-	const tsx = resolveTsx({ root, platform, exists: fs.exists, readFile: fs.readFile });
-	if (!tsx) return { error: installHint({ root, platform }) };
+	const layout = layoutOf({ root, platform, exists: fs.exists });
+	let entry;
+	if (layout === "package") {
+		const files = packageEntries({ root, platform });
+		if (!fs.exists(files.extension)) {
+			return { error: `This mu-agent package is incomplete (${files.extension} is missing). Reinstall it: npm i -g mu-agent` };
+		}
+		entry = [files.cli, "-e", files.extension];
+	} else {
+		const tsx = resolveTsx({ root, platform, exists: fs.exists, readFile: fs.readFile });
+		if (!tsx) return { error: installHint({ root, platform }) };
+		entry = [
+			tsx,
+			"--tsconfig",
+			path.join(root, "tsconfig.json"),
+			path.join(root, "packages", "coding-agent", "src", "experimental", "cli.ts"),
+			"-e",
+			path.join(root, "packages", "kyrn-judge", "src", "extension", "kyrn-judge.ts"),
+		];
+	}
 
 	const muDir = muHome({ home, platform, isDir: fs.isDir });
-	const appDir = muEnv("APP_DIR", env) || path.join(muDir, "app");
+	// The package names itself mu in its own package.json; a checkout needs the view at <home>/app for that.
+	const appDir = layout === "package" ? root : muEnv("APP_DIR", env) || path.join(muDir, "app");
 	const agentDir = agentDirFor({ env, muDir, platform });
 
 	const notes = [];
 	let fromFile = {};
 	let envText;
 	try {
-		envText = fs.readFile(path.join(root, ".env"));
+		envText = fs.readFile(envFilePath({ layout, root, muDir, platform }));
 	} catch {}
 	if (envText !== undefined) {
 		const parsed = parseEnvFile(envText);
@@ -426,8 +473,11 @@ export function planLaunch({ platform, env, argv, root, home, execPath, fs, canE
 	childEnv.MU_CODING_AGENT_DIR = agentDir;
 	childEnv.KYRN_CODING_AGENT_DIR = agentDir;
 	childEnv.PI_CODING_AGENT_DIR = agentDir;
-	// A fork run from source follows upstream through git, not through pi's release check.
+	// pi's release check asks pi.dev about pi's versions, which say nothing about mu's: a checkout follows
+	// upstream through git, and the package through npm.
 	childEnv.PI_SKIP_VERSION_CHECK = childEnv.PI_SKIP_VERSION_CHECK || "1";
+	// pi reports a fresh install to pi.dev with its version. mu-agent is not a pi install; asked for, it still can be.
+	if (layout === "package" && childEnv.PI_TELEMETRY === undefined) childEnv.PI_TELEMETRY = "0";
 
 	let startJudge = false;
 	if (wantsLaya({ env: childEnv, agentDir, platform, readFile: fs.readFile })) {
@@ -442,17 +492,10 @@ export function planLaunch({ platform, env, argv, root, home, execPath, fs, canE
 
 	return {
 		command: execPath,
-		args: [
-			tsx,
-			"--tsconfig",
-			path.join(root, "tsconfig.json"),
-			path.join(root, "packages", "coding-agent", "src", "experimental", "cli.ts"),
-			"-e",
-			path.join(root, "packages", "kyrn-judge", "src", "extension", "kyrn-judge.ts"),
-			...argv,
-		],
+		args: [...entry, ...argv],
 		env: childEnv,
 		strategy: launchStrategy({ platform, env, canExec }),
+		layout,
 		muDir,
 		appDir,
 		agentDir,
@@ -903,6 +946,7 @@ export async function main(argv = process.argv.slice(2)) {
 		if (platform === "linux") procVersion = readText("/proc/version");
 	} catch {}
 	const wsl = detectWsl({ platform, env, procVersion });
+	const layout = layoutOf({ root, platform, exists: existsSync });
 
 	if (!nodeVersionOk(process.versions.node)) {
 		err(`mu needs Node >= ${MIN_NODE.join(".")} (found ${process.version}). Try: nvm install 24`);
@@ -972,6 +1016,10 @@ export async function main(argv = process.argv.slice(2)) {
 			strategy,
 		});
 	}
+	if ((command === "link" || command === "unlink") && layout === "package") {
+		out("This mu was installed with npm, which already put `mu` on your PATH (npm i -g mu-agent); nothing to link.");
+		return 0;
+	}
 	if (command === "link") {
 		const plan = planLink({
 			platform,
@@ -1002,8 +1050,13 @@ export async function main(argv = process.argv.slice(2)) {
 		return 0;
 	}
 
+	if (layout === "package" && command === "version") {
+		const pkg = JSON.parse(readText(path.join(root, "package.json")));
+		out(`mu ${pkg.version} (pi ${pkg.muBuild?.pi ?? "?"}, npm package ${pkg.name})`);
+		return 0;
+	}
 	// Asked before `version` too, as it always was: a checkout without its dependencies says so at the first command.
-	if (!resolveTsx({ root, platform, exists: existsSync, readFile: readText })) {
+	if (layout === "repo" && !resolveTsx({ root, platform, exists: existsSync, readFile: readText })) {
 		err(installHint({ root, platform }));
 		return 1;
 	}
@@ -1029,7 +1082,9 @@ export async function main(argv = process.argv.slice(2)) {
 		return 1;
 	}
 
-	ensureAppView({ platform, app: plan.appDir, upstream: path.join(root, "packages", "coding-agent") });
+	if (plan.layout === "repo") {
+		ensureAppView({ platform, app: plan.appDir, upstream: path.join(root, "packages", "coding-agent") });
+	}
 	mkdirSync(plan.agentDir, { recursive: true });
 	for (const note of plan.notes) err(note);
 	// The local judge is one shared sidecar; starting it is idempotent and must never block mu.

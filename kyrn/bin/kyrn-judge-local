@@ -13,12 +13,15 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 HOME_DIR="$ROOT/kyrn/local-judge"
-PYTHON="$HOME_DIR/.venv/bin/python"
 MODEL_REPO="aac6fef/laya-multilingual-coreml"
 if [[ -d "$HOME/.mu" || ! -d "$HOME/.kyrn" ]]; then MU_DIR="$HOME/.mu"; else MU_DIR="$HOME/.kyrn"; fi
-MODEL_DIR="${MU_LOCAL_JUDGE_MODEL:-${KYRN_LOCAL_JUDGE_MODEL:-$HOME_DIR/models/laya-multilingual-coreml}}"
-PORT="${MU_LOCAL_JUDGE_PORT:-${KYRN_LOCAL_JUDGE_PORT:-47823}}"
 RUN_DIR="${MU_LOCAL_JUDGE_RUN_DIR:-${KYRN_LOCAL_JUDGE_RUN_DIR:-$MU_DIR/local-judge}}"
+# A checkout keeps the venv and the weights beside server.py. The npm package (mu-agent) keeps them in mu's
+# home instead: npm replaces the whole package folder on every update.
+if [[ -d "$ROOT/packages/kyrn-judge" ]]; then STATE_DIR="$HOME_DIR"; else STATE_DIR="$RUN_DIR"; fi
+PYTHON="$STATE_DIR/.venv/bin/python"
+MODEL_DIR="${MU_LOCAL_JUDGE_MODEL:-${KYRN_LOCAL_JUDGE_MODEL:-$STATE_DIR/models/laya-multilingual-coreml}}"
+PORT="${MU_LOCAL_JUDGE_PORT:-${KYRN_LOCAL_JUDGE_PORT:-47823}}"
 PID_FILE="$RUN_DIR/judge.pid"
 LOG_FILE="$RUN_DIR/judge.log"
 URL="http://127.0.0.1:$PORT"
@@ -42,7 +45,8 @@ cmd_setup() {
     exit 1
   fi
   command -v uv >/dev/null || { echo "uv is required: https://docs.astral.sh/uv/" >&2; exit 1; }
-  [[ -x "$PYTHON" ]] || uv venv --python 3.12 "$HOME_DIR/.venv"
+  mkdir -p "$STATE_DIR"
+  [[ -x "$PYTHON" ]] || uv venv --python 3.12 "$STATE_DIR/.venv"
   # The official index on purpose: mirrors lag behind new releases.
   uv pip install --python "$PYTHON" --index-url https://pypi.org/simple -r "$HOME_DIR/requirements.lock.txt"
   if [[ ! -f "$MODEL_DIR/coreml_config.json" ]]; then
