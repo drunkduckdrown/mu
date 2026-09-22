@@ -452,6 +452,44 @@ describe("board feature", () => {
 		}
 	});
 
+	it("follows a switch made in another conversation on the same project, and tells its own panel", async () => {
+		const dir = mkdtempSync(join(tmpdir(), "mu-board-other-"));
+		try {
+			const count = { reads: 0 };
+			const { harness, events } = await start(
+				reading(() => ({ phase: choice("changing"), needs_user: no, changed: no }), count),
+				{},
+				dir,
+			);
+			const switches = () => events.filter((event) => event.kind === "board.switched").map((event) => event.payload);
+			expect(switches()).toEqual([{ on: false, cwd: harness.tempDir }]);
+			// The other conversation's /board on, through the same file.
+			new BoardProjects(join(dir, "mu")).set(harness.tempDir, true);
+			const agent = [
+				work("edit", { path: "a.ts" }),
+				work("edit", { path: "b.ts" }),
+				fauxAssistantMessage("Edited."),
+			];
+			harness.setResponses(Array.from({ length: 6 }, () => router(agent, [], [])));
+			await harness.session.prompt("Change a.ts and b.ts.");
+			await vi.waitFor(() => expect(count.reads).toBeGreaterThan(0), { timeout: 5000 });
+			// Said once, when it changed; not again on every step.
+			expect(switches()).toEqual([
+				{ on: false, cwd: harness.tempDir },
+				{ on: true, cwd: harness.tempDir },
+			]);
+
+			new BoardProjects(join(dir, "mu")).set(harness.tempDir, false);
+			const more = [work("edit", { path: "c.ts" }), fauxAssistantMessage("One more.")];
+			harness.setResponses(Array.from({ length: 4 }, () => router(more, [], [])));
+			await harness.session.prompt("And c.ts.");
+			expect(switches().at(-1)).toEqual({ on: false, cwd: harness.tempDir });
+			expect(switches()).toHaveLength(3);
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
 	it("drops a look still running when the session ends, and cancels its writer", async () => {
 		let release: () => void = () => undefined;
 		const gate = new Promise<void>((resolve) => {

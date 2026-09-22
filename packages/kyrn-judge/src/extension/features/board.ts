@@ -133,6 +133,21 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	};
 
 	const on = (ctx: ExtensionContext) => projects.get(ctx.cwd) ?? options.defaultOn;
+	/** What this process last told the panel. */
+	let shown: boolean | undefined;
+	/**
+	 * Tells the panel whether the board is on here, when it asks or when it changed. Another conversation on the
+	 * same project may have switched it: the switch is the project's, so this one follows and says so.
+	 */
+	const announce = (ctx: ExtensionContext, always = false): boolean => {
+		const switched = on(ctx);
+		if (always || switched !== shown) {
+			shown = switched;
+			runtime.present("board.switched", { on: switched, cwd: ctx.cwd });
+			if (!always) showWidget(ctx);
+		}
+		return switched;
+	};
 	const showWidget = (ctx: ExtensionContext | undefined) => {
 		if (!ctx?.hasUI || ctx.mode !== "tui") return;
 		ctx.ui.setWidget(WIDGET_KEY, board && on(ctx) ? boardWidget(board, language()) : undefined);
@@ -246,8 +261,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			latest = "";
 			toolsSinceLook = 0;
 			// A panel opening with the session learns whether the board is on here, and what it said last.
-			const switched = on(ctx);
-			runtime.present("board.switched", { on: switched, cwd: ctx.cwd });
+			const switched = announce(ctx, true);
 			if (board && switched) runtime.present("board.update", { ...board, restored: true });
 			showWidget(ctx);
 			return undefined;
@@ -292,7 +306,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 				},
 			];
 			toolsSinceLook++;
-			if (!on(ctx)) return undefined;
+			if (!announce(ctx)) return undefined;
 			if (toolsSinceLook >= options.everyTools && Date.now() - lastLookAt >= options.minIntervalMs) {
 				schedule(ctx, false);
 			}
@@ -314,7 +328,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		"agent_end",
 		failOpen<AgentEndEvent, undefined>((_event, ctx) => {
 			runtime.touch(ctx);
-			if (on(ctx)) schedule(ctx, true);
+			if (announce(ctx)) schedule(ctx, true);
 			return undefined;
 		}),
 	);
@@ -327,7 +341,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			const zh = language() === "zh";
 			if (word === "on" || word === "off") {
 				projects.set(ctx.cwd, word === "on");
-				runtime.present("board.switched", { on: word === "on", cwd: ctx.cwd });
+				announce(ctx, true);
 				showWidget(ctx);
 				if (ctx.hasUI) {
 					ctx.ui.notify(
