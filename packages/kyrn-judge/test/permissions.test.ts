@@ -383,6 +383,34 @@ describe("permission modes in a session", () => {
 		expect(second.of("permissions.mode")[0]).toMatchObject({ mode: "full" });
 	});
 
+	it("/permissions <mode> --here switches this conversation only, quietly, and not when it already is so", async () => {
+		const dir = mkdtempSync(join(tmpdir(), "mu-permissions-here-"));
+		dirs.push(dir);
+		new PermissionDefaults(join(dir, "mu")).set("ask");
+		const { harness, of, notes } = await start(() => ({}), { agentDir: dir, pick: () => undefined });
+		expect(of("permissions.mode")[0]).toMatchObject({ mode: "ask", conversationSwitch: true });
+		const entries = () =>
+			harness.sessionManager
+				.getBranch()
+				.filter((entry) => entry.type === "custom" && entry.customType === "mu.permissions");
+
+		await harness.session.prompt("/permissions jev --here");
+		expect(of("permissions.mode").at(-1)).toMatchObject({ mode: "jev" });
+		expect(entries()).toHaveLength(1);
+		expect(notes).toEqual([]);
+		// The default for new conversations and for the terminal is still the user's own choice.
+		expect(new PermissionDefaults(join(dir, "mu")).get()).toBe("ask");
+
+		await harness.session.prompt("/permissions jev --here");
+		expect(entries()).toHaveLength(1);
+		expect(of("permissions.mode").at(-1)).toMatchObject({ mode: "jev" });
+
+		// Reopened, the conversation keeps what the app set for it.
+		await harness.session.reload();
+		expect(of("permissions.mode").at(-1)).toMatchObject({ mode: "jev" });
+		expect(new PermissionDefaults(join(dir, "mu")).get()).toBe("ask");
+	});
+
 	it("a sub-agent works in its parent's mode as it is now", () => {
 		expect(permissionEnv({ permissionMode: () => "ask" } as unknown as KyrnRuntime)).toEqual({
 			MU_PERMISSIONS: "ask",

@@ -106,6 +106,8 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 		runtime.present("permissions.mode", {
 			mode,
 			label: modeLabel(mode),
+			// `/permissions <mode> --here` is understood: it switches this conversation and leaves the default alone.
+			conversationSwitch: true,
 			modes: PERMISSION_MODES.map((each) => ({
 				id: each,
 				label: modeLabel(each),
@@ -114,15 +116,18 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 		});
 	};
 
-	const switchTo = (next: PermissionMode, ctx: ExtensionContext) => {
+	/** `here`: this conversation only, as when the app puts a conversation back in the mode it had there. */
+	const switchTo = (next: PermissionMode, ctx: ExtensionContext, here = false) => {
 		mode = next;
 		// Allowed under one mode is not allowed under another: a switch to fewer permissions must ask again.
 		grants = new Set();
 		pi.appendEntry(PERMISSIONS_ENTRY, { mode: next });
-		try {
-			defaults.set(next);
-		} catch {
-			// The next conversation then starts in the old default; this one has switched all the same.
+		if (!here) {
+			try {
+				defaults.set(next);
+			} catch {
+				// The next conversation then starts in the old default; this one has switched all the same.
+			}
 		}
 		show(ctx);
 	};
@@ -301,7 +306,17 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 			"How much mu may do without asking: /permissions full | jev | ask, or a picker. /permissions reset forgets what you allowed for this conversation",
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
-			const word = args.trim();
+			const words = args.trim().split(/\s+/).filter(Boolean);
+			// The app switching a conversation on its own: this conversation only, said nowhere but in the switch itself.
+			const here = words.includes("--here");
+			const word = words.filter((each) => each !== "--here").join(" ");
+			if (here) {
+				const next = parseMode(word);
+				// Already so: nothing to switch, and what the user allowed stays allowed.
+				if (next && next !== mode) switchTo(next, ctx, true);
+				else show(ctx);
+				return;
+			}
 			if (word === "reset") {
 				grants = new Set();
 				ctx.ui.notify(

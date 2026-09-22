@@ -66,17 +66,20 @@ When a conversation starts:
 
 `/permissions <mode>` switches this conversation, writes the session entry, saves the new default for later conversations, and forgets allowances. Other running conversations keep their own mode.
 
+`/permissions <mode> --here` switches this conversation only: the session entry, the status line and `permissions.mode` as above, but the saved default stays as it was and nothing is notified. When the conversation is already in that mode, nothing changes and allowances stay; only `permissions.mode` is sent again. This is for the app putting a conversation back in the mode it had there (on load, fork or a new conversation seeded from the last pick): only a switch the person made should change the default for the terminal and for new conversations. Keep the order above: session entry, then `MU_PERMISSIONS`, then `permissions.json`.
+
 ## Commands
 
 - `/permissions`: a picker of the three modes with descriptions. Without a UI, it prints the current mode.
 - `/permissions full | jev | ask`: switch. `yolo`, `auto`, `minimal`, `read-only`, `完全访问`, `审批` and `最小权限` also work.
+- `/permissions full | jev | ask --here`: switch this conversation only (above).
 - `/permissions reset`: forget what was allowed for this conversation.
 
 ## Presentation events (for the desktop)
 
 | kind | payload | when |
 | --- | --- | --- |
-| `permissions.mode` | `{ mode, label, modes: [{ id, label, description }] }` | at session start and on every switch |
+| `permissions.mode` | `{ mode, label, conversationSwitch: true, modes: [{ id, label, description }] }` | at session start and on every switch. `conversationSwitch` says `--here` is understood; an older harness would read `jev --here` as an unknown word |
 | `permissions.request` | `{ id, mode, tool, kind, summary, reason, flag?, grant?: { key, label }, answers: string[] }` | right before the picker opens |
 | `permissions.resolved` | `{ id, answer: "once" \| "session" \| "deny" }` | once the picker is answered |
 | `permissions.approved` | `{ tool, kind, summary, by: "jev" \| "grant" }` | a call that needed permission ran without asking you |
@@ -84,4 +87,4 @@ When a conversation starts:
 - `kind` is one of `edit`, `shell`, `run`, `outside`, `delegate` or `other`.
 - `reason` is one of `ask` (minimal mode), `unsure`, `beyond`, `unrelated`, `flagged` or `protected`.
 - `answers` holds the exact option strings the picker offers, in order. The picker is the normal extension `select` dialog (over RPC, `extension_ui_request` with `method: "select"`), so the desktop answers it with the chosen string.
-- To switch modes, send `/permissions <id>` as a typed command.
+- To switch modes, send `/permissions <id>` as a typed command when the person picked the mode, and `/permissions <id> --here` when the app does it by itself (and `conversationSwitch` is there).
