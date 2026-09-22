@@ -26,6 +26,7 @@ import type { HarnessRoots } from "./inherit.ts";
 
 /** Stored in the session, so a reopened session shows where it stood. */
 export const BOARD_ENTRY = "kyrn.board";
+const WIDGET_KEY = "mu-board";
 
 export interface BoardUpdate extends BoardText {
 	readonly phase?: BoardPhase;
@@ -57,6 +58,16 @@ export function parseBoardEntry(data: unknown): BoardUpdate | undefined {
 		by: value.by === "model" ? "model" : "rules",
 		ended: value.ended === true,
 	};
+}
+
+/** The board above the editor of the terminal: the desktop draws its own panel from the presentation event. */
+export function boardWidget(board: BoardUpdate, language: BoardLanguage): string[] {
+	const zh = language === "zh";
+	return [
+		`${zh ? "\u03bc 看板" : "\u03bc board"} · ${board.progress}`,
+		`  ${board.now}`,
+		...board.confirm.map((item) => `  ${zh ? "要你确认" : "For you"}: ${item}`),
+	];
 }
 
 export function describeBoard(board: BoardUpdate | undefined, language: BoardLanguage): string {
@@ -112,6 +123,10 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	let again: boolean | undefined;
 
 	const on = (ctx: ExtensionContext) => projects.get(ctx.cwd) ?? options.defaultOn;
+	const showWidget = (ctx: ExtensionContext | undefined) => {
+		if (!ctx?.hasUI || ctx.mode !== "tui") return;
+		ctx.ui.setWidget(WIDGET_KEY, board && on(ctx) ? boardWidget(board, language()) : undefined);
+	};
 	const language = (): BoardLanguage => {
 		if (options.language === "zh" || options.language === "en") return options.language;
 		return languageOf(`${runtime.frame?.goal ?? ""} ${runtime.turn.userMessage}`);
@@ -180,6 +195,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		board = update;
 		pi.appendEntry<BoardUpdate>(BOARD_ENTRY, update);
 		runtime.present("board.update", update);
+		showWidget(runtime.ctx ?? ctx);
 	};
 
 	/** One look at a time, in the background: the board never holds up the agent. */
@@ -210,6 +226,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			steps = [];
 			latest = "";
 			toolsSinceLook = 0;
+			showWidget(ctx);
 			return undefined;
 		}),
 	);
@@ -280,6 +297,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			if (word === "on" || word === "off") {
 				projects.set(ctx.cwd, word === "on");
 				runtime.present("board.switched", { on: word === "on", cwd: ctx.cwd });
+				showWidget(ctx);
 				if (ctx.hasUI) {
 					ctx.ui.notify(
 						word === "on"

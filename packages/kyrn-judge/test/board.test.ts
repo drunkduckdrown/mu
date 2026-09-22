@@ -23,7 +23,13 @@ import {
 	boardRead,
 	phaseByRule,
 } from "../src/decisions/board-read.ts";
-import { BOARD_ENTRY, type BoardUpdate, describeBoard, parseBoardEntry } from "../src/extension/features/board.ts";
+import {
+	BOARD_ENTRY,
+	type BoardUpdate,
+	boardWidget,
+	describeBoard,
+	parseBoardEntry,
+} from "../src/extension/features/board.ts";
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
 import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
 import { MockJudgeProvider, type MockResponder } from "../src/providers/mock.ts";
@@ -180,6 +186,9 @@ describe("board words", () => {
 		expect(parseBoardEntry({ now: "n" })).toBeUndefined();
 		expect(describeBoard(board, "zh")).toBe("进展: p\n正在做: n\n需要你确认:\n  - c");
 		expect(describeBoard(undefined, "en")).toContain("Nothing on the board yet");
+		// Greek mu, U+03BC, never the micro sign.
+		expect(boardWidget(board as BoardUpdate, "zh")).toEqual(["\u03bc 看板 · p", "  n", "  要你确认: c"]);
+		expect(boardWidget(board as BoardUpdate, "zh")[0].codePointAt(0)).toBe(0x3bc);
 	});
 });
 
