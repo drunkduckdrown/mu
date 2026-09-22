@@ -26,8 +26,7 @@ import {
 import { mergeWriterFrame, parseWriterReply, writerRequest } from "../../frame/writer.ts";
 import { say } from "../../language.ts";
 import { BRIEF_ENV, briefFrame, parseBrief } from "../../swarm/brief.ts";
-import { clip, failOpen, type KyrnRuntime, recentTurnDigests, textOf } from "../runtime.ts";
-import { judgedText } from "./preflight.ts";
+import { clip, failOpen, judgedText, type KyrnRuntime, recentTurnDigests, textOf, userWords } from "../runtime.ts";
 
 /** Custom session entry: one per frame version, per tick and per failed update. Never sent to the model. */
 export const FRAME_ENTRY = "kyrn.frame";
@@ -37,7 +36,10 @@ export const FRAME_MESSAGE = "kyrn.frame";
 /** One user message on its way into the frame. */
 interface Ask {
 	readonly turn: number;
+	/** As pi stores it: the frame finds the message in the session by this text. */
 	readonly text: string;
+	/** The person's own words, without a host's preamble (`userWords`): what the frame and its judge read. */
+	readonly words: string;
 	/** Typed while the agent was working: it never waits and it is not a turn of its own. */
 	readonly midRun: boolean;
 	readonly startedAt: number;
@@ -119,7 +121,7 @@ export function registerFrame(runtime: KyrnRuntime): void {
 	const state = (): FrameState => runtime.frameState ?? EMPTY_STATE;
 	const failedOf = (current: FrameState) => current.unmerged.filter((said) => said.reason === "failed");
 	const asText = (ask: Ask, change?: FrameChange): UserText => ({
-		text: ask.text,
+		text: ask.words,
 		turn: ask.turn,
 		...(ask.entryId ? { entryId: ask.entryId } : {}),
 		...(change ? { change } : {}),
@@ -128,7 +130,7 @@ export function registerFrame(runtime: KyrnRuntime): void {
 	const withKnownIds = (current: FrameState): FrameState =>
 		asks.reduce(
 			(patched, ask) =>
-				ask.entryId ? withEntryId(patched, { turn: ask.turn, text: ask.text, entryId: ask.entryId }) : patched,
+				ask.entryId ? withEntryId(patched, { turn: ask.turn, text: ask.words, entryId: ask.entryId }) : patched,
 			current,
 		);
 
@@ -185,7 +187,7 @@ export function registerFrame(runtime: KyrnRuntime): void {
 			return;
 		}
 		const decision = await runtime.engine.decide(taskFrame, {
-			userMessage: clip(judgedText(ask.text, pi.getCommands()) ?? ask.text, 600),
+			userMessage: clip(judgedText(ask.words, pi.getCommands()) ?? ask.words, 600),
 			frame: compactFrame({ frame: before.frame, unmerged: failedOf(before) }) ?? { goal: before.frame.goal },
 			recentTurns: runtime.ctx ? recentTurnDigests(runtime.ctx, 2) : [],
 		});
@@ -260,6 +262,7 @@ export function registerFrame(runtime: KyrnRuntime): void {
 		const ask: Ask = {
 			turn: runtime.userTurns,
 			text,
+			words: userWords(text),
 			midRun,
 			startedAt: Date.now(),
 			landed: false,
@@ -358,7 +361,10 @@ export function registerFrame(runtime: KyrnRuntime): void {
 				return undefined;
 			}
 			// Preflight counts the turns. Where it is off, nobody has counted this one yet.
-			if (begun?.text !== event.text) runtime.beginTurn(event.text);
+			if (begun?.text !== event.text) {
+				runtime.beginTurn(event.text);
+				runtime.startTurnWork(event.text);
+			}
 			const ask = begun;
 			begun = undefined;
 			if (!ask?.pending || runtime.mode(taskFrame.id) !== "active") return undefined;

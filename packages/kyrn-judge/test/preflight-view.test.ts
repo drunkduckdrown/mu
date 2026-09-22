@@ -198,12 +198,29 @@ describe("preflight view", () => {
 		expect(applied.hintIds).toEqual(["plan_first"]);
 		expect(applied.hints).toEqual([PREFLIGHT_HINTS.plan_first]);
 		expect(applied.answerValues).toEqual(chatAnswers);
-		expect(
-			hintIdsFor(
-				{ ...chatOutcome, needsClarification: "yes", sideQuestion: "yes", gear: "heavy", swarmWorthy: "yes" },
-				["hive", "delegate"],
-			),
-		).toEqual(["clarify", "side_question", "plan_first", "try_hive", "try_delegate"]);
+		const loose = { ...chatOutcome, needsClarification: "yes" as const, sideQuestion: "yes" as const };
+		// A loosely worded request that changes nothing is simply looked into: no hint about it.
+		expect(hintIdsFor({ ...loose, gear: "heavy", swarmWorthy: "yes" }, ["hive", "delegate"])).toEqual([
+			"side_question",
+			"plan_first",
+			"try_hive",
+			"try_delegate",
+		]);
+		// One that may change files is resolved by looking and saying the assumption, never by asking first.
+		expect(hintIdsFor({ ...loose, needsFilesChanged: "unsure" }, [])).toEqual([
+			"resolve",
+			"side_question",
+			"plan_first",
+		]);
+		expect(PREFLIGHT_HINTS.resolve).not.toMatch(/ask .* before/i);
+		// A reply to the agent's own question is acted on, whatever the judge made of it, judge or no judge.
+		expect(hintIdsFor({ ...loose, needsFilesChanged: "yes" }, [], { repliesToQuestion: true })).toEqual([
+			"answered",
+			"side_question",
+			"plan_first",
+		]);
+		expect(hintIdsFor(undefined, [], { repliesToQuestion: true })).toEqual(["answered"]);
+		expect(hintIdsFor(undefined, [])).toEqual([]);
 		// The tools a hint points to must exist.
 		expect(hintIdsFor({ ...chatOutcome, planFirst: "no", gear: "heavy", swarmWorthy: "yes" }, [])).toEqual([]);
 	});

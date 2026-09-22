@@ -87,10 +87,11 @@ The launch codes:
 These fields are added to `VerdictData`:
 
 - `reasonCode`, when there is no verdict: the decision's own reason (table above, plus `off`), or `skipped` (the person pressed esc) / `no_answer` with `reasonParams: { seconds }`. Those last two are only drawn in the terminal's panel: the event itself is sent only once a decision exists.
-- `hintIds`, the same order as `hints`:
-  - `clarify`: the request looks under-specified; ask one question first
+- `hintIds`, the same order as `hints`. None of them tells the model to stop and ask: the user is the resolver of last resort.
+  - `answered`: the agent's last turn stopped to ask and this message is the reply; act on it, do not ask again (a rule, sent with or without a verdict)
+  - `resolve`: the request is loosely worded and may change files; look at the workspace, say the assumption, ask only for what cannot be found here
   - `side_question`: answer briefly, then carry on with the main task
-  - `plan_first`: large or risky; plan and confirm first
+  - `plan_first`: large or risky; plan aloud, carry it out, pause only before a step that cannot be undone
   - `try_hive`: hard; use the hive if a direct attempt fails
   - `try_delegate`: independent parts; consider delegate
 - `answerValues`, the judge's answers by question id, as it gave them:

@@ -99,8 +99,9 @@ function gearFor(turnType: TurnType | "unknown", filesChanged: Verdict, peakComp
 	if (turnType === "chat") return filesChanged === "yes" ? "standard" : "chat";
 	const conversational = turnType === "chat_question" || turnType === "design_discussion";
 	if (conversational && filesChanged === "no") return "chat";
+	// Finding where something is never needs the heavy gear, however wide the judge rates the scope.
+	if (turnType === "quick_lookup") return peakComplexity <= 1.2 ? "light" : "standard";
 	if (peakComplexity >= 2.5 || turnType === "research") return "heavy";
-	if (turnType === "quick_lookup" && peakComplexity <= 1.2) return "light";
 	return "standard";
 }
 

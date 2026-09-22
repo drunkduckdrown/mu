@@ -15,7 +15,7 @@
               │                          （屏幕上看得见：消息先停在输入框上方的面板里等归类，判定出来后才进聊天区，见 §10.5）
               └─ D2 memory.capture       这句话是纠正或长期偏好吗？→ 写入经验库（后台）
            ──▶ [before_agent_start]
-              ├─ 档位落地：思考强度本轮升/降；注入一行提示（先澄清 / 先出计划 / 可并行 / 这是旁支）
+              ├─ 档位落地：思考强度本轮升/降；注入一行提示（自己查清再做 / 这是对你提问的回答，直接做 / 先出计划 / 可并行 / 这是旁支）
               ├─ A5 memory.recall        哪些历史经验适用？→ 每条命中注入一行
               └─ A6 skills.disclosure    哪些技能与本次会话相关？→ 不相关的不进 system prompt（首轮定，之后粘住）
            ──▶ 主模型推理 ──▶ 工具调用
@@ -254,8 +254,28 @@ pi 只在代理启动时才把用户消息画进聊天区，而 `input` 处理�
 - **面板不会卡住**：没有模型或没登录时不显示（pi 会直接报错）；`agent_start` 时撤掉；再兜底 30 s 自动撤。
 - **提示模板按含义归类**：`/init` 这类模板/技能命令，判断模型读的是它的 description（加上参数），不是 "/init" 这几个字符；没有 description 的命令不做归类。以 "/" 开头但不是命令的消息（路径）照常归类。
 - `features.preflight.show: false` 可整体关闭这层显示。
+- **提示永远不叫模型去问用户（2026-09-22）**。真实会话复盘：用户说"深度分析一下 Jev 在项目里的应用"，Jev 判 `needs_clarification` 0.84，旧提示 `clarify`（"先问一个澄清问题"）让 GPT 6 Astra 一个文件没看就反问"Jev 是什么"；用户答"你自己去找吧"，又判 0.91，模型再问一句。判断模型说"太模糊"没错，错的是把它变成"去问用户"：模糊几乎都能靠看工作区解决，问用户是最贵的解法。现在的规矩：用户是最后的解法来源。
+  - `resolve`：只在"太模糊"且可能改文件时给，内容是"自己查清：看工作区、取最合理的解读、一句话说明假设、继续做；只问工作区里找不到的东西，且先做完不依赖它的部分"。只读的查找 / 解释 / 调研不给任何提示（读错了不花钱，模型直接去看）。
+  - `answered`（规则，不经判断模型）：上一轮代理没干活就停下提问（最后一条助手消息含问号、无工具调用），这条消息就是回答 → "把它当答案，现在就做，除非真做不下去否则不要再问"；同时压掉 `resolve`。
+  - `plan_first` 改成"先写几行计划、说出来、然后做；只在不可撤销的一步前停下等用户"，不再"确认后再动手"。
+  - 系统提示的 mu 段落加了同一条原则（`welcome.ts` IDENTITY），没有提示的轮次也管用。
+- **宿主前缀不算用户的话**：AionUi 内核（aioncore 二进制）会在每个会话第一条消息前面塞约 1,600 字的 `[Assistant Rules] … [/Assistant Rules]`（它的技能清单）。以前任务框架 v1 的 goal 就是这段规则文本，preflight 的 `user_message`、`recent_turns`、技能/能力披露、记忆捕获读到的也都是它。现在 `runtime.userWords()` 先剥掉这段（只剥开头的那一块，正文一字不改），所有判定输入和 frame 的 goal 都用剥完的；主模型仍收到完整消息。
+- **quick_lookup 不进 heavy 档**："你自己去找吧"被判 quick_lookup 但范围打 2.52 分，曾进 heavy 档并附 hive 提示；找东西再大也只到 standard。
 
 实测（Jev 直连）：闲聊 804 ms 出判定；"把整个项目从 callback 重构成 async/await…先别动手" → `multi-step task · heavy gear · thinking medium → high · 741 ms`，主模型给出计划并只问了一个范围问题；`/init` → `multi-step task · heavy gear`。
+
+## 10.6 一轮的编排（2026-09-22）：等待只算一次，影子从不等待，连接不断
+
+真实会话的账本（gpt-6-astra + jev-1.13，全部 active）里，一轮开始前的判定是串着等的：preflight 1.2 s → 技能披露 1.5 s → 能力披露 0.4 s，模型开跑前约 3 s；工具路径上每条命令等 JeV 审批 1–2 s，长输出的准入按块判定 1.4–5.6 s。pi 对每个事件的扩展处理器是顺序 await 的（`runner.emit`），`before_agent_start`、`tool_call`、`tool_result`、`turn_end`、`agent_end` 都在主循环上。改成：
+
+- **到达即问**。`runtime.atTurnStart(listener)`：记忆、技能、能力披露在消息到达、preflight 的问题发出之后立刻发出自己的问题（`startTurnWork`），`before_agent_start` 只是取回已经在路上的答案。一轮开始前的等待从"三者之和"变成"三者中最慢的"。技能列表从 `ctx.getSystemPromptOptions().skills` 取，和 pi 给系统提示的是同一份。
+- **一个起点**。`runtime.untilTurnDeadline(work, waitMs)`：所有回合前的等待都从 `turn.startedAt`（消息到达）起算，和任务框架原本的做法一致；一个功能等慢了，不会给下一个功能再续一段配额。
+- **串行判定器保持顺序**。本地 Laya 一次只答一题（`batchSize 1`），提前发出的问题只会排在 preflight 前面拖慢它，所以 `runtime.judgeParallel` 为假（首个 tier 是 `local`）时不提前发问，仍按重要性顺序问。
+- **影子从不等待**。shadow 的判定只是记账，之前准入、约束门、诊断投递、完成度检查、记忆召回、技能/能力披露都是先 await 再发现"不是 active"。现在这些地方在非 active 时把判定丢到后台记账，立刻放行。
+- **准入**：4000 字以上走规则（测试日志去重，免费）不变；逐块请判断模型的门槛提到 6000 字（`judgeMinChars`），并发从 4 提到 8（`concurrency`）——每块是一个小请求，瓶颈是连接数不是判断模型。
+- **连接保活**（`extension/judge-fetch.ts`）。Node 默认空闲 4 s 就断开，而模型两次工具调用之间想的时间远不止 4 s，几乎每次判定都在重新握手。实测（api.typesafe.ai，一个小问题，间隔 8 s）：默认 dispatcher 0.7–1.9 s/次，保活 60 s 的 dispatcher 0.25–0.36 s/次；空闲 90 s 连接仍在，150 s 后服务端已断（重连 1.2 s）。所有判定 provider 现在都走 `createJudgeFetch()` 的 fetch（`JudgeHost.fetch`），环境变量里的代理照旧生效；会话结束时关闭。kyrn-judge 因此依赖 `undici`（与 pi 同一版本）。
+
+没做、值得做：把一次工具输出的多块合成一个请求（Jev 状态只计费一次，一个来回而不是几轮），需要按判断模型窗口分档（Laya 1024 token 装不下）；约束门和权限审批对同一条命令各问一次判断模型，可并成一次。
 
 ## 11. 还没接的点（按价值排序）
 

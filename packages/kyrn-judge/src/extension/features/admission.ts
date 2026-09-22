@@ -46,8 +46,12 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 	const options = runtime.options("admission", {
 		enabled: true,
 		minChars: 4000,
+		/** Below this, output is admitted whole rather than judged chunk by chunk: the round trips would cost more than the tokens saved. */
+		judgeMinChars: 6000,
 		chunkChars: 1200,
 		maxChunks: 48,
+		/** Chunk verdicts asked at once. Each is one small request, so a batch is bounded by connections, not by the judge. */
+		concurrency: 8,
 		passThrough: ["read", "edit", "write"],
 		/** "rules" omits exact repeats in test-runner output; "jev" also asks the judge about what is left. */
 		testLog: "off" as TestLogStrategy | "off",
@@ -108,16 +112,20 @@ export function registerAdmission(runtime: KyrnRuntime): void {
 			}
 
 			const mode = runtime.mode(toolAdmission.id);
-			if (mode === "off" || event.isError) return undefined;
+			if (mode === "off" || event.isError || text.length < options.judgeMinChars) return undefined;
 			const chunks = chunkLines(text, options.chunkChars);
 			if (chunks.length < 3 || chunks.length > options.maxChunks) return undefined;
 			const middle = chunks.slice(1, -1);
-			const decisions = await runtime.engine.decideMany(
-				toolAdmission,
-				middle.map((chunk) => ({ call, chunk })),
-				{ signal: ctx.signal },
-			);
-			if (mode !== "active") return undefined;
+			const inputs = middle.map((chunk) => ({ call, chunk }));
+			// Shadow records what it would have dropped; only an active verdict is worth holding the result for.
+			if (mode !== "active") {
+				void runtime.engine.decideMany(toolAdmission, inputs, { concurrency: options.concurrency }).catch(() => {});
+				return undefined;
+			}
+			const decisions = await runtime.engine.decideMany(toolAdmission, inputs, {
+				signal: ctx.signal,
+				concurrency: options.concurrency,
+			});
 
 			const dropped = decisions.map((decision) => decision.source === "judge" && decision.outcome.drop);
 			if (!dropped.some(Boolean)) return undefined;

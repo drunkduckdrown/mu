@@ -72,7 +72,7 @@ export interface VerdictData {
 	thinking?: { from: string; to: string };
 	/** What the main model was told because of this verdict. */
 	hints: string[];
-	/** Which hints those are, in the same order (`clarify`, `side_question`, `plan_first`, `try_hive`, `try_delegate`). */
+	/** Which hints those are, in the same order (`answered`, `resolve`, `side_question`, `plan_first`, `try_hive`, `try_delegate`). */
 	hintIds?: string[];
 	/** The judge's raw answers, as label and value. */
 	answers: [string, string][];

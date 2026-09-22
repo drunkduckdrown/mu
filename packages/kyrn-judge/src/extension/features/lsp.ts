@@ -281,25 +281,29 @@ export function registerLsp(runtime: KyrnRuntime): void {
 							160,
 						),
 					);
-			const decision = await Promise.race([
-				runtime.engine.decide(
-					diagnosticsDelivery,
-					{
-						newErrors: brief(errors),
-						newWarnings: brief(warnings),
-						errorCount: errors.length,
-						warningCount: warnings.length,
-						elsewhereCount: unjudged.filter((item) => item.elsewhere).length,
-						inEditedFileCount: unjudged.filter((item) => item.path === file).length,
-						statedIntent: clip(runtime.lastAssistantText, 400),
-						editedFile: local(ctx, file),
-						filesEditedThisTurn: edited.size,
-						sameFileEditedRepeatedly: recentEdits.filter((path) => path === file).length >= 2,
-					},
-					{ signal: ctx.signal },
-				),
-				new Promise<undefined>((done) => setTimeout(() => done(undefined), options.waitMs)),
-			]);
+			const input = {
+				newErrors: brief(errors),
+				newWarnings: brief(warnings),
+				errorCount: errors.length,
+				warningCount: warnings.length,
+				elsewhereCount: unjudged.filter((item) => item.elsewhere).length,
+				inEditedFileCount: unjudged.filter((item) => item.path === file).length,
+				statedIntent: clip(runtime.lastAssistantText, 400),
+				editedFile: local(ctx, file),
+				filesEditedThisTurn: edited.size,
+				sameFileEditedRepeatedly: recentEdits.filter((path) => path === file).length >= 2,
+			};
+			const judged = () => runtime.engine.decide(diagnosticsDelivery, input, { signal: ctx.signal });
+			// Shadow records what it would have delivered; only an active verdict is worth holding the result for.
+			let decision: Awaited<ReturnType<typeof judged>> | undefined;
+			if (runtime.mode(diagnosticsDelivery.id) !== "active") {
+				void runtime.engine.decide(diagnosticsDelivery, input).catch(() => {});
+			} else {
+				decision = await Promise.race([
+					judged(),
+					new Promise<undefined>((done) => setTimeout(() => done(undefined), options.waitMs)),
+				]);
+			}
 			// No verdict to act on (judge down, shadow, off, too slow): errors wait for the end of the turn, warnings are not told.
 			const outcome =
 				decision?.source === "judge" ? decision.outcome : ({ errors: "hold", warnings: "drop" } as const);

@@ -1,12 +1,17 @@
 import { Type } from "typebox";
-import { skillDisclosure } from "../../decisions/skill-disclosure.ts";
-import { failOpen, type KyrnRuntime } from "../runtime.ts";
+import { type SkillCandidate, skillDisclosure } from "../../decisions/skill-disclosure.ts";
+import { failOpen, type KyrnRuntime, userWords } from "../runtime.ts";
 
 interface HiddenSkill {
 	name: string;
 	description: string;
 	filePath: string;
 	announced: boolean;
+}
+
+interface PromptSkill extends SkillCandidate {
+	readonly filePath: string;
+	readonly disableModelInvocation?: boolean;
 }
 
 /**
@@ -22,30 +27,55 @@ export function registerSkills(runtime: KyrnRuntime): void {
 	const hidden = new Map<string, HiddenSkill>();
 	let decided = false;
 
+	const visibleOf = (all: readonly PromptSkill[]) => all.filter((skill) => !skill.disableModelInvocation);
+	const disclose = (words: string, skills: readonly SkillCandidate[], signal?: AbortSignal) =>
+		runtime.engine.decide(skillDisclosure, { userMessage: words, skills }, { signal });
+	const candidatesToAnnounce = () => [...hidden.values()].filter((skill) => !skill.announced);
+	/** The question asked the moment the message arrived, alongside preflight: the first pick, or the later announcements. */
+	let early: { turn: number; first: boolean; decision: ReturnType<typeof disclose> } | undefined;
+	runtime.atTurnStart((words) => {
+		if (runtime.mode(skillDisclosure.id) === "off") return;
+		// The prompt's skill list before the turn is built: pi exposes it on the context where it can.
+		const ctx = runtime.ctx as { getSystemPromptOptions?: () => { skills?: readonly PromptSkill[] } } | undefined;
+		let all: readonly PromptSkill[] = [];
+		try {
+			all = ctx?.getSystemPromptOptions?.().skills ?? [];
+		} catch {
+			return;
+		}
+		const visible = visibleOf(all);
+		if (visible.length < options.minSkills) return;
+		const first = !decided;
+		const skills = first ? visible : runtime.userTurns > 1 ? candidatesToAnnounce() : [];
+		if (skills.length === 0) return;
+		const decision = disclose(words, skills);
+		decision.catch(() => {});
+		early = { turn: runtime.userTurns, first, decision };
+	});
+
 	pi.on(
 		"before_agent_start",
 		failOpen(async (event, ctx) => {
 			runtime.touch(ctx);
 			const mode = runtime.mode(skillDisclosure.id);
+			const started = early?.turn === runtime.userTurns ? early : undefined;
+			early = undefined;
 			const all = event.systemPromptOptions.skills ?? [];
-			const visible = all.filter((skill) => !skill.disableModelInvocation);
+			const visible = visibleOf(all);
 			if (mode === "off" || visible.length < options.minSkills) return undefined;
 
-			const bounded = <T>(work: Promise<T>): Promise<T | undefined> =>
-				Promise.race([
-					work,
-					new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), options.waitMs)),
-				]);
+			// Shadow records the verdict; only an active one is worth holding the turn for.
+			const settle = <T>(work: Promise<T>): Promise<T | undefined> => {
+				if (mode === "active") return runtime.untilTurnDeadline(work, options.waitMs);
+				void work.catch(() => {});
+				return Promise.resolve(undefined);
+			};
 
 			if (!decided) {
 				decided = true;
 				runtime.progress("choosing which skills this session needs", "skills");
-				const decision = await bounded(
-					runtime.engine.decide(
-						skillDisclosure,
-						{ userMessage: event.prompt, skills: visible },
-						{ signal: ctx.signal },
-					),
+				const decision = await settle(
+					started?.first ? started.decision : disclose(userWords(event.prompt), visible, ctx.signal),
 				);
 				if (decision?.source === "judge") {
 					for (const skill of visible) {
@@ -63,14 +93,10 @@ export function registerSkills(runtime: KyrnRuntime): void {
 			event.systemPromptOptions.skills = all.filter((skill) => !hidden.has(skill.name));
 
 			if (runtime.userTurns <= 1) return undefined;
-			const candidates = [...hidden.values()].filter((skill) => !skill.announced);
+			const candidates = candidatesToAnnounce();
 			if (candidates.length === 0) return undefined;
-			const again = await bounded(
-				runtime.engine.decide(
-					skillDisclosure,
-					{ userMessage: event.prompt, skills: candidates },
-					{ signal: ctx.signal },
-				),
+			const again = await settle(
+				started && !started.first ? started.decision : disclose(userWords(event.prompt), candidates, ctx.signal),
 			);
 			if (again?.source !== "judge" || again.outcome.relevant.length === 0) return undefined;
 			const lines: string[] = [];

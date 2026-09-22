@@ -10,7 +10,8 @@ import { compactFrame, type Frame, type FrameState, isStale } from "../frame/fra
 import type { JudgeLike } from "../judge.ts";
 import { CompositeLedger, type LedgerRecord, type LedgerSink, MemoryLedger } from "../ledger.ts";
 import type { LlmCompletion } from "../providers/llm.ts";
-import { buildJudge } from "../registry.ts";
+import { buildJudge, resolveJudgeConfig } from "../registry.ts";
+import { createJudgeFetch, type JudgeFetch } from "./judge-fetch.ts";
 import {
 	type KyrnPresentationEvent,
 	PRESENTATION_STATUS_KEY,
@@ -39,6 +40,37 @@ export function clip(text: string, length: number): string {
 	return flat.length <= length ? flat : `${flat.slice(0, length - 1)}…`;
 }
 
+/**
+ * The person's own words. A host may put its instructions in front of what the person typed: AionUi's
+ * core prefixes the first message of a conversation with `[Assistant Rules] … [/Assistant Rules]`, its
+ * skill list, some 1,600 characters. That text is for the main model. A judge asked about "the user's
+ * message", and the task frame that takes the first message as the goal, must not read it as theirs.
+ */
+export function userWords(text: string): string {
+	const preamble = /^\s*\[Assistant Rules\][\s\S]*?\[\/Assistant Rules\]\s*/i.exec(text);
+	return preamble ? text.slice(preamble[0].length) : text;
+}
+
+/**
+ * What the judge should read for a message: the person's own words, without a
+ * host's preamble (`userWords`). A prompt template or a skill command stands
+ * for what it does, not for its name: "/init" says nothing, its description
+ * does. Undefined means there is nothing worth judging.
+ */
+export function judgedText(
+	text: string,
+	commands: readonly { name: string; description?: string }[],
+): string | undefined {
+	const words = userWords(text);
+	const match = /^\/(\S+)\s*([\s\S]*)$/.exec(words.trim());
+	if (!match) return words;
+	const command = commands.find((candidate) => candidate.name === match[1]);
+	// Not a command after all: a message may well start with a path.
+	if (!command) return words;
+	if (!command.description) return undefined;
+	return match[2] ? `${command.description}\n${match[2]}` : command.description;
+}
+
 /** The user turn that asked for a decision, as this runtime stamped it on the record. */
 function askedTurn(record: LedgerRecord): number | undefined {
 	const origin = record.origin;
@@ -55,15 +87,43 @@ export function recentTurnDigests(ctx: Pick<ExtensionContext, "sessionManager">,
 		if (entry.type !== "message") continue;
 		const message = entry.message as { role?: unknown; content?: unknown };
 		if (message.role !== "user" && message.role !== "assistant") continue;
-		const text = clip(textOf(message.content), length);
+		const said = message.role === "user" ? userWords(textOf(message.content)) : textOf(message.content);
+		const text = clip(said, length);
 		if (text) digests.unshift(`${message.role}: ${text}`);
 	}
 	return digests;
 }
 
+/**
+ * True when the agent's last turn ended on a question without working on it (its final message holds
+ * a question mark and made no tool call): the user message that follows is the reply, and the turn it
+ * starts must act on that reply, not ask again. A rule, so it holds with no judge at all.
+ */
+export function lastTurnStoppedToAsk(ctx: Pick<ExtensionContext, "sessionManager">): boolean {
+	const branch = ctx.sessionManager.getBranch();
+	for (let index = branch.length - 1; index >= 0; index--) {
+		const entry = branch[index];
+		if (entry.type !== "message") continue;
+		const message = entry.message as { role?: unknown; content?: unknown };
+		// Nothing said since the last user message: the previous turn produced no question to answer.
+		if (message.role === "user") return false;
+		if (message.role !== "assistant") continue;
+		const parts = Array.isArray(message.content) ? message.content : [];
+		if (parts.some((part) => (part as { type?: unknown } | null)?.type === "toolCall")) return false;
+		const text = textOf(message.content).trim();
+		return text.length > 0 && text.length <= 1200 && /[?？]/.test(text);
+	}
+	return false;
+}
+
 /** What one user turn has established so far. Reset when the next user message arrives. */
 export interface TurnState {
+	/** What the person typed, without a host's preamble (`userWords`). */
 	userMessage: string;
+	/** When the message arrived. Every wait before the turn starts counts from here, so waits overlap instead of adding up. */
+	startedAt: number;
+	/** The agent's last turn stopped to ask, and this message is the reply (`lastTurnStoppedToAsk`). */
+	repliesToQuestion: boolean;
 	preflight?: PreflightOutcome;
 	/** Files edited or written this turn, and whether a command ran after the last edit. */
 	editedFiles: Set<string>;
@@ -129,8 +189,15 @@ export class KyrnRuntime {
 	 * off, and then the guard alone looks at risky commands, as before there were modes.
 	 */
 	permissionMode?: () => "full" | "jev" | "ask";
+	/**
+	 * True when the configured judge answers concurrent calls concurrently (a hosted model). The local
+	 * sidecar answers one at a time, and there the work of a turn is best asked in order of importance.
+	 */
+	readonly judgeParallel: boolean;
 	private latestCtx: ExtensionContext | undefined;
 	private firstUserMessage = "";
+	private turnStartListeners: ((words: string) => void)[] = [];
+	private judgeHttp: JudgeFetch | undefined;
 	private presentationSequence = 0;
 	onPresentation?: PresentationListener;
 
@@ -138,6 +205,7 @@ export class KyrnRuntime {
 		this.pi = pi;
 		this.config = config;
 		if (problem) this.problems.push(problem);
+		this.judgeParallel = resolveJudgeConfig(config.tiers[0] ?? "", config)?.type !== "local";
 		const sessionLedger: LedgerSink = {
 			append: (record: LedgerRecord) => {
 				pi.appendEntry(LEDGER_ENTRY_TYPE, record);
@@ -157,6 +225,10 @@ export class KyrnRuntime {
 			origin: () => ({ turn: this.userTurns, frame: this.frameState?.frame?.version ?? 0 }),
 		});
 		for (const [specId, tiers] of Object.entries(config.routes)) this.route(specId, tiers);
+		pi.on("session_shutdown", () => {
+			void this.judgeHttp?.close().catch(() => {});
+			this.judgeHttp = undefined;
+		});
 	}
 
 	/** Answer one decision with its own tiers, e.g. `/mu route browser.step luna`. Empty tiers undo it. */
@@ -167,10 +239,12 @@ export class KyrnRuntime {
 	}
 
 	private buildConfiguredJudge(tiers: readonly string[]): JudgeLike {
+		this.judgeHttp ??= createJudgeFetch();
 		const built = buildJudge(
 			{ ...this.config, tiers },
 			{
 				env: process.env,
+				fetch: this.judgeHttp.fetch,
 				gatewayApiKey: async () =>
 					(await this.latestCtx?.modelRegistry.getApiKeyForProvider(GATEWAY_PROVIDER_ID)) ??
 					process.env.AI_GATEWAY_API_KEY,
@@ -244,13 +318,59 @@ export class KyrnRuntime {
 
 	beginTurn(userMessage: string): void {
 		this.userTurns++;
-		if (!this.firstUserMessage) this.firstUserMessage = userMessage;
-		this.turn = emptyTurn(userMessage);
+		const words = userWords(userMessage);
+		if (!this.firstUserMessage) this.firstUserMessage = words;
+		this.turn = emptyTurn(words);
 		try {
+			// The frame keeps the raw text: it matches the message by it once pi has stored it.
 			this.onTurnBegin?.(userMessage);
 		} catch {
 			// The frame is bookkeeping: a turn starts without it.
 		}
+	}
+
+	/**
+	 * Features that ask the judge something about every user message register here, and start that
+	 * work the moment the message arrives instead of when the turn starts: memory, skills and
+	 * capabilities are then read alongside preflight, and the turn starts after the slowest of them
+	 * rather than after all of them in a row. The listener gets what the judge should read
+	 * (`judgedText`). It is not called when the judge answers one call at a time: there, later work
+	 * would only delay preflight, and the turn's order of importance is preflight first.
+	 */
+	atTurnStart(listener: (words: string) => void): void {
+		this.turnStartListeners.push(listener);
+	}
+
+	/** Whoever counted the turn calls this once preflight's own question is on its way. */
+	startTurnWork(userMessage: string): void {
+		if (!this.judgeParallel) return;
+		const words = judgedText(userMessage, this.pi.getCommands());
+		if (words === undefined) return;
+		for (const listener of this.turnStartListeners) {
+			try {
+				listener(words);
+			} catch {
+				// Early work is an optimisation: a feature that fails to start it starts it when the turn does.
+			}
+		}
+	}
+
+	/**
+	 * Waits for `work` until `waitMs` after the message arrived, whichever comes first; undefined
+	 * when the time is up. Every wait before the turn counts from the same moment, so a judge that
+	 * was slow for one feature does not buy the next feature a fresh allowance.
+	 */
+	untilTurnDeadline<T>(work: Promise<T>, waitMs: number): Promise<T | undefined> {
+		const left = Math.max(0, this.turn.startedAt + waitMs - Date.now());
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		return Promise.race([
+			work,
+			new Promise<undefined>((resolve) => {
+				timer = setTimeout(() => resolve(undefined), left);
+			}),
+		]).finally(() => {
+			if (timer) clearTimeout(timer);
+		});
 	}
 
 	/** The full task frame: goal, constraints with their sources, acceptance items, open questions, version. */
@@ -356,6 +476,8 @@ export class KyrnRuntime {
 function emptyTurn(userMessage: string): TurnState {
 	return {
 		userMessage,
+		startedAt: Date.now(),
+		repliesToQuestion: false,
 		editedFiles: new Set(),
 		ranCommandAfterLastEdit: false,
 		nudgedForCompletion: false,

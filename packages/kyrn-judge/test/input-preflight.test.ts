@@ -76,6 +76,23 @@ describe("input preflight", () => {
 		expect(decision.outcome).toMatchObject({ turnType: "quick_lookup", sideQuestion: "no" });
 	});
 
+	it("keeps a lookup out of the heavy gear however wide the judge rates its scope", async () => {
+		// "Go and find it yourself" was rated as touching the whole codebase and went heavy, hive hint and all.
+		const { engine } = activeEngine({
+			turn_type: { type: "choice", choice: "quick_lookup", probabilities: { quick_lookup: 0.73, research: 0.23 } },
+			needs_clarification: yes,
+			needs_files_changed: no,
+			task_complexity: { type: "score", score: 2.52 },
+		});
+
+		const decision = await engine.decide(inputPreflight, {
+			userMessage: "我们的这个工作目录，你自己去找吧。",
+			recentTurns: ["user: 深度分析一下 Jev", "assistant: 你说的 Jev 具体指哪个组件？"],
+		});
+
+		expect(decision.outcome).toMatchObject({ turnType: "quick_lookup", gear: "standard" });
+	});
+
 	it("puts a decomposable migration in the heavy gear and flags it for the swarm", async () => {
 		const { engine } = activeEngine({
 			turn_type: { type: "choice", choice: "multi_step_task", probabilities: { multi_step_task: 0.9 } },

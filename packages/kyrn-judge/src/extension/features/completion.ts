@@ -46,13 +46,19 @@ export function registerCompletion(runtime: KyrnRuntime): void {
 			const finalMessage = last ? textOf((last as { content?: unknown }).content) : "";
 			if (!finalMessage.trim()) return undefined;
 
-			const decision = await runtime.engine.decide(turnCompletion, {
+			const input = {
 				userMessage: clip(turn.userMessage, 400),
 				finalMessage: clip(finalMessage, 600),
 				editedFiles: turn.editedFiles.size,
 				ranCommandAfterLastEdit: turn.ranCommandAfterLastEdit,
 				openItems: open.length,
-			});
+			};
+			// Shadow records what it would have said; only an active verdict is worth holding the end of the run for.
+			if (runtime.mode(turnCompletion.id) !== "active") {
+				void runtime.engine.decide(turnCompletion, input).catch(() => {});
+				return undefined;
+			}
+			const decision = await runtime.engine.decide(turnCompletion, input);
 			if (decision.source !== "judge" || decision.outcome !== "nudge") return undefined;
 			turn.nudgedForCompletion = true;
 			const said: string[] = [];

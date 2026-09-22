@@ -13,6 +13,8 @@ import type { JudgeProvider } from "./types.ts";
 /** What only the host application can supply: credentials and generative models. */
 export interface JudgeHost {
 	gatewayApiKey?: ApiKeyResolver;
+	/** The `fetch` judge providers call with, e.g. one that keeps its connections open between calls. */
+	fetch?: typeof fetch;
 	/** A completion function bound to "provider/model-id", or undefined when the host has no such model. */
 	llm?: (model: string, options: { thinking?: string }) => LlmCompletion | undefined;
 	env?: Readonly<Record<string, string | undefined>>;
@@ -40,7 +42,10 @@ function createProvider(name: string, judge: JudgeConfig, host: JudgeHost): Judg
 		case "mock":
 			return new MockJudgeProvider();
 		case "local":
-			return new LocalJudgeProvider({ baseUrl: judge.baseUrl ?? muEnv("LOCAL_JUDGE_URL", host.env ?? {}) });
+			return new LocalJudgeProvider({
+				baseUrl: judge.baseUrl ?? muEnv("LOCAL_JUDGE_URL", host.env ?? {}),
+				fetch: host.fetch,
+			});
 		case "http": {
 			const apiKeyEnv = judge.apiKeyEnv;
 			return new LocalJudgeProvider({
@@ -51,6 +56,7 @@ function createProvider(name: string, judge: JudgeConfig, host: JudgeHost): Judg
 					const token = apiKeyEnv ? host.env?.[apiKeyEnv] : undefined;
 					return token ? { Authorization: `Bearer ${token}` } : {};
 				},
+				fetch: host.fetch,
 			});
 		}
 		case "llm": {
@@ -64,6 +70,7 @@ function createProvider(name: string, judge: JudgeConfig, host: JudgeHost): Judg
 				apiKey: () => host.env?.[judge.apiKeyEnv ?? "TYPESAFE_API_KEY"],
 				model: judge.model,
 				baseUrl: judge.baseUrl,
+				fetch: host.fetch,
 			});
 		case "jev":
 			// A TypeSafe key is the direct route; without one, Jev is reached through the Vercel AI Gateway.
@@ -77,6 +84,7 @@ function createProvider(name: string, judge: JudgeConfig, host: JudgeHost): Judg
 					: (host.gatewayApiKey ?? (() => host.env?.AI_GATEWAY_API_KEY)),
 				model: judge.model,
 				baseUrl: judge.baseUrl,
+				fetch: host.fetch,
 			});
 	}
 }

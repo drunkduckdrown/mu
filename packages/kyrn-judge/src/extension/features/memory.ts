@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
 import { type Lesson, memoryCapture, memoryRecall } from "../../decisions/memory.ts";
 import { say } from "../../language.ts";
-import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
+import { clip, failOpen, type KyrnRuntime, userWords } from "../runtime.ts";
 
 export interface StoredLesson extends Lesson {
 	/** Project the lesson came from; undefined for lessons that apply everywhere. */
@@ -52,10 +52,35 @@ Reply with one JSON object and nothing else: {"trigger": "<the situation in whic
  * it. Without a writer the user's own words are kept.
  */
 export function registerMemory(runtime: KyrnRuntime): void {
-	const options = runtime.options("memory", { enabled: true, path: "", maxCandidates: 24, maxInjected: 5 });
+	const options = runtime.options("memory", {
+		enabled: true,
+		path: "",
+		maxCandidates: 24,
+		maxInjected: 5,
+		/** How long the turn waits for the recall verdict, counted from the arrival of the message. */
+		waitMs: 4000,
+	});
 	if (!options.enabled) return;
 	const { pi } = runtime;
 	const path = options.path || join(getAgentDir(), "mu", "lessons.jsonl");
+
+	const candidates = (cwd: string): StoredLesson[] =>
+		readLessons(path)
+			.filter((lesson) => lesson.cwd === undefined || lesson.cwd === cwd)
+			.slice(-options.maxCandidates);
+	const recall = (words: string, lessons: readonly StoredLesson[], signal?: AbortSignal) =>
+		runtime.engine.decide(memoryRecall, { userMessage: clip(words, 400), lessons }, { signal });
+	/** The recall asked the moment the message arrived, alongside preflight. */
+	let early: { turn: number; lessons: StoredLesson[]; decision: ReturnType<typeof recall> } | undefined;
+	runtime.atTurnStart((words) => {
+		const cwd = runtime.ctx?.cwd;
+		if (!cwd || runtime.mode(memoryRecall.id) === "off") return;
+		const lessons = candidates(cwd);
+		if (lessons.length === 0) return;
+		const decision = recall(words, lessons);
+		decision.catch(() => {});
+		early = { turn: runtime.userTurns, lessons, decision };
+	});
 
 	const store = async (userMessage: string, previousAssistantMessage: string, cwd: string): Promise<void> => {
 		let trigger = clip(userMessage, 200);
@@ -93,7 +118,7 @@ export function registerMemory(runtime: KyrnRuntime): void {
 			if (!previous) return undefined;
 			void runtime.engine
 				.decide(memoryCapture, {
-					userMessage: clip(event.text, 400),
+					userMessage: clip(userWords(event.text), 400),
 					previousAssistantMessage: clip(previous, 400),
 				})
 				.then((decision) => {
@@ -110,19 +135,21 @@ export function registerMemory(runtime: KyrnRuntime): void {
 		"before_agent_start",
 		failOpen(async (event, ctx) => {
 			runtime.touch(ctx);
+			const started = early?.turn === runtime.userTurns ? early : undefined;
+			early = undefined;
 			if (runtime.turn.preflight?.needsMemory === "no") return undefined;
-			const lessons = readLessons(path)
-				.filter((lesson) => lesson.cwd === undefined || lesson.cwd === ctx.cwd)
-				.slice(-options.maxCandidates);
+			const lessons = started?.lessons ?? candidates(ctx.cwd);
 			if (lessons.length === 0) return undefined;
+			const pending = started?.decision ?? recall(userWords(event.prompt), lessons, ctx.signal);
+			// Shadow records the verdict; only an active one is worth holding the turn for.
+			if (runtime.mode(memoryRecall.id) !== "active") {
+				void pending.catch(() => {});
+				return undefined;
+			}
 
 			runtime.progress("checking lessons from earlier sessions", "lessons");
-			const decision = await runtime.engine.decide(
-				memoryRecall,
-				{ userMessage: clip(event.prompt, 400), lessons },
-				{ signal: ctx.signal },
-			);
-			if (decision.source !== "judge" || decision.outcome.apply.length === 0) return undefined;
+			const decision = await runtime.untilTurnDeadline(pending, options.waitMs);
+			if (!decision || decision.source !== "judge" || decision.outcome.apply.length === 0) return undefined;
 			const lines = lessons
 				.filter((lesson) => decision.outcome.apply.includes(lesson.id))
 				.slice(-options.maxInjected)

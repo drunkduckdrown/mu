@@ -7,7 +7,7 @@ import {
 	type PreflightInput,
 	type PreflightOutcome,
 } from "../../decisions/input-preflight.ts";
-import { failOpen, type KyrnRuntime, recentTurnDigests } from "../runtime.ts";
+import { failOpen, judgedText, type KyrnRuntime, lastTurnStoppedToAsk, recentTurnDigests } from "../runtime.ts";
 import {
 	renderPending,
 	renderVerdict,
@@ -28,11 +28,21 @@ export function thinkingForGear(gear: Gear, baseline: Level): Level {
 	return baseline;
 }
 
-/** The hints the main model can be given, by a stable id a client can translate the shown line by. */
+/**
+ * The hints the main model can be given, by a stable id a client can translate the shown line by.
+ *
+ * None of them makes the model stop and ask. The user is the resolver of last resort: a loosely worded
+ * request is resolved by looking at the workspace and saying the assumption, a reply to a question is
+ * acted on, and a big change is planned aloud and then carried out.
+ */
 export const PREFLIGHT_HINTS = {
-	clarify: "The request looks under-specified. Ask one focused clarifying question before doing significant work.",
+	answered:
+		"You stopped to ask the user something, and this message is the reply. Take it as the answer and act on it now. Ask nothing more unless the work truly cannot proceed without it.",
+	resolve:
+		"The request is loosely worded. Resolve it yourself: look at the workspace, take the most plausible reading, say the assumption in one line and carry on. Ask the user only for what cannot be found here, and only after delivering what does not depend on it.",
 	side_question: "This is a side question. Answer it briefly, keep the plan for the main task, then carry on with it.",
-	plan_first: "This looks like a large or risky change. Write a short plan and confirm the approach before editing.",
+	plan_first:
+		"This looks like a large or risky change. Write a short plan, state it in a few lines, then carry it out. Pause for the user's go-ahead only before a step that cannot be undone.",
 	try_hive:
 		"This looks hard. If the cause is unknown or a direct attempt fails, use the hive tool: several investigators on the one problem, from different angles, sharing what they find.",
 	try_delegate: "This work splits into independent parts. Consider the delegate tool to run them in parallel.",
@@ -40,10 +50,31 @@ export const PREFLIGHT_HINTS = {
 
 export type PreflightHintId = keyof typeof PREFLIGHT_HINTS;
 
-/** Which hints a verdict calls for. Unsure verdicts say nothing. */
-export function hintIdsFor(outcome: PreflightOutcome, tools: readonly string[]): PreflightHintId[] {
+/** What the rules know about the turn, next to the judge's verdict. */
+export interface HintFlags {
+	/** The agent's last turn stopped to ask, and this message is the reply (`lastTurnStoppedToAsk`). */
+	readonly repliesToQuestion?: boolean;
+}
+
+/**
+ * Which hints a verdict calls for. Unsure verdicts say nothing.
+ *
+ * A reply to the agent's own question is acted on, whatever the judge makes of it: "go and find it
+ * yourself" reads as vague, and the one hint it must not get is "ask". A loosely worded request gets
+ * the resolve hint only when it is about to change files; a lookup, an explanation or a survey costs
+ * nothing to read the wrong way, and the model simply looks.
+ */
+export function hintIdsFor(
+	outcome: PreflightOutcome | undefined,
+	tools: readonly string[],
+	flags: HintFlags = {},
+): PreflightHintId[] {
 	const ids: PreflightHintId[] = [];
-	if (outcome.needsClarification === "yes") ids.push("clarify");
+	if (flags.repliesToQuestion) ids.push("answered");
+	if (!outcome) return ids;
+	if (!flags.repliesToQuestion && outcome.needsClarification === "yes" && outcome.needsFilesChanged !== "no") {
+		ids.push("resolve");
+	}
 	if (outcome.sideQuestion === "yes") ids.push("side_question");
 	if (outcome.planFirst === "yes") ids.push("plan_first");
 	if (outcome.gear === "heavy" && tools.includes("hive")) ids.push("try_hive");
@@ -52,8 +83,12 @@ export function hintIdsFor(outcome: PreflightOutcome, tools: readonly string[]):
 }
 
 /** One line per verdict the main model should know about. */
-export function hintsFor(outcome: PreflightOutcome, tools: readonly string[]): string[] {
-	return hintIdsFor(outcome, tools).map((id) => PREFLIGHT_HINTS[id]);
+export function hintsFor(
+	outcome: PreflightOutcome | undefined,
+	tools: readonly string[],
+	flags: HintFlags = {},
+): string[] {
+	return hintIdsFor(outcome, tools, flags).map((id) => PREFLIGHT_HINTS[id]);
 }
 
 function describe(label: string, decision: Decision<PreflightOutcome>): string {
@@ -92,23 +127,7 @@ interface Staged {
 	entryShown: boolean;
 }
 
-/**
- * What the judge should read for a message. A prompt template or a skill
- * command stands for what it does, not for its name: "/init" says nothing,
- * its description does. Undefined means there is nothing worth judging.
- */
-export function judgedText(
-	text: string,
-	commands: readonly { name: string; description?: string }[],
-): string | undefined {
-	const match = /^\/(\S+)\s*([\s\S]*)$/.exec(text.trim());
-	if (!match) return text;
-	const command = commands.find((candidate) => candidate.name === match[1]);
-	// Not a command after all: a message may well start with a path.
-	if (!command) return text;
-	if (!command.description) return undefined;
-	return match[2] ? `${command.description}\n${match[2]}` : command.description;
-}
+export { judgedText };
 
 /** Who settled the verdict and what became of it. Exported for tests. */
 export function verdictStateOf(staged: {
@@ -151,8 +170,10 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 			"input",
 			failOpen((event, ctx) => {
 				runtime.touch(ctx);
-				if (event.source !== "extension" && event.text.trim() && !event.streamingBehavior)
+				if (event.source !== "extension" && event.text.trim() && !event.streamingBehavior) {
 					runtime.beginTurn(event.text);
+					runtime.startTurnWork(event.text);
+				}
 				return { action: "continue" as const };
 			}),
 		);
@@ -257,6 +278,8 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 			if (event.streamingBehavior) return { action: "continue" as const };
 
 			runtime.beginTurn(event.text);
+			// A rule, settled before the judge is asked: a reply to the agent's own question is acted on.
+			runtime.turn.repliesToQuestion = lastTurnStoppedToAsk(ctx);
 			// Whatever the last message left on screen or in flight is no longer about the current one.
 			closePanel(ctx);
 			staged = undefined;
@@ -307,6 +330,8 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 					// Showing the verdict is a courtesy; failing to must not cost the turn its gear.
 				}
 			});
+			// Preflight's question is on its way: the other per-message questions can follow it now.
+			runtime.startTurnWork(event.text);
 			if (!active) {
 				void pending.catch(() => {});
 				return { action: "continue" as const };
@@ -354,11 +379,13 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 		failOpen((_event, ctx) => {
 			runtime.touch(ctx);
 			const outcome = runtime.turn.preflight;
+			const flags: HintFlags = { repliesToQuestion: runtime.turn.repliesToQuestion };
 			if (staged) staged.turnStarted = true;
-			if (!outcome) return undefined;
-			if (staged) staged.applied = true;
+			// The rule's hint needs no verdict; the gear does.
+			if (!outcome && !flags.repliesToQuestion) return undefined;
+			if (staged && outcome) staged.applied = true;
 
-			if (options.thinking) {
+			if (options.thinking && outcome) {
 				const current = pi.getThinkingLevel() as Level;
 				const wanted = thinkingForGear(outcome.gear, current);
 				if (wanted !== current) {
@@ -367,7 +394,7 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 					if (staged) staged.thinking = { from: current, to: wanted };
 				}
 			}
-			const hintIds = options.hints ? hintIdsFor(outcome, pi.getActiveTools()) : [];
+			const hintIds = options.hints ? hintIdsFor(outcome, pi.getActiveTools(), flags) : [];
 			const hints = hintIds.map((id) => PREFLIGHT_HINTS[id]);
 			if (staged) {
 				staged.hints = hints;

@@ -2,7 +2,7 @@ import { Type } from "typebox";
 import type { Capability, OpenedBy } from "../../catalog/catalog.ts";
 import { capabilityDisclosure } from "../../decisions/capability-disclosure.ts";
 import { say } from "../../language.ts";
-import { failOpen, type KyrnRuntime } from "../runtime.ts";
+import { failOpen, type KyrnRuntime, userWords } from "../runtime.ts";
 
 export const CAPABILITY_ENTRY = "kyrn.capability";
 const CAPABILITY_MESSAGE = "kyrn.capabilities";
@@ -28,6 +28,18 @@ export function registerCatalog(runtime: KyrnRuntime): void {
 	const options = runtime.options("catalog", { enabled: true, waitMs: 4000 });
 	if (!options.enabled) return;
 	const { pi, catalog } = runtime;
+	const disclose = (words: string, candidates: readonly Capability[], signal?: AbortSignal) =>
+		runtime.engine.decide(capabilityDisclosure, { userMessage: words, capabilities: candidates }, { signal });
+	/** The question asked the moment the message arrived, alongside preflight. */
+	let early: { turn: number; decision: ReturnType<typeof disclose> } | undefined;
+	runtime.atTurnStart((words) => {
+		if (runtime.mode(capabilityDisclosure.id) === "off") return;
+		const candidates = catalog.hidden();
+		if (candidates.length === 0) return;
+		const decision = disclose(words, candidates);
+		decision.catch(() => {});
+		early = { turn: runtime.userTurns, decision };
+	});
 	// Only tools this feature switched off are ever switched back on: what the user pinned with --tools stays as it is.
 	const withheld = new Set<string>();
 
@@ -62,18 +74,18 @@ export function registerCatalog(runtime: KyrnRuntime): void {
 				applyLoadout(true);
 				return undefined;
 			}
+			const started = early?.turn === runtime.userTurns ? early : undefined;
+			early = undefined;
 			const candidates = catalog.hidden();
 			const opened: Capability[] = [];
 			if (candidates.length > 0) {
-				runtime.progress("choosing which capabilities this task needs", "capabilities");
-				const decision = await Promise.race([
-					runtime.engine.decide(
-						capabilityDisclosure,
-						{ userMessage: event.prompt, capabilities: candidates },
-						{ signal: ctx.signal },
-					),
-					new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), options.waitMs)),
-				]);
+				const pending = started?.decision ?? disclose(userWords(event.prompt), candidates, ctx.signal);
+				// Shadow records the verdict; only an active one is worth holding the turn for.
+				let decision: Awaited<typeof pending> | undefined;
+				if (runtime.mode(capabilityDisclosure.id) === "active") {
+					runtime.progress("choosing which capabilities this task needs", "capabilities");
+					decision = await runtime.untilTurnDeadline(pending, options.waitMs);
+				} else void pending.catch(() => {});
 				if (decision?.source === "judge") {
 					for (const id of decision.outcome.open) {
 						// One that fails to start stays hidden and findable; the others still open.

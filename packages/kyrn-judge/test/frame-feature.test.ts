@@ -131,6 +131,18 @@ describe("task frame feature", () => {
 		expect(frameAt).toBeGreaterThan(userAt);
 	});
 
+	it("takes the person's own words as the goal when a host put its rules in front of the first message", async () => {
+		const { harness, shown, entries } = await start(verdicts("none"));
+		harness.setResponses([fauxAssistantMessage("On it.")]);
+
+		await harness.session.prompt(
+			`[Assistant Rules]\n## Available Skills\n- **aionui-config**: Configure AionUi.\n[/Assistant Rules]\n\n${GOAL}`,
+		);
+
+		expect(shown()).toMatchObject({ reason: "created", frame: { version: 1, goal: GOAL } });
+		expect(entries()).toMatchObject([{ reason: "created", frame: { version: 1, goal: GOAL } }]);
+	});
+
 	it("a correction bumps the version, keeps the user's words although the writer paraphrased, and tells the model", async () => {
 		const { harness, shown, entries, notes, records } = await start(verdicts("correction", "none"));
 		let writerSaw = "";

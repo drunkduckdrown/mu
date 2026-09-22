@@ -45,14 +45,17 @@ export function registerConstraints(runtime: KyrnRuntime): void {
 			const constraints = (runtime.frame?.constraints ?? [])
 				.slice(-options.maxConstraints)
 				.map((entry) => entry.text);
-			if (constraints.length === 0 || runtime.mode(toolConstraint.id) === "off") return undefined;
+			const mode = runtime.mode(toolConstraint.id);
+			if (constraints.length === 0 || mode === "off") return undefined;
+			const input = { toolName: event.toolName, call: describeCall(event.toolName, event.input), constraints };
+			// Shadow records what it would have stopped; only an active verdict is worth holding the call for.
+			if (mode !== "active") {
+				void runtime.engine.decide(toolConstraint, input).catch(() => {});
+				return undefined;
+			}
 
 			const decision = await Promise.race([
-				runtime.engine.decide(
-					toolConstraint,
-					{ toolName: event.toolName, call: describeCall(event.toolName, event.input), constraints },
-					{ signal: ctx.signal },
-				),
+				runtime.engine.decide(toolConstraint, input, { signal: ctx.signal }),
 				new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), options.waitMs)),
 			]);
 			// Shadow records what it would have stopped. Only an active, judged verdict stops a call.
