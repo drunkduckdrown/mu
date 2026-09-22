@@ -5,7 +5,7 @@ name: npm package
 # Publishing is not done here: whoever is logged in to npm publishes the checked tarball by hand.
 on:
   push:
-    branches: [main]
+    branches: [main, npm-package]
     paths:
       - 'kyrn/**'
       - 'packages/**'
