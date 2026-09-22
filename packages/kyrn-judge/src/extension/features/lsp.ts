@@ -11,6 +11,7 @@ import {
 	type SessionShutdownEvent,
 } from "@earendil-works/pi-coding-agent";
 import { diagnosticsDelivery } from "../../decisions/diagnostics-delivery.ts";
+import { say } from "../../language.ts";
 import { formatReport, lineMap, type ReportItem } from "../../lsp/diagnostics.ts";
 import { LspManager } from "../../lsp/manager.ts";
 import { mergeServers, type ServerSpec } from "../../lsp/servers.ts";
@@ -385,7 +386,10 @@ export function registerLsp(runtime: KyrnRuntime): void {
 	);
 
 	pi.registerCommand("lsp", {
-		description: "Language servers: which are installed, which are running, and the last error",
+		description: say({
+			zh: "语言服务器：装了哪些、哪些在运行、最近一次出错",
+			en: "Language servers: which are installed, which are running, and the last error",
+		}),
 		handler: async (_args, ctx) => {
 			runtime.touch(ctx);
 			const known = servers(ctx, true);

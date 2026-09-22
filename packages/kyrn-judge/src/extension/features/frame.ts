@@ -24,6 +24,7 @@ import {
 	withEntryId,
 } from "../../frame/frame.ts";
 import { mergeWriterFrame, parseWriterReply, writerRequest } from "../../frame/writer.ts";
+import { say } from "../../language.ts";
 import { BRIEF_ENV, briefFrame, parseBrief } from "../../swarm/brief.ts";
 import { clip, failOpen, type KyrnRuntime, recentTurnDigests, textOf } from "../runtime.ts";
 import { judgedText } from "./preflight.ts";
@@ -512,7 +513,10 @@ export function registerFrame(runtime: KyrnRuntime): void {
 	});
 
 	pi.registerCommand("frame", {
-		description: "The task frame: goal, your hard constraints and where you said them, subgoal, acceptance items",
+		description: say({
+			zh: "任务帧：目标、你的硬约束（原话加出处）、当前子目标、验收条件",
+			en: "The task frame: goal, your hard constraints and where you said them, subgoal, acceptance items",
+		}),
 		handler: async (_args, ctx) => {
 			runtime.touch(ctx);
 			const text = describeFrame(state());

@@ -11,6 +11,7 @@ import {
 	shellEnv,
 	shellKind,
 } from "../../background/shell.ts";
+import { say } from "../../language.ts";
 import { muHome } from "../../naming.ts";
 import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
 
@@ -289,7 +290,10 @@ export function registerBackground(runtime: KyrnRuntime): void {
 	});
 
 	pi.registerCommand("jobs", {
-		description: "Background jobs: /jobs, /jobs stop <id|all>",
+		description: say({
+			zh: "后台命令：/jobs 查看，/jobs stop <编号|all> 停掉",
+			en: "Background jobs: /jobs, /jobs stop <id|all>",
+		}),
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
 			const [verb, target] = args.trim().split(/\s+/);

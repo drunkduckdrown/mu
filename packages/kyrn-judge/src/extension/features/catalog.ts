@@ -1,6 +1,7 @@
 import { Type } from "typebox";
 import type { Capability, OpenedBy } from "../../catalog/catalog.ts";
 import { capabilityDisclosure } from "../../decisions/capability-disclosure.ts";
+import { say } from "../../language.ts";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
 
 export const CAPABILITY_ENTRY = "kyrn.capability";
@@ -158,7 +159,10 @@ export function registerCatalog(runtime: KyrnRuntime): void {
 	});
 
 	pi.registerCommand("capabilities", {
-		description: "What is installed and what is open: /capabilities, /capabilities open <id>",
+		description: say({
+			zh: "装了哪些能力、这次打开了哪些：/capabilities 查看，/capabilities open <ID> 打开",
+			en: "What is installed and what is open: /capabilities, /capabilities open <id>",
+		}),
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
 			const [verb, id] = args.trim().split(/\s+/);

@@ -10,7 +10,7 @@ import { type LaunchedChrome, launchChrome } from "../../browser/chrome.ts";
 import { EmbeddedBrowser, findEmbeddedEndpoint } from "../../browser/embedded.ts";
 import { BrowserSession } from "../../browser/session.ts";
 import { browserStep } from "../../decisions/browser-step.ts";
-import { codeOf } from "../../language.ts";
+import { codeOf, say } from "../../language.ts";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
 
 const TEXT_RULES = `Return a JSON object with exactly one key, text: the exact string to enter in the selected field.
@@ -258,7 +258,10 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 
 	// The same run, started by the user. The result is shown, not added to the conversation.
 	pi.registerCommand("browse", {
-		description: "Drive the built-in browser yourself: /browse <url> [goal]",
+		description: say({
+			zh: "让内置浏览器打开网址，照你说的去做：/browse <网址> [要做的事]",
+			en: "Drive the built-in browser yourself: /browse <url> [goal]",
+		}),
 		handler: async (args, ctx) => {
 			const [url, ...rest] = args.trim().split(/\s+/);
 			if (!url) {

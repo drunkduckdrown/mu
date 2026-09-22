@@ -3,6 +3,7 @@ import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { getAgentDir } from "@earendil-works/pi-coding-agent";
 import { type Lesson, memoryCapture, memoryRecall } from "../../decisions/memory.ts";
+import { say } from "../../language.ts";
 import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
 
 export interface StoredLesson extends Lesson {
@@ -137,7 +138,10 @@ export function registerMemory(runtime: KyrnRuntime): void {
 	);
 
 	pi.registerCommand("remember", {
-		description: "Store a lesson for future sessions in this project: /remember <what to do>",
+		description: say({
+			zh: "给这个项目记一条经验，以后的会话都会用上：/remember <该怎么做>",
+			en: "Store a lesson for future sessions in this project: /remember <what to do>",
+		}),
 		handler: async (args, ctx) => {
 			const text = args.trim();
 			if (!text) {

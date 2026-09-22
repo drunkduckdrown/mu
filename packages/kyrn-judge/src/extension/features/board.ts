@@ -38,7 +38,7 @@ import {
 	MAX_EVENTS,
 	MAX_KEY,
 } from "../../decisions/board-read.ts";
-import { appLanguage } from "../../language.ts";
+import { appLanguage, say } from "../../language.ts";
 import type { LlmCompletion } from "../../providers/llm.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
 import { isShellTool } from "../shell-tools.ts";
@@ -571,8 +571,10 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	);
 
 	pi.registerCommand("board", {
-		description:
-			"The plain-language board: /board (show it), /board on, /board off (for this project), /board model (who writes it)",
+		description: say({
+			zh: "人话看板：/board 查看，/board on、/board off 为这个项目打开或关闭，/board model 换个模型来讲",
+			en: "The plain-language board: /board (show it), /board on, /board off (for this project), /board model (who writes it)",
+		}),
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
 			const [first = "", ...rest] = args.trim().split(/\s+/);

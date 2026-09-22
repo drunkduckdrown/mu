@@ -1,5 +1,6 @@
 import { Type } from "typebox";
 import { type Finding, type Priority, reviewTriage } from "../../../decisions/review-triage.ts";
+import { say } from "../../../language.ts";
 import { type Pack, type PackShared, text } from "./pack.ts";
 
 const HEADINGS: Readonly<Record<Priority, string>> = {
@@ -31,8 +32,10 @@ export function reviewPack(shared: PackShared, options: { maxFindings: number })
 	const { runtime } = shared;
 
 	runtime.pi.registerCommand("review", {
-		description:
-			"Review the uncommitted change, or what you name, with the reviewer sub-agent; findings sorted P0 to P3",
+		description: say({
+			zh: "让评审子代理审查还没提交的改动（或你指定的内容），评审发现按轻重排成 P0 到 P3",
+			en: "Review the uncommitted change, or what you name, with the reviewer sub-agent; findings sorted P0 to P3",
+		}),
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
 			// Opening needs no program, so it does not fail; a review without the triage would still be a review.

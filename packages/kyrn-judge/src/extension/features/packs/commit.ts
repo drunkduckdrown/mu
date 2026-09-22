@@ -31,8 +31,10 @@ const TITLE = "mu /commit";
 export function registerCommit(shared: PackShared, options: { maxPlanChars: number }): void {
 	const { runtime } = shared;
 	runtime.pi.registerCommand("commit", {
-		description:
-			"Split the uncommitted change into commits: shows the plan, commits only when you say yes, never pushes",
+		description: say({
+			zh: "把还没提交的改动拆成几个提交：先给你看计划，你同意才提交，从不推送",
+			en: "Split the uncommitted change into commits: shows the plan, commits only when you say yes, never pushes",
+		}),
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
 			const git = gitOver(shared.run);

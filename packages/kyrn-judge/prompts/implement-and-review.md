@@ -1,6 +1,8 @@
 ---
 description: Implement, review, fix - worker, reviewer and worker again in a chain
+description-zh: 实现、评审、修正：干活的子代理先做，评审的子代理检查，再由干活的子代理按意见修正
 argument-hint: "<what to build or fix>"
+argument-hint-zh: "<要做或要修的事>"
 ---
 Carry out this task with a chain of sub-agents, reviewed before you call it done: $@
 

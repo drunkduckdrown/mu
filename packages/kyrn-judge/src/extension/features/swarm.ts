@@ -7,6 +7,7 @@ import { basename, join } from "node:path";
 import { getAgentDir, type Theme } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 import { swarmRouting } from "../../decisions/swarm-routing.ts";
+import { say } from "../../language.ts";
 import { stopPlan } from "../../platform.ts";
 import {
 	BRIEF_ENV,
@@ -608,7 +609,10 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 	registerSwarmCommand(runtime);
 
 	pi.registerCommand("agents", {
-		description: "List the sub-agent roles the delegate tool can use, and where to add your own",
+		description: say({
+			zh: "列出 delegate 工具能用的子代理角色，以及在哪里加你自己的",
+			en: "List the sub-agent roles the delegate tool can use, and where to add your own",
+		}),
 		handler: async (_args, ctx) => {
 			const dir = options.agentsDir || join(getAgentDir(), "agents");
 			const ladder = options.models.length > 0 ? options.models.join(" < ") : "the session's current model";
@@ -689,8 +693,11 @@ export function registerSwarmCommand(runtime: KyrnRuntime): void {
 		runtime.pi.registerCommand(command, {
 			description:
 				command === "swarm"
-					? "Sub-agents at work: /swarm (what each one is doing), /swarm stop [name] (report now), /swarm kill [name]"
-					: "Same as /swarm",
+					? say({
+							zh: "正在干活的子代理：/swarm 看每个在做什么，/swarm stop [名字] 让它现在交报告，/swarm kill [名字] 立刻结束它",
+							en: "Sub-agents at work: /swarm (what each one is doing), /swarm stop [name] (report now), /swarm kill [name]",
+						})
+					: say({ zh: "同 /swarm", en: "Same as /swarm" }),
 			// No argument completions on purpose: with them the first Enter picks a completion and only the
 			// second one runs the command, and "stop" is typed by someone who wants it to happen now.
 			handler,

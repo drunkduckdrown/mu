@@ -534,8 +534,10 @@ export function registerGoal(runtime: KyrnRuntime): void {
 	};
 
 	pi.registerCommand("goal", {
-		description:
-			"Goal mode: keep the agent working until a condition holds. /goal <condition>, /goal (show, or ask for one), /goal clear",
+		description: say({
+			zh: "目标模式：让代理一直干到某个条件成立。/goal <条件> 设定，/goal 查看（没有时会问你），/goal clear 结束",
+			en: "Goal mode: keep the agent working until a condition holds. /goal <condition>, /goal (show, or ask for one), /goal clear",
+		}),
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
 			const text = args.trim();

@@ -1,6 +1,8 @@
 ---
 description: Analyze this project and write AGENTS.md, the instructions every future session starts with
+description-zh: 分析这个项目，写出 AGENTS.md：以后每次会话开始都会先读它
 argument-hint: "[what to emphasize]"
+argument-hint-zh: "[想强调的地方]"
 ---
 Create an `AGENTS.md` at the root of this project (or improve the one that exists). Every future session reads it first, so it must be short, specific and true.
 

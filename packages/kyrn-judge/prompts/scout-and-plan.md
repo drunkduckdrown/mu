@@ -1,6 +1,8 @@
 ---
 description: Scout, then plan - two sub-agents in a chain; nothing is changed
+description-zh: 先侦察，再计划：两个子代理接力，什么都不改
 argument-hint: "<what you want planned>"
+argument-hint-zh: "<要做计划的事>"
 ---
 Plan this task with a chain of sub-agents, without changing anything: $@
 

@@ -68,6 +68,15 @@ When a conversation starts:
 
 `/permissions <mode> --here` switches this conversation only: the session entry, the status line and `permissions.mode` as above, but the saved default stays as it was and nothing is notified. When the conversation is already in that mode, nothing changes and allowances stay; only `permissions.mode` is sent again. This is for the app putting a conversation back in the mode it had there (on load, fork or a new conversation seeded from the last pick): only a switch the person made should change the default for the terminal and for new conversations. Keep the order above: session entry, then `MU_PERMISSIONS`, then `permissions.json`.
 
+**`permissions.json` is a contract with the desktop app.** The app's settings page writes it (2026-09-22, KYRN-desktop `4e26995`), and `PermissionDefaults` reads it back:
+
+- The format is `{"version": 1, "mode": "full" | "jev" | "ask"}`, mode 600.
+- mu reads only these three ids. Aliases such as `yolo` are for typing, not for the file.
+- Any other version, a missing file or a broken file counts as "not set".
+- mu writes the file only when the person switches with `/permissions <mode>` (never with `--here`), and it writes the whole file.
+
+Tell the desktop session before changing the version, the location or the accepted values.
+
 ## Commands
 
 - `/permissions`: a picker of the three modes with descriptions. Without a UI, it prints the current mode.

@@ -7,7 +7,7 @@ import type { Capability } from "../../catalog/catalog.ts";
 import { capabilityDisclosure } from "../../decisions/capability-disclosure.ts";
 import type { InheritanceScan } from "../../inherit/scan.ts";
 import type { McpServerDefinition } from "../../inherit/types.ts";
-import { codedError, codeOf } from "../../language.ts";
+import { codedError, codeOf, say } from "../../language.ts";
 import { allocateServerIds, allocateToolNames, capabilityId } from "../../mcp/names.ts";
 import type { McpTool, McpTransport } from "../../mcp/protocol.ts";
 import { toToolContent } from "../../mcp/result.ts";
@@ -280,7 +280,10 @@ export function registerMcp(
 	);
 
 	pi.registerCommand("mcp", {
-		description: "MCP servers: /mcp, /mcp open <id>, /mcp restart <id>",
+		description: say({
+			zh: "MCP 服务器：/mcp 查看，/mcp open <ID> 打开，/mcp restart <ID> 重启",
+			en: "MCP servers: /mcp, /mcp open <id>, /mcp restart <id>",
+		}),
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
 			ensureLoaded(ctx);

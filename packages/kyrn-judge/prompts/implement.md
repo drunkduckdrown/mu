@@ -1,6 +1,8 @@
 ---
 description: Scout, plan, implement - a chain of three sub-agents, each working to its own checklist
+description-zh: 侦察、计划、实现：三个子代理接力，每个按自己的清单做
 argument-hint: "<what to build or fix>"
+argument-hint-zh: "<要做或要修的事>"
 ---
 Carry out this task with a chain of sub-agents: $@
 

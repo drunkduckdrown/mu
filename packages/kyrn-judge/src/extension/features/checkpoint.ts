@@ -28,6 +28,7 @@ import {
 } from "../../checkpoint/store.ts";
 import { turnRewind } from "../../decisions/turn-rewind.ts";
 import type { Coded } from "../../language.ts";
+import { say } from "../../language.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
 import { describeCall } from "./admission.ts";
 import type { HarnessRoots } from "./inherit.ts";
@@ -682,7 +683,10 @@ export function registerCheckpoint(
 	);
 
 	pi.registerCommand("checkpoints", {
-		description: "The checkpoints of this conversation: turn, time, files changed since",
+		description: say({
+			zh: "这次对话的检查点：第几回合、什么时间、之后改了哪些文件",
+			en: "The checkpoints of this conversation: turn, time, files changed since",
+		}),
 		handler: async (_args, ctx) => {
 			runtime.touch(ctx);
 			const entries = checkpointsOn(ctx).reverse();
@@ -717,7 +721,10 @@ export function registerCheckpoint(
 	});
 
 	pi.registerCommand("rewind", {
-		description: "Go back to a checkpoint: /rewind [#] [both|files|conversation], /rewind undo",
+		description: say({
+			zh: "回到一个检查点：/rewind [序号] [both|files|conversation]，/rewind undo 撤销回退；both 文件和对话都退，files 只退文件，conversation 只退对话",
+			en: "Go back to a checkpoint: /rewind [#] [both|files|conversation], /rewind undo",
+		}),
 		getArgumentCompletions: (prefix) => {
 			const matches = ["undo", "files", "conversation", "both"].filter((value) => value.startsWith(prefix));
 			return matches.length > 0 ? matches.map((value) => ({ value, label: value })) : null;

@@ -151,18 +151,17 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 	runtime.onPresentation = options.onPresentation;
 	for (const capability of options.capabilities ?? []) runtime.catalog.register(capability);
 	registerWelcome(runtime);
+	// Whoever injected a provider or a config owns the setup, and that includes not reading the user's home folder.
+	const roots: HarnessRoots | undefined =
+		options.roots ?? (options.config || options.provider ? undefined : { home: homedir(), agentDir: getAgentDir() });
 	if (loaded.disabled) {
-		registerCommands(runtime);
+		registerCommands(runtime, roots);
 		return;
 	}
 
 	// A sub-agent first of all listens to its parent: a wrap-up request has to be known before anything else reacts to a step.
 	if (process.env.KYRN_SWARM_CONTROL)
 		registerSwarmChild(runtime, process.env.KYRN_SWARM_CONTROL, process.env[FRAME_OUT_ENV]);
-
-	// Whoever injected a provider or a config owns the setup, and that includes not reading the user's home folder.
-	const roots: HarnessRoots | undefined =
-		options.roots ?? (options.config || options.provider ? undefined : { home: homedir(), agentDir: getAgentDir() });
 
 	// Order matters where two features share an event: interjection must see a
 	// mid-run message before anything else, and preflight must set the turn's
@@ -209,5 +208,5 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 	for (const [name, register] of features) {
 		if (!options.only || options.only.includes(name)) register(runtime);
 	}
-	registerCommands(runtime);
+	registerCommands(runtime, roots);
 }

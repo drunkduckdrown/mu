@@ -10,6 +10,7 @@ import {
 	writeInheritState,
 } from "../../inherit/scan.ts";
 import type { InheritedRule } from "../../inherit/types.ts";
+import { say } from "../../language.ts";
 import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
 
 /** Where inherited configuration and mu's own state live. Tests and embedders point these at fixtures. */
@@ -208,7 +209,10 @@ export function registerInherit(runtime: KyrnRuntime, roots: HarnessRoots | unde
 	);
 
 	pi.registerCommand("inherit", {
-		description: "What mu took over from Claude Code, Cursor and Codex, and from where",
+		description: say({
+			zh: "mu 从 Claude Code、Cursor 和 Codex 沿用了什么，各来自哪个文件",
+			en: "What mu took over from Claude Code, Cursor and Codex, and from where",
+		}),
 		handler: async (_args, ctx) => {
 			runtime.touch(ctx);
 			const found = ensureScanned(ctx);
