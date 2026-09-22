@@ -187,7 +187,7 @@ describe('captureBackendStartupFailure', () => {
         isPackaged: true,
         runtimeKey: 'win32-x64',
         binaryName: 'aioncore.exe',
-        resourcesPath: 'C:\\Users\\alice\\AppData\\Local\\Programs\\AionUi\\resources',
+        resourcesPath: 'C:\\Users\\alice\\AppData\\Local\\Programs\\mu\\resources',
         bundledDirExists: false,
         runtimeDirExists: false,
         resourcesDirEntries: [

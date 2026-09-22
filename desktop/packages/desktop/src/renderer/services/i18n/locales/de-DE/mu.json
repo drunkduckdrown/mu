@@ -2,7 +2,7 @@
   "title": "mu-Einstellungen",
   "description": "Alles, was du mu vorgeben kannst: Judges, Entscheidungspunkte, Funktionen, Modelle und Kontext. Gemeinsam mit der mu-Kommandozeile genutzt.",
   "reload": "Neu laden",
-  "search": "Entscheidungspunkte und Funktionen durchsuchen",
+  "search": "Entscheidungen und Funktionen suchen",
   "noMatch": "Nichts passt zur Suche.",
   "modified": "Geändert",
   "applyNote": "Änderungen gelten für neue Sitzungen. Eine laufende Sitzung behält die Konfiguration, mit der sie gestartet wurde; verbinde sie neu, um die Änderungen zu übernehmen.",

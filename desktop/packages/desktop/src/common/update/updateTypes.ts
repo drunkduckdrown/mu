@@ -8,9 +8,9 @@ import type { UpdateErrorInfo } from './updateErrors';
 
 export interface GitHubReleaseAsset {
   name: string;
-  /** Primary download URL — rewritten to CDN for faster download. */
+  /** Download URL: the release asset on GitHub. */
   url: string;
-  /** Original GitHub download URL — used as fallback when CDN fails. */
+  /** A second URL tried when the first fails. */
   fallbackUrl?: string;
   size: number;
   contentType?: string;
@@ -37,7 +37,7 @@ export interface UpdateCheckResult {
 
 export interface UpdateCheckRequest {
   includePrerelease?: boolean;
-  /** Defaults to iOfficeAI/AionUi when omitted */
+  /** Defaults to mu's own repository, qybaihe/MU, when omitted. */
   repo?: string;
 }
 
@@ -45,7 +45,7 @@ export interface UpdateDownloadRequest {
   /** Optional caller-provided id so renderer can match progress events immediately. */
   downloadId?: string;
   url: string;
-  /** Fallback URL tried when the primary URL fails (e.g. CDN down). */
+  /** Fallback URL tried when the primary URL fails. */
   fallbackUrl?: string;
   file_name?: string;
 }

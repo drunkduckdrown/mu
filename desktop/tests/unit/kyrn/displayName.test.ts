@@ -14,6 +14,12 @@ describe('showAsMu', () => {
     expect(showAsMu('Chat with (AionUi) assistant')).toBe('Chat with (mu) assistant');
   });
 
+  it('shows the name as mu in German compound nouns, which join it to the next word with a hyphen', () => {
+    expect(showAsMu('Die AionUi-Installation ist unvollständig.')).toBe('Die mu-Installation ist unvollständig.');
+    expect(showAsMu('Liebe AionUi-Nutzerin, lieber AionUi-Nutzer,')).toBe('Liebe mu-Nutzerin, lieber mu-Nutzer,');
+    expect(showAsMu('die AionUi-Oberfläche')).toBe('die mu-Oberfläche');
+  });
+
   it('leaves links, paths, file names, identifiers and the backend component name alone', () => {
     for (const text of [
       'https://github.com/iOfficeAI/AionUi/releases',
@@ -21,6 +27,7 @@ describe('showAsMu', () => {
       'support@AionUi.com',
       'AionUi.app',
       'AionUi-update-1.zip',
+      '~/Library/Application Support/AionUi-Dev',
       '~/Library/Application Support/AionUi/config',
       'AIONUI_STREAM_BROKEN',
       'cleanAionUITimestamp',

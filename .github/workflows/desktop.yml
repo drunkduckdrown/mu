@@ -179,10 +179,13 @@ jobs:
           hdiutil info 2>/dev/null | grep '/dev/disk' | awk '{print $1}' | while read -r disk; do hdiutil detach "$disk" -force 2>/dev/null || true; done
 
       # electron-builder reads the homepage from the app's git remote, and desktop/ has no .git of its own
-      # here; the Linux package refuses to build without one.
-      - name: Set the project homepage
+      # here; the Linux package refuses to build without one. A release tag (v0.1.0) is also the app's
+      # version, which its "check for updates" compares with the tags of this repository's releases.
+      - name: Set the project homepage and version
         shell: bash
-        run: npm pkg set homepage="${{ github.server_url }}/${{ github.repository }}"
+        run: |
+          npm pkg set homepage="${{ github.server_url }}/${{ github.repository }}"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then npm pkg set version="${GITHUB_REF_NAME#v}"; fi
 
       - name: Build installers
         shell: bash

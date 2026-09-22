@@ -1,12 +1,14 @@
-appId: com.aionui.app
-productName: AionUi
-executableName: AionUi
-copyright: Copyright © 2024 AionUi
+# mu's own identity. It is a fork of AionUi (Apache-2.0) but a different app: its own bundle id, name, data folder
+# (userData follows productName) and link scheme, so it installs beside AionUi instead of over it.
+appId: io.github.qybaihe.mu
+productName: mu
+executableName: mu
+copyright: Copyright © 2026 mu
 
 protocols:
-  - name: AionUi Protocol
+  - name: mu Protocol
     schemes:
-      - aionui
+      - mu
 
 asar:
   smartUnpack: true
@@ -168,18 +170,19 @@ linux:
     - deb
   icon: resources/app.png
   artifactName: ${productName}-${version}-${os}-${arch}.${ext}
+  # `mu` on the PATH is the command line (npm i -g mu-agent); the desktop app gets its own name there.
+  executableName: mu-desktop
   category: Utility
-  maintainer: aionui
-  vendor: aionui
+  maintainer: mu
+  vendor: mu
   synopsis: ${description}
   description: ${description}
   desktop:
     entry:
-      Name: AionUi
+      Name: mu
       Comment: ${description}
-      Icon: AionUi
       Categories: Office;Utility;
-      MimeType: x-scheme-handler/aionui;
+      MimeType: x-scheme-handler/mu;
 
 npmRebuild: false
 buildDependenciesFromSource: false
@@ -216,9 +219,11 @@ removePackageScripts: true
 electronDownload:
   cache: ${env.ELECTRON_CACHE}
 
+# mu's releases. No update feed is published (no latest*.yml): the builds are unsigned pre-releases, which
+# electron-updater cannot install, and the app does not look for updates (see autoUpdaterService).
 publish:
   provider: github
-  owner: iOfficeAI
-  repo: AionUi
-  publishAutoUpdate: true
-  releaseType: release
+  owner: qybaihe
+  repo: MU
+  publishAutoUpdate: false
+  releaseType: prerelease

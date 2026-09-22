@@ -4,11 +4,13 @@
  * (renderer and main process) run every resolved string, default values included, through `showAsMu`.
  *
  * Left alone on purpose: AionCore (the upstream backend's own component name), anything that is part of a URL, a
- * path, a file name, an identifier or an e-mail address, and the upper-case error codes (`AIONUI_…`).
+ * path, a file name, an identifier or an e-mail address, and the upper-case error codes (`AIONUI_…`). A hyphen after
+ * the name is a file name (`AionUi-update-1.zip`) unless a capitalised word follows it: a German compound noun such
+ * as `AionUi-Installation` or `AionUi-Team`, which is the name in a sentence.
  */
 
 /** No lookbehind: the WebUI is opened in browsers that fail to parse one, which would break the whole bundle. */
-const UPSTREAM_NAME = /(^|[^\w/.@:-])AionU[iI](?![\w/@-]|\.\w)/g;
+const UPSTREAM_NAME = /(^|[^\w/.@:-])AionU[iI](?![\w/@]|-(?!\p{Lu}\p{Ll})|\.\w)/gu;
 
 export const MU_DISPLAY_NAME = 'mu';
 

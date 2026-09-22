@@ -166,7 +166,7 @@ function Wait-BuildProcess($Build, [int]$TimeoutSeconds) {
   $Build.process.WaitForExit()
   $Build.process.Refresh()
   $exitCode = $Build.process.ExitCode
-  $source = Join-Path $Build.worktreePath "out\AionUi-$($Build.version)-win-x64.exe"
+  $source = Join-Path $Build.worktreePath "out\mu-$($Build.version)-win-x64.exe"
   if (-not (Test-Path -LiteralPath $source)) {
     $tailParts = @()
     if (Test-Path -LiteralPath $Build.stderrPath) {
@@ -198,7 +198,7 @@ function Wait-BuildProcess($Build, [int]$TimeoutSeconds) {
     throw "build $($Build.version) produced an unexpectedly small installer ($($sourceItem.Length) bytes): $source. Logs: $($Build.stdoutPath), $($Build.stderrPath)"
   }
 
-  $target = Join-Path $script:OutputDirResolved "AionUi-$($Build.version)-win-x64.exe"
+  $target = Join-Path $script:OutputDirResolved "mu-$($Build.version)-win-x64.exe"
   Copy-Item -LiteralPath $source -Destination $target -Force
   $item = Get-Item -LiteralPath $target
   $hash = (Get-FileHash -LiteralPath $target -Algorithm SHA512).Hash
@@ -243,7 +243,7 @@ $nodeModules = Join-Path $repoRoot 'node_modules'
 $localAioncoreBinary = Join-Path $repoRoot 'resources\bundled-aioncore\win32-x64\aioncore.exe'
 $localAioncoreBundleDir = Join-Path $repoRoot 'out\win-unpacked\resources\bundled-aioncore\win32-x64'
 if (-not (Test-Path -LiteralPath (Join-Path $localAioncoreBundleDir 'managed-resources') -PathType Container)) {
-  $localAioncoreBundleDir = Join-Path $env:LOCALAPPDATA 'Programs\AionUi\resources\bundled-aioncore\win32-x64'
+  $localAioncoreBundleDir = Join-Path $env:LOCALAPPDATA 'Programs\mu\resources\bundled-aioncore\win32-x64'
 }
 if (Test-Path -LiteralPath (Join-Path $localAioncoreBundleDir 'managed-resources') -PathType Container) {
   $localAioncoreBundleDir = (Resolve-Path -LiteralPath $localAioncoreBundleDir).Path

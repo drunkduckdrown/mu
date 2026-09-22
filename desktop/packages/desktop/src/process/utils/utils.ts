@@ -90,27 +90,36 @@ const ensureCliSafeSymlink = (targetPath: string, symlinkName: string): string =
 };
 
 /**
+ * The names of the home-folder shortcuts. A packaged mu has its own: `~/.aionui` and `~/.aionui-config` belong to
+ * AionUi, which may be installed beside mu, and each app would keep re-pointing the other's shortcut at itself. A dev
+ * build keeps `~/.aionui-dev` and `~/.aionui-config-dev`, through which its existing data was written.
+ */
+const MU_SHORTCUT_NAMES = { '.aionui': '.mu-desktop', '.aionui-config': '.mu-desktop-config' } as const;
+const shortcutName = (upstreamName: keyof typeof MU_SHORTCUT_NAMES): string =>
+  getPlatformServices().paths.isPackaged() === true ? MU_SHORTCUT_NAMES[upstreamName] : getEnvAwareName(upstreamName);
+
+/**
  * Get data path, using CLI-safe symlink on macOS.
- * Release builds use ~/.aionui; dev builds use ~/.aionui-dev.
+ * Release builds use ~/.mu-desktop; dev builds use ~/.aionui-dev.
  * 获取数据目录路径，macOS 上使用符号链接。
- * Release 使用 ~/.aionui，Dev 模式使用 ~/.aionui-dev。
+ * Release 使用 ~/.mu-desktop，Dev 模式使用 ~/.aionui-dev。
  */
 export const getDataPath = (): string => {
   const rootPath = getElectronPathOrFallback('userData');
   const dataPath = path.join(rootPath, 'aionui');
-  return ensureCliSafeSymlink(dataPath, getEnvAwareName('.aionui'));
+  return ensureCliSafeSymlink(dataPath, shortcutName('.aionui'));
 };
 
 /**
  * Get config path, using CLI-safe symlink on macOS.
- * Release builds use ~/.aionui-config; dev builds use ~/.aionui-config-dev.
+ * Release builds use ~/.mu-desktop-config; dev builds use ~/.aionui-config-dev.
  * 获取配置目录路径，macOS 上使用符号链接。
- * Release 使用 ~/.aionui-config，Dev 模式使用 ~/.aionui-config-dev。
+ * Release 使用 ~/.mu-desktop-config，Dev 模式使用 ~/.aionui-config-dev。
  */
 export const getConfigPath = (): string => {
   const rootPath = getElectronPathOrFallback('userData');
   const configPath = path.join(rootPath, 'config');
-  return ensureCliSafeSymlink(configPath, getEnvAwareName('.aionui-config'));
+  return ensureCliSafeSymlink(configPath, shortcutName('.aionui-config'));
 };
 
 /**

@@ -2,7 +2,7 @@
   "title": "Paramètres de mu",
   "description": "Tout ce qu’on peut régler dans mu : juges, points de décision, fonctions, modèles et contexte. Partagé avec la ligne de commande mu.",
   "reload": "Recharger",
-  "search": "Rechercher des points de décision et des fonctions",
+  "search": "Rechercher décisions et fonctions",
   "noMatch": "Rien ne correspond à la recherche.",
   "modified": "Modifié",
   "applyNote": "Les modifications s’appliquent aux nouvelles sessions. Une session en cours garde la configuration de son démarrage ; reconnectez-la pour les prendre en compte.",

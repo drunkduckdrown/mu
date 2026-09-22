@@ -2,7 +2,7 @@
   "title": "Configuración de mu",
   "description": "Todo lo que se le puede indicar a mu: jueces, puntos de decisión, funciones, modelos y contexto. Compartido con la línea de comandos de mu.",
   "reload": "Recargar",
-  "search": "Buscar puntos de decisión y funciones",
+  "search": "Buscar decisiones y funciones",
   "noMatch": "Nada coincide con la búsqueda.",
   "modified": "Modificado",
   "applyNote": "Los cambios se aplican a las sesiones nuevas. Una sesión en curso mantiene la configuración con la que empezó; reconéctala para aplicarlos.",

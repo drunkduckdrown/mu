@@ -1,12 +1,11 @@
 {
-  "name": "AionUi",
+  "name": "mu-desktop",
   "version": "2.2.2",
-  "description": "Transform your command-line AI agent into a modern, efficient AI Chat interface.",
+  "description": "mu, the coding agent with JeV judgment, as a desktop app.",
   "keywords": [],
   "license": "Apache-2.0",
   "author": {
-    "name": "AionUi",
-    "email": "service@aionui.com"
+    "name": "mu"
   },
   "workspaces": [
     "packages/*"
@@ -268,5 +267,5 @@
   "patchedDependencies": {
     "7zip-bin@5.2.0": "patches/7zip-bin@5.2.0.patch"
   },
-  "productName": "AionUi"
+  "productName": "mu"
 }

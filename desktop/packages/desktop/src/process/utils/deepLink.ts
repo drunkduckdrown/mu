@@ -7,13 +7,17 @@
 import type { BrowserWindow } from 'electron';
 import { ipcBridge } from '@/common';
 
-export const PROTOCOL_SCHEME = 'aionui';
+/**
+ * mu's own link scheme (electron-builder.yml `protocols`). mu does not answer AionUi's `aionui://`: that scheme belongs
+ * to AionUi, which may be installed beside mu.
+ */
+export const PROTOCOL_SCHEME = 'mu';
 
 /**
- * Parse an aionui:// URL into action and params.
+ * Parse a mu:// URL into action and params.
  * Supports two formats:
- *   1. aionui://add-provider?base_url=xxx&api_key=xxx
- *   2. aionui://provider/add?v=1&data=<base64 JSON>  (one-api / new-api style)
+ *   1. mu://add-provider?base_url=xxx&api_key=xxx
+ *   2. mu://provider/add?v=1&data=<base64 JSON>  (one-api / new-api style)
  */
 export const parseDeepLinkUrl = (url: string): { action: string; params: Record<string, string> } | null => {
   try {

@@ -18,7 +18,8 @@ type ConsumeOptions = {
 const isString = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
 
 export function getInstallerLastFailureMarkerPath(appDataDir: string): string {
-  return path.join(appDataDir, 'AionUi', INSTALLER_LAST_FAILURE_FILE_NAME);
+  // The app's data folder on Windows, %APPDATA%\<productName>; the installer writes the marker there.
+  return path.join(appDataDir, 'mu', INSTALLER_LAST_FAILURE_FILE_NAME);
 }
 
 export function parseInstallerLastFailureMarker(raw: unknown): InstallerLastFailureMarker | null {

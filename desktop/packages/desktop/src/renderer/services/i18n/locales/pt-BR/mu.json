@@ -2,7 +2,7 @@
   "title": "Configurações do mu",
   "description": "Tudo o que dá para configurar no mu: juízes, pontos de decisão, recursos, modelos e contexto. Compartilhado com a linha de comando do mu.",
   "reload": "Recarregar",
-  "search": "Buscar pontos de decisão e recursos",
+  "search": "Buscar decisões e recursos",
   "noMatch": "Nada corresponde à busca.",
   "modified": "Alterado",
   "applyNote": "As alterações valem para novas sessões. Uma sessão em andamento mantém a configuração com que começou; reconecte-a para aplicá-las.",

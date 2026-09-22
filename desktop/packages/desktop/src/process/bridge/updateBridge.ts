@@ -26,7 +26,6 @@ import { uuid } from '@/common/utils';
 import { app } from 'electron';
 import log from 'electron-log';
 import * as fs from 'fs';
-import { load as loadYaml } from 'js-yaml';
 import * as path from 'path';
 import semver from 'semver';
 import { autoUpdaterService } from '../services/autoUpdaterService';
@@ -66,13 +65,14 @@ interface AutoUpdateCheckParams {
   includePrerelease?: boolean;
 }
 
-const DEFAULT_REPO = 'iOfficeAI/AionUi';
-const DEFAULT_USER_AGENT = 'AionUi';
+/**
+ * mu's builds are the releases of its own repository. mu is a fork of AionUi and never asks AionUi's update server
+ * (static.aionui.com) or AionUi's GitHub: either would offer AionUi's installer as an update of mu.
+ */
+const DEFAULT_REPO = 'qybaihe/MU';
+const DEFAULT_USER_AGENT = 'mu';
 const ALLOWED_ASSET_EXTS = new Set(['.exe', '.msi', '.dmg', '.zip', '.deb', '.rpm']);
-const CDN_HOST = 'static.aionui.com';
-const CDN_BASE_URL = `https://${CDN_HOST}/releases`;
 const ALLOWED_DOWNLOAD_HOSTS = new Set<string>([
-  CDN_HOST,
   'github.com',
   'objects.githubusercontent.com',
   'github-releases.githubusercontent.com',
@@ -91,15 +91,6 @@ const normalizeTagToSemver = (tag: string): string | null => {
   // Ensure it looks like a semver prefix at least.
   if (!/^\d+\.\d+\.\d+/.test(withoutV)) return null;
   return semver.valid(withoutV);
-};
-
-/**
- * Rewrite a GitHub release asset URL to the CDN URL for faster download.
- * The CDN path follows the fixed convention `{base}/{version}/{original-filename}`,
- * matching electron-builder's artifactName output, so no name conversion is needed.
- */
-const rewriteAssetUrlToCDN = (assetName: string, version: string): string => {
-  return `${CDN_BASE_URL}/${version}/${assetName}`;
 };
 
 type RuntimePlatformInfo = {
@@ -196,71 +187,35 @@ export const pickRecommendedAsset = (
   return scored[0]?.asset;
 };
 
-export type CdnManifestFile = { url: string; size?: number };
-export type CdnLatestManifest = { version: string; files: CdnManifestFile[]; releaseDate?: string };
-
 /**
- * Pick the electron-builder channel file for the current platform/arch,
- * matching the names build-and-release uploads to the CDN root.
+ * The newest of mu's releases, with its installers: the highest version tag among the releases that are not drafts.
+ * Every mu build is a preview for now, published as a GitHub pre-release, so pre-releases count.
  */
-export const resolveCdnChannelFile = (
-  runtime: RuntimePlatformInfo = { platform: process.platform, arch: process.arch }
-): string => {
-  const isArm64 = normalizeArch(runtime.arch) === 'arm64';
-  if (runtime.platform === 'win32') return isArm64 ? 'latest-win-arm64.yml' : 'latest.yml';
-  if (runtime.platform === 'darwin') return isArm64 ? 'latest-arm64-mac.yml' : 'latest-mac.yml';
-  return isArm64 ? 'latest-linux-arm64.yml' : 'latest-linux.yml';
-};
-
-/** Parse an electron-builder channel yml; null when the shape is unusable. */
-export const parseCdnManifest = (raw: string): CdnLatestManifest | null => {
-  let doc: unknown;
-  try {
-    doc = loadYaml(raw);
-  } catch {
-    return null;
+export const latestRelease = (releases: GitHubReleaseApi[]): UpdateReleaseInfo | null => {
+  let newest: { release: GitHubReleaseApi; version: string } | null = null;
+  for (const release of releases) {
+    if (!release || release.draft) continue;
+    const version = normalizeTagToSemver(release.tag_name);
+    if (version && (!newest || semver.gt(version, newest.version))) newest = { release, version };
   }
-  if (!doc || typeof doc !== 'object') return null;
-  const { version, files, releaseDate } = doc as Record<string, unknown>;
-  if (typeof version !== 'string' || !Array.isArray(files)) return null;
-  const mappedFiles = files
-    .filter((file): file is Record<string, unknown> => Boolean(file) && typeof file === 'object')
-    .filter((file) => typeof file.url === 'string')
-    .map((file) => ({ url: file.url as string, size: typeof file.size === 'number' ? file.size : undefined }));
-  if (!mappedFiles.length) return null;
+  if (!newest) return null;
+  const { release, version } = newest;
+  const assets: GitHubReleaseAsset[] = (release.assets ?? [])
+    .filter((asset) => asset && isAllowedAssetName(asset.name))
+    .map((asset) => ({
+      name: asset.name,
+      url: asset.browser_download_url,
+      size: asset.size ?? 0,
+      ...(asset.content_type ? { contentType: asset.content_type } : {}),
+    }));
   return {
+    tagName: release.tag_name,
     version,
-    files: mappedFiles,
-    releaseDate: typeof releaseDate === 'string' ? releaseDate : undefined,
-  };
-};
-
-/**
- * Build an UpdateReleaseInfo from the CDN manifest alone. `htmlUrl`/`body`
- * stay empty here — the GitHub best-effort enrichment fills them when
- * reachable. fallbackUrl follows GitHub's fixed release-asset URL scheme, so
- * no API call is needed to construct it.
- */
-export const mapCdnManifestToRelease = (manifest: CdnLatestManifest, repo: string): UpdateReleaseInfo | null => {
-  const version = semver.valid(manifest.version);
-  if (!version) return null;
-  const assets: GitHubReleaseAsset[] = [];
-  for (const file of manifest.files) {
-    const name = path.basename(file.url.trim());
-    if (!name || !isAllowedAssetName(name)) continue;
-    assets.push({
-      name,
-      url: rewriteAssetUrlToCDN(name, version),
-      fallbackUrl: `https://github.com/${repo}/releases/download/v${version}/${name}`,
-      size: file.size ?? 0,
-    });
-  }
-  return {
-    tagName: `v${version}`,
-    version,
-    htmlUrl: '',
-    publishedAt: manifest.releaseDate,
-    prerelease: false,
+    name: release.name,
+    body: release.body,
+    htmlUrl: release.html_url,
+    publishedAt: release.published_at,
+    prerelease: release.prerelease,
     draft: false,
     assets,
     recommendedAsset: pickRecommendedAsset(assets),
@@ -337,91 +292,25 @@ const fetchGitHubReleases = async (repo: string, timeoutMs = 30000): Promise<Git
       signal: controller.signal,
     });
 
-    // Only the best-effort release notes use this, and they swallow its errors: the texts are for the log.
     if (!res.ok) {
-      throw new Error(`GitHub API request failed (${res.status})`);
+      throw new UpdateError(
+        res.status === 404 ? { code: 'noUpdateInfo' } : { code: 'serverError', status: res.status },
+        `GitHub API request failed (${res.status}): ${url}`
+      );
     }
 
     const json = (await res.json()) as unknown;
     if (!Array.isArray(json)) {
-      throw new Error('GitHub API response is not a release list');
+      throw new UpdateError({ code: 'invalidMetadata' }, `GitHub API response is not a release list: ${url}`);
     }
     return json as GitHubReleaseApi[];
   } catch (err: unknown) {
     if (err instanceof Error && err.name === 'AbortError') {
-      throw new Error(`GitHub API request timed out after ${timeoutMs} ms`, { cause: err });
+      throw new UpdateError({ code: 'timeout' }, `GitHub API request timed out after ${timeoutMs} ms`, { cause: err });
     }
     throw err;
   } finally {
     clearTimeout(timeoutId);
-  }
-};
-
-const CDN_MANIFEST_TIMEOUT_MS = 15000;
-const GITHUB_NOTES_TIMEOUT_MS = 10000;
-
-/**
- * Fetch and parse the authoritative CDN channel manifest for the current
- * platform/arch. Any failure here fails the manual check — the CDN is the
- * single source of truth for "is there an update".
- */
-const fetchCdnManifest = async (): Promise<CdnLatestManifest> => {
-  const url = `${CDN_BASE_URL}/${resolveCdnChannelFile()}`;
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), CDN_MANIFEST_TIMEOUT_MS);
-
-  log.info('[manual-update] Checking CDN manifest:', url);
-  try {
-    const res = await fetch(url, {
-      headers: { 'User-Agent': DEFAULT_USER_AGENT },
-      signal: controller.signal,
-    });
-    if (!res.ok) {
-      throw new UpdateError(
-        res.status === 404 ? { code: 'noUpdateInfo' } : { code: 'serverError', status: res.status },
-        `Update metadata request failed (${res.status}): ${url}`
-      );
-    }
-    const manifest = parseCdnManifest(await res.text());
-    if (!manifest) {
-      throw new UpdateError({ code: 'invalidMetadata' }, `Update metadata is invalid: ${url}`);
-    }
-    log.info('[manual-update] CDN manifest resolved:', {
-      url,
-      version: manifest.version,
-      files: manifest.files.length,
-    });
-    return manifest;
-  } catch (err: unknown) {
-    if (err instanceof Error && err.name === 'AbortError') {
-      throw new UpdateError({ code: 'timeout' }, `Update metadata request timed out: ${url}`, { cause: err });
-    }
-    throw err;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-};
-
-type ReleaseNotesEnrichment = { body?: string; htmlUrl?: string; name?: string; publishedAt?: string };
-
-/**
- * Best-effort GitHub lookup for the release matching the CDN version. The
- * manual check must work without GitHub (the repo stays the changelog source
- * but may be unreachable), so every failure path resolves to an empty object.
- */
-const fetchReleaseNotesEnrichment = async (repo: string, version: string): Promise<ReleaseNotesEnrichment> => {
-  try {
-    const releases = await fetchGitHubReleases(repo, GITHUB_NOTES_TIMEOUT_MS);
-    const match = releases.find((rel) => rel && !rel.draft && normalizeTagToSemver(rel.tag_name) === version);
-    if (!match) return {};
-    return {
-      body: match.body,
-      htmlUrl: match.html_url,
-      name: match.name,
-      publishedAt: match.published_at,
-    };
-  } catch {
-    return {};
   }
 };
 
@@ -444,7 +333,7 @@ const sanitizeFileName = (name: string): string => {
   // Keep only base name and trim weird whitespace.
   const base = path.basename(name).trim();
   // Avoid empty names.
-  return base || `AionUi-update-${Date.now()}`;
+  return base || `mu-update-${Date.now()}`;
 };
 
 const ensureUniquePath = (target: string): string => {
@@ -695,43 +584,19 @@ export function initUpdateBridge(): void {
         const repo = resolveRepo(params?.repo);
         const currentVersion = app.getVersion();
 
-        // EN: Versioning note
-        // Update comparisons are pure semver: `app.getVersion()` (packaged app version) vs the CDN
-        // manifest `version`. If you want dev/prerelease updates to work reliably, CI must inject a
-        // prerelease semver into `package.json#version` for dev builds (e.g. `1.7.2-dev.1234+sha.abcdef0`)
-        // so semver ordering holds.
-        //
-        // 中文：版本号说明
-        // 更新比较严格使用 semver：`app.getVersion()`（应用自身版本号）对比 CDN manifest 的 `version`。
-        // 若要 dev/预发布版本更新可靠生效，需要 CI 在 dev 构建时把 `package.json#version`
-        // 注入为带 prerelease 的 semver（如 `1.7.2-dev.1234+sha.abcdef0`），以保证比较顺序正确。
-
-        // The CDN channel manifest is the authoritative source. It serves a single
-        // stable channel, so `includePrerelease` no longer affects detection.
-        const manifest = await fetchCdnManifest();
-        const latest = mapCdnManifestToRelease(manifest, repo);
+        // Update comparisons are pure semver: `app.getVersion()` (the packaged app's version) against the newest
+        // release tag. A release is offered only when its tag is a higher version than the build that is running.
+        log.info('[manual-update] Checking releases of', repo);
+        const latest = latestRelease(await fetchGitHubReleases(repo));
 
         const currentSemver = semver.valid(currentVersion) || semver.coerce(currentVersion)?.version;
         if (!currentSemver || !latest) {
           return { success: true, data: { currentVersion, updateAvailable: false } };
         }
 
-        // GitHub only enriches the result with release notes; it never blocks.
-        const enrichment = await fetchReleaseNotesEnrichment(repo, latest.version);
-
         return {
           success: true,
-          data: {
-            currentVersion,
-            updateAvailable: semver.gt(latest.version, currentSemver),
-            latest: {
-              ...latest,
-              body: enrichment.body,
-              name: enrichment.name,
-              htmlUrl: enrichment.htmlUrl ?? '',
-              publishedAt: enrichment.publishedAt ?? latest.publishedAt,
-            },
-          },
+          data: { currentVersion, updateAvailable: semver.gt(latest.version, currentSemver), latest },
         };
       } catch (err: unknown) {
         log.warn('[manual-update] Update check failed:', updateErrorDetail(err));
@@ -750,9 +615,9 @@ export function initUpdateBridge(): void {
         }
 
         // Defense-in-depth: do not allow arbitrary downloads from renderer.
-        // EN: Only allowlisted hosts (CDN + GitHub release hosts) are permitted;
+        // EN: Only allowlisted hosts (GitHub release hosts) are permitted;
         // each redirect hop is re-validated against the allowlist.
-        // 中文：仅允许白名单内的域名（CDN + GitHub release 相关），并手动处理重定向，每一跳都校验白名单。
+        // 中文：仅允许白名单内的域名（GitHub release 相关），并手动处理重定向，每一跳都校验白名单。
         await assertAllowedUrl(params.url);
         if (params.fallbackUrl) {
           await assertAllowedUrl(params.fallbackUrl);

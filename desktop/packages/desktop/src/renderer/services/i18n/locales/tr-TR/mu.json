@@ -2,7 +2,7 @@
   "title": "mu ayarları",
   "description": "mu'ya verilebilecek tüm ayarlar: hakemler, karar noktaları, özellikler, modeller ve bağlam. mu komut satırıyla ortak kullanılır.",
   "reload": "Yeniden yükle",
-  "search": "Karar noktalarında ve özelliklerde ara",
+  "search": "Kararlarda ve özelliklerde ara",
   "noMatch": "Aramayla eşleşen bir şey yok.",
   "modified": "Değiştirildi",
   "applyNote": "Değişiklikler yeni oturumlarda geçerli olur. Çalışan bir oturum başladığı yapılandırmayı korur; değişiklikleri alması için yeniden bağlayın.",
