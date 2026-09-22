@@ -1,0 +1,185 @@
+/**
+ * Model providers as the settings screen edits them. They live in pi's `<agentDir>/models.json`; the startup
+ * model and thinking level live in pi's `<agentDir>/settings.json`. API keys never come back from the main process:
+ * the screen only learns how a provider's key is configured and whether a value is present.
+ */
+
+/** The wire formats pi can speak to a custom provider (`api` in models.json). */
+export const ENDPOINT_TYPES = [
+  'openai-completions',
+  'openai-responses',
+  'anthropic-messages',
+  'google-generative-ai',
+] as const;
+export type EndpointType = (typeof ENDPOINT_TYPES)[number];
+
+/** pi's thinking levels, weakest first. */
+export const THINKING_LEVELS = ['off', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max'] as const;
+export type ThinkingLevel = (typeof THINKING_LEVELS)[number];
+
+export type ProviderModel = {
+  id: string;
+  name: string;
+  reasoning: boolean;
+  imageInput: boolean;
+  contextWindow: number;
+  maxTokens: number;
+  /**
+   * Thinking levels the model takes, from `reasoning` and a hand-written `thinkingLevelMap`.
+   * Read-only: the map itself is preserved, not edited here.
+   */
+  thinkingLevels: ThinkingLevel[];
+};
+
+/**
+ * `none`: no key in models.json. `managed`: `"$MU_PROVIDER_<ID>_API_KEY"`, with the value in the harness `.env`,
+ * written from this screen. `manual`: anything else a person wrote (a literal, `!command`, another variable):
+ * kept as it is and never read back.
+ */
+export type ProviderKeyState = 'none' | 'managed' | 'manual';
+
+export type ProviderSettings = {
+  id: string;
+  name: string;
+  api: EndpointType;
+  baseUrl: string;
+  /** Adds `Authorization: Bearer <key>` for proxies that want it on top of the endpoint's own header. */
+  authHeader: boolean;
+  models: ProviderModel[];
+  /** Read-only. */
+  key: ProviderKeyState;
+  /** Read-only: for `managed`, whether the variable has a value; for `manual`, true. */
+  keySet: boolean;
+  /** Read-only: names of hand-written extra headers. Their values are secrets and stay in the file. */
+  headerNames: string[];
+  /**
+   * Set by the screen on a provider that was added and not saved yet, whose id can still be typed. The store does
+   * not read it: there, a provider is new when models.json has no entry under its id.
+   */
+  isNew?: boolean;
+};
+
+/** An entry of models.json this screen shows but does not edit: an override of a built-in provider, or an unknown `api`. */
+export type ForeignProvider = { id: string; name: string; api: string; baseUrl: string; modelCount: number };
+
+export type ModelDefaults = { provider: string; model: string; thinkingLevel: ThinkingLevel | '' };
+
+export type ModelsSettings = {
+  providers: ProviderSettings[];
+  foreign: ForeignProvider[];
+  defaults: ModelDefaults;
+  /** models.json has comments or trailing commas (pi accepts them). Saving providers would lose them, so it is refused. */
+  commented: boolean;
+  /** models.json could not be parsed. Providers are then neither shown nor saved. */
+  problem: string;
+};
+
+/** What a running mu last reported as usable: built-in logins and custom providers alike. A snapshot, not live. */
+export type AvailableModels = {
+  providers: { id: string; models: { id: string; name: string }[] }[];
+  thinkingLevels: string[];
+};
+
+export type ProviderTestInput = {
+  id: string;
+  api: EndpointType;
+  baseUrl: string;
+  authHeader: boolean;
+  /** Used for the one-token request when the endpoint has no model list. */
+  model: string;
+  /** A key typed but not saved yet. Without it the saved key is used, and only against the saved base URL. */
+  apiKey?: string;
+};
+
+export type ProviderTestCode =
+  | 'ok-models'
+  | 'ok-completion'
+  | 'auth'
+  | 'not-found'
+  | 'http'
+  | 'timeout'
+  | 'network'
+  | 'redirect'
+  | 'invalid-response'
+  | 'key-unavailable'
+  | 'url-changed';
+
+export type ProviderTestResult = {
+  ok: boolean;
+  code: ProviderTestCode;
+  status?: number;
+  latencyMs: number;
+  /** Model ids the endpoint listed, for filling in the model table. */
+  models: string[];
+  /** A short message from the endpoint, with the key removed. */
+  detail: string;
+};
+
+/** New provider ids: a slug, so the id maps to exactly one credential variable. */
+export const PROVIDER_ID = /^[a-z0-9][a-z0-9-]{0,39}$/;
+
+/**
+ * pi's built-in providers (its `packages/ai/src/providers`, 2026-09). A models.json entry under one of these ids
+ * is not a new provider: it reroutes the built-in one and merges into its models. So a new provider may not take
+ * such an id. The list can lag behind pi; the screen also refuses ids the running mu reports.
+ */
+export const RESERVED_PROVIDER_IDS: ReadonlySet<string> = new Set(
+  (
+    'amazon-bedrock ant-ling anthropic azure-openai-responses baseten cerebras cloudflare-ai-gateway ' +
+    'cloudflare-workers-ai deepseek fireworks github-copilot google-vertex google groq huggingface kimi-coding ' +
+    'minimax-cn minimax mistral moonshotai-cn moonshotai nvidia openai-codex openai opencode-go opencode openrouter ' +
+    'qwen-token-plan-cn qwen-token-plan-individual qwen-token-plan radius together vercel-ai-gateway xai ' +
+    'xiaomi-token-plan-ams xiaomi-token-plan-cn xiaomi-token-plan-sgp xiaomi zai-coding-cn zai llama-cpp'
+  ).split(' ')
+);
+
+/**
+ * Built-in providers pi reports as usable that nobody set up to talk to. The judge (Jev) takes its key from
+ * `AI_GATEWAY_API_KEY`, which is also the variable pi reads for the Vercel AI Gateway, so with the judge set up that
+ * way pi lists the gateway and its models. The key has to stay (the judge needs it), so the app does not offer the
+ * gateway: not as another built-in provider, not as a model to start with or switch to.
+ */
+export const UNOFFERED_PROVIDER_IDS: ReadonlySet<string> = new Set(['vercel-ai-gateway']);
+
+/** The credential variable of a provider: `my-proxy` -> `MU_PROVIDER_MY_PROXY_API_KEY`. */
+export function providerKeyVariable(id: string): string {
+  return `MU_PROVIDER_${id.toUpperCase().replace(/[^A-Z0-9]/g, '_')}_API_KEY`;
+}
+
+/**
+ * pi's rule (`getSupportedThinkingLevels`): a model without reasoning only takes `off`; a level mapped to null is
+ * not supported; `xhigh` and `max` only when the map names them.
+ */
+export function supportedThinkingLevels(reasoning: boolean, map?: Record<string, unknown>): ThinkingLevel[] {
+  if (!reasoning) return ['off'];
+  return THINKING_LEVELS.filter((level) => {
+    const mapped = map?.[level];
+    if (mapped === null) return false;
+    if (level === 'xhigh' || level === 'max') return typeof mapped === 'string';
+    return true;
+  });
+}
+
+/** Turns a display name into an id suggestion: "My Proxy (EU)" -> "my-proxy-eu". */
+export function suggestProviderId(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+}
+
+/**
+ * The rule for every address this app sends a key to: HTTPS, or plain HTTP to this machine only, and nothing that
+ * smuggles a credential or a second destination. Shared by the store (which enforces it) and the screen (which explains it).
+ */
+export function isSafeEndpoint(value: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  const loopback = url.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname);
+  return !url.username && !url.password && !url.search && !url.hash && (url.protocol === 'https:' || loopback);
+}

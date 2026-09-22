@@ -1,0 +1,39 @@
+import { bridge } from '../platform/bridge';
+import { KyrnError, type KyrnResult } from './errors';
+import type { LocalJudgeAction, LocalJudgeState } from './localJudge';
+import type { LoginState, LoginStatus, SubscriptionProvider } from './login';
+import type { AvailableModels, ProviderTestInput, ProviderTestResult } from './models';
+import type { ActivityPage, KyrnCatalog, KyrnSettings, SaveSettings } from './types';
+
+export const kyrnBridge = {
+  catalog: bridge.buildProvider<KyrnResult<KyrnCatalog>, void>('kyrn.catalog'),
+  settings: bridge.buildProvider<KyrnResult<KyrnSettings>, void>('kyrn.settings'),
+  save: bridge.buildProvider<KyrnResult<KyrnSettings>, SaveSettings>('kyrn.save'),
+  /** Models the running mu last reported as usable: a snapshot kept by the backend, not a live query. */
+  availableModels: bridge.buildProvider<KyrnResult<AvailableModels>, void>('kyrn.availableModels'),
+  /** One minimal request to a provider's endpoint, made by the main process. */
+  testProvider: bridge.buildProvider<KyrnResult<ProviderTestResult>, ProviderTestInput>('kyrn.testProvider'),
+  activity: bridge.buildProvider<
+    KyrnResult<ActivityPage>,
+    { conversationId: string; sessionId?: string; cursor: number }
+  >('kyrn.activity'),
+  /** Signing in to a subscription with pi's OAuth flow; see common/kyrn/login.ts. */
+  loginStart: bridge.buildProvider<KyrnResult<LoginState>, { provider: SubscriptionProvider }>('kyrn.login.start'),
+  loginState: bridge.buildProvider<KyrnResult<LoginState>, void>('kyrn.login.state'),
+  loginAnswer: bridge.buildProvider<KyrnResult<LoginState>, { id: number; value: string }>('kyrn.login.answer'),
+  loginCancel: bridge.buildProvider<KyrnResult<LoginState>, void>('kyrn.login.cancel'),
+  loginStatus: bridge.buildProvider<KyrnResult<LoginStatus>, void>('kyrn.login.status'),
+  loginLogout: bridge.buildProvider<KyrnResult<LoginStatus>, { provider: SubscriptionProvider }>('kyrn.login.logout'),
+  /** The local judge (Laya) on this machine; see common/kyrn/localJudge.ts. */
+  localJudgeState: bridge.buildProvider<KyrnResult<LocalJudgeState>, void>('kyrn.localJudge.state'),
+  /** `consent`: the person agreed to what `setup` downloads. */
+  localJudgeRun: bridge.buildProvider<KyrnResult<LocalJudgeState>, { action: LocalJudgeAction; consent?: boolean }>(
+    'kyrn.localJudge.run'
+  ),
+};
+
+/** The data of a bridge answer; a failure is thrown as a `KyrnError` that keeps its code for the screen to translate. */
+export function unwrap<T>(result: KyrnResult<T>): T {
+  if (result.ok === false) throw new KyrnError(result.code ?? 'unknown', result.error, result.params);
+  return result.data;
+}

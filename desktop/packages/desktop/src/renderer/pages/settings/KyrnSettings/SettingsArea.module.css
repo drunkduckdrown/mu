@@ -1,0 +1,133 @@
+/* The mu settings area: a section list on the left, the chosen section on the right, one save bar below.
+   It sizes itself by its own width, because it lives in a page, in a modal and in narrow windows alike. */
+.area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  container: mu-area / inline-size;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 168px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+  min-width: 0;
+}
+
+.bodyRouted {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 880px;
+}
+
+.nav {
+  position: sticky;
+  top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.navItem:hover {
+  background: var(--color-fill-2);
+}
+
+.navItemActive,
+.navItemActive:hover {
+  background: var(--color-fill-3);
+  color: var(--text-primary);
+}
+
+.navLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(var(--primary-6));
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.note {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.saveBar {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 12px;
+  background: var(--bg-1);
+  box-shadow: 0 -6px 24px rgb(0 0 0 / 6%);
+}
+
+.saveText {
+  flex: 1;
+  min-width: 160px;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.saveError {
+  flex-basis: 100%;
+  color: rgb(var(--danger-6));
+  font-size: 12px;
+  line-height: 18px;
+}
+
+@container mu-area (max-width: 760px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .navItem {
+    flex: none;
+  }
+}

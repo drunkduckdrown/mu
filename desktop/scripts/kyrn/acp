@@ -1,0 +1,8 @@
+#!/bin/bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+export KYRN_ROOT="${KYRN_ROOT:-$(dirname "$ROOT")/KYRN}"
+if [[ -d "$HOME/.nvm/versions/node/v24.16.0/bin" ]]; then
+  export PATH="$HOME/.nvm/versions/node/v24.16.0/bin:$PATH"
+fi
+exec node "$ROOT/node_modules/tsx/dist/cli.mjs" "$ROOT/packages/desktop/src/process/agent/kyrn/index.ts"

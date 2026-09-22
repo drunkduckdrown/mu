@@ -1,0 +1,299 @@
+/* A section of the mu settings area: a heading, then cards. Each section is its own size container, so its rows
+   and the provider manager lay themselves out by the room they really have (page, modal or a narrow window). */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  container: mu-section / inline-size;
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.title {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.description {
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.card {
+  min-width: 0;
+  padding: 4px 16px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 12px;
+  background: var(--bg-1);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  padding: 10px 0 6px;
+}
+
+.cardTitle {
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.cardSpacer {
+  flex: 1;
+}
+
+.cardSummary {
+  padding-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.cardBody {
+  border-top: 1px solid var(--color-border-1);
+}
+
+.groupTitle {
+  margin: 6px 0 -6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 18px;
+}
+
+.mono {
+  color: var(--text-secondary);
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.search {
+  width: min(260px, 100%);
+}
+
+.empty {
+  padding: 24px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.meta {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  padding: 0 0 10px;
+}
+
+.dim {
+  opacity: 0.62;
+}
+
+/* The judges page: three choices as radio tiles, the chosen one opened to the one thing it needs. */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.choice {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 12px;
+  background: var(--bg-1);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.choice:hover {
+  border-color: var(--mu-accent-border, rgb(var(--primary-3)));
+}
+
+.choice:focus-visible {
+  outline: 2px solid rgb(var(--primary-4));
+  outline-offset: 2px;
+}
+
+.choiceActive,
+.choiceActive:hover {
+  border-color: var(--mu-accent-border, rgb(var(--primary-5)));
+  background: var(--mu-accent-tint, rgb(var(--primary-1) / 45%));
+  box-shadow: 0 0 0 3px var(--mu-ring, rgb(var(--primary-2) / 45%));
+  cursor: default;
+}
+
+.choiceRadio {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  border: 1.5px solid var(--color-border-3);
+  border-radius: 50%;
+  background: var(--bg-1);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.choiceActive .choiceRadio {
+  border-color: rgb(var(--primary-6));
+  box-shadow: inset 0 0 0 3.5px var(--bg-1);
+  background: rgb(var(--primary-6));
+}
+
+.choiceText {
+  flex: 1;
+  min-width: 0;
+}
+
+.choiceTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
+}
+
+.choiceTag {
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgb(var(--primary-1));
+  color: rgb(var(--primary-6));
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.choiceDescription {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.choiceBody {
+  margin-top: 12px;
+  cursor: auto;
+}
+
+.choiceField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 440px;
+}
+
+.choiceInput {
+  width: 100%;
+}
+
+.choiceLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.choiceHint {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+/* Laya on this machine: where it stands, what can be done, and the script's last words while it works. */
+.localJudge {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.localJudgeStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.localJudgeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.localJudgeActions:empty {
+  display: none;
+}
+
+.localJudgeProblem {
+  color: rgb(var(--danger-6));
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.localJudgeOutput {
+  margin: 0;
+  padding: 8px 10px;
+  max-height: 120px;
+  overflow: auto;
+  border-radius: 8px;
+  background: var(--color-fill-1);
+  color: var(--text-secondary);
+  font-family: var(--font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  font-size: 11px;
+  line-height: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.advancedToggle {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.advancedToggle:hover {
+  color: rgb(var(--primary-6));
+}
+
+.advanced {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}

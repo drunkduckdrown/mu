@@ -1,0 +1,210 @@
+.summary {
+  margin: 6px 0;
+  min-width: 0;
+}
+.header:global(.arco-btn) {
+  display: grid;
+  grid-template-columns: 16px auto auto minmax(0, 1fr) 12px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  gap: 6px 8px;
+  padding: 10px 12px;
+  color: var(--text-primary);
+  background: var(--bg-1);
+  border: 1px solid var(--border-base);
+  border-radius: 10px;
+  text-align: start;
+  white-space: normal;
+}
+.header:global(.arco-btn:hover) {
+  background: var(--bg-hover);
+}
+.headerIcon,
+.arrow,
+.arrowOpen {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  white-space: nowrap;
+}
+.status[data-status='error'] {
+  color: var(--danger);
+}
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  justify-self: end;
+  column-gap: 4px;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+/* A narrow column breaks between the two counts, never inside one. */
+.counts > span {
+  white-space: nowrap;
+}
+.latest {
+  grid-row: 2;
+  grid-column: 2 / 5;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.latest > span {
+  flex-shrink: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.latest code {
+  min-width: 0;
+  font-family: var(--font-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.arrow,
+.arrowOpen {
+  grid-row: 1;
+  grid-column: 5;
+  transition: transform 160ms ease;
+}
+.arrowOpen {
+  transform: rotate(90deg);
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 12px;
+  margin-top: 4px;
+  border: 1px solid var(--border-base);
+  border-radius: 10px;
+  background: var(--bg-1);
+}
+.call {
+  min-width: 0;
+}
+.callButton:global(.arco-btn),
+.callStatic {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  gap: 8px;
+  padding: 5px 0;
+  color: var(--text-primary);
+  text-align: start;
+}
+.callStatic {
+  font-size: 12px;
+}
+.callName {
+  flex: 0 1 auto;
+  max-width: 35%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+.callPreview {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-secondary);
+  font: 12px/1.6 var(--font-mono);
+}
+.breathing :global(.arco-badge-status-dot) {
+  animation: breathing 1.5s ease-in-out infinite;
+}
+.detailPanel {
+  padding: 6px 0 2px 12px;
+  border-inline-start: 2px solid var(--border-base);
+}
+.detailSection {
+  margin-top: 6px;
+}
+.detailLabel {
+  margin-bottom: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.detailContent {
+  max-height: 320px;
+  margin: 0;
+  padding: 8px 10px;
+  overflow: auto;
+  color: var(--text-secondary);
+  font: 12px/1.6 var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: var(--bg-2);
+  border-radius: 6px;
+}
+.loadError {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--danger);
+  font-size: 12px;
+}
+.imagePreview {
+  position: relative;
+  max-width: 280px;
+  margin-top: 8px;
+  padding: 8px;
+  overflow: hidden;
+  background: var(--bg-1);
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+}
+.downloadImage:global(.arco-btn) {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 10px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.imagePreview:hover .downloadImage,
+.downloadImage:focus {
+  opacity: 0.9;
+}
+@keyframes breathing {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .breathing :global(.arco-badge-status-dot) {
+    animation: none;
+  }
+  .arrow,
+  .arrowOpen,
+  .downloadImage {
+    transition: none;
+  }
+}

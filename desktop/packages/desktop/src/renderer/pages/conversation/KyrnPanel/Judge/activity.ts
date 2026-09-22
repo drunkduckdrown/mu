@@ -1,0 +1,440 @@
+import type { Activity } from '@/common/kyrn/types';
+import { list, record, str } from '../activity';
+
+/** Decision points of the harness by ledger spec id. An unknown id stays visible as `other`. */
+export const DECISIONS = {
+  'input.preflight': 'preflight',
+  'input.interjection': 'interjection',
+  'tool.admission': 'admission',
+  'context.forget': 'forget',
+  'context.compact': 'compaction',
+  'skills.disclosure': 'skills',
+  'files.locate': 'locate',
+  'swarm.routing': 'routing',
+  'hive.publish': 'publish',
+  'hive.deliver': 'deliver',
+  'browser.step': 'browser',
+  'memory.recall': 'recall',
+  'memory.capture': 'capture',
+  'tool.risk': 'risk',
+  'turn.drift': 'drift',
+  'turn.completion': 'completion',
+  'notify.routing': 'notify',
+  'cache.warming': 'cache',
+  'turn.rewind': 'rewind',
+  'goal.met': 'goalMet',
+  'output.drift': 'outputDrift',
+  'task.frame': 'taskFrame',
+  'tool.constraint': 'constraint',
+  'capability.disclosure': 'capabilities',
+  'diagnostics.delivery': 'diagnostics',
+  'swarm.patch': 'patch',
+  'review.triage': 'review',
+  'board.read': 'board',
+} as const;
+
+export type JudgeStage = (typeof DECISIONS)[keyof typeof DECISIONS] | 'other';
+
+/** The decision point a ledger spec id belongs to; its question is `common.kyrn.judgeView.questions.<stage>`. */
+export const stageOf = (specId: string): JudgeStage => DECISIONS[specId as keyof typeof DECISIONS] ?? 'other';
+
+/** The harness words an unanswered classification as "no answer after 6.0 s"; the view shows it as a code. */
+const NO_ANSWER = /^no answer after \d+(?:\.\d+)? s$/;
+
+/**
+ * A recorded reason as a code the view can translate: `error:<kind>` and the judge's own codes stay as they are,
+ * the preflight's English sentence for a wait without an answer becomes `no_answer`.
+ */
+export const reasonCode = (reason: string): string => (NO_ANSWER.test(reason.trim()) ? 'no_answer' : reason);
+
+/**
+ * What became of a judgment. `returned` only says the runtime received it; `confirmed` needs a
+ * recorded effect (an applied adjustment, a delivery receipt). `shadow`, `late`, `fallback` and
+ * `rule` are never folded into either: each means the judge's answer did not drive execution.
+ */
+export type JudgeState =
+  | 'pending'
+  | 'returned'
+  | 'confirmed'
+  | 'shadow'
+  | 'fallback'
+  | 'late'
+  | 'rule'
+  | 'ended'
+  | 'unknown';
+
+export type JudgeAction =
+  | 'toRuntime'
+  | 'observeOnly'
+  | 'useDefault'
+  | 'lateIgnored'
+  | 'waiting'
+  | 'waitEnded'
+  | 'recordedOnly'
+  | 'mainGiven'
+  | 'allowPublish'
+  | 'denyPublish'
+  | 'allowDelivery'
+  | 'denyDelivery'
+  | 'delivered';
+
+export type JudgeCard = {
+  id: string;
+  at: number;
+  stage: JudgeStage;
+  specId: string;
+  state: JudgeState;
+  action: JudgeAction;
+  /** The judge model that answered. Empty for a rule, or when none was recorded. */
+  model: string;
+  latencyMs?: number;
+  outcome: unknown;
+  reason: string;
+  thinking?: { from: string; to: string };
+  hints: string[];
+  answers: unknown;
+  batch?: { size: number; failures: number };
+  route?: { from: string; to: string };
+  preview: string;
+  /** A classification record without correlation fields. It stands alone; nothing is merged into it. */
+  unlinked: boolean;
+  evidence: Activity[];
+};
+
+type Payload = Record<string, unknown>;
+type Group = { id: string; specId: string; unlinked: boolean; events: Activity[] };
+
+const PREFLIGHT = 'input.preflight';
+const amount = (value: unknown): number | undefined =>
+  typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : undefined;
+const joinKey = (...parts: unknown[]): string => JSON.stringify(parts);
+
+/** Both fields or nothing: a turn number alone repeats in every runtime. */
+const turnScope = (event: Activity): string | undefined =>
+  typeof event.runtimeId === 'string' && event.runtimeId && Number.isSafeInteger(event.turnId)
+    ? joinKey(event.runtimeId, event.turnId)
+    : undefined;
+
+const isPreflight = (event: Activity): boolean =>
+  event.kind.startsWith('preflight.') || (event.kind === 'decision' && event.payload.specId === PREFLIGHT);
+
+const bySequence = (a: Activity, b: Activity): number =>
+  a.sequence !== undefined && b.sequence !== undefined ? a.sequence - b.sequence : 0;
+
+/** A ledger record on its own: what the caller acted on, and whether the judge's answer was it. */
+function ledgerVerdict(ledger: Payload): Pick<JudgeCard, 'state' | 'action'> {
+  const reason = str(ledger.reason);
+  if (ledger.mode === 'shadow' || reason === 'shadow') return { state: 'shadow', action: 'observeOnly' };
+  if (ledger.source === 'fallback' || reason === 'abstain' || reason.startsWith('error:'))
+    return { state: 'fallback', action: 'useDefault' };
+  if (ledger.source === 'judge') return { state: 'returned', action: 'toRuntime' };
+  return { state: 'unknown', action: 'recordedOnly' };
+}
+
+function batchOf(ledger: Payload): JudgeCard['batch'] {
+  const batch = record(ledger.batch);
+  const size = amount(batch.size);
+  return size === undefined ? undefined : { size, failures: amount(batch.failures) ?? 0 };
+}
+
+function decisionCard(group: Group, ledger: Payload): JudgeCard {
+  const shadow = ledger.mode === 'shadow';
+  return {
+    id: group.id,
+    at: group.events.at(-1)!.at,
+    stage: stageOf(group.specId),
+    specId: group.specId,
+    ...ledgerVerdict(ledger),
+    model: str(ledger.modelId) || str(ledger.providerId),
+    latencyMs: amount(ledger.latencyMs),
+    // Observe-only: the caller acted on its default, so the judgment itself is what is worth reading.
+    outcome: shadow && ledger.judged !== undefined ? ledger.judged : ledger.outcome,
+    reason: str(ledger.reason),
+    hints: [],
+    answers: ledger.answers ?? record(ledger.batch).answers,
+    batch: batchOf(ledger),
+    preview: '',
+    unlinked: group.unlinked,
+    evidence: group.events,
+  };
+}
+
+function preflightCard(group: Group, ended: (group: Group) => boolean): JudgeCard {
+  const last = (kind: string): Payload | undefined => group.events.findLast((event) => event.kind === kind)?.payload;
+  const verdict = last('preflight.verdict');
+  const wait = last('preflight.wait_end');
+  const pending = last('preflight.pending');
+  // A ledger frame is stamped with the turn that is current when it is written, so a judge that
+  // answers after the next message began lands under that message. A verdict repeats its ledger
+  // record's latency; a record that disagrees belongs to another turn and must not describe this one.
+  const latency = amount(verdict?.latencyMs);
+  const ledger = group.events.findLast(
+    (event) =>
+      event.kind === 'decision' &&
+      (latency === undefined ||
+        amount(event.payload.latencyMs) === undefined ||
+        amount(event.payload.latencyMs) === latency)
+  )?.payload;
+  const base: JudgeCard = {
+    ...decisionCard(group, ledger ?? {}),
+    model: str(ledger?.modelId) || (verdict?.by === 'rule' ? '' : str(verdict?.by)) || str(pending?.judge),
+  };
+  if (!verdict) {
+    if (ledger) return base;
+    // Only the wait was recorded. A timeout runs the turn on stock behaviour; anything else says
+    // nothing about a judgment, and a wait whose task has since ended is no longer a wait.
+    const timedOut = wait?.reason === 'timeout';
+    const over = Boolean(wait) || ended(group);
+    return {
+      ...base,
+      state: timedOut ? 'fallback' : over ? 'ended' : 'pending',
+      action: timedOut ? 'useDefault' : over ? 'waitEnded' : 'waiting',
+      latencyMs: amount(wait?.waitedMs),
+      reason: str(wait?.reason),
+      outcome: undefined,
+    };
+  }
+  const change = record(verdict.thinking);
+  const thinking =
+    str(change.from) && str(change.to) && change.from !== change.to
+      ? { from: str(change.from), to: str(change.to) }
+      : undefined;
+  const hints = Array.isArray(verdict.hints)
+    ? verdict.hints.filter((hint): hint is string => typeof hint === 'string')
+    : [];
+  const applied = verdict.state === 'applied';
+  const effect = applied && (thinking !== undefined || hints.length > 0);
+  let state: JudgeState = 'unknown';
+  let action: JudgeAction = 'recordedOnly';
+  if (verdict.state === 'shadow') [state, action] = ['shadow', 'observeOnly'];
+  else if (verdict.state === 'late') [state, action] = ['late', 'lateIgnored'];
+  else if (verdict.state === 'none') [state, action] = ['fallback', 'useDefault'];
+  // A rule settled it without the judge: applied, but never presented as the judge's decision.
+  else if (applied && verdict.by === 'rule') [state, action] = ['rule', effect ? 'mainGiven' : 'useDefault'];
+  else if (applied) [state, action] = effect ? ['confirmed', 'mainGiven'] : ['returned', 'toRuntime'];
+  return {
+    ...base,
+    state,
+    action,
+    // The wait marker and the ledger may still name the judge that was asked. It did not settle this one.
+    model: state === 'rule' ? '' : base.model,
+    latencyMs: amount(verdict.latencyMs) ?? base.latencyMs ?? amount(wait?.waitedMs),
+    outcome: { turnType: verdict.turnType, gear: verdict.gear },
+    reason: str(verdict.reason) || base.reason,
+    thinking: applied ? thinking : undefined,
+    hints: applied ? hints : [],
+    answers: ledger?.answers ?? verdict.answers,
+  };
+}
+
+function gateCard(group: Group, receipts: ReadonlySet<string>, notes: ReadonlyMap<string, Payload>): JudgeCard {
+  const event = group.events[0];
+  const gate = event.payload;
+  const delivering = gate.gate === 'deliver' || (gate.gate === undefined && 'deliver' in gate);
+  const allowed = delivering ? gate.deliver : gate.publish;
+  const reason = str(gate.reason);
+  let state: JudgeState = 'unknown';
+  let action: JudgeAction = 'recordedOnly';
+  if (reason === 'shadow') [state, action] = ['shadow', 'observeOnly'];
+  // The gates fail closed: their default withholds, it never waves a note through.
+  else if (reason === 'abstain' || reason.startsWith('error:')) [state, action] = ['fallback', 'useDefault'];
+  else if (typeof allowed === 'boolean') {
+    state = 'returned';
+    action = delivering ? (allowed ? 'allowDelivery' : 'denyDelivery') : allowed ? 'allowPublish' : 'denyPublish';
+  }
+  // "Allowed" is a verdict. Only a delivery receipt for the same run, note and bee is an arrival.
+  if (delivering && allowed === true && event.run && receipts.has(joinKey(event.run, gate.note, gate.to)))
+    [state, action] = ['confirmed', 'delivered'];
+  const note = event.run ? notes.get(joinKey(event.run, gate.note)) : undefined;
+  return {
+    id: group.id,
+    at: event.at,
+    stage: delivering ? 'deliver' : 'publish',
+    specId: group.specId,
+    state,
+    action,
+    model: '',
+    outcome: {
+      [delivering ? 'deliver' : 'publish']: allowed,
+      ...(typeof gate.kind === 'string' ? { kind: gate.kind } : {}),
+      ...(typeof gate.score === 'number' ? { score: gate.score } : {}),
+    },
+    reason,
+    hints: [],
+    answers: undefined,
+    route: { from: str(gate.bee) || str(gate.from), to: str(gate.to) },
+    preview: str(gate.text) || str(gate.head) || str(note?.text),
+    unlinked: false,
+    evidence: group.events,
+  };
+}
+
+/**
+ * One card per judgment, newest first. Phases of a classification are folded only when they carry
+ * the same runtime id and turn number; a record without them is never attached to a neighbour by
+ * timestamp. It stays a card of its own.
+ */
+export function judgeCards(events: Activity[]): JudgeCard[] {
+  const groups = new Map<string, Group>();
+  const receipts = new Set<string>();
+  const notes = new Map<string, Payload>();
+  const latestTurn = new Map<string, number>();
+  const closes: number[] = [];
+  const add = (id: string, specId: string, event: Activity, unlinked = false) => {
+    const group = groups.get(id) ?? { id, specId, unlinked, events: [] };
+    group.events.push(event);
+    groups.set(id, group);
+  };
+  for (const event of events) {
+    if (event.kind === 'hive.delivery' && event.run)
+      receipts.add(joinKey(event.run, event.payload.note, event.payload.to));
+    if (event.kind === 'hive.note' && event.run) notes.set(joinKey(event.run, event.payload.id), event.payload);
+    if (event.kind === 'agent_settled' || event.kind === 'kyrn_rpc_closed') closes.push(event.at);
+    if (event.kind === 'hive.gate') add(event.id, `hive.${str(event.payload.gate) || 'gate'}`, event);
+    else if (isPreflight(event)) {
+      const scope = turnScope(event);
+      if (scope) {
+        add(`preflight:${scope}`, PREFLIGHT, event);
+        latestTurn.set(event.runtimeId!, Math.max(latestTurn.get(event.runtimeId!) ?? 0, event.turnId!));
+      }
+      // A lone wait marker is no judgment. It stays in the runtime event list, unpaired.
+      else if (event.kind === 'preflight.verdict' || event.kind === 'decision') add(event.id, PREFLIGHT, event, true);
+    } else if (event.kind === 'decision')
+      add(str(event.payload.id) ? `decision:${str(event.payload.id)}` : event.id, str(event.payload.specId), event);
+  }
+  const ended = (group: Group): boolean => {
+    const first = group.events[0];
+    const at = group.events.at(-1)!.at;
+    return closes.some((close) => close >= at) || (latestTurn.get(first.runtimeId ?? '') ?? 0) > (first.turnId ?? 0);
+  };
+  return [...groups.values()]
+    .map((group): JudgeCard => {
+      group.events.sort(bySequence);
+      const first = group.events[0];
+      if (first.kind === 'hive.gate') return gateCard(group, receipts, notes);
+      if (group.specId === PREFLIGHT) return preflightCard(group, ended);
+      return decisionCard(group, group.events.at(-1)!.payload);
+    })
+    .toSorted((a, b) => b.at - a.at);
+}
+
+/**
+ * `pairs` are the labelled fields of one candidate in a batch; `more` counts what the list left out. A `tally` counts
+ * identical answers of a batch: its name is an answer ("shrink"), not a field, and its one value is the count ("×2").
+ */
+export type JudgeFact = {
+  name: string;
+  values: string[];
+  pairs?: { key: string; value: string }[];
+  more?: number;
+  tally?: true;
+};
+
+const FACT_LIMIT = 6;
+const scalar = (value: unknown): string =>
+  typeof value === 'string'
+    ? value
+    : typeof value === 'boolean'
+      ? String(value)
+      : typeof value === 'number' && Number.isFinite(value)
+        ? String(Math.round(value * 100) / 100)
+        : '';
+const capped = (name: string, values: string[]): JudgeFact =>
+  values.length > FACT_LIMIT
+    ? { name, values: values.slice(0, FACT_LIMIT), more: values.length - FACT_LIMIT }
+    : { name, values };
+
+/**
+ * The outcome as labelled fields. Names and values stay raw: the view translates the ones it knows.
+ * Nothing here turns a verdict into a claim that the operation was carried out.
+ */
+export function resultFacts(card: JudgeCard): JudgeFact[] {
+  const outcome = card.outcome;
+  if (Array.isArray(outcome)) {
+    const rows = list(outcome);
+    if (card.stage === 'admission')
+      return [
+        { name: 'drop', values: [String(rows.filter((row) => row.drop === true).length)] },
+        { name: 'keep', values: [String(rows.filter((row) => row.drop === false).length)] },
+      ];
+    if (outcome.every((value) => scalar(value))) {
+      const counts = new Map<string, number>();
+      for (const value of outcome) counts.set(scalar(value), (counts.get(scalar(value)) ?? 0) + 1);
+      return [...counts]
+        .slice(0, FACT_LIMIT)
+        .map(([name, count]): JudgeFact => ({ name, values: [`×${count}`], tally: true }));
+    }
+    const facts = rows.flatMap((row, index): JudgeFact[] => {
+      const pairs = Object.entries(row).flatMap(([key, value]) =>
+        scalar(value) ? [{ key, value: scalar(value) }] : []
+      );
+      return pairs.length ? [{ name: String(index + 1), values: [], pairs }] : [];
+    });
+    return facts.length > FACT_LIMIT
+      ? [...facts.slice(0, FACT_LIMIT - 1), { name: '…', values: [], more: facts.length - FACT_LIMIT + 1 }]
+      : facts;
+  }
+  if (scalar(outcome)) return [{ name: 'result', values: [scalar(outcome)] }];
+  return Object.entries(record(outcome))
+    .flatMap(([name, value]): JudgeFact[] => {
+      if (name === 'ranked')
+        return [
+          capped(
+            'path',
+            list(value)
+              .map((row) => str(row.path))
+              .filter(Boolean)
+          ),
+        ];
+      const values = Array.isArray(value) ? value.map(scalar).filter(Boolean) : scalar(value) ? [scalar(value)] : [];
+      return values.length ? [capped(name, values)] : [];
+    })
+    .slice(0, FACT_LIMIT);
+}
+
+export type JudgeAnswer =
+  | { id: string; type: 'boolean'; probability: number }
+  | { id: string; type: 'choice'; choice: string; options: { name: string; probability: number }[] }
+  | { id: string; type: 'score'; score: number }
+  | { id: string; type: 'text'; text: string };
+
+const ANSWER_LIMIT = 12;
+
+/** The judge's recorded answers with their probabilities. A batch keeps its per-item answers in the raw record. */
+export function answerRows(card: JudgeCard): { rows: JudgeAnswer[]; more: number } {
+  const source = card.answers;
+  const rows: JudgeAnswer[] = Array.isArray(source)
+    ? source.flatMap((pair): JudgeAnswer[] =>
+        Array.isArray(pair) && typeof pair[0] === 'string' && typeof pair[1] === 'string'
+          ? [{ id: pair[0], type: 'text', text: pair[1] }]
+          : []
+      )
+    : Object.entries(record(source)).flatMap(([id, value]): JudgeAnswer[] => {
+        const answer = record(value);
+        if (answer.type === 'boolean' && typeof answer.probability === 'number')
+          return [{ id, type: 'boolean', probability: answer.probability }];
+        if (answer.type === 'score' && typeof answer.score === 'number')
+          return [{ id, type: 'score', score: answer.score }];
+        if (answer.type !== 'choice' || typeof answer.choice !== 'string') return [];
+        const options = Object.entries(record(answer.probabilities))
+          .flatMap(([name, probability]) => (typeof probability === 'number' ? [{ name, probability }] : []))
+          .toSorted((a, b) => b.probability - a.probability)
+          .slice(0, 3);
+        return [{ id, type: 'choice', choice: answer.choice, options }];
+      });
+  return { rows: rows.slice(0, ANSWER_LIMIT), more: Math.max(0, rows.length - ANSWER_LIMIT) };
+}
+
+/** Events the JeV tab lists under its cards: everything that is neither a judgment nor another tab's record. */
+export function runtimeEvents(events: Activity[]): Activity[] {
+  return events.filter(
+    (event) =>
+      event.kind !== 'swarm.snapshot' &&
+      event.kind !== 'bee.event' &&
+      event.kind !== 'artifact.image' &&
+      !event.kind.startsWith('hive.') &&
+      event.kind !== 'decision' &&
+      event.kind !== 'preflight.verdict' &&
+      !(isPreflight(event) && turnScope(event))
+  );
+}

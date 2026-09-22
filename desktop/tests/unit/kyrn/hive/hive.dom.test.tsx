@@ -1,0 +1,147 @@
+import React from 'react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { createInstance } from 'i18next';
+import { I18nextProvider } from 'react-i18next';
+import common from '@/renderer/services/i18n/locales/en-US/common.json';
+import mu from '@/renderer/services/i18n/locales/en-US/mu.json';
+import Hive from '@/renderer/pages/conversation/KyrnPanel/Hive';
+import { onHiveFocus, requestHiveFocus } from '@/renderer/pages/conversation/KyrnPanel/focus';
+import MessageToolGroupSummary from '@/renderer/pages/conversation/Messages/components/MessageToolGroupSummary';
+import { activity, hiveEvents, hiveMessage, hiveSnapshot } from './hiveFixtures';
+
+vi.mock('@/renderer/components/media/LocalImageView', () => ({ default: () => null }));
+vi.mock('@/renderer/utils/file/download', () => ({ downloadFileFromPath: vi.fn() }));
+
+const i18n = createInstance();
+beforeAll(async () => {
+  await i18n.init({
+    lng: 'en',
+    resources: { en: { translation: { common, mu } } },
+    interpolation: { escapeValue: false },
+  });
+});
+afterEach(cleanup);
+const view = (children: React.ReactNode) => <I18nextProvider i18n={i18n}>{children}</I18nextProvider>;
+
+describe('Native Hive interaction', () => {
+  it('shows named bees outside raw steps and sends a scoped click-through request', () => {
+    const listener = vi.fn();
+    const unsubscribe = onHiveFocus(listener);
+    try {
+      render(view(<MessageToolGroupSummary messages={[hiveMessage()]} />));
+      fireEvent.click(screen.getByRole('button', { name: 'Inspect prefix-mutations' }));
+      expect(listener).toHaveBeenCalledWith({
+        conversationId: 'conversation-1',
+        runId: 'run-1',
+        beeName: 'prefix-mutations',
+      });
+      expect(screen.queryByText('View Steps · 1')).not.toBeInTheDocument();
+      expect(screen.getByText('provider-cache')).toBeInTheDocument();
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('keeps the original raw input/output available on demand', () => {
+    render(view(<MessageToolGroupSummary messages={[hiveMessage()]} />));
+    expect(screen.queryByText(/Original terminal evidence/)).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Raw evidence' }));
+    expect(screen.getByText(/Original terminal evidence/)).toHaveTextContent('Original terminal evidence');
+    expect(screen.getByText(/Inspect changing request prefixes/)).toBeInTheDocument();
+  });
+
+  it('opens the selected bee context with the real current tool and completed output', () => {
+    render(view(<Hive events={hiveEvents} />));
+    fireEvent.click(screen.getByRole('button', { name: 'Inspect prefix-mutations' }));
+    const inspector = screen.getByRole('region', { name: 'Execution context' });
+    expect(within(inspector).getByText('read src/cache.ts')).toBeInTheDocument();
+    // Counts are plural-aware and the thinking level is a word, not pi's raw id.
+    expect(within(inspector).getByText('3 turns · 6 tool calls · 1 shared · 0 received')).toBeInTheDocument();
+    expect(within(inspector).getByText('test-model · High')).toBeInTheDocument();
+    fireEvent.click(within(inspector).getByText('Assignment'));
+    expect(within(inspector).getByText('Inspect changing request prefixes')).toBeInTheDocument();
+    fireEvent.click(within(inspector).getByText('read'));
+    expect(within(inspector).getByText('export const stablePrefix = true;')).toBeInTheDocument();
+  });
+
+  it('draws only real directed deliveries, never judge-only connections', () => {
+    const { rerender } = render(view(<Hive events={hiveEvents.filter((event) => event.kind !== 'hive.delivery')} />));
+    expect(screen.queryByTestId('hive-connection')).not.toBeInTheDocument();
+    rerender(view(<Hive events={hiveEvents} />));
+    expect(screen.getByTestId('hive-connection')).toHaveAttribute('data-from', 'prefix-mutations');
+    expect(screen.getByTestId('hive-connection')).toHaveAttribute('data-to', 'provider-cache');
+  });
+
+  it('waits for the requested run rather than opening a different run, then applies late data', () => {
+    const focus = { conversationId: 'conversation-1', runId: 'run-2', beeName: 'provider-cache' };
+    const { rerender } = render(view(<Hive events={hiveEvents} focus={focus} />));
+    expect(screen.getByText('Waiting for this Hive’s recorded events.')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Inspect prefix-mutations' })).not.toBeInTheDocument();
+    rerender(
+      view(<Hive events={[...hiveEvents, activity('other', 'swarm.snapshot', hiveSnapshot, 'run-2')]} focus={focus} />)
+    );
+    expect(screen.getByRole('region', { name: 'Execution context' })).toHaveTextContent('provider-cache');
+  });
+
+  it('keeps inspecting the selected run when a newer run arrives', () => {
+    const { rerender } = render(view(<Hive events={hiveEvents} />));
+    fireEvent.click(screen.getByRole('button', { name: 'Inspect prefix-mutations' }));
+    const newer = activity(
+      'newer',
+      'swarm.snapshot',
+      { ...hiveSnapshot, bees: [{ ...hiveSnapshot.bees[0], tool: { name: 'bash', summary: 'bash other-run' } }] },
+      'run-2'
+    );
+    newer.at = 20000;
+    rerender(view(<Hive events={[...hiveEvents, newer]} />));
+    expect(screen.getByRole('region', { name: 'Execution context' })).toHaveTextContent('read src/cache.ts');
+    expect(screen.queryByText('bash other-run')).not.toBeInTheDocument();
+  });
+
+  it('does not invent output when a tool has only started', () => {
+    render(
+      view(
+        <Hive
+          events={hiveEvents.filter((event) => event.id !== 'tool-end')}
+          focus={{ conversationId: 'conversation-1', runId: 'run-1', beeName: 'prefix-mutations' }}
+        />
+      )
+    );
+    fireEvent.click(within(screen.getByRole('region', { name: 'Execution context' })).getByText('read'));
+    expect(screen.getByText('Waiting for completed tool output.')).toBeInTheDocument();
+    expect(screen.queryByText('export const stablePrefix = true;')).not.toBeInTheDocument();
+  });
+
+  it('ignores malformed focus events and unsubscribes without retaining a listener', () => {
+    const listener = vi.fn();
+    const unsubscribe = onHiveFocus(listener);
+    window.dispatchEvent(new CustomEvent('kyrn:hive-focus', { detail: { conversationId: 12, runId: 'run-1' } }));
+    expect(listener).not.toHaveBeenCalled();
+    unsubscribe();
+    requestHiveFocus({ conversationId: 'conversation-1', runId: 'run-1' });
+    expect(listener).not.toHaveBeenCalled();
+  });
+
+  it('leads a failed bee with a translated headline and keeps the raw error as a detail', () => {
+    const failed = {
+      ...hiveSnapshot,
+      bees: [
+        { ...hiveSnapshot.bees[0], status: 'failed', thinking: 'minimal', quietMs: 45_000, error: 'spawn ENOENT' },
+      ],
+    };
+    render(
+      view(
+        <Hive
+          events={[activity('snapshot', 'swarm.snapshot', failed)]}
+          focus={{ conversationId: 'conversation-1', runId: 'run-1', beeName: 'prefix-mutations' }}
+        />
+      )
+    );
+    const inspector = screen.getByRole('region', { name: 'Execution context' });
+    expect(within(inspector).getByText(common.kyrn.beeFailed)).toBeInTheDocument();
+    expect(within(inspector).getByText('spawn ENOENT')).toBeInTheDocument();
+    expect(within(inspector).getByText('No activity for 45 sec')).toBeInTheDocument();
+    expect(within(inspector).getByText('test-model · Minimal')).toBeInTheDocument();
+  });
+});

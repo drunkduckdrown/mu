@@ -1,0 +1,316 @@
+.hive {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.toolCard {
+  margin-block: 8px;
+  padding: 16px;
+  border: 1px solid var(--border-base);
+  border-radius: 16px;
+  background: linear-gradient(130deg, color-mix(in srgb, var(--brand) 9%, var(--bg-1)), var(--bg-1) 70%);
+  color: var(--text-primary);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block: 10px;
+  min-width: 0;
+}
+
+.brandIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--brand);
+}
+
+.goal {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  line-height: 1.6;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 14px 6px;
+}
+
+.chip:global(.arco-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  max-width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border-base);
+  border-radius: 10px;
+  background: var(--bg-1);
+  color: var(--text-primary);
+  white-space: normal;
+}
+
+.chipName {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.openLink:global(.arco-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--brand);
+}
+
+.avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+  background: var(--bg-1);
+  color: var(--brand);
+}
+
+.avatar[data-tone='1'] {
+  color: var(--info);
+}
+.avatar[data-tone='2'] {
+  color: var(--warning);
+}
+.avatarSmall {
+  width: 27px;
+  height: 27px;
+  border-radius: 9px;
+}
+
+.statusDot {
+  position: absolute;
+  inset-inline-end: -2px;
+  bottom: -2px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--bg-1);
+  border-radius: 50%;
+  background: var(--bg-6);
+}
+.statusDot[data-status='thinking'],
+.statusDot[data-status='tool'],
+.statusDot[data-status='starting'] {
+  background: var(--primary);
+}
+.statusDot[data-status='done'] {
+  background: var(--success);
+}
+.statusDot[data-status='failed'],
+.statusDot[data-status='timed-out'] {
+  background: var(--danger);
+}
+.statusDot[data-status='retrying'],
+.statusDot[data-status='wrapping-up'] {
+  background: var(--warning);
+}
+
+.graph {
+  position: relative;
+  direction: ltr;
+  margin-block: 12px 4px;
+  border: 1px solid var(--border-base);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at center, color-mix(in srgb, var(--brand) 7%, transparent), transparent 75%), var(--bg-1);
+}
+
+.edges {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--brand);
+  pointer-events: none;
+}
+.edge {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+.edge[data-muted='true'] {
+  opacity: 0.15;
+}
+
+.node:global(.arco-btn) {
+  position: absolute;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 43%;
+  height: auto;
+  padding: 0 3px 5px;
+  border-radius: 12px;
+  color: var(--text-primary);
+  background: transparent;
+  white-space: normal;
+}
+.node:global(.arco-btn:hover) {
+  background: var(--bg-hover);
+}
+.node[aria-pressed='true'] .avatar {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+.node:focus-visible,
+.chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+.nodeName {
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 500;
+  unicode-bidi: plaintext;
+}
+.nodeStatus {
+  font-size: 10px;
+  line-height: 1.3;
+  color: var(--text-secondary);
+}
+.hint {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  margin-block: 4px;
+}
+.sectionLabel {
+  margin-block: 12px 6px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.beeName {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.wrap {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.inspector {
+  min-width: 0;
+}
+.current {
+  margin-block: 12px;
+  padding: 1px 10px 10px;
+  border-inline-start: 2px solid var(--brand);
+  border-radius: 0 8px 8px 0;
+  background: var(--bg-2);
+}
+.said {
+  margin-block: 8px 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.recordText {
+  margin: 0;
+  padding: 10px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.7 var(--font-mono);
+  background: var(--bg-2);
+  border-radius: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+  color: var(--text-primary);
+}
+.collapse :global(.arco-collapse-item-header) {
+  padding: 10px 10px 10px 22px;
+  background: transparent;
+  color: var(--text-primary);
+}
+.collapse :global(.arco-collapse-item-content-box) {
+  padding: 8px 0;
+}
+.collapse :global(.arco-collapse-item-content) {
+  background: transparent;
+}
+.collapse :global(.arco-collapse-item-header-title) {
+  min-width: 0;
+}
+.delivery {
+  padding-block: 12px;
+  border-bottom: 1px solid var(--border-base);
+}
+.route {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.route > :not(.routeName) {
+  flex-shrink: 0;
+}
+.routeName:global(.arco-btn) {
+  height: auto;
+  min-width: 0;
+  padding: 2px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+  font-size: 11px;
+}
+.finding {
+  margin-top: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.65;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.flowFilter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+.pendingBee {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block: 8px;
+}

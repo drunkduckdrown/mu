@@ -1,0 +1,54 @@
+/* Jev's class for a message: one quiet line, no box. */
+
+.line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  margin: 4px 0;
+  padding: 0 2px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dot,
+.dotBusy,
+.dotMuted {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.dot {
+  background: var(--mu-judge-dot, rgb(var(--primary-5)));
+}
+
+.dotMuted {
+  background: var(--color-fill-4, var(--text-disabled));
+}
+
+.dotBusy {
+  background: var(--mu-judge-dot, rgb(var(--primary-5)));
+  animation: breathe 1.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dotBusy {
+    animation: none;
+  }
+}

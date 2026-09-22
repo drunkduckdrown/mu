@@ -1,0 +1,538 @@
+{
+  "title": "mu 設定",
+  "description": "mu 支援的各項控制都在這裡：判定器、判定點、功能、模型與上下文。與命令列裡的 mu 共用同一份設定。",
+  "reload": "重新載入",
+  "search": "搜尋判定點和功能",
+  "noMatch": "沒有符合的項目。",
+  "modified": "已修改",
+  "applyNote": "修改對新對話生效。正在執行的對話沿用啟動時的設定，重新連線後才會使用新設定。",
+  "apiKey": "API 金鑰",
+  "keyHelp": "只寫不讀：儲存後不會再顯示。存放在本機 harness 的 .env 中（僅本人可讀）。",
+  "keyKeep": "留空則保留已儲存的金鑰",
+  "endpointRule": "請使用 HTTPS；只有本機位址（127.0.0.1、localhost）可以用 HTTP。位址裡不能帶使用者名稱、密碼、查詢參數或片段。",
+  "sections": {
+    "judges": "判定器",
+    "decisions": "判定點",
+    "features": "功能",
+    "models": "模型與供應商",
+    "permissions": "權限",
+    "context": "上下文"
+  },
+  "modes": {
+    "active": "生效",
+    "shadow": "影子",
+    "off": "關閉",
+    "activeHelp": "判定結果直接起作用。",
+    "shadowHelp": "照常提問並記錄，但不改變任何行為。",
+    "offHelp": "不提問，行為與原版 pi 相同。"
+  },
+  "harness": {
+    "tooOld": "目前的 mu harness 版本較舊，還不能描述自己的判定點和功能。更新 harness 後這裡才會列出；基礎設定仍可正常使用。",
+    "unsupported": "harness 的自述格式（版本 {{version}}）比本應用程式新，暫時無法編輯判定點和功能，請更新應用程式。"
+  },
+  "load": {
+    "failed": "無法讀取設定"
+  },
+  "save": {
+    "saved": "已儲存。新對話立即使用；執行中的對話請重新連線。",
+    "unsaved": "有未儲存的修改：{{sections}}",
+    "nothing": "沒有未儲存的修改",
+    "unsavedDot": "有未儲存的修改",
+    "discard": "放棄修改",
+    "stale": "設定在載入之後被其他程式（命令列 mu 或執行中的對話）改過，因此這次沒有儲存。請重新載入查看最新狀態；尚未儲存的修改會遺失。",
+    "failed": "儲存失敗：{{reason}}"
+  },
+  "units": {
+    "ms": "毫秒",
+    "tokens": "tokens"
+  },
+  "options": {
+    "range": "範圍 {{min}} – {{max}}。",
+    "emptyText": "留空使用預設值",
+    "addItem": "輸入後按 Enter 新增",
+    "addNumber": "輸入數字後按 Enter 新增",
+    "problem": {
+      "type": "這個值的類型不對。",
+      "range": "這個值超出了允許的範圍。",
+      "choice": "這個值不在可選項裡。",
+      "length": "內容過長，或有空白項目。"
+    }
+  },
+  "decisions": {
+    "description": "判定器被提問的每一個環節。每個判定點預設跟隨總模式，也可以單獨指定。",
+    "defaultMode": "預設模式",
+    "defaultModeHelp": "沒有單獨指定模式的判定點都用它。",
+    "follow": "跟隨預設（{{mode}}）",
+    "feature": "功能：{{name}}",
+    "featureOff": "功能已關閉，不會提問",
+    "groups": {
+      "input": "輸入",
+      "context": "上下文",
+      "tools": "工具與安全",
+      "turn": "回合",
+      "team": "協作"
+    },
+    "otherGroup": "其他"
+  },
+  "features": {
+    "description": "harness 在模型周圍做的各項工作。沒改過的選項會一直跟隨 harness 的預設值。",
+    "beta": "測試版",
+    "reset": "恢復預設",
+    "asks": "相關判定點：{{names}}。",
+    "permissionsElsewhere": "新對話的預設模式在「權限」裡設定。",
+    "boardModelElsewhere": "寫看板的模型在「模型與供應商」裡選。"
+  },
+  "judges": {
+    "tiers": "判定層級",
+    "tiersHelp": "按順序依次詢問；後一級只處理前一級拿不準的問題。",
+    "order": "順序",
+    "judge": "判定器",
+    "type": "接入方式",
+    "model": "判定模型",
+    "modelHelp": "通用大模型充當判定器時填寫 provider/model-id。",
+    "endpoint": "端點位址",
+    "endpointDefault": "使用服務的預設位址",
+    "timeout": "逾時",
+    "keyVariable": "金鑰變數名稱",
+    "keyVariableHelp": "可用 TYPESAFE_API_KEY、AI_GATEWAY_API_KEY，或以 MU_JUDGE_ 開頭的名稱。",
+    "types": {
+      "jev": "Jev（自動選擇通道）",
+      "typesafe": "Jev 直連（TypeSafe）",
+      "gateway": "Jev（經 Vercel AI Gateway）",
+      "local": "本機判定（Laya）",
+      "http": "自建 HTTP 判定服務",
+      "llm": "通用大模型充當判定器",
+      "mock": "模擬（只給中性回答）",
+      "jevHelp": "設定了 TypeSafe 金鑰就直連，否則走 Vercel AI Gateway。",
+      "typesafeHelp": "始終直連 TypeSafe。",
+      "gatewayHelp": "始終經由 Vercel AI Gateway。",
+      "localHelp": "執行在本機的 Laya 判定服務。",
+      "httpHelp": "任何接收 {state, questions} 並回傳 {answers} 的端點。",
+      "llmHelp": "用你已有的某個生成式模型，按提示以 JSON 作答。",
+      "mockHelp": "用於測試和離線：不會真的提問。"
+    },
+    "intro": "mu 工作時要做很多小判斷：這條訊息該怎麼處理、這一步會不會違反你的約束……判定器負責回答。選一個就行。",
+    "choose": "選擇判定器",
+    "custom": "現在排在第一位的是自訂的判定器，可以在進階設定裡查看和修改。",
+    "advanced": "進階設定",
+    "keyPlaceholder": "貼上 TypeSafe 或 Vercel AI Gateway 的金鑰",
+    "localHow": "需要本機執行著 Laya 判定服務：在終端機執行 mu judge start（目前僅 macOS）。應用程式內一鍵安裝即將加入。",
+    "choices": {
+      "jev": {
+        "title": "Jev",
+        "tag": "推薦",
+        "description": "又快又準，按次計費。需要 TypeSafe 或 Vercel AI Gateway 的金鑰。"
+      },
+      "local": {
+        "title": "本機 Laya",
+        "tag": "免費 · 離線",
+        "description": "在這台電腦上執行，不連網、不花錢。適合分類判斷，關聯和評分不夠可靠。"
+      }
+    },
+    "localAddress": "服務位址：{{address}}",
+    "laya": {
+      "running": "正在本機執行",
+      "stopped": "已安裝，沒有執行。mu 用到它時會自己啟動。",
+      "missing": "還沒有安裝。",
+      "platform": "這台電腦無法執行 Laya：它需要 Apple Silicon 的 Mac。可以在進階設定裡填一個你自己的判定服務位址。",
+      "needsUv": "安裝前需要先裝好 uv（Python 的套件管理工具），裝好後回到這裡。",
+      "uvLink": "如何安裝 uv",
+      "install": "安裝 Laya",
+      "start": "啟動",
+      "stop": "停止",
+      "confirmTitle": "下載並安裝 Laya？",
+      "confirmText": "這會從 PyPI 和 Hugging Face 下載約 {{size}} MB（Python 套件和模型權重）到 mu 的資料夾，需要幾分鐘。裝好後 Laya 會自動啟動。",
+      "confirmOk": "下載並安裝",
+      "working": {
+        "setup": "正在安裝 Laya…",
+        "start": "正在啟動 Laya…",
+        "stop": "正在停止 Laya…"
+      },
+      "failed": {
+        "setup": "安裝沒有完成，可以再試一次。",
+        "start": "Laya 沒能啟動。",
+        "stop": "Laya 沒能停止。"
+      }
+    }
+  },
+  "keyState": {
+    "none": "未設定",
+    "set": "已設定",
+    "typed": "已輸入新金鑰，待儲存",
+    "empty": "變數為空",
+    "managed": "已設定",
+    "manual": "已設定（手動）"
+  },
+  "context": {
+    "description": "對話何時壓縮、如何壓縮。與 pi 的 settings.json 共用。",
+    "auto": "自動壓縮",
+    "autoHelp": "上下文快滿時自動壓縮歷史。",
+    "limit": "上下文上限",
+    "limitHelp": "0 表示跟隨模型視窗減去保留量；否則為 {{min}} 到 {{max}}。在下一次請求模型之前檢查，不是硬性截斷。",
+    "limitProblem": "請填 0，或 {{min}} 到 {{max}} 之間的整數。",
+    "beta": "免摘要壓縮",
+    "betaHelp": "壓縮時逐段判斷保留還是裁掉，不讓模型寫摘要。與「功能」裡的免摘要壓縮是同一個開關。"
+  },
+  "permissions": {
+    "description": "mu 動手之前要不要先問你。這裡定的是新對話預設用的模式；每個對話還能在傳送框的「權限」裡單獨切換。",
+    "choose": "新對話的預設權限",
+    "note": "對話傳送框裡的「權限」只切換那一個對話；在對話裡輸入 /permissions 切換，會同時改掉這裡的預設。不管哪種模式，你明確說過不許做的事都會被攔下；動到 mu 自己設定的操作每次都會問你。",
+    "off": "權限模式在「功能」裡關掉了：現在不按模式問你，只有危險指令的把關在起作用。",
+    "missing": "這個版本的 mu 還沒有權限模式，更新 mu 後就能在這裡選。",
+    "modes": {
+      "full": {
+        "title": "完全存取",
+        "description": "什麼都不問，直接執行，不再打斷你。"
+      },
+      "jev": {
+        "title": "JeV 審批",
+        "description": "專案裡的讀和改直接做；指令、專案外的改動和對外操作由 JeV 替你審批，它拿不準的才問你。"
+      },
+      "ask": {
+        "title": "最小權限",
+        "description": "只讀操作直接做；改檔案、跑指令、對外操作都先問你。"
+      }
+    }
+  },
+  "providers": {
+    "description": "新對話預設用哪個模型，以及模型背後的供應商。",
+    "lead": "模型從哪裡來：訂閱帳號和介面位址；還有寫人話看板的模型。對話用哪個模型、思考等級多少，在傳送框裡選。",
+    "title": "供應商",
+    "custom": "自訂供應商",
+    "manualGroup": "手動設定",
+    "builtinGroup": "其他內建",
+    "add": "新增供應商",
+    "new": "新供應商",
+    "unsaved": "未儲存",
+    "remove": "移除",
+    "endpointType": "API 格式",
+    "name": "顯示名稱",
+    "namePlaceholder": "例如：我的中轉站",
+    "id": "ID",
+    "idHelp": "小寫字母、數字和連字號。儲存後不可更改，模型以 provider/model 的形式引用它。",
+    "idProblem": {
+      "format": "只能用小寫字母、數字和連字號，以字母或數字開頭，最多 40 個字元。",
+      "reserved": "這是內建供應商的 ID。用它建項目會改寫那個內建供應商，而不是新增一個。",
+      "taken": "這個 ID 已被使用。"
+    },
+    "baseUrl": "端點位址（Base URL）",
+    "keyEnter": "貼上 API 金鑰",
+    "keyReplace": "目前用的是手寫設定的金鑰；在這裡輸入會取代它",
+    "keyHelp": "金鑰存入 harness 的 .env（變數 {{variable}}），models.json 裡只寫引用，儲存後不再顯示。",
+    "authHeader": "同時傳送 Authorization: Bearer 標頭（部分中轉服務需要）",
+    "headers": "手寫的額外請求標頭會原樣保留：{{names}}。它們的值屬於機密，請在 models.json 中修改。",
+    "pick": "在左側選擇一個供應商，或新增一個。",
+    "manual": "手動設定",
+    "foreignHelp": "這個項目改寫了內建供應商，或用了本頁面不支援編輯的 API 格式。這裡只能移除它，不能編輯；要修改請直接改 models.json。",
+    "modelCount": "{{count, number}} 個模型",
+    "usable": "可用",
+    "builtinHelp": "mu 上次連線時回報它能用，通常是因為環境裡有它的 API 金鑰。這裡不能移除它：從環境變數裡刪掉那個金鑰，mu 下次連線後它就不會再出現。",
+    "noneYet": "還沒有",
+    "unreadable": "無法解析 models.json，供應商既不會顯示也不會儲存。請手動修復後重新載入。",
+    "commented": "models.json 裡有註解，從這裡儲存會把註解弄丟，所以供應商暫為唯讀。手動去掉註解後即可在此編輯。",
+    "modelCount_one": "{{count, number}} 個模型",
+    "modelCount_other": "{{count, number}} 個模型",
+    "summary": "登入訂閱帳號就能直接用，也可以接入任何 OpenAI、Anthropic 或 Gemini 相容的端點。",
+    "subscriptions": "訂閱登入",
+    "manualShort": "手寫",
+    "needsSetup": "還沒設定好",
+    "more": "更多操作",
+    "removeProvider": "移除供應商",
+    "removeTitle": "移除 {{name}}？",
+    "removeSaved": "儲存後它會從 models.json 裡刪除，為它存的金鑰也會一起刪除。",
+    "removeUnsaved": "它還沒儲存，移除後這裡填的內容都會丟掉。",
+    "removeEntry": "儲存後這個手寫項目會從 models.json 裡刪除。如果它改寫的是內建供應商，那個供應商會恢復預設。",
+    "removeDefault": "新對話預設用的就是它，所以預設模型也會清空。"
+  },
+  "accounts": {
+    "signIn": "登入",
+    "signOut": "登出",
+    "signOutFailed": "登出沒有完成，可以再試一次。",
+    "signOutConfirm": "登出 {{name}}？之後要用它需要重新登入。",
+    "signedOut": "未登入",
+    "instant": "登入和登出立即生效，不用按儲存。",
+    "models": "可用的模型",
+    "byKey": "可用（API 金鑰）",
+    "byKeyHelp": "沒有登入訂閱，但 mu 上次連線時回報它能用，通常是因為環境裡有它的 API 金鑰。登入訂閱後改用訂閱。",
+    "otherRunning": "{{name}} 正在登入，同一時間只能進行一個登入。",
+    "showRunning": "去看看"
+  },
+  "endpoints": {
+    "openaiCompletions": {
+      "name": "OpenAI 相容（Chat Completions）",
+      "hint": "相容性最廣：各類中轉、Ollama、vLLM、LM Studio、DeepSeek 等",
+      "url": "通常以 /v1 結尾，例如 https://api.example.com/v1 或 http://localhost:11434/v1。",
+      "short": "OpenAI 相容"
+    },
+    "openaiResponses": {
+      "name": "OpenAI Responses",
+      "hint": "OpenAI 較新的 Responses 介面，服務方支援時選用",
+      "url": "通常以 /v1 結尾，例如 https://api.example.com/v1。",
+      "short": "OpenAI Responses"
+    },
+    "anthropicMessages": {
+      "name": "Anthropic 相容（Messages）",
+      "hint": "用於 Claude，以及提供 Anthropic Messages 格式的服務",
+      "url": "不要帶 /v1：用戶端會自己加上 /v1/messages，例如 https://api.example.com。",
+      "short": "Anthropic 相容"
+    },
+    "googleGenerativeAi": {
+      "name": "Google Generative AI",
+      "hint": "經 Google AI Studio 使用 Gemini、Gemma",
+      "url": "例如 https://generativelanguage.googleapis.com/v1beta。",
+      "short": "Google"
+    }
+  },
+  "models": {
+    "title": "模型列表",
+    "id": "模型 ID",
+    "name": "顯示名稱",
+    "context": "上下文視窗",
+    "maxOutput": "最大輸出",
+    "reasoning": "思考",
+    "image": "圖片",
+    "add": "新增模型",
+    "none": "還沒有模型。可以手動新增，或先測試連線，從端點回傳的清單裡點選。",
+    "problem": {
+      "emptyId": "每個模型都要填 ID。",
+      "duplicate": "有兩個模型的 ID 相同。"
+    },
+    "idField": "模型 ID · 按端點要求填寫",
+    "rowField": "{{field}}（第 {{n}} 列）",
+    "edit": "編輯 {{name}}",
+    "removeNamed": "移除 {{name}}",
+    "done": "完成",
+    "contextTag": "上下文視窗 {{size}}",
+    "tagReasoning": "思考",
+    "tagImage": "視覺",
+    "noId": "新模型",
+    "show": "檢視 {{name}}",
+    "addListed": "新增 {{name}}"
+  },
+  "test": {
+    "run": "測試連線",
+    "hint": "由本應用程式發出一次最小請求：優先取模型清單，取不到就用第一個模型請求 1 個 token。",
+    "okModels": "連線成功（{{ms}} 毫秒），端點回傳了 {{count, number}} 個模型。",
+    "okCompletion": "連線成功（{{ms}} 毫秒），模型已回應。",
+    "auth": "金鑰被拒絕（HTTP {{status}}）。",
+    "notFound": "這個位址上沒有對應的端點（HTTP 404）。請檢查端點位址和 API 格式；也可以先新增一個模型，再用它發請求測試。",
+    "http": "端點回傳了 HTTP {{status}}。",
+    "timeout": "等待逾時，沒有收到回應。",
+    "network": "無法連線。請檢查位址和網路。",
+    "redirect": "端點把請求重新導向到了別處（HTTP {{status}}）。請直接填最終位址：金鑰不會跟著重新導向傳送。",
+    "invalidResponse": "回傳內容不符合這種 API 格式。API 格式選對了嗎？",
+    "keyUnavailable": "已儲存的金鑰是一條命令或組合值，本應用程式不會去執行它。請輸入金鑰後再測試。",
+    "urlChanged": "位址或 API 格式已修改。已儲存的金鑰只會傳往儲存時的位址：請先儲存，或重新輸入金鑰。",
+    "detail": "端點回傳：{{detail}}",
+    "okModels_one": "連線成功（{{ms}} 毫秒），端點回傳了 {{count, number}} 個模型。",
+    "okModels_other": "連線成功（{{ms}} 毫秒），端點回傳了 {{count, number}} 個模型。"
+  },
+  "defaults": {
+    "title": "預設模型",
+    "summary": "新對話啟動時使用。對話中仍可隨時切換。",
+    "provider": "供應商",
+    "model": "模型",
+    "level": "思考等級",
+    "levelUnset": "不指定",
+    "levelHelp": "該模型不支援的等級已停用。",
+    "levelClamped": "不指定時為「中」。模型不支援的等級會自動改用最接近的可用等級。",
+    "noReasoning": "這個模型不支援思考，用它啟動的對話思考固定為關閉。",
+    "notSet": "未指定",
+    "pickProvider": "請先選擇供應商。"
+  },
+  "boardModel": {
+    "title": "人話模型",
+    "summary": "人話看板用它把進展講成白話。只給你看，不進對話的上下文；看板每更新一次呼叫一次。",
+    "pick": "指定一個模型",
+    "recommended": "推薦 Claude Opus 4.6：講得最自然、最穩；其次 Gemini 3.8 Flash：更快，也更省。",
+    "recommendedTag": "推薦",
+    "provider": "供應商",
+    "model": "模型",
+    "notSet": "未選擇",
+    "pickProvider": "先選供應商",
+    "unset": "還沒選：第一次打開看板時 mu 會問你。",
+    "session": "跟著對話用的模型",
+    "sessionHelp": "對話換了模型，看板也跟著換。",
+    "update": "這個版本的 mu 還不能在這裡選寫看板的模型，更新 mu 後就可以。"
+  },
+  "levels": {
+    "off": "關閉",
+    "minimal": "極低",
+    "low": "低",
+    "medium": "中",
+    "high": "高",
+    "xhigh": "極高",
+    "max": "最高"
+  },
+  "welcome": {
+    "reopen": "新手引導",
+    "progress": "引導進度",
+    "steps": {
+      "model": "模型",
+      "judge": "判定器",
+      "done": "完成"
+    },
+    "skipAll": "跳過引導",
+    "skipStep": "暫時跳過",
+    "back": "上一步",
+    "next": "下一步",
+    "start": "開始使用",
+    "model": {
+      "title": "連接一個模型",
+      "subtitle": "mu 用它寫程式、回答問題。三步就好，之後隨時可以在設定裡修改。",
+      "model": "模型",
+      "baseUrl": "端點位址",
+      "key": "API 金鑰",
+      "keyPlaceholder": "貼上金鑰；本機服務可以不填",
+      "modelId": "模型名稱",
+      "signedIn": {
+        "title": "用訂閱帳號登入",
+        "tag": "免 API 金鑰",
+        "description": "ChatGPT、Claude 或 Grok 的訂閱"
+      },
+      "openai": {
+        "title": "OpenAI 相容介面",
+        "tag": "最常見",
+        "description": "OpenAI、DeepSeek、Kimi、通義千問、Ollama，以及各種中轉服務",
+        "modelPlaceholder": "例如 deepseek-chat"
+      },
+      "anthropic": {
+        "title": "Anthropic 相容介面",
+        "tag": "Claude",
+        "description": "Claude，以及相容 Messages 格式的服務",
+        "modelPlaceholder": "例如 claude-sonnet-5"
+      },
+      "problems": {
+        "baseUrl": "請填寫 https:// 開頭的位址（本機服務可以用 http://）。",
+        "key": "請填寫 API 金鑰。",
+        "model": "請填寫模型名稱。"
+      },
+      "openaiApi": {
+        "label": "API 格式",
+        "openai-completions": "Chat Completions",
+        "openai-responses": "Responses",
+        "openai-completionsHint": "相容性最好，大多數服務和中轉都用這個。",
+        "openai-responsesHint": "OpenAI 的新介面，只有部分服務支援。"
+      }
+    },
+    "judge": {
+      "title": "選一個判定器",
+      "subtitle": "判定器回答 mu 工作中的小判斷。沒有也能用，只是少了這些把關。"
+    },
+    "done": {
+      "title": "準備好了",
+      "subtitle": "確認一下，就可以開始了。",
+      "model": "模型",
+      "judge": "判定器",
+      "none": "暫未設定",
+      "noKey": "還沒有金鑰，判定會先按預設規則進行",
+      "saveFailed": "儲存沒有成功：{{reason}}",
+      "modelValue": "{{provider}} / {{model}}"
+    },
+    "intro": {
+      "title": "歡迎使用 mu",
+      "lead": "mu 是一個會動手的程式助手：它讀你的專案、改程式碼、跑指令和測試，直到把事情做完。",
+      "points": {
+        "judge": {
+          "title": "每一步都有判斷",
+          "text": "內建的判定器在關鍵處把關：先想清楚再動手，不越過你定的規矩，沒驗證不說做完。"
+        },
+        "control": {
+          "title": "看得見，管得住",
+          "text": "改動隨時可以回退；瀏覽器裡的每一步都在眼前，可以暫停，也可以自己接手。"
+        },
+        "ready": {
+          "title": "開箱即用",
+          "text": "自動沿用你在 Claude Code、Cursor、Codex 裡的規則、技能和 MCP 設定。"
+        }
+      },
+      "start": "開始設定"
+    },
+    "login": {
+      "providers": {
+        "openai-codex": {
+          "name": "ChatGPT",
+          "plan": "Plus / Pro 訂閱"
+        },
+        "anthropic": {
+          "name": "Claude",
+          "plan": "Pro / Max 訂閱"
+        },
+        "xai": {
+          "name": "Grok",
+          "plan": "SuperGrok / X Premium"
+        },
+        "google-gemini-cli": {
+          "name": "Gemini CLI",
+          "plan": "Google 帳號"
+        },
+        "google-antigravity": {
+          "name": "Antigravity",
+          "plan": "Google 帳號"
+        }
+      },
+      "signedIn": "已登入",
+      "inProgress": "正在登入…",
+      "waiting": "已在瀏覽器開啟 {{name}} 的授權頁。登入並同意後，這裡會自動繼續。",
+      "deviceCode": "驗證碼",
+      "code": "授權碼",
+      "codePlaceholder": "貼上瀏覽器顯示的授權碼，或它最後停留的網址",
+      "submit": "送出",
+      "openAgain": "重新開啟授權頁",
+      "pasteCode": "手動貼上授權碼",
+      "cancel": "取消",
+      "failed": "登入沒有完成，可以再試一次。",
+      "asks": "{{name}} 的登入在問（以下是原文）：",
+      "needAccount": "先登入一個帳號，再選一個模型。",
+      "experimental": "實驗",
+      "starting": "正在準備 {{name}} 的登入…",
+      "waitingDevice": "已在瀏覽器開啟 {{name}} 的驗證頁。核對頁面上的代碼和下面這個一致（沒有自動填好就輸入它），同意後這裡會自動繼續。",
+      "risk": {
+        "title": "登入前請先了解風險",
+        "text": "這個登入借用的是 Google 給 {{tool}} 自己用的登入方式，不是 Google 為 mu 提供的。Google 可能認為這違反它的條款，限制甚至停用這個帳號。",
+        "instead": "建議用一個出問題也不要緊的帳號。想走官方的路，可以改用 Gemini API 金鑰，或用 gcloud 登入 Vertex AI。",
+        "continue": "我了解風險，繼續登入",
+        "cancel": "不登入了"
+      },
+      "readingModels": "已登入 {{name}}，正在讀取這個帳號能用的模型…"
+    }
+  },
+  "turnErrors": {
+    "processExited": "mu 在這一輪中途結束了，重新傳送訊息即可重新啟動。",
+    "modelFailed": "模型請求失敗。",
+    "turnRunning": "mu 還在處理上一則訊息，請等待或先停止。",
+    "busyConfig": "請等這一輪結束後再切換模型或思考強度。",
+    "unsupportedValue": "mu 不支援這個模型、思考強度或權限模式。",
+    "permissionsNotSwitched": "mu 沒有切換權限模式。請重試，或在對話中輸入 /permissions。",
+    "imageUnsupported": "只能傳送 12 MB 以內的 PNG、JPEG、WebP 或 GIF 圖片。",
+    "contentUnsupported": "mu 只接受文字、圖片和文字檔案。",
+    "wrongProject": "這個對話屬於另一個專案資料夾。",
+    "notPersisted": "mu 無法儲存這個對話。",
+    "startFailed": "mu 無法啟動。",
+    "timeout": "mu 沒有及時回應。",
+    "processClosed": "mu 已結束，重新傳送訊息即可重新啟動。"
+  },
+  "errors": {
+    "credential": "金鑰中有不允許的字元（如空格、引號或換行），請重新貼上。",
+    "keyVariable": "{{name}} 不能用來存判定器的金鑰。請用 TYPESAFE_API_KEY、AI_GATEWAY_API_KEY，或以 MU_JUDGE_ 開頭的變數名稱。",
+    "sharedKey": "{{providers}} 會共用同一個金鑰變數，請修改其中一個 ID。",
+    "pickBoth": "請同時選擇供應商和模型。",
+    "modelsUnreadable": "無法解析 models.json，請先手動修復，再儲存供應商。",
+    "modelsCommented": "models.json 中有註解，從這裡儲存會把它們刪掉，請手動編輯供應商。",
+    "option": {
+      "type": "「{{name}}」的值類型不對。",
+      "range": "「{{name}}」超出了允許的範圍。",
+      "choice": "「{{name}}」不在可選項裡。",
+      "length": "「{{name}}」內容過長，或有空白項目。"
+    },
+    "invalidJson": "{{file}} 不是有效的 JSON，請手動修正後重新載入。",
+    "unreadable": "無法讀取 {{file}}。",
+    "runtimeOffline": "mu 核心目前離線，請檢查本機啟動器和登入狀態。",
+    "otherRegistration": "應用程式中已經註冊了另一個 mu 指令。",
+    "backend": "本機服務回應異常（HTTP {{status}}）。",
+    "invalid": "有一項填寫的值無效。",
+    "unknown": "mu 出了點問題。",
+    "unwritable": "無法寫入 {{file}}。",
+    "contextLimit": "上下文上限必須是 0，或 {{min}} 到 {{max}} 之間的整數。"
+  }
+}

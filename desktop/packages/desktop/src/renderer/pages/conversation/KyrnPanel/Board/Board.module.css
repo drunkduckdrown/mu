@@ -1,0 +1,243 @@
+/* The plain-language board: the page's own neutral colours, pink only where it needs the person. */
+
+.board {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  flex: 1;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.faint {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.empty {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.off {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: var(--color-fill-1);
+}
+
+.offText {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+/* Read out, not shown: what a new board says, for a screen reader. */
+.announce {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.current {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* A new board comes in softly; the one replayed on opening is simply there. */
+.fresh {
+  animation: arrive 0.36s ease-out;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fresh {
+    animation: none;
+  }
+}
+
+.marks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  min-height: 22px;
+}
+
+.phase {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--color-fill-2);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.phaseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mu-accent-dot, rgb(var(--primary-5)));
+}
+
+/* Stuck: a soft warning, carried by the tint and the dot; the words keep the page's text colour. */
+.stuck {
+  background: color-mix(in srgb, rgb(var(--warning-6)) 14%, var(--bg-1));
+}
+
+.stuck .phaseDot {
+  background: rgb(var(--warning-6));
+}
+
+.brief {
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--color-fill-2);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 16px;
+  cursor: default;
+}
+
+.now {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 23px;
+  overflow-wrap: anywhere;
+}
+
+.progress {
+  margin: 4px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar {
+  flex: 1;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--color-fill-2);
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: rgb(var(--primary-5));
+  transition: width 0.4s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar span {
+    transition: none;
+  }
+}
+
+.count {
+  flex: none;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+/* What needs the person: the one pink card of the panel. */
+.ask {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--mu-judge-border, var(--color-border-2));
+  border-radius: 10px;
+  background: var(--mu-judge-bg, var(--color-fill-1));
+}
+
+.askTitle {
+  color: var(--mu-judge, var(--text-primary));
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.askText {
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.askList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.askItem {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--color-border-2);
+  border-radius: 8px;
+  background: var(--bg-1);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.askItem:hover {
+  border-color: var(--mu-accent-border, rgb(var(--primary-4)));
+}
+
+.askItem:focus-visible {
+  outline: 2px solid var(--mu-accent-border, rgb(var(--primary-5)));
+  outline-offset: 1px;
+}

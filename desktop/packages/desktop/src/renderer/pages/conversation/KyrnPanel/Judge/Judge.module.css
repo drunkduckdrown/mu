@@ -1,0 +1,261 @@
+.judge {
+  min-width: 0;
+  color: var(--text-primary);
+  font-size: 13px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block: 10px;
+  min-width: 0;
+}
+
+.brandIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border: 1px solid var(--mu-judge-border, transparent);
+  border-radius: 11px;
+  background: var(--mu-judge-bg, transparent);
+  /* The judge's own colour: pink, never the primary violet of action buttons. */
+  color: var(--mu-judge, var(--brand));
+}
+
+.title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.hint,
+.muted {
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+}
+
+.hint {
+  margin-block: 4px;
+}
+
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin-block: 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.stat dt,
+.statValue {
+  margin: 0;
+}
+
+.statValue {
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.filter:global(.arco-select) {
+  width: 100%;
+  margin-block: 2px 8px;
+}
+
+.card {
+  min-width: 0;
+  margin-block: 8px;
+  padding: 12px 12px 4px;
+  border: 1px solid var(--border-base);
+  border-inline-start: 3px solid var(--border-base);
+  border-radius: 12px;
+  background: var(--bg-1);
+}
+
+/* The accent repeats what the state tag says; the tag's text is what tells the states apart. */
+.card[data-state='returned'],
+.card[data-state='pending'] {
+  border-inline-start-color: var(--primary);
+}
+
+.card[data-state='confirmed'] {
+  border-inline-start-color: var(--success);
+}
+
+.card[data-state='fallback'],
+.card[data-state='late'] {
+  border-inline-start-color: var(--warning);
+}
+
+.card[data-state='rule'] {
+  border-inline-start-color: var(--info);
+}
+
+.cardHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* The state is told by the tag's text (the mu colour scheme keeps every tag colour readable). */
+.cardHead :global(.arco-tag) {
+  font-weight: 500;
+}
+
+.meta {
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.step {
+  min-width: 0;
+  margin-top: 10px;
+}
+
+.stepLabel,
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 2px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.sectionLabel {
+  margin-block: 10px 6px;
+}
+
+.stepBody,
+.effect {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.effect {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-top: 4px;
+  padding-inline-start: 8px;
+  border-inline-start: 2px solid var(--border-base);
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.facts,
+.answers,
+.hints {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hints {
+  padding-inline-start: 16px;
+  list-style: disc;
+  color: var(--text-secondary);
+}
+
+.fact,
+.answer {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.factName,
+.answerId {
+  margin-inline-end: 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.answer {
+  font-size: 12px;
+}
+
+.answerId {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.recordText {
+  max-height: 360px;
+  margin: 0;
+  padding: 10px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.7 var(--font-mono);
+  color: var(--text-primary);
+  background: var(--bg-2);
+  border-radius: 8px;
+}
+
+.collapse {
+  margin-top: 6px;
+}
+
+.collapse :global(.arco-collapse-item-header) {
+  padding: 8px 8px 8px 22px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+/* Arco parks the caret at 13px, which lands on the first letter once the header padding is this tight. */
+.collapse :global(.arco-collapse-item .arco-collapse-item-icon-hover) {
+  left: 2px;
+}
+
+.collapse :global(.arco-collapse-item-content),
+.collapse :global(.arco-collapse-item) {
+  border: none;
+  background: transparent;
+}
+
+.collapse :global(.arco-collapse-item-content-box) {
+  padding: 0 0 8px;
+}
