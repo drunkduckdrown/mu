@@ -2260,6 +2260,98 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "packs",
+			"title": {
+				"zh": "能力包",
+				"en": "Capability packs"
+			},
+			"summary": {
+				"zh": "随 mu 装好、默认不露的工具包，任务需要时才打开；缺外部程序时给出安装提示。",
+				"en": "Tool packs that ship with mu and stay hidden until a task needs them; a missing program gives an install hint."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "astGrep",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "ast-grep 结构化搜索与改写",
+						"en": "ast-grep structural search and rewrite"
+					},
+					"help": {
+						"zh": "按语法而不是按文字找代码、改代码。需要本机装有 ast-grep。",
+						"en": "Finds and changes code by syntax, not text. Needs ast-grep on this machine."
+					}
+				},
+				{
+					"key": "maxResults",
+					"kind": "number",
+					"default": 50,
+					"min": 1,
+					"max": 500,
+					"label": {
+						"zh": "一次搜索最多返回",
+						"en": "Matches one search returns"
+					}
+				},
+				{
+					"key": "maxDiffChars",
+					"kind": "number",
+					"default": 12000,
+					"min": 1000,
+					"max": 200000,
+					"unit": {
+						"zh": "字符",
+						"en": "chars"
+					},
+					"label": {
+						"zh": "单个结果最多带多少 diff",
+						"en": "Most diff one result carries"
+					}
+				},
+				{
+					"key": "astGrepCommand",
+					"kind": "text",
+					"default": "",
+					"label": {
+						"zh": "ast-grep 的路径",
+						"en": "Path of ast-grep"
+					},
+					"help": {
+						"zh": "留空则依次在 PATH 里找 ast-grep 和 sg。",
+						"en": "Empty: ast-grep, then sg, from PATH."
+					}
+				},
+				{
+					"key": "github",
+					"kind": "boolean",
+					"default": true,
+					"label": {
+						"zh": "GitHub（通过 gh）",
+						"en": "GitHub through gh"
+					},
+					"help": {
+						"zh": "不加工具，只带一个教模型用 gh 处理 PR、issue、检查和发布的技能。需要本机装有 gh。",
+						"en": "No tools, one skill that teaches gh for PRs, issues, checks and releases. Needs gh on this machine."
+					}
+				},
+				{
+					"key": "ghCommand",
+					"kind": "text",
+					"default": "",
+					"label": {
+						"zh": "gh 的路径",
+						"en": "Path of gh"
+					},
+					"help": {
+						"zh": "留空则在 PATH 里找 gh。",
+						"en": "Empty: gh from PATH."
+					}
+				}
+			]
 		}
 	]
 }
