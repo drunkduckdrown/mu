@@ -207,6 +207,24 @@ describe("/commit: a change split into commits", () => {
 		},
 	);
 
+	it("touches nothing when someone committed while the plan was being read", async () => {
+		const repo = changedRepo();
+		const { state, change } = await changeOf(repo);
+		// Another terminal commits between the plan and the "yes".
+		sh(repo, "add", "b.txt");
+		sh(repo, "commit", "-q", "-m", "Someone else's commit");
+		const head = sh(repo, "rev-parse", "HEAD");
+		const index = readFileSync(join(repo, ".git", "index"));
+
+		const outcome = await applyPlan(git, state, change, rulePlan(change));
+
+		expect(outcome).toMatchObject({ status: "failed", step: "checking HEAD", undone: [] });
+		if (outcome.status === "failed") expect(outcome.reason).toContain("run /commit again");
+		expect(sh(repo, "rev-parse", "HEAD")).toBe(head);
+		expect(sh(repo, "log", "-n", "1", "--format=%s").trim()).toBe("Someone else's commit");
+		expect(readFileSync(join(repo, ".git", "index")).equals(index)).toBe(true);
+	});
+
 	it("makes the first commit of a repository that has none yet", async () => {
 		const { root, dir } = tempArea("mu-commit-");
 		temps.push(root);

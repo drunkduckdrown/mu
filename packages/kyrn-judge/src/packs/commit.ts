@@ -264,6 +264,18 @@ export async function applyPlan(
 	signal?: AbortSignal,
 ): Promise<ApplyOutcome> {
 	const { root: cwd } = repo;
+	// The plan was read against repo.head, and undoing means going back to it. If something else committed
+	// while the user read the plan, undoing would drop that commit from the branch: stop before touching anything.
+	const now = await git(["rev-parse", "--verify", "-q", "HEAD"], { cwd });
+	const current = now.code === 0 ? now.stdout.toString("utf8").trim() : undefined;
+	if (current !== repo.head) {
+		return {
+			status: "failed",
+			step: "checking HEAD",
+			reason: `HEAD moved since the plan was made (now ${current ? current.slice(0, 9) : "no commit"}); run /commit again`,
+			undone: [],
+		};
+	}
 	const indexPath = join(repo.gitDir, "index");
 	const savedIndex = await readFile(indexPath).catch(() => undefined);
 	const made: { sha: string; subject: string }[] = [];
