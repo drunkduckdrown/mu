@@ -220,6 +220,29 @@ describe("Google sign-in", () => {
 		expect(await portIsFree(config.callbackPort)).toBe(true);
 	});
 
+	it("ends at once when the person cancels on Google's page, and frees the port; another sign-in's refusal does not end it", async () => {
+		const google = await fakeGoogle({});
+		const config = await configFor(GEMINI_CLI_LOGIN, google.url);
+		let stranger = 0;
+		const them = person({
+			consent: "continue",
+			browser: (authUrl) => {
+				const base = `http://127.0.0.1:${config.callbackPort}${config.callbackPath}`;
+				void (async () => {
+					stranger = (await fetch(`${base}?error=access_denied&state=someone-else`)).status;
+					await fetch(`${base}?error=access_denied<script>&state=${authUrl.searchParams.get("state")}`);
+				})();
+			},
+		});
+		await expect(googleOAuth(config).login(them.interaction)).rejects.toThrow(
+			"Google sign-in was declined: access_deniedscript",
+		);
+		expect(stranger).toBe(400);
+		expect(google.seen).toEqual([]);
+		expect(them.pasteWasCancelled()).toBe(true);
+		expect(await portIsFree(config.callbackPort)).toBe(true);
+	});
+
 	it("takes the address a browser on another machine ended on, and refuses one from another sign-in", async () => {
 		const google = await fakeGoogle({
 			"/token": tokens,

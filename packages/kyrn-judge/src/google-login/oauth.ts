@@ -114,17 +114,20 @@ export async function pkce(): Promise<{ verifier: string; challenge: string }> {
 const page = (title: string, body: string) =>
 	`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:system-ui;margin:3rem;color:#3b2f4a;background:#fdf7fb"><h2>${title}</h2><p>${body}</p></body></html>`;
 
+/** The code of this sign-in, Google's refusal of it, or nothing (cancelled). */
+type Received = { code: string; state: string } | { declined: string } | undefined;
+
 interface Callback {
 	readonly server: Server;
-	readonly wait: Promise<{ code: string; state: string } | undefined>;
+	readonly wait: Promise<Received>;
 	readonly cancel: () => void;
 }
 
 /** Only the callback of this sign-in counts: anything else that reaches the port (a stale tab, another page) is turned away. */
 function listen(config: GoogleLoginConfig, state: string): Promise<Callback> {
 	return new Promise((resolve, reject) => {
-		let settle: (value: { code: string; state: string } | undefined) => void = () => {};
-		const wait = new Promise<{ code: string; state: string } | undefined>((done) => {
+		let settle: (value: Received) => void = () => {};
+		const wait = new Promise<Received>((done) => {
 			let settled = false;
 			settle = (value) => {
 				if (settled) return;
@@ -139,10 +142,16 @@ function listen(config: GoogleLoginConfig, state: string): Promise<Callback> {
 				response.end(page(title, body));
 			};
 			if (url.pathname !== config.callbackPath) return send(404, "Not found", "This is mu's sign-in callback.");
-			const error = url.searchParams.get("error");
-			if (error) return send(400, "Sign-in did not complete", `Google said: ${error.replace(/[<>&]/g, "")}`);
-			const code = url.searchParams.get("code");
 			const given = url.searchParams.get("state");
+			const error = url.searchParams.get("error");
+			if (error) {
+				const said = error.replace(/[^\w.-]/g, "").slice(0, 80) || "an error";
+				send(400, "Sign-in did not complete", `Google said: ${said}`);
+				// Cancel on Google's page ends this sign-in; someone else's refusal does not.
+				if (given === state) settle({ declined: said });
+				return;
+			}
+			const code = url.searchParams.get("code");
 			if (!code || !given) return send(400, "Sign-in did not complete", "The code or the state is missing.");
 			if (given !== state) {
 				return send(
@@ -399,6 +408,7 @@ async function login(config: GoogleLoginConfig, interaction: ProviderAuthInterac
 
 		let code: string | undefined;
 		const received = await callback.wait;
+		if (received && "declined" in received) throw new Error(`Google sign-in was declined: ${received.declined}`);
 		if (received) {
 			if (received.state !== verifier) throw new Error("OAuth state mismatch");
 			code = received.code;
@@ -436,6 +446,8 @@ async function login(config: GoogleLoginConfig, interaction: ProviderAuthInterac
 		interaction.signal.removeEventListener("abort", onAbort);
 		pasting.abort();
 		callback.server.close();
+		// A browser keeps its connection open; the port must be free for the next sign-in now, not when it lets go.
+		callback.server.closeAllConnections();
 	}
 }
 
