@@ -23,6 +23,7 @@ import { Judge } from "../judge.ts";
 import type { JudgeProvider } from "../types.ts";
 import { registerAdmission } from "./features/admission.ts";
 import { registerBackground } from "./features/background.ts";
+import { registerBoard } from "./features/board.ts";
 import { registerBrowser } from "./features/browser.ts";
 import { registerCatalog } from "./features/catalog.ts";
 import { type CheckpointDeps, registerCheckpoint } from "./features/checkpoint.ts";
@@ -93,6 +94,7 @@ export type FeatureName =
 	| "guard"
 	| "constraints"
 	| "goal"
+	| "board"
 	| "ttsr"
 	| "admission"
 	| "forgetting"
@@ -179,6 +181,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["lsp", registerLsp],
 		["goal", registerGoal],
 		["completion", registerCompletion],
+		// Reads the frame and the steps; says nothing to the model, so its place among the others does not matter.
+		["board", (shared) => registerBoard(shared, roots)],
 		// After the guard and the monitor: a blocked call needs no checkpoint, and the monitor's trouble is what the rewind hears.
 		["checkpoint", (shared) => registerCheckpoint(shared, roots, options.checkpoint)],
 		["notify", registerNotify],

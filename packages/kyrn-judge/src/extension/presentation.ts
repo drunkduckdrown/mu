@@ -21,6 +21,8 @@ export interface KyrnPresentationEvent {
 		| "mcp.tools_changed"
 		| "constraint.blocked"
 		| "goal.state"
+		| "board.update"
+		| "board.switched"
 		| "checkpoint.taken"
 		| "rewind.proposed"
 		| "rewind.done"

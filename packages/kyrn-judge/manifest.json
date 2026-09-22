@@ -358,6 +358,19 @@
 			}
 		},
 		{
+			"id": "board.read",
+			"group": "turn",
+			"feature": "board",
+			"title": {
+				"zh": "人话看板：现在在干什么",
+				"en": "Plain-language board: where things stand"
+			},
+			"summary": {
+				"zh": "打开人话看板的项目里，代理每做几步、以及每次停下时，用选择题读出它处在哪个阶段、在做哪条验收条件、是不是在等你、和上次比有没有新情况。只有出现新情况，才请会说人话的模型重写看板。",
+				"en": "In a project with the board on, every few tool calls and whenever the agent stops, multiple-choice questions read its phase, the acceptance item it works on, whether it waits for you, and whether anything changed since last time. Only something new has a plain-speaking model write the board again."
+			}
+		},
+		{
 			"id": "notify.routing",
 			"group": "turn",
 			"feature": "notify",
@@ -1607,6 +1620,138 @@
 					"help": {
 						"zh": "模型连续几次什么工具都没用就结束，说明它在原地打转。",
 						"en": "Runs in a row that ended without a single tool call: the agent is going nowhere."
+					}
+				}
+			]
+		},
+		{
+			"name": "board",
+			"title": {
+				"zh": "人话看板",
+				"en": "Plain-language board"
+			},
+			"summary": {
+				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。Jev 用选择题读出要点，会说人话的模型来写；只给人看，不进模型的上下文。每个项目单独开关（/board on、/board off）。",
+				"en": "Tells you in plain words how far the work is, what is happening now and what waits on you. Jev reads the facts by multiple choice, a plain-speaking model writes; for you only, never in the model's context. Switched per project (/board on, /board off)."
+			},
+			"defaultEnabled": true,
+			"options": [
+				{
+					"key": "defaultOn",
+					"kind": "boolean",
+					"default": false,
+					"label": {
+						"zh": "没单独设置过的项目也打开",
+						"en": "On for projects not switched yet"
+					},
+					"help": {
+						"zh": "默认关闭：看板每更新一次就调用一次模型。",
+						"en": "Off by default: each update of the board costs a model call."
+					}
+				},
+				{
+					"key": "model",
+					"kind": "text",
+					"default": "",
+					"label": {
+						"zh": "写看板的模型",
+						"en": "Model that writes the board"
+					},
+					"help": {
+						"zh": "写成“提供商/模型”，选一个表达好的，比如 Gemini Flash。留空用 writer 模型，再没有就用当前会话的模型。",
+						"en": "As provider/model; pick one that explains well. Empty: the writer model, else the session's model."
+					}
+				},
+				{
+					"key": "language",
+					"kind": "choice",
+					"default": "auto",
+					"label": {
+						"zh": "看板的语言",
+						"en": "Language of the board"
+					},
+					"choices": [
+						{
+							"value": "auto",
+							"label": {
+								"zh": "跟着你说的话",
+								"en": "The one you write in"
+							}
+						},
+						{
+							"value": "zh",
+							"label": {
+								"zh": "中文",
+								"en": "Chinese"
+							}
+						},
+						{
+							"value": "en",
+							"label": {
+								"zh": "英文",
+								"en": "English"
+							}
+						}
+					]
+				},
+				{
+					"key": "everyTools",
+					"kind": "number",
+					"default": 5,
+					"min": 1,
+					"max": 100,
+					"label": {
+						"zh": "代理每做几步看一次",
+						"en": "Tool calls between two looks"
+					}
+				},
+				{
+					"key": "minIntervalMs",
+					"kind": "number",
+					"default": 20000,
+					"min": 0,
+					"max": 600000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "干活时两次查看至少隔多久",
+						"en": "Shortest gap between two looks while it works"
+					},
+					"help": {
+						"zh": "代理停下时总会看一次，不受这个限制。",
+						"en": "When the agent stops it always looks, whatever this says."
+					}
+				},
+				{
+					"key": "maxSteps",
+					"kind": "number",
+					"default": 10,
+					"min": 3,
+					"max": 50,
+					"label": {
+						"zh": "每次读最近几步",
+						"en": "Latest tool calls read each time"
+					}
+				},
+				{
+					"key": "narrateTimeoutMs",
+					"kind": "number",
+					"default": 60000,
+					"min": 5000,
+					"max": 300000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "写看板最多等多久",
+						"en": "Longest wait for the writer"
+					},
+					"help": {
+						"zh": "超时就用固定的句子说。",
+						"en": "After that, fixed sentences are used."
 					}
 				}
 			]
