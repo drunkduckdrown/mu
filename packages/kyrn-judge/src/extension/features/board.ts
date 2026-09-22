@@ -121,6 +121,15 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	let looking: Promise<void> | undefined;
 	/** A look asked for while another ran: done right after it, once. */
 	let again: boolean | undefined;
+	/** Bumped when the session ends or another one starts: a look still running then belongs to a session that is gone. */
+	let epoch = 0;
+	let retired = new AbortController();
+	const retire = () => {
+		epoch++;
+		retired.abort();
+		retired = new AbortController();
+		again = undefined;
+	};
 
 	const on = (ctx: ExtensionContext) => projects.get(ctx.cwd) ?? options.defaultOn;
 	const showWidget = (ctx: ExtensionContext | undefined) => {
@@ -142,6 +151,8 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	};
 
 	const look = async (ctx: ExtensionContext, ended: boolean): Promise<void> => {
+		const at = epoch;
+		const gone = retired.signal;
 		const frame = runtime.frame;
 		const items = (frame?.acceptance ?? []).map((item) => ({ id: item.id, text: item.text, done: item.done }));
 		const input: BoardInput = {
@@ -153,6 +164,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			last: board ? { phase: board.phase, focus: board.focus, now: board.now } : undefined,
 		};
 		const reading = (await runtime.engine.decide(boardRead, input)).outcome;
+		if (at !== epoch) return;
 		toolsSinceLook = 0;
 		lastLookAt = Date.now();
 		if (!reading.update) return;
@@ -175,13 +187,14 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 				const reply = await complete({
 					system: narratorSystem(facts.language),
 					user: narratorRequest(facts),
-					signal: AbortSignal.timeout(options.narrateTimeoutMs),
+					signal: AbortSignal.any([AbortSignal.timeout(options.narrateTimeoutMs), gone]),
 				});
 				text = parseBoardText(reply.text);
 			} catch {
 				text = undefined;
 			}
 		}
+		if (at !== epoch) return;
 		const update: BoardUpdate = {
 			...(text ?? plainBoard(facts)),
 			phase: reading.phase,
@@ -218,6 +231,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		"session_start",
 		failOpen((_event, ctx) => {
 			runtime.touch(ctx);
+			retire();
 			board = undefined;
 			for (const entry of ctx.sessionManager.getBranch()) {
 				if (entry.type === "custom" && entry.customType === BOARD_ENTRY)
@@ -226,7 +240,19 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			steps = [];
 			latest = "";
 			toolsSinceLook = 0;
+			// A panel opening with the session learns whether the board is on here, and what it said last.
+			const switched = on(ctx);
+			runtime.present("board.switched", { on: switched, cwd: ctx.cwd });
+			if (board && switched) runtime.present("board.update", { ...board, restored: true });
 			showWidget(ctx);
+			return undefined;
+		}),
+	);
+
+	pi.on(
+		"session_shutdown",
+		failOpen(() => {
+			retire();
 			return undefined;
 		}),
 	);

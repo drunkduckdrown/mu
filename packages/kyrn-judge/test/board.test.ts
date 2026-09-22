@@ -251,6 +251,7 @@ describe("board feature", () => {
 	async function start(
 		responder: MockResponder,
 		board: Record<string, unknown> = {},
+		agentDir?: string,
 	): Promise<{ harness: Harness; events: KyrnPresentationEvent[]; notes: string[] }> {
 		const events: KyrnPresentationEvent[] = [];
 		const harness = await createHarness({
@@ -262,6 +263,7 @@ describe("board feature", () => {
 					config: parseConfig({ features: { memory: false, board: { minIntervalMs: 0, ...board } } }),
 					only: ["preflight", "board"],
 					onPresentation: (event) => events.push(event),
+					...(agentDir ? { roots: { home: agentDir, agentDir } } : {}),
 				}),
 			],
 		});
@@ -307,7 +309,10 @@ describe("board feature", () => {
 		await new Promise((resolve) => setTimeout(resolve, 100));
 		expect(count.reads).toBe(0);
 		expect(boards(harness)).toEqual([]);
-		expect(events.some((event) => event.kind.startsWith("board."))).toBe(false);
+		// All it ever says is that it is off here, when the session opens.
+		expect(events.filter((event) => event.kind.startsWith("board.")).map((event) => event.payload)).toEqual([
+			{ on: false, cwd: harness.tempDir },
+		]);
 	});
 
 	it("once switched on, looks while the agent works and when it stops, and has the writer speak plainly", async () => {
@@ -318,7 +323,7 @@ describe("board feature", () => {
 			{ everyTools: 2 },
 		);
 		await harness.session.prompt("/board on");
-		expect(events.find((event) => event.kind === "board.switched")?.payload).toMatchObject({ on: true });
+		expect(events.filter((event) => event.kind === "board.switched").at(-1)?.payload).toMatchObject({ on: true });
 		expect(notes.at(-1)).toContain("Each update costs one model call");
 
 		const asked: string[] = [];
@@ -396,5 +401,65 @@ describe("board feature", () => {
 		await harness.session.prompt("And d.ts.");
 		await new Promise((resolve) => setTimeout(resolve, 100));
 		expect(count.reads).toBe(before);
+	});
+
+	it("a reopened session shows the last board again, marked as restored", async () => {
+		const dir = mkdtempSync(join(tmpdir(), "mu-board-reopen-"));
+		try {
+			const { harness, events } = await start(
+				reading(() => ({ phase: choice("changing"), needs_user: no, changed: yes })),
+				{},
+				dir,
+			);
+			await harness.session.prompt("/board on");
+			const agent = [work("edit", { path: "a.ts" }), fauxAssistantMessage("Edited a.ts.")];
+			const writer = [JSON.stringify({ progress: "Halfway.", now: "It changed a.ts.", confirm: [] })];
+			harness.setResponses(Array.from({ length: 6 }, () => router(agent, writer, [])));
+			await harness.session.prompt("Change a.ts.");
+			await vi.waitFor(() => expect(boards(harness)).toHaveLength(1), { timeout: 5000 });
+			expect(events.filter((event) => event.kind === "board.update").at(-1)?.payload).not.toHaveProperty("restored");
+
+			events.length = 0;
+			await harness.session.reload();
+			expect(events.find((event) => event.kind === "board.switched")?.payload).toEqual({
+				on: true,
+				cwd: harness.tempDir,
+			});
+			expect(events.find((event) => event.kind === "board.update")?.payload).toMatchObject({
+				now: "It changed a.ts.",
+				by: "model",
+				restored: true,
+			});
+		} finally {
+			rmSync(dir, { recursive: true, force: true });
+		}
+	});
+
+	it("drops a look still running when the session ends, and cancels its writer", async () => {
+		let release: () => void = () => undefined;
+		const gate = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const count = { reads: 0 };
+		const { harness, events } = await start(async (request): Promise<Record<string, Answer>> => {
+			if (!("phase" in request.questions)) return {};
+			count.reads++;
+			await gate;
+			return { phase: choice("changing"), needs_user: no, changed: yes };
+		});
+		await harness.session.prompt("/board on");
+		const asked: string[] = [];
+		const agent = [work("edit", { path: "a.ts" }), fauxAssistantMessage("Edited a.ts.")];
+		const writer = [JSON.stringify({ progress: "Halfway.", now: "It changed a.ts.", confirm: [] })];
+		harness.setResponses(Array.from({ length: 6 }, () => router(agent, writer, asked)));
+		await harness.session.prompt("Change a.ts.");
+		await vi.waitFor(() => expect(count.reads).toBe(1), { timeout: 5000 });
+
+		await harness.session.extensionRunner.emit({ type: "session_shutdown", reason: "quit" });
+		release();
+		await new Promise((resolve) => setTimeout(resolve, 100));
+		expect(boards(harness)).toEqual([]);
+		expect(events.some((event) => event.kind === "board.update")).toBe(false);
+		expect(asked).toEqual([]);
 	});
 });
