@@ -279,6 +279,7 @@ describe.skipIf(!findChrome())("runBrowserTask (real Chrome, local fixture)", ()
 		await session.close();
 
 		expect(result.status).toBe("done");
+		expect(result.code).toBe("done");
 		expect(result.history.map((entry) => [entry.kind, entry.action, entry.text, entry.page_changed])).toEqual([
 			["fill", "Search products", "red shoes", true],
 			["click", "Search", undefined, true],
@@ -320,6 +321,7 @@ describe.skipIf(!findChrome())("runBrowserTask (real Chrome, local fixture)", ()
 		await allowed.close();
 
 		expect(stopped.status).toBe("needs_confirmation");
+		expect(stopped).toMatchObject({ code: "not_confirmed", params: { label: "Delete account" } });
 		expect(stopped.history).toEqual([]);
 		expect(stopped.page.text).not.toContain("account deleted");
 		expect(asked).toEqual(["Delete account"]);
@@ -343,6 +345,7 @@ describe.skipIf(!findChrome())("runBrowserTask (real Chrome, local fixture)", ()
 		expect(result.status).toBe("blocked");
 		expect(result.history).toHaveLength(3);
 		expect(result.reason).toContain("changed nothing");
+		expect(result).toMatchObject({ code: "stuck", params: { actions: 3 } });
 	}, 30_000);
 
 	it("browse tool: the main model states the goal once and gets the final page back", async () => {

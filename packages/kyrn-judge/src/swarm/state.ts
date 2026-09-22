@@ -28,9 +28,31 @@ export function isOver(status: BeeStatus): boolean {
 	return status === "done" || status === "failed" || status === "stopped" || status === "timed-out";
 }
 
+/**
+ * A line a person reads, as a stable code and what it names, for a client
+ * that translates. The English text always stays beside it.
+ */
+export interface Coded {
+	readonly code: string;
+	readonly params?: Readonly<Record<string, string | number>>;
+}
+
+/** An error that also says what it is as a code. `coded`, not `code`: Node's own errors use that for ENOENT. */
+export function codedError(message: string, coded: Coded): Error & { coded: Coded } {
+	return Object.assign(new Error(message), { coded });
+}
+
+export function codeOf(error: unknown): Coded | undefined {
+	const coded = (error as { coded?: Coded } | undefined)?.coded;
+	return coded && typeof coded.code === "string" ? coded : undefined;
+}
+
 export interface BeeActivity {
 	at: number;
 	text: string;
+	/** `notes_received` {count}, `late_notes` {count}, `asked_findings`, `told_wrap_up`, `model_error` {message}, `tool_call` {tool, summary}, `tool_failed` {tool}, `retry` {attempt, maxAttempts, message}, `compacting`. */
+	code?: string;
+	params?: Readonly<Record<string, string | number>>;
 }
 
 export interface BeeUsage {
@@ -65,10 +87,13 @@ export interface BeeState {
 	received: number;
 	/** Why it is over, when it did not simply finish. */
 	error?: string;
+	/** The same as a code: see `BEE_ERROR_CODES` in run.ts. */
+	errorCode?: string;
+	errorParams?: Readonly<Record<string, string | number>>;
 	/** Set by the watchdog when nothing has come out of the process for a while. */
 	quietMs?: number;
 	/** A wrap-up was requested: stop investigating, report now. */
-	wrapUp?: { at: number; reason: string };
+	wrapUp?: { at: number; reason: string; code?: string; params?: Readonly<Record<string, string | number>> };
 	/** The last few things it did, newest last. */
 	recent: BeeActivity[];
 	/** Messages that ended a run of work: an assistant message with no tool call in it. */
@@ -103,8 +128,12 @@ function flat(text: string, length: number): string {
 	return line.length <= length ? line : `${line.slice(0, length - 1)}…`;
 }
 
-function note(state: BeeState, at: number, text: string): void {
-	state.recent.push({ at, text });
+function note(state: BeeState, at: number, text: string, coded?: Coded): void {
+	state.recent.push({
+		at,
+		text,
+		...(coded ? { code: coded.code, ...(coded.params ? { params: coded.params } : {}) } : {}),
+	});
 	if (state.recent.length > MAX_RECENT) state.recent.splice(0, state.recent.length - MAX_RECENT);
 }
 
@@ -191,11 +220,19 @@ export function applyEvent(state: BeeState, event: BeeEvent, now: number): boole
 				const text = type === HIVE_MESSAGE || type === SWARM_MESSAGE ? textOf(event.message.content) : "";
 				const notes = text.split("\n").filter((line) => line.startsWith("- ")).length;
 				if (text.startsWith(NOTES_HEADER))
-					note(state, now, `← ${notes} note${notes === 1 ? "" : "s"} from the others`);
+					note(state, now, `← ${notes} note${notes === 1 ? "" : "s"} from the others`, {
+						code: "notes_received",
+						params: { count: notes },
+					});
 				else if (text.startsWith(LAST_CALL))
-					note(state, now, `← last call: ${notes} late note${notes === 1 ? "" : "s"}`);
-				else if (text === CHECKPOINT) note(state, now, "← asked what it has found so far");
-				else if (text.startsWith(WRAP_UP)) note(state, now, "← told to wrap up and report");
+					note(state, now, `← last call: ${notes} late note${notes === 1 ? "" : "s"}`, {
+						code: "late_notes",
+						params: { count: notes },
+					});
+				else if (text === CHECKPOINT)
+					note(state, now, "← asked what it has found so far", { code: "asked_findings" });
+				else if (text.startsWith(WRAP_UP))
+					note(state, now, "← told to wrap up and report", { code: "told_wrap_up" });
 			}
 			break;
 		case "message_update":
@@ -220,11 +257,18 @@ export function applyEvent(state: BeeState, event: BeeEvent, now: number): boole
 			if (text) state.said = text.slice(-MAX_SAID);
 			if (message.stopReason === "error" || message.stopReason === "aborted") {
 				state.error = message.errorMessage ?? `the model request was ${message.stopReason}`;
-				note(state, now, `model error: ${flat(state.error, 120)}`);
+				state.errorCode = "model_error";
+				state.errorParams = { message: flat(state.error, 120), stopReason: message.stopReason };
+				note(state, now, `model error: ${flat(state.error, 120)}`, {
+					code: "model_error",
+					params: { message: flat(state.error, 120) },
+				});
 				break;
 			}
 			// A request that went through means an earlier failure was recovered from.
 			state.error = undefined;
+			state.errorCode = undefined;
+			state.errorParams = undefined;
 			if (text && !hasToolCall(message.content)) state.finals.push(text);
 			break;
 		}
@@ -233,13 +277,19 @@ export function applyEvent(state: BeeState, event: BeeEvent, now: number): boole
 			state.toolCalls++;
 			state.tool = { name, summary: summarizeCall(name, event.args), startedAt: now };
 			if (!isOver(state.status)) state.status = "tool";
-			note(state, now, state.tool.summary);
+			note(state, now, state.tool.summary, {
+				code: "tool_call",
+				params: { tool: name, summary: state.tool.summary },
+			});
 			break;
 		}
 		case "tool_execution_end":
 			if (event.isError) {
 				state.toolErrors++;
-				note(state, now, `${event.toolName ?? "tool"} failed`);
+				note(state, now, `${event.toolName ?? "tool"} failed`, {
+					code: "tool_failed",
+					params: { tool: event.toolName ?? "tool" },
+				});
 			}
 			state.tool = undefined;
 			running();
@@ -255,15 +305,26 @@ export function applyEvent(state: BeeState, event: BeeEvent, now: number): boole
 				message: flat(event.errorMessage ?? "request failed", 120),
 			};
 			if (!isOver(state.status)) state.status = "retrying";
-			note(state, now, `retry ${state.retry.attempt}/${state.retry.maxAttempts}: ${state.retry.message}`);
+			note(state, now, `retry ${state.retry.attempt}/${state.retry.maxAttempts}: ${state.retry.message}`, {
+				code: "retry",
+				params: {
+					attempt: state.retry.attempt,
+					maxAttempts: state.retry.maxAttempts,
+					message: state.retry.message,
+				},
+			});
 			break;
 		case "auto_retry_end":
 			state.retry = undefined;
-			if (event.success === false) state.error = event.finalError ?? "the model request kept failing";
+			if (event.success === false) {
+				state.error = event.finalError ?? "the model request kept failing";
+				state.errorCode = "retries_exhausted";
+				state.errorParams = { message: flat(state.error, 120) };
+			}
 			running();
 			break;
 		case "compaction_start":
-			note(state, now, "compacting its context");
+			note(state, now, "compacting its context", { code: "compacting" });
 			break;
 		case "agent_settled":
 			return true;

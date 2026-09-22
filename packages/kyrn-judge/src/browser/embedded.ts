@@ -16,7 +16,7 @@ import type { CdpConnection } from "./cdp.ts";
  * then page-level methods), and a few methods of its own under `Mu.`:
  *
  *   Mu.hello    { version, session } -> { embedded: true, version }   tells the app apart from a plain Chrome
- *   Mu.run      { state, goal, url } | { state, status, reason }      what the run is for, and how it ended
+ *   Mu.run      { state, goal, url } | { state, status, reason, code, params? }   what the run is for, and how it ended
  *   Mu.control  -> { paused, stop }              asked before every step
  *   Mu.confirm  { label, url } -> { allowed }    the app's own dialog for irreversible actions
  *   Mu.step     { ...record }                    one line for the live overlay; no answer needed

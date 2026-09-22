@@ -64,7 +64,7 @@ export function registerCatalog(runtime: KyrnRuntime): void {
 			const candidates = catalog.hidden();
 			const opened: Capability[] = [];
 			if (candidates.length > 0) {
-				runtime.progress("choosing which capabilities this task needs");
+				runtime.progress("choosing which capabilities this task needs", "capabilities");
 				const decision = await Promise.race([
 					runtime.engine.decide(
 						capabilityDisclosure,

@@ -114,4 +114,28 @@ describe("desktop presentation events", () => {
 			harness.cleanup();
 		}
 	});
+
+	it("says which step a progress line is as a code, beside the English", async () => {
+		const events: KyrnPresentationEvent[] = [];
+		const harness = await createHarness({
+			extensionFactories: [
+				createKyrnJudgeExtension({
+					provider: new MockJudgeProvider(() => ({})),
+					mode: "active",
+					only: ["preflight", "frame"],
+					onPresentation: (event) => events.push(event),
+					config: parseConfig({ features: { memory: false } }),
+				}),
+			],
+		});
+		try {
+			harness.setResponses([fauxAssistantMessage("First."), fauxAssistantMessage("Second.")]);
+			await harness.session.prompt("Speed up the report page");
+			await harness.session.prompt("Only the export button, please");
+			const progress = events.filter((event) => event.kind === "progress").map((event) => event.payload);
+			expect(progress).toContainEqual({ step: "updating the task frame", code: "frame" });
+		} finally {
+			harness.cleanup();
+		}
+	});
 });

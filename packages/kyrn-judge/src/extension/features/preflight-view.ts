@@ -63,11 +63,21 @@ export interface VerdictData {
 	latencyMs?: number;
 	/** Why there is no verdict, when there is none. */
 	reason?: string;
+	/**
+	 * The same as a stable code, for a client that translates: `skipped`, `no_answer` (params.seconds), or the
+	 * decision's own reason (`off`, `shadow`, `abstain`, `error:<kind>`).
+	 */
+	reasonCode?: string;
+	reasonParams?: Record<string, number>;
 	thinking?: { from: string; to: string };
 	/** What the main model was told because of this verdict. */
 	hints: string[];
+	/** Which hints those are, in the same order (`clarify`, `side_question`, `plan_first`, `try_hive`, `try_delegate`). */
+	hintIds?: string[];
 	/** The judge's raw answers, as label and value. */
 	answers: [string, string][];
+	/** The same answers as the judge gave them, by question id: `{ type, probability | choice, probabilities | score }`. */
+	answerValues?: Record<string, Answer>;
 }
 
 function percent(probability: number): string {
@@ -97,10 +107,13 @@ export interface VerdictExtras {
 	by: string;
 	state: VerdictState;
 	reason?: string;
+	reasonCode?: string;
+	reasonParams?: Record<string, number>;
 	/** Wall-clock wait, for a verdict that never came. */
 	waitedMs?: number;
 	thinking?: { from: string; to: string };
 	hints?: readonly string[];
+	hintIds?: readonly string[];
 }
 
 /** The stored form of one preflight decision. `decision` is undefined when none arrived. */
@@ -112,6 +125,8 @@ export function verdictData(decision: Decision<PreflightOutcome> | undefined, ex
 			: (decision.judged ?? decision.outcome)
 		: undefined;
 	const answers = decision?.answers ?? {};
+	const decided = shown && shown.turnType !== "unknown" ? undefined : decision?.reason;
+	const reasonCode = extras.reasonCode ?? decided;
 	return {
 		version: 1,
 		by: extras.by,
@@ -119,11 +134,17 @@ export function verdictData(decision: Decision<PreflightOutcome> | undefined, ex
 		turnType: shown?.turnType ?? "unknown",
 		gear: shown?.gear ?? "standard",
 		latencyMs: decision?.latencyMs ?? extras.waitedMs,
-		reason: extras.reason ?? (shown && shown.turnType !== "unknown" ? undefined : decision?.reason),
+		reason: extras.reason ?? decided,
+		...(reasonCode ? { reasonCode } : {}),
+		...(extras.reasonParams ? { reasonParams: { ...extras.reasonParams } } : {}),
 		thinking: extras.thinking,
 		hints: [...(extras.hints ?? [])],
+		hintIds: [...(extras.hintIds ?? [])],
 		answers: QUESTION_LABELS.flatMap(([id, label]): [string, string][] =>
 			answers[id] ? [[label, describeAnswer(id, answers[id])]] : [],
+		),
+		answerValues: Object.fromEntries(
+			QUESTION_LABELS.flatMap(([id]): [string, Answer][] => (answers[id] ? [[id, answers[id]]] : [])),
 		),
 	};
 }

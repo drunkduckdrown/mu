@@ -28,31 +28,32 @@ export function thinkingForGear(gear: Gear, baseline: Level): Level {
 	return baseline;
 }
 
-/** One line per verdict the main model should know about. Unsure verdicts say nothing. */
+/** The hints the main model can be given, by a stable id a client can translate the shown line by. */
+export const PREFLIGHT_HINTS = {
+	clarify: "The request looks under-specified. Ask one focused clarifying question before doing significant work.",
+	side_question: "This is a side question. Answer it briefly, keep the plan for the main task, then carry on with it.",
+	plan_first: "This looks like a large or risky change. Write a short plan and confirm the approach before editing.",
+	try_hive:
+		"This looks hard. If the cause is unknown or a direct attempt fails, use the hive tool: several investigators on the one problem, from different angles, sharing what they find.",
+	try_delegate: "This work splits into independent parts. Consider the delegate tool to run them in parallel.",
+} as const;
+
+export type PreflightHintId = keyof typeof PREFLIGHT_HINTS;
+
+/** Which hints a verdict calls for. Unsure verdicts say nothing. */
+export function hintIdsFor(outcome: PreflightOutcome, tools: readonly string[]): PreflightHintId[] {
+	const ids: PreflightHintId[] = [];
+	if (outcome.needsClarification === "yes") ids.push("clarify");
+	if (outcome.sideQuestion === "yes") ids.push("side_question");
+	if (outcome.planFirst === "yes") ids.push("plan_first");
+	if (outcome.gear === "heavy" && tools.includes("hive")) ids.push("try_hive");
+	if (outcome.swarmWorthy === "yes" && tools.includes("delegate")) ids.push("try_delegate");
+	return ids;
+}
+
+/** One line per verdict the main model should know about. */
 export function hintsFor(outcome: PreflightOutcome, tools: readonly string[]): string[] {
-	const hints: string[] = [];
-	if (outcome.needsClarification === "yes") {
-		hints.push(
-			"The request looks under-specified. Ask one focused clarifying question before doing significant work.",
-		);
-	}
-	if (outcome.sideQuestion === "yes") {
-		hints.push("This is a side question. Answer it briefly, keep the plan for the main task, then carry on with it.");
-	}
-	if (outcome.planFirst === "yes") {
-		hints.push(
-			"This looks like a large or risky change. Write a short plan and confirm the approach before editing.",
-		);
-	}
-	if (outcome.gear === "heavy" && tools.includes("hive")) {
-		hints.push(
-			"This looks hard. If the cause is unknown or a direct attempt fails, use the hive tool: several investigators on the one problem, from different angles, sharing what they find.",
-		);
-	}
-	if (outcome.swarmWorthy === "yes" && tools.includes("delegate")) {
-		hints.push("This work splits into independent parts. Consider the delegate tool to run them in parallel.");
-	}
-	return hints;
+	return hintIdsFor(outcome, tools).map((id) => PREFLIGHT_HINTS[id]);
 }
 
 function describe(label: string, decision: Decision<PreflightOutcome>): string {
@@ -83,6 +84,7 @@ interface Staged {
 	applied: boolean;
 	thinking?: { from: string; to: string };
 	hints: string[];
+	hintIds: string[];
 	/** What another feature is working out before the turn starts, as it put it. */
 	step?: string;
 	/** The user message is in the chat and in the session, so the verdict line can follow it. */
@@ -164,14 +166,24 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 		const decision = turn.decision;
 		if (!decision) {
 			const waited = (turn.waitEndedAt ?? Date.now()) - turn.startedAt;
-			const reason = turn.waitEndedBy === "skipped" ? "skipped" : `no answer after ${(waited / 1000).toFixed(1)} s`;
-			return verdictData(undefined, { by: runtime.judgeLabel, state: "none", reason, waitedMs: waited });
+			const skipped = turn.waitEndedBy === "skipped";
+			const seconds = Number((waited / 1000).toFixed(1));
+			const reason = skipped ? "skipped" : `no answer after ${seconds.toFixed(1)} s`;
+			return verdictData(undefined, {
+				by: runtime.judgeLabel,
+				state: "none",
+				reason,
+				reasonCode: skipped ? "skipped" : "no_answer",
+				...(skipped ? {} : { reasonParams: { seconds } }),
+				waitedMs: waited,
+			});
 		}
 		return verdictData(decision, {
 			by: decision.source === "judge" || decision.mode !== "active" ? runtime.judgeLabel : "rule",
 			state: verdictStateOf(turn),
 			thinking: turn.thinking,
 			hints: turn.hints,
+			hintIds: turn.hintIds,
 		});
 	};
 
@@ -267,6 +279,7 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 				turnStarted: false,
 				applied: false,
 				hints: [],
+				hintIds: [],
 				messageShown: false,
 				entryShown: false,
 			};
@@ -354,8 +367,12 @@ export function registerPreflight(runtime: KyrnRuntime): void {
 					if (staged) staged.thinking = { from: current, to: wanted };
 				}
 			}
-			const hints = options.hints ? hintsFor(outcome, pi.getActiveTools()) : [];
-			if (staged) staged.hints = hints;
+			const hintIds = options.hints ? hintIdsFor(outcome, pi.getActiveTools()) : [];
+			const hints = hintIds.map((id) => PREFLIGHT_HINTS[id]);
+			if (staged) {
+				staged.hints = hints;
+				staged.hintIds = hintIds;
+			}
 			if (hints.length === 0) return undefined;
 			// With the verdict line on screen the hints are one keypress away there; without it they show as their own message.
 			return { message: { customType: "kyrn.hint", content: hints.join("\n"), display: staged === undefined } };

@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Paint } from "../src/extension/features/welcome.ts";
 import { CHECKPOINT, HIVE_MESSAGE, lastCall, NOTES_HEADER, SWARM_MESSAGE, wrapUp } from "../src/swarm/markers.ts";
 import { activeRuns, type BeeObserver, type BeeRunner, controlPath, SwarmRun } from "../src/swarm/run.ts";
-import { applyEvent, type BeeEvent, newBee, reportOf, summarizeCall } from "../src/swarm/state.ts";
+import { applyEvent, type BeeEvent, codedError, newBee, reportOf, summarizeCall } from "../src/swarm/state.ts";
 import { clock, renderSwarm } from "../src/swarm/view.ts";
 
 const plain: Paint = { fg: (_color, text) => text, bold: (text) => text };
@@ -73,6 +73,8 @@ describe("bee state", () => {
 		applyEvent(bee, { type: "agent_start" }, 0);
 		applyEvent(bee, assistant("", { stopReason: "error", errorMessage: "429 rate limited" }), 100);
 		expect(bee.error).toBe("429 rate limited");
+		// The same, as a code a client translates by; the provider's own message stays as data.
+		expect(bee).toMatchObject({ errorCode: "model_error", errorParams: { message: "429 rate limited" } });
 		applyEvent(
 			bee,
 			{ type: "auto_retry_start", attempt: 1, maxAttempts: 3, delayMs: 4000, errorMessage: "429 rate limited" },
@@ -81,7 +83,11 @@ describe("bee state", () => {
 		expect(bee).toMatchObject({ status: "retrying", retry: { attempt: 1, maxAttempts: 3 } });
 		applyEvent(bee, { type: "auto_retry_end", success: true }, 4300);
 		applyEvent(bee, assistant("It works now."), 6000);
-		expect(bee).toMatchObject({ status: "thinking", retry: undefined, error: undefined });
+		expect(bee).toMatchObject({ status: "thinking", retry: undefined, error: undefined, errorCode: undefined });
+		expect(bee.recent.map((entry) => [entry.code, entry.params])).toEqual([
+			["model_error", { message: "429 rate limited" }],
+			["retry", { attempt: 1, maxAttempts: 3, message: "429 rate limited" }],
+		]);
 	});
 
 	it("records what the harness told the bee as something that happened to it, not as its words", () => {
@@ -99,6 +105,12 @@ describe("bee state", () => {
 			"← asked what it has found so far",
 			"← last call: 1 late note",
 			"← told to wrap up and report",
+		]);
+		expect(bee.recent.map((entry) => [entry.code, entry.params])).toEqual([
+			["notes_received", { count: 2 }],
+			["asked_findings", undefined],
+			["late_notes", { count: 1 }],
+			["told_wrap_up", undefined],
 		]);
 		expect(bee.said).toBeUndefined();
 	});
@@ -229,6 +241,7 @@ describe("swarm run", () => {
 		const [stuck, fine] = await finished;
 		expect(stuck.state.status).toBe("timed-out");
 		expect(stuck.report).toContain("STOPPED BY THE WATCHDOG: no sign of life from the model for 1m0");
+		expect(stuck.state).toMatchObject({ errorCode: "stalled", errorParams: { what: "model", seconds: 60 } });
 		// What it had said is not lost with it.
 		expect(stuck.report).toContain("Let me look at the lock file first.");
 		expect(fine).toMatchObject({ report: "All good.", state: { status: "done" } });
@@ -317,6 +330,11 @@ describe("swarm run", () => {
 		expect(obedient.report).toBe("(Cut short: time budget of 1 min reached.)\nWhat I have so far: the docs moved.");
 		expect(deaf.state.status).toBe("timed-out");
 		expect(deaf.report).toContain("time budget of 1 min reached; no report within 30s of being asked");
+		expect(obedient.state.wrapUp).toMatchObject({ code: "time_budget", params: { minutes: 1 } });
+		expect(deaf.state).toMatchObject({
+			errorCode: "no_report_in_time",
+			errorParams: { seconds: 30, after: "time_budget" },
+		});
 	});
 
 	it("lets the user stop one bee or all of them and still get what was found", async () => {
@@ -364,7 +382,11 @@ describe("swarm run", () => {
 		await vi.waitFor(() => expect(run.bees[0].status).toBe("thinking"));
 		controller.abort();
 		const [outcome] = await finished;
-		expect(outcome.state).toMatchObject({ status: "stopped", error: "the run was cancelled" });
+		expect(outcome.state).toMatchObject({
+			status: "stopped",
+			error: "the run was cancelled",
+			errorCode: "cancelled",
+		});
 	});
 
 	it("reports a bee that could not run as failed, with the reason", async () => {
@@ -374,6 +396,23 @@ describe("swarm run", () => {
 		});
 		expect(outcome.state.status).toBe("failed");
 		expect(outcome.report).toContain("FAILED: sub-agent exited with code 1 before it finished: No API key found");
+		expect(outcome.state).toMatchObject({
+			errorCode: "error",
+			errorParams: { message: "sub-agent exited with code 1 before it finished: No API key found" },
+		});
+		// An error that says what it is keeps its code.
+		const [coded] = await new SwarmRun<string>({
+			kind: "delegate",
+			title: "1 task",
+			dir: tempDir(),
+			bees: [spec("b")],
+		}).run(async () => {
+			throw codedError("sub-agent exited with code 2 before it finished", {
+				code: "exited_early",
+				params: { exitCode: 2 },
+			});
+		});
+		expect(coded.state).toMatchObject({ errorCode: "exited_early", errorParams: { exitCode: 2 } });
 	});
 
 	it("writes each bee's steps to a transcript, without the token stream", async () => {

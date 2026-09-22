@@ -155,6 +155,8 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 		const userMessage = clip(runtime.turn.userMessage, 400);
 		runtime.progress(
 			say({ zh: `JeV 在审批：${clip(need.summary, 60)}`, en: `JeV is reviewing: ${clip(need.summary, 60)}` }),
+			"permission_review",
+			{ summary: clip(need.summary, 60) },
 		);
 		if (flag) {
 			const decision = await runtime.engine.decide(

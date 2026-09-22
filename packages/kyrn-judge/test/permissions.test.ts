@@ -264,6 +264,11 @@ describe("permission modes in a session", () => {
 		expect(asked[0].title).toContain("npm publish");
 		expect(asked[0].title).toContain("JeV thinks this goes beyond what you asked for.");
 		expect(of("permissions.request")[0]).toMatchObject({ reason: "beyond", mode: "jev" });
+		expect(of("progress")).toContainEqual({
+			step: "JeV is reviewing: npm test -- a",
+			code: "permission_review",
+			params: { summary: "npm test -- a" },
+		});
 	});
 
 	it("JeV approves: a sure 'needed' is required, and without anyone to ask the rest is refused", async () => {

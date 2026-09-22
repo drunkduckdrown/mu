@@ -30,7 +30,7 @@ import {
 	SwarmRun,
 	type SwarmSnapshot,
 } from "../../swarm/run.ts";
-import type { BeeEvent } from "../../swarm/state.ts";
+import { type BeeEvent, codedError } from "../../swarm/state.ts";
 import { renderSwarm } from "../../swarm/view.ts";
 import { type AgentDefinition, type AgentThinking, loadAgents } from "../agents.ts";
 import { clip, type KyrnRuntime } from "../runtime.ts";
@@ -100,7 +100,11 @@ export function chainRunner(runner: SwarmRunner): SwarmRunner {
 	let previous: { title: string; report: string } | undefined;
 	let broken: string | undefined;
 	return async (task, assignment, signal, env, observer) => {
-		if (broken) throw new Error(`not started: the step before it ("${broken}") did not finish`);
+		if (broken)
+			throw codedError(`not started: the step before it ("${broken}") did not finish`, {
+				code: "chain_broken",
+				params: { step: broken },
+			});
 		const step = previous && task.brief ? { ...task, brief: { ...task.brief, previous } } : task;
 		try {
 			const report = await runner(step, assignment, signal, env, observer);
@@ -245,7 +249,12 @@ export const spawnRunner: SwarmRunner = async (task, assignment, signal, env, ob
 				if (buffer.trim()) onLine(buffer);
 				if (settled) return;
 				const detail = stderr.trim().slice(-400);
-				finish(new Error(`sub-agent exited with code ${code} before it finished${detail ? `: ${detail}` : ""}`));
+				finish(
+					codedError(`sub-agent exited with code ${code} before it finished${detail ? `: ${detail}` : ""}`, {
+						code: "exited_early",
+						params: { exitCode: code ?? -1 },
+					}),
+				);
 			});
 		});
 	} finally {
@@ -641,7 +650,10 @@ export function registerSwarmCommand(runtime: KyrnRuntime): void {
 		if (verb === "stop" || verb === "kill") {
 			const reached = runs.reduce(
 				(sum, run) =>
-					sum + (verb === "stop" ? run.wrapUp(name, "stopped by the user") : run.kill(name, "ended by the user")),
+					sum +
+					(verb === "stop"
+						? run.wrapUp(name, "stopped by the user", { code: "stopped_by_user" })
+						: run.kill(name, "ended by the user", "stopped", { code: "ended_by_user" })),
 				0,
 			);
 			ctx.ui.notify(

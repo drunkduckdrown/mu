@@ -115,7 +115,7 @@ export function registerMemory(runtime: KyrnRuntime): void {
 				.slice(-options.maxCandidates);
 			if (lessons.length === 0) return undefined;
 
-			runtime.progress("checking lessons from earlier sessions");
+			runtime.progress("checking lessons from earlier sessions", "lessons");
 			const decision = await runtime.engine.decide(
 				memoryRecall,
 				{ userMessage: clip(event.prompt, 400), lessons },

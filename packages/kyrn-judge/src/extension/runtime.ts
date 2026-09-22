@@ -11,7 +11,12 @@ import type { JudgeLike } from "../judge.ts";
 import { CompositeLedger, type LedgerRecord, type LedgerSink, MemoryLedger } from "../ledger.ts";
 import type { LlmCompletion } from "../providers/llm.ts";
 import { buildJudge } from "../registry.ts";
-import { type KyrnPresentationEvent, PRESENTATION_STATUS_KEY, type PresentationListener } from "./presentation.ts";
+import {
+	type KyrnPresentationEvent,
+	PRESENTATION_STATUS_KEY,
+	type PresentationListener,
+	type ProgressCode,
+} from "./presentation.ts";
 
 export const LEDGER_ENTRY_TYPE = "kyrn.decision";
 const GATEWAY_PROVIDER_ID = "vercel-ai-gateway";
@@ -304,8 +309,8 @@ export class KyrnRuntime {
 	}
 
 	/** Says what is being worked out before the turn starts ("choosing skills"). Showing it is best effort. */
-	progress(step: string): void {
-		this.present("progress", { step });
+	progress(step: string, code?: ProgressCode, params?: Readonly<Record<string, string | number>>): void {
+		this.present("progress", { step, ...(code ? { code } : {}), ...(params ? { params } : {}) });
 		try {
 			this.onProgress?.(step);
 		} catch {

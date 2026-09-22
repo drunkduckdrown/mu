@@ -1,7 +1,17 @@
 import { appendFileSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { SwarmBrief } from "./brief.ts";
-import { applyEvent, type BeeEvent, type BeeState, isOver, isRunning, newBee, reportOf } from "./state.ts";
+import {
+	applyEvent,
+	type BeeEvent,
+	type BeeState,
+	type Coded,
+	codeOf,
+	isOver,
+	isRunning,
+	newBee,
+	reportOf,
+} from "./state.ts";
 
 /** What a sub-agent is asked to do. */
 export interface BeeTask {
@@ -104,6 +114,37 @@ const clock = (ms: number): string => {
 	return seconds < 60 ? `${seconds}s` : `${Math.floor(seconds / 60)}m${String(seconds % 60).padStart(2, "0")}s`;
 };
 
+/**
+ * Why a bee ended or was asked to wrap up, as `errorCode` / `wrapUp.code`:
+ * - `cancelled`: the whole run was cancelled (Esc on the tool call)
+ * - `stopped_by_user` / `ended_by_user`: `/swarm stop` / `/swarm kill`
+ * - `stalled` {what: "model" | "tool", tool?, seconds}: the watchdog saw no sign of life
+ * - `no_report_in_time` {seconds, after?}: asked to wrap up (`after` = why), no report within the grace period
+ * - `time_budget` {minutes}: its time budget ran out (a wrap-up, not an end)
+ * - `model_error` {message}, `retries_exhausted` {message}: the model request failed
+ * - `exited_early` {exitCode}, `chain_broken` {step}, `error` {message}, `no_report`: the process ended badly
+ */
+export const BEE_ERROR_CODES = [
+	"cancelled",
+	"stopped_by_user",
+	"ended_by_user",
+	"stalled",
+	"no_report_in_time",
+	"time_budget",
+	"model_error",
+	"retries_exhausted",
+	"exited_early",
+	"chain_broken",
+	"error",
+	"no_report",
+] as const;
+
+const setError = (bee: BeeState, reason: string, coded: Coded | undefined) => {
+	bee.error = reason;
+	bee.errorCode = coded?.code;
+	bee.errorParams = coded?.params;
+};
+
 /** File a bee's control requests are written to; the child watches it. */
 export function controlPath(dir: string, index: number): string {
 	return join(dir, "control", `bee-${index}.json`);
@@ -193,17 +234,21 @@ export class SwarmRun<Assignment> {
 	}
 
 	/** Asks bees to stop investigating and report. Bees still waiting for a slot are dropped. Returns how many it reached. */
-	wrapUp(name: string | undefined, reason: string): number {
+	wrapUp(name: string | undefined, reason: string, coded?: Coded): number {
 		let reached = 0;
 		for (const index of this.find(name)) {
 			const bee = this.bees[index];
 			if (bee.status === "queued") {
 				bee.status = "stopped";
-				bee.error = reason;
+				setError(bee, reason, coded);
 				bee.endedAt = this.now();
 				reached++;
 			} else if (isRunning(bee.status) && !bee.wrapUp) {
-				bee.wrapUp = { at: this.now(), reason };
+				bee.wrapUp = {
+					at: this.now(),
+					reason,
+					...(coded ? { code: coded.code, ...(coded.params ? { params: coded.params } : {}) } : {}),
+				};
 				bee.status = "wrapping-up";
 				try {
 					writeFileSync(controlPath(this.dir, index), JSON.stringify({ action: "wrap_up", reason }));
@@ -218,13 +263,13 @@ export class SwarmRun<Assignment> {
 	}
 
 	/** Ends bees now. What they found so far is kept. */
-	kill(name: string | undefined, reason: string, status: "stopped" | "timed-out" = "stopped"): number {
+	kill(name: string | undefined, reason: string, status: "stopped" | "timed-out" = "stopped", coded?: Coded): number {
 		let reached = 0;
 		for (const index of this.find(name)) {
 			const bee = this.bees[index];
 			if (isOver(bee.status)) continue;
 			bee.status = status;
-			bee.error = reason;
+			setError(bee, reason, coded);
 			bee.endedAt = this.now();
 			bee.tool = undefined;
 			this.controllers[index]?.abort();
@@ -244,7 +289,14 @@ export class SwarmRun<Assignment> {
 			const limit = (inTool ? this.limits.toolStallSeconds : this.limits.stallSeconds) * 1000;
 			if (limit > 0 && quiet >= limit) {
 				const what = inTool ? `its ${bee.tool?.name ?? "tool"} call` : "the model";
-				this.kill(bee.name, `no sign of life from ${what} for ${clock(quiet)}`, "timed-out");
+				this.kill(bee.name, `no sign of life from ${what} for ${clock(quiet)}`, "timed-out", {
+					code: "stalled",
+					params: {
+						what: inTool ? "tool" : "model",
+						...(inTool ? { tool: bee.tool?.name ?? "tool" } : {}),
+						seconds: Math.round(quiet / 1000),
+					},
+				});
 				continue;
 			}
 			if (bee.wrapUp) {
@@ -253,10 +305,21 @@ export class SwarmRun<Assignment> {
 						bee.name,
 						`${bee.wrapUp.reason}; no report within ${this.limits.graceSeconds}s of being asked`,
 						"timed-out",
+						{
+							code: "no_report_in_time",
+							// What the wrap-up was for, so "time budget reached; no report in time" can be said whole.
+							params: {
+								seconds: this.limits.graceSeconds,
+								...(bee.wrapUp.code ? { after: bee.wrapUp.code } : {}),
+							},
+						},
 					);
 				}
 			} else if (this.limits.beeMinutes > 0 && now - (bee.startedAt ?? now) >= this.limits.beeMinutes * 60_000) {
-				this.wrapUp(bee.name, `time budget of ${this.limits.beeMinutes} min reached`);
+				this.wrapUp(bee.name, `time budget of ${this.limits.beeMinutes} min reached`, {
+					code: "time_budget",
+					params: { minutes: this.limits.beeMinutes },
+				});
 			}
 		}
 	}
@@ -269,7 +332,15 @@ export class SwarmRun<Assignment> {
 		if (!isOver(bee.status)) {
 			if (failure !== undefined || (bee.error && !report)) {
 				bee.status = "failed";
-				bee.error ??= failure instanceof Error ? failure.message : String(failure ?? "no report");
+				if (bee.error === undefined) {
+					const message = failure instanceof Error ? failure.message : String(failure ?? "no report");
+					setError(
+						bee,
+						message,
+						codeOf(failure) ??
+							(failure === undefined ? { code: "no_report" } : { code: "error", params: { message } }),
+					);
+				}
 			} else {
 				bee.status = "done";
 			}
@@ -294,7 +365,7 @@ export class SwarmRun<Assignment> {
 	async run(runner: BeeRunner<Assignment>, signal?: AbortSignal): Promise<BeeOutcome[]> {
 		active.add(this as SwarmRun<unknown>);
 		const outcomes: BeeOutcome[] = new Array(this.specs.length);
-		const abortAll = () => this.kill(undefined, "the run was cancelled");
+		const abortAll = () => this.kill(undefined, "the run was cancelled", "stopped", { code: "cancelled" });
 		if (signal?.aborted) abortAll();
 		else signal?.addEventListener("abort", abortAll, { once: true });
 		const ticker = setInterval(() => {

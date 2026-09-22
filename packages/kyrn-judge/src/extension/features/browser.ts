@@ -126,11 +126,15 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 		});
 		let status = "failed";
 		let reason: string | undefined;
+		/** How it ended, for a client to translate; `reason` is the English of it. */
+		let code = "error";
+		let codeParams: Readonly<Record<string, string | number>> | undefined;
 		try {
 			if (!params.goal?.trim()) {
 				const page = await session.observe();
 				const text = `${page.title}\n${page.url}\n\n${UNTRUSTED}\n\n${page.text.slice(0, textChars)}`;
 				status = "read";
+				code = "read";
 				return { text, status, url: page.url };
 			}
 			const result = await runBrowserTask({
@@ -163,6 +167,8 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 			});
 			status = result.status;
 			reason = result.reason;
+			code = result.code;
+			codeParams = result.params;
 			// The usual first-run failure: a small local judge that is rightly not trusted with pages.
 			const hint = result.reason?.includes("no judge could choose")
 				? `\nThe judge for browser.step (${runtime.engine.judgeFor(browserStep.id).id}) cannot relate a goal to a page. Give this one decision a capable judge: /mu route browser.step luna (any llm judge from kyrn.json), or jev once it is available.`
@@ -184,8 +190,15 @@ export function registerBrowser(runtime: KyrnRuntime): void {
 			reason = error instanceof Error ? error.message : String(error);
 			throw error;
 		} finally {
-			runtime.present("browser.run", { state: "finished", status, embedded: app !== undefined });
-			app?.run({ state: "finished", status, reason });
+			const ended = { code, ...(codeParams ? { params: codeParams } : {}) };
+			runtime.present("browser.run", {
+				state: "finished",
+				status,
+				...ended,
+				...(reason ? { reason } : {}),
+				embedded: app !== undefined,
+			});
+			app?.run({ state: "finished", status, reason, ...ended });
 			await session.close();
 		}
 	};

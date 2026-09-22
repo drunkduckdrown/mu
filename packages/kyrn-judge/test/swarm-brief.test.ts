@@ -264,6 +264,9 @@ describe("a chain of sub-agents", () => {
 		await expect(chained(step("implement"), assignment)).rejects.toThrow(
 			'the step before it ("plan") did not finish',
 		);
+		await expect(chained(step("again"), assignment)).rejects.toMatchObject({
+			coded: { code: "chain_broken", params: { step: "plan" } },
+		});
 		expect(seen).toEqual([undefined, "scout report"]);
 		// The step itself is not changed: only what the child is handed.
 		expect(step("x").brief?.previous).toBeUndefined();

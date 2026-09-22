@@ -355,7 +355,7 @@ export function registerFrame(runtime: KyrnRuntime): void {
 			begun = undefined;
 			if (!ask?.pending || runtime.mode(taskFrame.id) !== "active") return undefined;
 
-			runtime.progress("updating the task frame");
+			runtime.progress("updating the task frame", "frame");
 			const at = epoch;
 			let timer: ReturnType<typeof setTimeout> | undefined;
 			const late = await Promise.race([

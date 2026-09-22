@@ -6,7 +6,13 @@ import { createHarness, type Harness } from "../../coding-agent/test/suite/harne
 import { parseConfig } from "../src/config.ts";
 import type { Decision } from "../src/decision.ts";
 import type { PreflightOutcome } from "../src/decisions/input-preflight.ts";
-import { judgedText, verdictStateOf } from "../src/extension/features/preflight.ts";
+import {
+	hintIdsFor,
+	hintsFor,
+	judgedText,
+	PREFLIGHT_HINTS,
+	verdictStateOf,
+} from "../src/extension/features/preflight.ts";
 import {
 	renderPending,
 	renderVerdict,
@@ -160,6 +166,46 @@ describe("preflight view", () => {
 
 		const late = verdictData(decision(), { by: "jev-latest", state: "late" });
 		expect(renderVerdict(late, false, 120, plain)[0]).toContain("arrived after the turn started, not applied");
+	});
+
+	it("carries codes next to the English, for a client that translates: reason, hints and the raw answers", () => {
+		const failed = decision({
+			source: "fallback",
+			judged: undefined,
+			reason: "error:timeout",
+			outcome: { ...chatOutcome, turnType: "unknown", gear: "standard" },
+		});
+		expect(verdictData(failed, { by: "jev-latest", state: "none" })).toMatchObject({
+			reason: "error:timeout",
+			reasonCode: "error:timeout",
+		});
+		const waited = verdictData(undefined, {
+			by: "jev-latest",
+			state: "none",
+			reason: "no answer after 3.0 s",
+			reasonCode: "no_answer",
+			reasonParams: { seconds: 3 },
+		});
+		expect(waited).toMatchObject({ reasonCode: "no_answer", reasonParams: { seconds: 3 } });
+		// A verdict that came has no reason to translate.
+		const applied = verdictData(decision(), {
+			by: "jev-latest",
+			state: "applied",
+			hints: hintsFor(chatOutcome, []),
+			hintIds: hintIdsFor(chatOutcome, []),
+		});
+		expect(applied.reasonCode).toBeUndefined();
+		expect(applied.hintIds).toEqual(["plan_first"]);
+		expect(applied.hints).toEqual([PREFLIGHT_HINTS.plan_first]);
+		expect(applied.answerValues).toEqual(chatAnswers);
+		expect(
+			hintIdsFor(
+				{ ...chatOutcome, needsClarification: "yes", sideQuestion: "yes", gear: "heavy", swarmWorthy: "yes" },
+				["hive", "delegate"],
+			),
+		).toEqual(["clarify", "side_question", "plan_first", "try_hive", "try_delegate"]);
+		// The tools a hint points to must exist.
+		expect(hintIdsFor({ ...chatOutcome, planFirst: "no", gear: "heavy", swarmWorthy: "yes" }, [])).toEqual([]);
 	});
 
 	it("names the step another feature is on while the turn is being prepared", () => {

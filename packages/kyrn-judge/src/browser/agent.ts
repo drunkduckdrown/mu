@@ -111,9 +111,26 @@ export interface BrowserTaskOptions {
 	readonly onStep?: (record: BrowserStepRecord) => void;
 }
 
+/**
+ * Why a run ended, as a stable code a client can translate. `reason` stays the
+ * English of it, and `params` holds what the sentence names (a count, a label).
+ */
+export type BrowserEndCode =
+	| "done"
+	| "cancelled"
+	| "stopped_by_user"
+	| "max_steps"
+	| "no_judge"
+	| "no_progress"
+	| "not_confirmed"
+	| "no_value"
+	| "stuck";
+
 export interface BrowserTaskResult {
 	readonly status: "done" | "blocked" | "budget" | "needs_confirmation" | "aborted";
+	readonly code: BrowserEndCode;
 	readonly reason?: string;
+	readonly params?: Readonly<Record<string, string | number>>;
 	readonly page: { readonly url: string; readonly title: string; readonly text: string };
 	readonly history: readonly BrowserStepRecord[];
 	readonly decisions: number;
@@ -133,9 +150,16 @@ export async function runBrowserTask(options: BrowserTaskOptions): Promise<Brows
 	let decisions = 0;
 	let page: PageState = await session.observe();
 
-	const finish = (status: BrowserTaskResult["status"], reason?: string): BrowserTaskResult => ({
+	const finish = (
+		status: BrowserTaskResult["status"],
+		code: BrowserEndCode,
+		reason?: string,
+		params?: Readonly<Record<string, string | number>>,
+	): BrowserTaskResult => ({
 		status,
+		code,
 		reason,
+		...(params ? { params } : {}),
 		page: { url: page.url, title: page.title, text: page.text },
 		history,
 		decisions,
@@ -143,11 +167,11 @@ export async function runBrowserTask(options: BrowserTaskOptions): Promise<Brows
 	});
 
 	while (true) {
-		if (options.signal?.aborted) return finish("aborted");
+		if (options.signal?.aborted) return finish("aborted", "cancelled");
 		if (options.beforeStep && !(await options.beforeStep()))
-			return finish("aborted", "stopped by the person watching");
+			return finish("aborted", "stopped_by_user", "stopped by the person watching");
 		if (history.length >= maxSteps || decisions >= maxSteps * 2)
-			return finish("budget", `stopped after ${maxSteps} actions`);
+			return finish("budget", "max_steps", `stopped after ${maxSteps} actions`, { maxSteps });
 		if (!(await session.fresh(page))) page = await session.observe();
 
 		const space = actionSpace(page.actions);
@@ -165,9 +189,13 @@ export async function runBrowserTask(options: BrowserTaskOptions): Promise<Brows
 		const decision = await engine.decide(browserStep, input, { signal: options.signal });
 		// The judge is the actor here, so its verdict is used whatever the decision mode says.
 		const verdict = decision.judged;
-		if (!verdict) return finish("blocked", `no judge could choose an action (${decision.reason ?? "no verdict"})`);
-		if (verdict.operation === "DONE") return finish("done");
-		if (verdict.operation === "BLOCKED") return finish("blocked", "the judge found no operation that makes progress");
+		if (!verdict) {
+			const why = decision.reason ?? "no verdict";
+			return finish("blocked", "no_judge", `no judge could choose an action (${why})`, { judgeReason: why });
+		}
+		if (verdict.operation === "DONE") return finish("done", "done");
+		if (verdict.operation === "BLOCKED")
+			return finish("blocked", "no_progress", "the judge found no operation that makes progress");
 
 		const key =
 			verdict.operation in space.targets ? `${verdict.operation}:${verdict.target ?? ""}` : verdict.operation;
@@ -185,7 +213,12 @@ export async function runBrowserTask(options: BrowserTaskOptions): Promise<Brows
 			if (action.kind === "click" && IRREVERSIBLE.test(action.label)) {
 				const allowed = options.confirm ? await options.confirm(action.label, page.url) : false;
 				if (!allowed)
-					return finish("needs_confirmation", `"${action.label}" looks irreversible and was not confirmed`);
+					return finish(
+						"needs_confirmation",
+						"not_confirmed",
+						`"${action.label}" looks irreversible and was not confirmed`,
+						{ label: action.label },
+					);
 			}
 			if (action.kind === "fill") {
 				text = await options.writeText({
@@ -194,7 +227,10 @@ export async function runBrowserTask(options: BrowserTaskOptions): Promise<Brows
 					page: { title: page.title, text: page.text.slice(0, 6000) },
 					recent_actions: history.slice(-6).map((entry) => ({ action: entry.action, text: entry.text })),
 				});
-				if (!text) return finish("blocked", `no value could be produced for "${action.label}"`);
+				if (!text)
+					return finish("blocked", "no_value", `no value could be produced for "${action.label}"`, {
+						label: action.label,
+					});
 			}
 			try {
 				await session.act(action, page, text);
@@ -221,7 +257,7 @@ export async function runBrowserTask(options: BrowserTaskOptions): Promise<Brows
 
 		const lastThree = history.slice(-3);
 		if (lastThree.length === 3 && lastThree.every((entry) => entry.page_changed === false && entry.kind !== "wait")) {
-			return finish("blocked", "three actions in a row changed nothing");
+			return finish("blocked", "stuck", "three actions in a row changed nothing", { actions: 3 });
 		}
 	}
 }

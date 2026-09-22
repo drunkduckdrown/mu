@@ -39,7 +39,7 @@ export function registerSkills(runtime: KyrnRuntime): void {
 
 			if (!decided) {
 				decided = true;
-				runtime.progress("choosing which skills this session needs");
+				runtime.progress("choosing which skills this session needs", "skills");
 				const decision = await bounded(
 					runtime.engine.decide(
 						skillDisclosure,
