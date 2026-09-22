@@ -135,3 +135,27 @@
 - `/forget` 只认本项目和到处适用的经验；前缀对上多条时列出来让用户多给几位；已退役的会说明。`/remember` 不带文字时等同 `/lessons`。`/lessons all` 把已退役、已替代的也列上，活跃的在前。
 - 注入了 `config` 或 `provider`、又没给 `roots` 和 `memory.path` 的调用方（测试、嵌入），经验只存在内存里，随会话结束。
 - 文件读取是增量的：记住读到的偏移、inode 和 mtime，只解析新追加的部分；文件被替换或变短就从头读；最后一行没有换行也算，等换行来了再读一次结果不变。追加时如果文件末尾没有换行，先补一个。
+
+## 12. 真实 Jev 验证记录（2026-09-23）
+
+§10 的第二条：用 `packages/kyrn-judge` 的 `DecisionEngine` 加内置 `jev` 判定器（active 模式），把 §4–§6 的每种问题各问一遍，脚本只在会话草稿区，不入库。15 次调用全部与预期一致，合计 5.2 s、6412 输入 token；前两次 600–720 ms 含建连，之后每次 250–300 ms。
+
+| 判定 | 输入 | 结果 | 用时 / token |
+| --- | --- | --- | --- |
+| `memory.capture` v2 | "别用 npm test，这个仓库要用 ./test.sh 跑测试"（上一句助手说它跑了 npm test） | `correction` | 722 ms / 349 |
+| | "好的，继续" | `skip` | 607 / 329 |
+| `memory.merge` | 同一条换个说法 | `same` | 300 / 466 |
+| | 更具体的说法（多了"跳过需要凭证的 e2e"） | `refines` | 292 / 473 |
+| | 改口："用 npm test，test.sh 删了" | `contradicts` | 267 / 460 |
+| | 装依赖的经验 | `unrelated` | 307 / 459 |
+| | 改口 vs [旧经验, 装依赖] | `contradicts`, `unrelated` | 553 / 632 |
+| `memory.recall` v1 | "跑一下测试，看看有没有挂的" vs [新经验, 装依赖] | 新经验 | 247 / 316 |
+| | "装一下依赖再跑" | 装依赖 | 266 / 310 |
+| | "把 Button 组件改名成 ActionButton" | 无 | 269 / 315 |
+| `memory.worth` | vitest 找不到测试要在包根目录跑 / 登录测试挂在第 42 行 / 只暂存明确路径（AGENTS.md 已写） | `reusable`, `one_off`, `already_known` | 281 / 828 |
+| `memory.applied` | 摘要里 `npm test -> ok` vs "用 npm test" | 照做 | 274 / 341 |
+| | 摘要里 `./test.sh -> ok` | 没照做 | 270 / 342 |
+| `memory.outcome` | 三次 npm test 失败后换 ./test.sh 通过 | `learn` | 249 / 399 |
+| | 三次失败靠改代码通过，办法没变 | `skip` | 254 / 393 |
+
+结论：题面不用改。§10 第一条的单元测试在 `test/memory.test.ts`（28 个）。还没跑的是整条链在真实会话里的样子（纠正 → 存 → 改口 → 退役 → 召回），等用户用新内核跑几轮后看台账。
