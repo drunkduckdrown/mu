@@ -122,6 +122,40 @@ describe("goal mode", () => {
 		expect(messages[1]).toContain("continuation 1 of 20");
 	});
 
+	it("does not carry a check over to a goal set while it was reading", async () => {
+		let release: () => void = () => undefined;
+		const gate = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		let checks = 0;
+		const harness = await start(async (request): Promise<Record<string, Answer>> => {
+			if (!("achieved" in request.questions)) return {};
+			checks++;
+			if (checks === 1) {
+				await gate;
+				return { achieved: no, needs_user: no };
+			}
+			return { achieved: yes, needs_user: no };
+		});
+		harness.setResponses([
+			fauxAssistantMessage("I had a look at the importer."),
+			fauxAssistantMessage("The exporter writes UTF-8 now."),
+			fauxAssistantMessage("unused"),
+		]);
+
+		await harness.session.prompt("/goal the importer handles empty files");
+		await vi.waitFor(() => expect(checks).toBe(1), { timeout: 5000 });
+		await harness.session.prompt("/goal the exporter writes UTF-8");
+		release();
+		await settled(harness, 1);
+
+		expect(
+			states(harness).map((state) => `${state.text.split(" ")[1]}:${state.status}:${state.continuations}`),
+		).toEqual(["importer:active:0", "exporter:active:0", "exporter:met:0"]);
+		// The first goal's "not yet" never became a continuation of the second.
+		expect(sent(harness).some((message) => message.includes("not met yet"))).toBe(false);
+	});
+
 	it("stops by itself when the agent twice ends a run without doing anything", async () => {
 		const harness = await start(verdicts());
 		harness.setResponses([

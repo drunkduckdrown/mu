@@ -329,9 +329,10 @@ export function registerGoal(runtime: KyrnRuntime): void {
 				steps: run.steps,
 				finalMessage: clip(textOf(last.content), 1500),
 			};
+			const checked = goal;
 			const { outcome, by } = await check(ctx, evidence);
-			// The goal may have been cleared or replaced while the check was reading.
-			if (goal?.status !== "active") return undefined;
+			// The goal may have been cleared or replaced while the check was reading: that verdict was about another goal.
+			if (goal !== checked || goal?.status !== "active") return undefined;
 
 			if (outcome.kind === "met") {
 				save({ ...goal, status: "met", reason: outcome.reason, next: undefined, checkedBy: by });
