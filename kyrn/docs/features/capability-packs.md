@@ -1,6 +1,6 @@
 # 能力包：装上，默认不露，Jev 按任务披露
 
-更新日期：2026-09-22。状态：ast-grep、GitHub、`/commit`、`/review` 分级、冲突解决已完成并测试；DAP 调试器另见 `features/debugger.md`（进行中）。
+更新日期：2026-09-22。状态：ast-grep、GitHub、`/commit`、`/review` 分级、冲突解决、DAP 调试器全部完成并测试；调试器另见 `features/debugger.md`。
 
 ## 1. 原则
 
@@ -23,6 +23,7 @@
 | `/commit` | — | `/commit [要注意的]` | 见第 3 节 |
 | `pack:review` | `review_triage` | `/review [评审什么]` | 见第 4 节 |
 | `pack:conflicts` | `conflicts_list`、`conflicts_show`、`conflicts_resolve` | — | 见第 5 节 |
+| `pack:debugger` | `debug_start`、`debug_step`、`debug_inspect`、`debug_stop` | — | 在调试器里运行程序：断点、未捕获异常处停下、单步、调用栈与变量。debugpy / delve / lldb-dap，也可自己加。见 `features/debugger.md` |
 
 ## 3. `/commit`：把改动拆成多个提交
 
@@ -77,6 +78,7 @@
 | `/commit` | `test/packs-commit.test.ts` 9 个用例，全部在真实临时仓库里：倒序拆 hunk、改名加修改、二进制、暂存的新文件、仓库的第一个提交、hook 中途拒绝时逐字节恢复、全是相同行的文件；命令本身：确认后提交、带上用户的话、计划漏单元时退回一次再用规则、用户拒绝或无界面时不提交。做过变异检查：行号偏移两处、index 恢复一处，改坏都会被抓到 | — |
 | `/review` | `test/packs-review.test.ts`：分级表每一格、判定器没答的题算拿不准、命令打开包并交出评审、真实工具调用的排序、影子模式下按评审自己的轻重 | 真实 Jev 对这两个问题的校准未测 |
 | 冲突解决 | `test/packs-conflicts.test.ts`：两种冲突样式、CRLF、损坏的标记；一次真实的停住的合并（一块的文件、两块分两次解决的文件、一方删除的文件），全程 HEAD 不动、MERGE_HEAD 还在 | 变基、拣选只靠同一套代码，没有单独的用例 |
+| 调试器 | `test/dap.test.ts` 13 个用例：适配器表、替身适配器上的完整协议（两种启动顺序、TCP、条件断点、异常、死循环与暂停、中止）、通过 harness 的整个包 | **本机真实 debugpy 1.6.7 跑通**；delve、lldb-dap 未在真机跑 |
 
 未验证：Windows（`git` 走不经 shell 的进程，路径用 `node:path`，但没在真机跑过）；`/commit` 在带 gpg 签名要求、会改文件的格式化 hook（比如本仓库的 pre-commit 会 `biome --write`）的仓库里的表现；真实模型的分组质量。
 

@@ -12,6 +12,9 @@ const MUTATING = new Set([
 	"bg_start",
 	"apply_patch_from",
 	"conflicts_resolve",
+	// A debugged program does whatever it does, and an evaluated expression can call anything in it.
+	"debug_start",
+	"debug_inspect",
 ]);
 
 /** What a call would do, short enough for a judge: where, and the beginning of what. */

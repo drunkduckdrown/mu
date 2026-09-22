@@ -6,6 +6,7 @@ import { CAPABILITY_ENTRY } from "./catalog.ts";
 import { astGrepPack } from "./packs/ast-grep.ts";
 import { registerCommit } from "./packs/commit.ts";
 import { conflictsPack } from "./packs/conflicts.ts";
+import { debuggerPack } from "./packs/debugger.ts";
 import { githubPack } from "./packs/github.ts";
 import type { Pack, PackShared } from "./packs/pack.ts";
 import { reviewPack } from "./packs/review.ts";
@@ -14,7 +15,7 @@ import { reviewPack } from "./packs/review.ts";
  * Capability packs: installed with mu, out of the model's sight until a task
  * needs one. Each is one `judged` entry of the capability catalog, and its
  * tools are only registered when it is opened, so a closed pack costs the
- * model nothing. What a pack needs from the machine (ast-grep, git, gh) is
+ * model nothing. What a pack needs from the machine (ast-grep, git, gh, a debug adapter) is
  * looked for at that moment too: a missing program is an install hint to
  * whoever opened the pack, never an error at start-up.
  *
@@ -47,6 +48,18 @@ export function registerPacks(runtime: KyrnRuntime): void {
 		/** Lines of each side of a conflict block that conflicts_show returns. */
 		maxSideLines: 80,
 		maxConflictChars: 20000,
+		/** A program run under a debug adapter: breakpoints, stepping, variables. */
+		debugger: true,
+		/** Adapters added or changed by id: `{ "<id>": { command, args, transport, extensions, launch, install } }`. */
+		debugAdapters: {} as Record<string, unknown>,
+		/** Frames of the call stack shown at a stop. */
+		maxFrames: 20,
+		/** Variables listed per scope or member list. */
+		maxVariables: 50,
+		/** Characters of the program's output one result carries: the tail when there is more. */
+		debugOutputChars: 4000,
+		/** How long a launch or a step waits for the program to stop or end before reporting it still runs. */
+		debugWaitMs: 30000,
 	});
 	if (!options.enabled) return;
 	const { pi, catalog } = runtime;
@@ -80,6 +93,17 @@ export function registerPacks(runtime: KyrnRuntime): void {
 	if (options.review) packs.push(reviewPack(shared, { maxFindings: options.maxFindings }));
 	if (options.conflicts) {
 		packs.push(conflictsPack(shared, { maxSideLines: options.maxSideLines, maxChars: options.maxConflictChars }));
+	}
+	if (options.debugger) {
+		packs.push(
+			debuggerPack(shared, {
+				adapters: options.debugAdapters,
+				maxFrames: options.maxFrames,
+				maxVariables: options.maxVariables,
+				outputChars: options.debugOutputChars,
+				stopTimeoutMs: options.debugWaitMs,
+			}),
+		);
 	}
 
 	const starting = new Map<string, Promise<void>>();

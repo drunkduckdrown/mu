@@ -33,7 +33,7 @@ Jev 管得住上下文，管不住安装体积、维护量、故障面和安全�
 
 DAP 调试器 · ast-grep 结构化搜索和改写 · 带优先级的 `/review` · 把改动拆成多个提交的 `/commit` · GitHub（`gh` 加一个技能，不另做一堆工具）· 冲突解决。全部以 `pack:*` 登记到能力目录，外部二进制（`sg`、`gh`、调试适配器）缺失时给出安装提示而不是报错。
 
-**状态**（设计见 `features/capability-packs.md`）：ast-grep、GitHub、`/commit`、`/review` 的 P0–P3 分级（判定点 `review.triage`）、冲突解决**已完成**。ast-grep 对本机真实的 ast-grep 0.44.0 跑通；`/commit` 与冲突解决都在真实临时仓库里测过，`/commit` 要么全部提交成功、要么逐字节恢复，冲突解决从不提交、从不 `--continue`。DAP 调试器进行中。
+**状态**（设计见 `features/capability-packs.md`）：ast-grep、GitHub、`/commit`、`/review` 的 P0–P3 分级（判定点 `review.triage`）、冲突解决**已完成**。ast-grep 对本机真实的 ast-grep 0.44.0 跑通；`/commit` 与冲突解决都在真实临时仓库里测过，`/commit` 要么全部提交成功、要么逐字节恢复，冲突解决从不提交、从不 `--continue`。DAP 调试器（`pack:debugger`，`features/debugger.md`）**已完成**：debugpy / delve / lldb-dap 加用户自己的适配器，停在断点和未捕获异常处，对本机真实 debugpy 1.6.7 跑通；delve、lldb-dap 没在真机跑。能力包一节到此全部完成。
 
 实验：**语义版 TTSR**。OMP 用正则发现模型写偏，就中断输出、插入规则、从原处重来；mu 把“发现写偏”换成 Jev 判断（流式输出按段送判，确信偏了才中断）。默认关，先在 shadow 里攒数据。**代码已完成**（功能 `ttsr`，判定点 `output.drift`，设计与限制见 `features/semantic-ttsr.md`）：规则用平常的话写，任务帧里的硬约束自动算进去；判断与输出流并行，只有确信违规才掐断，随后点名规则让模型从断点继续。未在真实模型和真实 Jev 上跑过。
 
