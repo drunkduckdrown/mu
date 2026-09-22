@@ -349,12 +349,12 @@
 			"group": "turn",
 			"feature": "goal",
 			"title": {
-				"zh": "目标是否达成",
-				"en": "Goal reached"
+				"zh": "目标是否达成（Jev 兜底）",
+				"en": "Goal reached (Jev fallback)"
 			},
 			"summary": {
-				"zh": "用 /goal 定下目标后，模型每次想停下来，都判断一次目标是否已经达成：没达成就让它继续干，需要你拿主意就停下来等你。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
-				"en": "With a goal set by /goal, each time the model wants to stop the judge reads whether the goal holds: if not, the agent is sent back to work; if it needs you, it waits. An open acceptance item or an unverified edit always means not yet."
+				"zh": "目标模式默认由大模型判断；这个判定点只在选了 Jev、或大模型没答上来时用：读结束语，判断目标是否达成、是否需要你拿主意。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
+				"en": "Goal mode is checked by a model by default; this decision is used when Jev is chosen or the model gives no answer: it reads the closing message for whether the goal holds and whether you are needed. An open acceptance item or an unverified edit always means not yet."
 			}
 		},
 		{
@@ -1437,11 +1437,133 @@
 				"en": "Goal mode"
 			},
 			"summary": {
-				"zh": "/goal <条件> 之后，代理会一直干到条件成立为止。被你打断、模型调用失败、连续空转、用完续跑次数或时间，都会自己停下；你再发一条消息就接着干。",
-				"en": "After /goal <condition> the agent keeps working until the condition holds. It stops by itself when you interrupt, a model call fails, it idles, or its allowance runs out; your next message picks it up again."
+				"zh": "/goal <条件> 之后，代理会一直干到条件成立为止（只输入 /goal 会问你条件）。每次它想停，由大模型对照证据判断是否达成、下一步做什么。被你打断、模型调用失败、连续空转或原地打转、用完续跑次数或时间，都会自己停下；你再发一条消息就接着干。",
+				"en": "After /goal <condition> the agent keeps working until the condition holds (/goal alone asks for it). Each time it wants to stop, a model reads the evidence: met, or the next step. It stops by itself when you interrupt, a model call fails, it idles or goes in circles, or its allowance runs out; your next message picks it up again."
 			},
 			"defaultEnabled": true,
 			"options": [
+				{
+					"key": "checker",
+					"kind": "choice",
+					"default": "model",
+					"label": {
+						"zh": "谁来判断目标是否达成",
+						"en": "Who checks whether the goal holds"
+					},
+					"help": {
+						"zh": "大模型读目标、这一轮做了什么、最后一次测试的结果和结束语，给出结论和下一步；它没答上来时才退回 Jev。无论哪种，没勾的验收条件、改完没跑都算没达成。",
+						"en": "A model reads the goal, what the run did, the last test run and the closing message, and gives a verdict and the next step; Jev only when it gives no answer. Either way an open acceptance item or an unverified edit means not yet."
+					},
+					"choices": [
+						{
+							"value": "model",
+							"label": {
+								"zh": "大模型（推荐）",
+								"en": "A model (recommended)"
+							}
+						},
+						{
+							"value": "jev",
+							"label": {
+								"zh": "Jev 判定器",
+								"en": "The Jev judge"
+							}
+						}
+					]
+				},
+				{
+					"key": "checkModel",
+					"kind": "text",
+					"default": "",
+					"label": {
+						"zh": "判断用的模型",
+						"en": "Model for the check"
+					},
+					"help": {
+						"zh": "写成“提供商/模型”。留空就用当前会话的模型。",
+						"en": "As provider/model. Empty: the session's current model."
+					}
+				},
+				{
+					"key": "checkThinking",
+					"kind": "choice",
+					"default": "off",
+					"label": {
+						"zh": "判断时的思考等级",
+						"en": "Thinking level of the check"
+					},
+					"choices": [
+						{
+							"value": "off",
+							"label": {
+								"zh": "不思考",
+								"en": "Off"
+							}
+						},
+						{
+							"value": "minimal",
+							"label": {
+								"zh": "极少",
+								"en": "Minimal"
+							}
+						},
+						{
+							"value": "low",
+							"label": {
+								"zh": "低",
+								"en": "Low"
+							}
+						},
+						{
+							"value": "medium",
+							"label": {
+								"zh": "中",
+								"en": "Medium"
+							}
+						},
+						{
+							"value": "high",
+							"label": {
+								"zh": "高",
+								"en": "High"
+							}
+						}
+					]
+				},
+				{
+					"key": "checkTimeoutMs",
+					"kind": "number",
+					"default": 90000,
+					"min": 5000,
+					"max": 600000,
+					"unit": {
+						"zh": "毫秒",
+						"en": "ms"
+					},
+					"label": {
+						"zh": "判断最多等多久",
+						"en": "Longest wait for the check"
+					},
+					"help": {
+						"zh": "超时就退回 Jev 判定器，再退回只看事实。",
+						"en": "After that, Jev decides, and failing that the facts alone."
+					}
+				},
+				{
+					"key": "stallLimit",
+					"kind": "number",
+					"default": 2,
+					"min": 1,
+					"max": 10,
+					"label": {
+						"zh": "连续几轮没进展就停",
+						"en": "Runs without progress before it stops"
+					},
+					"help": {
+						"zh": "判断者发现代理在重复自己、原地打转。第一次会让它换个思路，到这个次数就停下来问你。",
+						"en": "The check found the agent repeating itself. The first time it is told to change course; at this count the goal pauses for you."
+					}
+				},
 				{
 					"key": "maxContinuations",
 					"kind": "number",

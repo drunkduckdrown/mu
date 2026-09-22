@@ -2,10 +2,15 @@ import { defineDecision } from "../decision.ts";
 import { threeZone } from "../policy.ts";
 
 /**
- * Goal mode. The user states a condition once ("every test in packages/x
- * passes and the README describes the new flag") and leaves. Each time the
- * agent wants to stop, the harness asks whether the condition holds, and
- * sends the agent back to work while it does not.
+ * Goal mode's check by the judge. The user states a condition once ("every
+ * test in packages/x passes and the README describes the new flag") and
+ * leaves. Each time the agent wants to stop, the harness asks whether the
+ * condition holds, and sends the agent back to work while it does not.
+ *
+ * A language model makes that check by default (`src/goal/check.ts`): two
+ * booleans over the closing message proved too thin for "is it done". This
+ * decision is what runs when the user chose the judge, or the model gave no
+ * usable answer.
  *
  * What the harness knows outranks what the closing message claims: an
  * acceptance item nobody ticked, or an edit nothing ran after, means "not

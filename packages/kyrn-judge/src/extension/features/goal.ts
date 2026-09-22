@@ -1,29 +1,48 @@
 import type { AgentEndEvent, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { isCheckCommand } from "../../checkpoint/mutating.ts";
 import { goalMet } from "../../decisions/goal-met.ts";
 import { openItems } from "../../frame/frame.ts";
+import {
+	GOAL_CHECK_SYSTEM,
+	type GoalEvidence,
+	type GoalJudgement,
+	goalCheckRequest,
+	parseGoalJudgement,
+} from "../../goal/check.ts";
+import type { LlmCompletion } from "../../providers/llm.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
+import { isShellTool } from "../shell-tools.ts";
+import { describeCall } from "./constraints.ts";
 
 /** Stored in the session, so a rewind or a fork brings back the goal of that branch. */
 export const GOAL_ENTRY = "kyrn.goal";
 export const GOAL_MESSAGE = "kyrn.goal";
 
 const GOAL_LENGTH = 600;
+const STATUS_KEY = "mu-goal";
+const MAX_STEPS = 16;
 
 export type GoalStatus = "active" | "paused" | "met" | "cleared";
+
+/** Who decided the last check: the model, the judge (Jev), or the facts alone. */
+export type GoalCheckedBy = "model" | "jev" | "rules";
 
 export interface GoalState {
 	readonly status: GoalStatus;
 	/** The condition, in the user's words. */
 	readonly text: string;
-	/** Why it is not running, for the user to read. */
+	/** Why it is not running, or why the last check said what it said, for the user to read. */
 	readonly reason?: string;
 	/** Times mu sent the agent back to work since the user last spoke. */
 	readonly continuations: number;
+	/** The next step the last check named. */
+	readonly next?: string;
+	readonly checkedBy?: GoalCheckedBy;
 }
 
 export function parseGoalEntry(data: unknown): GoalState | undefined {
 	if (typeof data !== "object" || data === null) return undefined;
-	const { status, text, reason, continuations } = data as Record<string, unknown>;
+	const { status, text, reason, continuations, next, checkedBy } = data as Record<string, unknown>;
 	if (status !== "active" && status !== "paused" && status !== "met" && status !== "cleared") return undefined;
 	if (typeof text !== "string" || !text.trim()) return undefined;
 	return {
@@ -31,6 +50,8 @@ export function parseGoalEntry(data: unknown): GoalState | undefined {
 		text,
 		reason: typeof reason === "string" ? reason : undefined,
 		continuations: typeof continuations === "number" && continuations >= 0 ? Math.floor(continuations) : 0,
+		next: typeof next === "string" && next ? next : undefined,
+		checkedBy: checkedBy === "model" || checkedBy === "jev" || checkedBy === "rules" ? checkedBy : undefined,
 	};
 }
 
@@ -44,37 +65,109 @@ export function describeGoal(goal: GoalState | undefined): string {
 			: goal.status === "met"
 				? "met"
 				: `paused: ${goal.reason ?? "waiting for you"}. Your next message picks it up again`;
-	return `goal: ${goal.text}\nstate: ${state}`;
+	const last = goal.status === "active" && goal.reason ? `\nlast check: ${goal.reason}` : "";
+	const next = goal.status === "active" && goal.next ? `\nnext: ${goal.next}` : "";
+	return `goal: ${goal.text}\nstate: ${state}${last}${next}`;
 }
+
+/** What one run did, oldest first, as the goal check reads it: "bash npm test -> error". */
+export function stepsOf(messages: readonly unknown[]): { steps: string[]; checks: GoalEvidence["lastCheck"][] } {
+	const calls = new Map<string, { name: string; input: Record<string, unknown> }>();
+	const steps: string[] = [];
+	const checks: GoalEvidence["lastCheck"][] = [];
+	for (const raw of messages) {
+		const message = raw as { role?: string; content?: unknown; toolCallId?: string; isError?: boolean };
+		if (message.role === "assistant" && Array.isArray(message.content)) {
+			for (const block of message.content as { type?: string; id?: string; name?: string; arguments?: unknown }[]) {
+				if (block.type === "toolCall" && block.id && block.name) {
+					calls.set(block.id, { name: block.name, input: (block.arguments ?? {}) as Record<string, unknown> });
+				}
+			}
+		} else if (message.role === "toolResult" && message.toolCallId) {
+			const call = calls.get(message.toolCallId);
+			if (!call) continue;
+			steps.push(
+				`${call.name} ${clip(describeCall(call.name, call.input), 160)} -> ${message.isError ? "error" : "ok"}`,
+			);
+			const command = isShellTool(call.name) ? String(call.input.command ?? "") : "";
+			if (command && isCheckCommand(command)) {
+				const output = textOf(message.content);
+				checks.push({ command: clip(command, 200), failed: message.isError === true, output: output.slice(-600) });
+			}
+		}
+	}
+	return { steps: steps.slice(-MAX_STEPS), checks };
+}
+
+/** The check's answer after the facts had their say. */
+type Outcome =
+	| { readonly kind: "met"; readonly reason?: string }
+	| { readonly kind: "continue"; readonly reason?: string; readonly next?: string; readonly stalled: boolean }
+	| { readonly kind: "ask"; readonly reason?: string }
+	| { readonly kind: "unjudged" };
 
 /**
  * Goal mode. `/goal <condition>` states once what "finished" means, and from
  * then on the agent is not allowed to stop short of it: each time it ends a
- * run, the judge reads the closing message against the condition, the harness
- * adds what it knows for a fact (open acceptance items, an edit nothing ran
- * after), and the agent is sent back to work until the condition holds.
+ * run, a model reads the goal against what the run did and what the harness
+ * knows for a fact (open acceptance items, an edit nothing ran after, the
+ * last test run), and the agent is sent back to work with the next step
+ * named, until the goal holds.
+ *
+ * The check is the session's model unless another is set: whether a goal
+ * holds is a judgement of evidence, which the fast judge reads too thinly.
+ * Jev is the fallback when no model answers, and the facts are the last word
+ * either way: work that is provably unfinished goes on.
  *
  * It stops by itself when the agent needs the user, when the user interrupts,
- * when a model call fails, when the agent twice in a row ends a run without
- * doing anything, and when its allowance of continuations or minutes is used
- * up. The user's next message picks a paused goal up again with a fresh
- * allowance.
+ * when a model call fails, when the agent idles or goes in circles, and when
+ * its allowance of continuations or minutes is used up. The user's next
+ * message picks a paused goal up again with a fresh allowance.
  */
 export function registerGoal(runtime: KyrnRuntime): void {
-	const options = runtime.options("goal", { enabled: true, maxContinuations: 20, maxMinutes: 180, idleLimit: 2 });
+	const options = runtime.options("goal", {
+		enabled: true,
+		maxContinuations: 20,
+		maxMinutes: 180,
+		idleLimit: 2,
+		/** Who reads whether the goal holds: "model" (a language model) or "jev" (the fast judge). */
+		checker: "model",
+		/** "provider/model" for the check; empty: the session's current model. */
+		checkModel: "",
+		/** Thinking level of the check: off, minimal, low, medium, high. */
+		checkThinking: "off",
+		checkTimeoutMs: 90000,
+		/** Checks in a row that found the agent going round in circles before the goal pauses. */
+		stallLimit: 2,
+	});
 	if (!options.enabled) return;
 	const { pi } = runtime;
 	let goal: GoalState | undefined;
 	/** Runs in a row that ended without a single tool call. */
 	let idle = 0;
+	/** Checks in a row that found no progress. */
+	let stalls = 0;
 	let since = Date.now();
+	let lastCheck: GoalEvidence["lastCheck"];
 
 	const show = (ctx: ExtensionContext | undefined, text: string, level: "info" | "warning" = "info") => {
 		if (ctx?.hasUI) ctx.ui.notify(text, level);
 	};
+	const status = () => {
+		const ctx = runtime.ctx;
+		if (!ctx?.hasUI) return;
+		const label =
+			!goal || goal.status === "cleared"
+				? undefined
+				: goal.status === "active"
+					? `goal ${goal.continuations}/${options.maxContinuations}`
+					: `goal ${goal.status}`;
+		ctx.ui.setStatus(STATUS_KEY, label);
+	};
 	const adopt = (next: GoalState | undefined) => {
 		goal = next;
 		runtime.goalActive = next?.status === "active";
+		status();
 	};
 	const save = (next: GoalState) => {
 		adopt(next);
@@ -83,11 +176,17 @@ export function registerGoal(runtime: KyrnRuntime): void {
 	};
 	const pause = (ctx: ExtensionContext, reason: string) => {
 		if (!goal) return;
-		save({ ...goal, status: "paused", reason });
+		save({ ...goal, status: "paused", reason, next: undefined });
 		show(ctx, `mu goal paused: ${reason}.\n${goal.text}`, "warning");
+	};
+	const fresh = () => {
+		idle = 0;
+		stalls = 0;
+		since = Date.now();
 	};
 
 	const restore = (ctx: ExtensionContext) => {
+		runtime.touch(ctx);
 		let restored: GoalState | undefined;
 		for (const entry of ctx.sessionManager.getBranch()) {
 			if (entry.type === "custom" && entry.customType === GOAL_ENTRY) {
@@ -100,8 +199,8 @@ export function registerGoal(runtime: KyrnRuntime): void {
 				? { ...restored, status: "paused", reason: "the session was reopened" }
 				: restored,
 		);
-		idle = 0;
-		since = Date.now();
+		fresh();
+		lastCheck = undefined;
 	};
 	pi.on(
 		"session_start",
@@ -129,12 +228,70 @@ export function registerGoal(runtime: KyrnRuntime): void {
 			if (goal?.status === "paused") save({ ...goal, status: "active", reason: undefined, continuations: 0 });
 			if (goal?.status === "active") {
 				if (goal.continuations > 0) adopt({ ...goal, continuations: 0 });
-				idle = 0;
-				since = Date.now();
+				fresh();
 			}
 			return undefined;
 		}),
 	);
+
+	/** The model that checks the goal: the one configured for it, else the session's own. */
+	const checkerModel = (ctx: ExtensionContext): LlmCompletion | undefined => {
+		const thinking = options.checkThinking;
+		if (options.checkModel) return runtime.llm(options.checkModel, { thinking });
+		return ctx.model ? runtime.llm(`${ctx.model.provider}/${ctx.model.id}`, { thinking }) : undefined;
+	};
+
+	const askModel = async (ctx: ExtensionContext, evidence: GoalEvidence): Promise<GoalJudgement | undefined> => {
+		const complete = checkerModel(ctx);
+		if (!complete) return undefined;
+		try {
+			const reply = await complete({
+				system: GOAL_CHECK_SYSTEM,
+				user: goalCheckRequest(evidence),
+				signal: AbortSignal.timeout(options.checkTimeoutMs),
+			});
+			return parseGoalJudgement(reply.text);
+		} catch {
+			return undefined;
+		}
+	};
+
+	/** The check, then the facts over it: open items or an unverified edit mean "not yet" whatever was said. */
+	const check = async (
+		ctx: ExtensionContext,
+		evidence: GoalEvidence,
+	): Promise<{ outcome: Outcome; by: GoalCheckedBy }> => {
+		const provable = evidence.openItems.length > 0 || evidence.unverifiedFiles.length > 0;
+		if (options.checker !== "jev") {
+			const judged = await askModel(ctx, evidence);
+			if (judged) {
+				if (judged.verdict === "needs_user")
+					return { outcome: { kind: "ask", reason: judged.reason }, by: "model" };
+				if (judged.verdict === "met" && !provable)
+					return { outcome: { kind: "met", reason: judged.reason }, by: "model" };
+				return {
+					outcome: {
+						kind: "continue",
+						reason: judged.verdict === "met" ? undefined : judged.reason,
+						next: judged.next,
+						stalled: judged.stalled,
+					},
+					by: "model",
+				};
+			}
+		}
+		const decision = await runtime.engine.decide(goalMet, {
+			goal: evidence.goal,
+			finalMessage: clip(evidence.finalMessage, 800),
+			openItems: evidence.openItems.length,
+			unverified: evidence.unverifiedFiles.length > 0,
+		});
+		const by: GoalCheckedBy = decision.source === "judge" ? "jev" : "rules";
+		if (decision.outcome === "met") return { outcome: { kind: "met" }, by };
+		if (decision.outcome === "ask") return { outcome: { kind: "ask" }, by };
+		if (decision.outcome === "unjudged") return { outcome: { kind: "unjudged" }, by };
+		return { outcome: { kind: "continue", stalled: false }, by };
+	};
 
 	pi.on(
 		"agent_end",
@@ -154,39 +311,60 @@ export function registerGoal(runtime: KyrnRuntime): void {
 				pause(ctx, "a model call failed");
 				return undefined;
 			}
-			const finalMessage = textOf(last.content);
-			idle = event.messages.some((message) => message.role === "toolResult") ? 0 : idle + 1;
+			const run = stepsOf(event.messages);
+			lastCheck = run.checks.at(-1) ?? lastCheck;
+			idle = run.steps.length > 0 ? 0 : idle + 1;
 
 			const open = openItems(runtime.frame);
 			const turn = runtime.turn;
-			const unverified = turn.editedFiles.size > 0 && !turn.ranCommandAfterLastEdit;
-			const decision = await runtime.engine.decide(goalMet, {
+			const unverified = turn.editedFiles.size > 0 && !turn.ranCommandAfterLastEdit ? [...turn.editedFiles] : [];
+			const evidence: GoalEvidence = {
 				goal: clip(goal.text, GOAL_LENGTH),
-				finalMessage: clip(finalMessage, 800),
-				openItems: open.length,
-				unverified,
-			});
-			// The goal may have been cleared or replaced while the judge was reading.
+				continuation: goal.continuations + 1,
+				maxContinuations: options.maxContinuations,
+				previousNext: goal.next,
+				openItems: open.map((item) => `${item.id} ${item.text}`),
+				unverifiedFiles: unverified,
+				lastCheck,
+				steps: run.steps,
+				finalMessage: clip(textOf(last.content), 1500),
+			};
+			const { outcome, by } = await check(ctx, evidence);
+			// The goal may have been cleared or replaced while the check was reading.
 			if (goal?.status !== "active") return undefined;
 
-			if (decision.outcome === "met") {
-				save({ ...goal, status: "met", reason: undefined });
+			if (outcome.kind === "met") {
+				save({ ...goal, status: "met", reason: outcome.reason, next: undefined, checkedBy: by });
+				const why = outcome.reason ? ` ${outcome.reason}` : "";
 				show(
 					ctx,
-					`mu goal met after ${goal.continuations} continuation${goal.continuations === 1 ? "" : "s"}.\n${goal.text}`,
+					`mu goal met after ${goal.continuations} continuation${goal.continuations === 1 ? "" : "s"}.${why}\n${goal.text}`,
 				);
 				return undefined;
 			}
-			if (decision.outcome === "ask") {
-				pause(ctx, "the agent needs something from you");
+			if (outcome.kind === "ask") {
+				pause(
+					ctx,
+					outcome.reason
+						? `the agent needs something from you: ${outcome.reason}`
+						: "the agent needs something from you",
+				);
 				return undefined;
 			}
-			if (decision.outcome === "unjudged") {
+			if (outcome.kind === "unjudged") {
 				pause(ctx, "no judge could read whether the goal holds, and nothing is provably unfinished");
 				return undefined;
 			}
+			stalls = outcome.stalled ? stalls + 1 : 0;
 			if (idle >= options.idleLimit) {
 				pause(ctx, `the agent ended ${idle} runs in a row without doing anything`);
+				return undefined;
+			}
+			if (stalls >= options.stallLimit) {
+				pause(
+					ctx,
+					`no progress in ${stalls} runs in a row${outcome.reason ? ` (${outcome.reason})` : ""}; say how to go on`,
+				);
 				return undefined;
 			}
 			if (goal.continuations >= options.maxContinuations) {
@@ -198,7 +376,13 @@ export function registerGoal(runtime: KyrnRuntime): void {
 				return undefined;
 			}
 
-			const next: GoalState = { ...goal, continuations: goal.continuations + 1 };
+			const next: GoalState = {
+				...goal,
+				continuations: goal.continuations + 1,
+				reason: outcome.reason,
+				next: outcome.next,
+				checkedBy: by,
+			};
 			save(next);
 			const facts: string[] = [];
 			if (open.length > 0) {
@@ -206,20 +390,25 @@ export function registerGoal(runtime: KyrnRuntime): void {
 					`Open acceptance items: ${open.map((item) => `${item.id} ${item.text}`).join("; ")}. Tick each with the todo tool and one line of evidence, or say which no longer apply.`,
 				);
 			}
-			if (unverified) {
-				facts.push(`You edited ${[...turn.editedFiles].join(", ")} and nothing has run since. Verify the change.`);
+			if (unverified.length > 0) {
+				facts.push(`You edited ${unverified.join(", ")} and nothing has run since. Verify the change.`);
 			}
 			pi.sendMessage(
 				{
 					customType: GOAL_MESSAGE,
 					content: [
 						`The goal the user set is not met yet: "${clip(goal.text, GOAL_LENGTH)}"`,
+						...(outcome.reason ? [`Why not yet: ${outcome.reason}`] : []),
+						...(outcome.stalled
+							? ["The last run did not bring the goal closer. Do not repeat it: take a different approach."]
+							: []),
+						...(outcome.next ? [`Next: ${outcome.next}`] : []),
 						...facts,
 						"Keep working towards it. When it holds, say so plainly and name the evidence. If you cannot go on without the user, say exactly what you need from them and stop.",
 						`(continuation ${next.continuations} of ${options.maxContinuations})`,
 					].join("\n"),
 					display: true,
-					details: { continuation: next.continuations },
+					details: { continuation: next.continuations, checkedBy: by },
 				},
 				{ triggerTurn: true },
 			);
@@ -227,41 +416,59 @@ export function registerGoal(runtime: KyrnRuntime): void {
 		}),
 	);
 
+	const begin = (ctx: ExtensionContext, text: string) => {
+		save({ status: "active", text, continuations: 0 });
+		fresh();
+		lastCheck = undefined;
+		// The condition is the user's own sentence: the task frame reads it like any other message of theirs.
+		runtime.beginTurn(text);
+		show(
+			ctx,
+			`mu goal set. The agent keeps working until it holds (at most ${options.maxContinuations} continuations).`,
+		);
+		pi.sendMessage(
+			{
+				customType: GOAL_MESSAGE,
+				content: [
+					`The user set a goal: "${clip(text, GOAL_LENGTH)}"`,
+					"Work until it holds. When it does, say so plainly and name the evidence. If you cannot go on without the user, say exactly what you need from them and stop.",
+				].join("\n"),
+				display: true,
+				details: { continuation: 0 },
+			},
+			{ triggerTurn: true },
+		);
+	};
+
 	pi.registerCommand("goal", {
-		description: "Keep the agent working until a condition holds: /goal <condition>, /goal (show), /goal clear",
+		description:
+			"Goal mode: keep the agent working until a condition holds. /goal <condition>, /goal (show, or ask for one), /goal clear",
 		handler: async (args, ctx) => {
 			runtime.touch(ctx);
 			const text = args.trim();
 			if (!text) {
+				// Nothing running and someone to ask: /goal alone enters goal mode by asking for the condition.
+				if ((!goal || goal.status === "cleared" || goal.status === "met") && ctx.hasUI) {
+					const asked = (
+						await ctx.ui.input(
+							"mu goal: what must hold when the work is done?",
+							"e.g. every test in packages/x passes",
+						)
+					)?.trim();
+					if (asked) begin(ctx, asked);
+					else show(ctx, describeGoal(goal));
+					return;
+				}
 				show(ctx, describeGoal(goal));
 				return;
 			}
 			if (["clear", "off", "stop", "none"].includes(text.toLowerCase())) {
-				if (goal && goal.status !== "cleared") save({ ...goal, status: "cleared", reason: undefined });
+				if (goal && goal.status !== "cleared")
+					save({ ...goal, status: "cleared", reason: undefined, next: undefined });
 				show(ctx, "mu goal cleared.");
 				return;
 			}
-			save({ status: "active", text, continuations: 0 });
-			idle = 0;
-			since = Date.now();
-			// The condition is the user's own sentence: the task frame reads it like any other message of theirs.
-			runtime.beginTurn(text);
-			show(
-				ctx,
-				`mu goal set. The agent keeps working until it holds (at most ${options.maxContinuations} continuations).`,
-			);
-			pi.sendMessage(
-				{
-					customType: GOAL_MESSAGE,
-					content: [
-						`The user set a goal: "${clip(text, GOAL_LENGTH)}"`,
-						"Work until it holds. When it does, say so plainly and name the evidence. If you cannot go on without the user, say exactly what you need from them and stop.",
-					].join("\n"),
-					display: true,
-					details: { continuation: 0 },
-				},
-				{ triggerTurn: true },
-			);
+			begin(ctx, text);
 		},
 	});
 }
