@@ -9,6 +9,9 @@
  * here fails `test/manifest.test.ts`.
  *
  * Regenerate the JSON after a change: `node packages/kyrn-judge/scripts/write-manifest.ts`.
+ * The JSON also carries the texts in eleven more languages, from `i18n/manifest.json`
+ * (src/manifest-locales.ts): a text whose English changes shows in English there until it is
+ * translated again, and the script lists those.
  */
 export interface Localized {
 	readonly zh: string;

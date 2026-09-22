@@ -3,6 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { MANIFEST } from "../src/manifest.ts";
+import { localizeManifest, type ManifestTranslations, manifestTexts } from "../src/manifest-locales.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const read = (path: string) => readFileSync(join(root, path), "utf8");
@@ -75,7 +76,55 @@ describe("harness manifest", () => {
 		}
 	});
 
-	it("keeps manifest.json, which the desktop app reads, identical to the source", () => {
-		expect(read("manifest.json")).toBe(`${JSON.stringify(MANIFEST, null, "\t")}\n`);
+	it("keeps manifest.json, which the desktop app reads, identical to the source and its translations", () => {
+		const translations = JSON.parse(read("i18n/manifest.json")) as ManifestTranslations;
+		const localized = localizeManifest(MANIFEST, translations).manifest;
+		expect(read("manifest.json")).toBe(`${JSON.stringify(localized, null, "\t")}\n`);
+	});
+});
+
+describe("the manifest in more languages", () => {
+	const translations = (texts: ManifestTranslations["texts"]): ManifestTranslations => ({
+		version: 1,
+		locales: ["ja-JP", "de-DE"],
+		texts,
+	});
+
+	it("finds each text by names, ids, keys and values, not by where it happens to be", () => {
+		const paths = [...manifestTexts(MANIFEST).keys()];
+		expect(paths).toContain("groups.input");
+		expect(paths).toContain("modes[value=shadow].help");
+		expect(paths).toContain("decisions[id=input.preflight].summary");
+		expect(paths.some((path) => /^features\[name=[^\]]+\]\.options\[key=[^\]]+\]\.label$/.test(path))).toBe(true);
+		expect(new Set(paths).size).toBe(paths.length);
+	});
+
+	it("adds a translation beside zh and en only while its English is the English of the text", () => {
+		const shadow = MANIFEST.modes.find((mode) => mode.value === "shadow");
+		const input = MANIFEST.groups.input;
+		const result = localizeManifest(
+			MANIFEST,
+			translations({
+				"modes[value=shadow].label": { en: shadow?.label.en ?? "", "ja-JP": "シャドー", "de-DE": "Schatten" },
+				"groups.input": { en: "Input, as it was before", "ja-JP": "入力" },
+				"features[name=gone].title": { en: "Gone", "ja-JP": "消えた" },
+			}),
+		);
+		const manifest = result.manifest as typeof MANIFEST & {
+			modes: { value: string; label: Record<string, string> }[];
+		};
+		expect(manifest.modes.find((mode) => mode.value === "shadow")?.label).toEqual({
+			zh: shadow?.label.zh,
+			en: shadow?.label.en,
+			"ja-JP": "シャドー",
+			"de-DE": "Schatten",
+		});
+		// Its English changed after it was translated: English until someone translates it again.
+		expect(manifest.groups.input).toEqual(input);
+		expect(result.stale).toEqual(["groups.input"]);
+		expect(result.unused).toEqual(["features[name=gone].title"]);
+		expect(result.untranslated.length).toBe(manifestTexts(MANIFEST).size - 2);
+		// The source object is never changed.
+		expect(Object.keys(MANIFEST.groups.input)).toEqual(["zh", "en"]);
 	});
 });
