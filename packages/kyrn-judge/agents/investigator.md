@@ -14,3 +14,4 @@ Final report:
 - **Found**: what you established, with `path:line` or the exact command and output that shows it.
 - **Ruled out**: what you checked and eliminated.
 - **Next**: the single most useful next step for whoever fixes this.
+- **Lessons**: only if you learned something that will help later work in this project (a trap and the way around it, a fact about the project that is written down nowhere), one line each: `Lesson: <when this comes up> -> <what to do>`. Otherwise leave this out.

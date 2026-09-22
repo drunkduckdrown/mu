@@ -13,5 +13,6 @@ Report, most serious first:
 - **Should fix**: real problems that are not defects yet.
 - **Consider**: optional improvements, briefly.
 - **Verdict**: two sentences.
+- **Lessons**: only if you learned something that will help later work in this project (a trap and the way around it, a fact about the project that is written down nowhere), one line each: `Lesson: <when this comes up> -> <what to do>`. Otherwise leave this out.
 
 Report only what you verified in the code. A finding without a file and line is not a finding.

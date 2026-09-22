@@ -517,6 +517,11 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 			const byName = new Map(roles.map((agent) => [agent.name, agent]));
 			const menu = Object.fromEntries(roles.map((agent) => [agent.name, agent.description]));
 
+			// What this project's lessons say about each part, asked alongside the routing: it costs the wait of neither.
+			const lessons = runtime.knownLessons?.(
+				tasks.map((task) => `${task.title}: ${task.instructions}`),
+				signal,
+			);
 			const routes = await runtime.engine.decideMany(
 				swarmRouting,
 				tasks.map((task) => ({
@@ -526,6 +531,11 @@ export function registerSwarm(runtime: KyrnRuntime, runner: SwarmRunner = spawnR
 				})),
 				{ signal },
 			);
+			const known = (await lessons?.catch(() => undefined)) ?? [];
+			tasks.forEach((task, index) => {
+				const found = known[index];
+				if (task.brief && found && found.length > 0) task.brief = { ...task.brief, lessons: found };
+			});
 			const current = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
 			const sessionThinking = pi.getThinkingLevel();
 			const assignments: SwarmAssignment[] = routes.map((route, index) => {

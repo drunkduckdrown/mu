@@ -50,6 +50,8 @@ const helpZh = () => `mu ${KYRN_VERSION} · 先判断再动手的编程代理，
   /capabilities：装了哪些能力，判定器为这次任务打开了哪些
   /ledger [条数]：最近几条判定和用时
   /remember <经验>：记一条经验，以后的会话都会用上
+  /lessons [all]：这个项目的经验，召回和照做了几次；all 连到处适用的和已退役的一起列
+  /forget <id>：让一条经验退役，以后不再召回
 
 代理能用的工具（你也可以叫它用）
   /browse <网址> [要做的事]：你直接让内置浏览器打开网址、照你说的去做；代理用的是 browse 工具
@@ -96,6 +98,9 @@ Judgment layer
   /capabilities            what is installed, and what the judge has opened for this task
   /ledger [n]              the last n verdicts with timing
   /remember <lesson>       keep a lesson for future sessions
+  /lessons [all]           this project's lessons, how often each was recalled and followed; all adds the ones
+                           for everywhere and the retired ones
+  /forget <id>             retire a lesson so it is no longer recalled
 
 Tools the agent can use (and you can ask for)
   /browse <url> [goal]     drive the built-in browser yourself; the agent has it as "browse"

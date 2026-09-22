@@ -13,3 +13,4 @@ Report:
 - **Done**: what changed, as `path:line` references.
 - **Verified**: the command you ran and its result, or "not verified" and why.
 - **Left over**: anything the task needs that you did not do.
+- **Lessons**: only if you learned something that will help later work in this project (a trap and the way around it, a fact about the project that is written down nowhere), one line each: `Lesson: <when this comes up> -> <what to do>`. Otherwise leave this out.

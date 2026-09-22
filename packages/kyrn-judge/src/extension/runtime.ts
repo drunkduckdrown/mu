@@ -192,6 +192,11 @@ export class KyrnRuntime {
 	 */
 	permissionMode?: () => "full" | "jev" | "ask";
 	/**
+	 * Set by the memory feature: for each sub-agent task, the lessons of this project that apply to it,
+	 * one line each, for the "known lessons" of its brief. Undefined while that feature is off.
+	 */
+	knownLessons?: (tasks: readonly string[], signal?: AbortSignal) => Promise<readonly (readonly string[])[]>;
+	/**
 	 * True when the configured judge answers concurrent calls concurrently (a hosted model). The local
 	 * sidecar answers one at a time, and there the work of a turn is best asked in order of importance.
 	 */

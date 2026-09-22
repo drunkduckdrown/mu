@@ -15,5 +15,6 @@ Report:
 - **Where**: `path/to/file.ts:10-50` and what is there, one line each.
 - **Key code**: only the types or functions the reader must see, copied exactly.
 - **Open questions**: what you could not establish.
+- **Lessons**: only if you learned something that will help later work in this project (a trap and the way around it, a fact about the project that is written down nowhere), one line each: `Lesson: <when this comes up> -> <what to do>`. Otherwise leave this out.
 
 No preamble and no narration of your search.

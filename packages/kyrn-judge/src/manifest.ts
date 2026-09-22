@@ -216,8 +216,48 @@ export const MANIFEST: HarnessManifest = {
 			feature: "memory",
 			title: { zh: "经验记录", en: "Lesson capture" },
 			summary: {
-				zh: "判断一段经历值不值得记成经验。",
-				en: "Decides whether something that happened is worth keeping as a lesson.",
+				zh: "判断你的一句话是不是在纠正代理、或立下以后都要守的规矩；是就记成一条经验。",
+				en: "Decides whether a message of yours corrects the agent or sets a rule for later; if so, it becomes a lesson.",
+			},
+		},
+		{
+			id: "memory.outcome",
+			group: "context",
+			feature: "memory",
+			title: { zh: "从脱困中学", en: "Learning from a way out" },
+			summary: {
+				zh: "代理原地打转或跑偏过、这一回合却以通过的检查或达成的目标收尾时，判断最后奏效的办法是不是换了一种；是就记下这个坑和绕过办法。每回合最多问一次。",
+				en: "When the agent went in circles or off course and the turn still ended with a passing check or the goal met, judges whether what finally worked was a different approach; if so, keeps the trap and the way around it. Asked at most once a turn.",
+			},
+		},
+		{
+			id: "memory.worth",
+			group: "context",
+			feature: "memory",
+			title: { zh: "值不值得记", en: "Worth keeping" },
+			summary: {
+				zh: "模型用 remember 工具记的、子代理报告里 Lesson: 开头的经验，判断是以后还用得上、只关这一次，还是提示词或项目文件里早就有。只存以后用得上的。",
+				en: "For a lesson the model keeps with the remember tool, or a Lesson: line in a sub-agent's report: useful again later, a one-off, or known already from the prompt or the project files. Only the first kind is kept.",
+			},
+		},
+		{
+			id: "memory.merge",
+			group: "context",
+			feature: "memory",
+			title: { zh: "经验整理", en: "Lesson merging" },
+			summary: {
+				zh: "新经验落盘前，和最像的几条已有经验逐一比：同一条就不重复存，说得更准的替代旧的，互相矛盾时以你最新的说法为准。",
+				en: "Before a new lesson is stored, compares it with the most similar kept ones: the same lesson is not kept twice, a more precise one replaces the old, and on a contradiction your latest word wins.",
+			},
+		},
+		{
+			id: "memory.applied",
+			group: "context",
+			feature: "memory",
+			title: { zh: "经验有没有用", en: "Lesson followed" },
+			summary: {
+				zh: "回合结束时，判断带进这一回合的经验有没有被照做。召回多次却从没照做过的经验会自动退役。",
+				en: "At the end of a turn, judges whether the lessons brought into it were followed. A lesson recalled many times and never followed is retired.",
 			},
 		},
 		{
@@ -576,8 +616,8 @@ export const MANIFEST: HarnessManifest = {
 			name: "memory",
 			title: { zh: "经验库", en: "Lessons" },
 			summary: {
-				zh: "记下踩过的坑，下次遇到相关任务时带上。",
-				en: "Keeps lessons learned and brings the relevant ones along next time.",
+				zh: "从你的纠正、代理自己的脱困、模型和子代理的发现里学经验，存之前先和已有的合并，下次遇到相关任务时带上，没人照做的自动退役。/lessons 查看，/forget 退役一条。",
+				en: "Learns from your corrections, from the agent getting itself unstuck, and from what the model and sub-agents found; merges each lesson with the kept ones before storing it, brings the relevant ones along next time, and retires those nobody follows. /lessons shows them, /forget retires one.",
 			},
 			defaultEnabled: true,
 			options: [
@@ -595,6 +635,10 @@ export const MANIFEST: HarnessManifest = {
 					min: 1,
 					max: 200,
 					label: { zh: "每次最多评估", en: "Judge at most" },
+					help: {
+						zh: "照做次数多的、最近记下或确认过的排在前面。",
+						en: "The most followed, then the most recently stored or confirmed, come first.",
+					},
 				},
 				{
 					key: "maxInjected",
@@ -603,6 +647,59 @@ export const MANIFEST: HarnessManifest = {
 					min: 0,
 					max: 20,
 					label: { zh: "每回合最多带入", en: "Bring in at most" },
+				},
+				{
+					key: "waitMs",
+					kind: "number",
+					default: 4000,
+					min: 0,
+					max: 30000,
+					unit: ms,
+					label: { zh: "最多等召回结果", en: "Wait for the recall at most" },
+					help: {
+						zh: "从消息到达算起；给子代理挑经验也等这么久。",
+						en: "Counted from the arrival of the message; picking lessons for sub-agents waits as long.",
+					},
+				},
+				{
+					key: "retireAfter",
+					kind: "number",
+					default: 8,
+					min: 0,
+					max: 100,
+					label: { zh: "召回几次从没照做就退役", en: "Retire after this many recalls never followed" },
+					help: { zh: "0 表示从不自动退役。", en: "0 never retires a lesson by itself." },
+				},
+				{
+					key: "mergeNeighbours",
+					kind: "number",
+					default: 6,
+					min: 0,
+					max: 16,
+					label: { zh: "存之前比较几条最像的", en: "Compare with this many similar lessons" },
+					help: {
+						zh: "按字面重合挑出来，一次请求问完；0 表示不整理，直接存。",
+						en: "Picked by shared words, asked in one request; 0 stores without merging.",
+					},
+				},
+				{
+					key: "outcome",
+					kind: "boolean",
+					default: true,
+					label: { zh: "从代理的脱困中学", en: "Learn from the agent getting unstuck" },
+					help: {
+						zh: "需要写作模型或当前对话模型把经验写成一句话。",
+						en: "Needs the writer model or the conversation's model to put the lesson into words.",
+					},
+				},
+				{
+					key: "applied",
+					kind: "boolean",
+					default: true,
+					label: {
+						zh: "回合结束时检查经验有没有被照做",
+						en: "Check at the end of a turn whether lessons were followed",
+					},
 				},
 			],
 		},

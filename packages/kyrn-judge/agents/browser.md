@@ -15,3 +15,4 @@ Report:
 - **Answer**: what was asked for.
 - **Sources**: the URLs the answer came from.
 - **Not found**: anything you could not establish.
+- **Lessons**: only if you learned something that will help later work in this project (a site that needs a different way in, a fact about the project that is written down nowhere), one line each: `Lesson: <when this comes up> -> <what to do>`. Otherwise leave this out.

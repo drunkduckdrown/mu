@@ -13,6 +13,7 @@ import {
 } from "../../decisions/hive.ts";
 import { type RoutingOutcome, swarmRouting } from "../../decisions/swarm-routing.ts";
 import { Board, foldRelations, isDuplicate, type Note, overlapping } from "../../hive/board.ts";
+import { knownLessons } from "../../swarm/brief.ts";
 import { CHECKPOINT, conflictLine, correctionLine, HIVE_MESSAGE, lastCall, NOTES_HEADER } from "../../swarm/markers.ts";
 import { type BeeSpec, type BoardSummary, SwarmRun } from "../../swarm/run.ts";
 import { loadAgents } from "../agents.ts";
@@ -415,28 +416,36 @@ export function registerHive(runtime: KyrnRuntime, runner: SwarmRunner = spawnRu
 				};
 			};
 
+			const tasks = bees.map((bee) => `${bee.focus} (part of: ${params.goal})`);
+			// What this project's lessons say about each angle, asked alongside the routing.
+			const lessons = runtime.knownLessons?.(tasks, signal);
 			const routes = await runtime.engine.decideMany(
 				swarmRouting,
-				bees.map((bee) => ({ task: clip(`${bee.focus} (part of: ${params.goal})`, 600) })),
+				tasks.map((task) => ({ task: clip(task, 600) })),
 				{ signal },
 			);
+			const known = (await lessons?.catch(() => undefined)) ?? [];
 			interface Member {
 				name: string;
 				focus: string;
 				assignment: SwarmAssignment;
+				lessons?: readonly string[];
 			}
 			const members: Member[] = bees.map((bee, at) => ({
 				name: bee.name,
 				focus: bee.focus,
 				assignment: placement(routes[at].judged ?? routes[at].outcome, bee.agent),
+				lessons: known[at],
 			}));
 			const specFor = (member: Member, all: readonly Member[]): BeeSpec<SwarmAssignment> => {
 				const others = all.filter((other) => other !== member).map((other) => `- ${other.name}: ${other.focus}`);
+				const lessonLines = knownLessons(member.lessons);
 				const instructions = [
 					`You are "${member.name}", one of ${all.length} investigators working on the same problem at the same time.`,
 					`The problem:\n${params.goal}`,
 					`Your angle: ${member.focus}`,
 					`The others, so you do not repeat them:\n${others.join("\n")}`,
+					...(lessonLines.length > 0 ? [lessonLines.join("\n")] : []),
 				].join("\n\n");
 				return {
 					name: member.name,

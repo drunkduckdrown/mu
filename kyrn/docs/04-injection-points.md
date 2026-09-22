@@ -16,7 +16,7 @@
               └─ D2 memory.capture       这句话是纠正或长期偏好吗？→ 写入经验库（后台）
            ──▶ [before_agent_start]
               ├─ 档位落地：思考强度本轮升/降；注入一行提示（自己查清再做 / 这是对你提问的回答，直接做 / 先出计划 / 可并行 / 这是旁支）
-              ├─ A5 memory.recall        哪些历史经验适用？→ 每条命中注入一行
+              ├─ A5 memory.recall        哪些历史经验适用？→ 每条命中注入一行（候选按"照做过几次、多新"排序，注入即记账）
               └─ A6 skills.disclosure    哪些技能与本次会话相关？→ 不相关的不进 system prompt（首轮定，之后粘住）
            ──▶ 主模型推理 ──▶ 工具调用
               ├─ [tool_call]   B3 tool.risk        规则先挑出危险命令；判断模型只回答"用户要求的吗"→ 放行 / 让用户确认
@@ -25,7 +25,9 @@
               ├─ [context]     B2 context.forget   上下文占用过阈值时：这个旧结果还需要完整保留吗？→ 出站请求里缩成头尾
               └─ [turn_end]    B8 notify.routing   上下文快满等外部事件：现在说 / 下一轮说 / 不说
            ──▶ [agent_end]
-              └─ D1 turn.completion      改了文件、之后什么都没跑、却说"完成了"？→ 一次性追问：去验证
+              ├─ D1 turn.completion      改了文件、之后什么都没跑、却说"完成了"？→ 一次性追问：去验证
+              ├─ D3b memory.applied      这一轮注入的经验，助手照做了吗？→ 记账；召回多次从未照做的退役（后台）
+              └─ D2b memory.outcome      打转过、最后过了检查或达成了目标：最后的办法和开头的不同吗？→ 记一条绕过办法（后台，一轮最多一次）
            ──▶ 空闲
               └─ [cache_warming_decision] E2 cache.warming   用户还会回来吗？→ 继续保温 / 停止保温
 
@@ -35,6 +37,8 @@
   delegate    C1–C3 swarm.routing   每个子任务是哪类活、多难、要多少推理？→ 选角色 + 模型档位 + 思考强度，并行跑在独立上下文
   locate      F     files.locate    候选路径逐个判"可能包含要找的东西吗"→ 返回排序后的十来个路径，替代反复 grep
   find_skill  A6 的找回通道：列出被隐藏的技能
+  remember    D2c   memory.worth    模型主动记一条经验：以后还用得上吗？→ 只有 reusable 才存
+              （所有新经验落盘前都过 D3a memory.merge：和最像的几条已有经验是同一条 / 更准 / 矛盾 / 无关？）
 ```
 
 ## 2. 决策点清单
@@ -45,7 +49,7 @@
 | 编号 | 决策 id | pi 钩子 | 问判断模型什么 | 能力 | 拿到答案后做什么 | 缓存影响 | 错了怎么办 |
 |---|---|---|---|---|---|---|---|
 | A1–A7 | `input.preflight` | `input` → `before_agent_start` | 轮次类型；是否改文件/旁支/需澄清/需经验/可并行/先计划；三个复杂度 | classify + relate + meta + rate | 定档位 → 本轮思考强度；注入一行提示 | 只追加 | 档位只影响本轮；`agent_end` 还原思考强度 |
-| A5 | `memory.recall` | `before_agent_start` | 每条历史经验："这个情境匹配当前消息吗？" | relate | 命中的每条注入一行（最多 5 条） | 只追加 | 多注入一行而已 |
+| A5 | `memory.recall` | `before_agent_start` | 每条历史经验："这个情境匹配当前消息吗？"（v2：`delegate` / `hive` 内对着每个子任务问同一题，状态字段是 `task`） | relate | 命中的每条注入一行（最多 5 条）；候选按照做次数、再按新旧排序；注入的记 `uses.recalled`。v2 命中的写进子代理简报的"Known lessons"一段，不记账 | 只追加 | 多注入一行而已 |
 | A6 | `skills.disclosure` | `before_agent_start` | 每个技能："对这条消息有帮助吗？" | relate | 只有高置信"否"才隐藏；首轮定、整个会话不变；后来变相关的用消息宣布 | 改前缀（只在首轮，此时没有缓存） | `/skill:name` 和 `find_skill` 都能找回 |
 | A8 | `input.interjection` | `input`（流式中） | 这句插话是纠偏 / 追加 / 旁支 / 其他 | relate | 与按键投递方式不同时，改用 steer 或 followUp 重发 | 只追加 | 不确定就保持用户按键的选择 |
 | B1 | `tool.admission` | `tool_result` | 每个输出块是什么：error / result / progress / warning / passing / other | classify | 高置信噪音块归档到临时文件，原位留一行指针；首尾块、报错、源码读取、短输出一律放行 | 无（没进来的 token 最便宜） | 指针里有完整输出的路径，模型可以 `read` 回来 |
@@ -60,7 +64,11 @@
 | H2 | `hive.deliver` | 蜂进程内 `turn_end`（后台） | 白板上别的蜂的新消息，对**这只蜂**手上的活有用吗？ | relate | 有用 → 以 steer 消息注入这只蜂的下一步（每只蜂最多 10 条）；`decision` 类消息按规则送达所有蜂 | 只追加 | 送多了只是多一行；每条消息都标明"是发现，不是指令" |
 | H3 | `hive.relate` | 蜂进程内 `turn_end`（后台），每条过了 H1 的新消息对照板上有共同词的旧消息 | `later` 对 `earlier` 是更新替代、冲突、佐证，还是无关？ | classify（四选一，`none` 兜底） | 更新 → 旧消息下线，持有它的蜂按规则收到 CORRECTION；冲突 → 两边都留，持有任一边的蜂收到 CONFLICT，60 秒没解决则加派验证蜂；佐证 → 标 confirmed | 只追加 | 判定器从不裁决谁对；同一只蜂自相矛盾按更新算，不问判定器 |
 | D1 | `turn.completion` | `agent_end` | 结束语在宣称完成吗？这个改动该跑一下验证吗？ | classify + meta | 改过文件且之后没跑过命令 → 追问一次（每个用户轮最多一次） | 只追加 | 多一轮验证 |
-| D2 | `memory.capture` | `input`（后台） | 这句是在纠正代理吗？是在立长期规则吗？ | classify | 是 → 写入经验库（有 writer 模型就提炼成"触发条件 + 一行教训"，没有就存原话） | 无 | `/remember` 可查看；文件是纯 JSONL |
+| D2 | `memory.capture` | `input`（后台） | 这句是在纠正代理吗？是在立长期规则吗？ | classify | 是 → 经 D3a 后写入经验库（有 writer 模型就提炼成"触发条件 + 一行教训"，没有就存原话）；v2 记下是纠正还是规则 | 无 | `/lessons` 可查看，`/forget` 退役；文件是纯 JSONL |
+| D2b | `memory.outcome` | `agent_end` / 目标达成（`goal.state`），后台 | 从 `turn_digest` 看，最后奏效的办法和一开始撞上 `trouble` 的办法不同吗？ | relate | 是 → writer（没配就用会话模型）把"坑 + 绕过办法"写成一行，`kind: workaround`，经 D3a 后存 | 无 | 一轮最多问一次，且只在监视器报过打转或漂移、这一轮又以通过的检查或达成的目标结束时问；正常的一轮不多一次调用 |
+| D2c | `memory.worth` | `remember` 工具内；`delegate` / `hive` 结果里的 `Lesson:` 行 | 每条候选：`reusable` / `one_off` / `already_known`（对照 `project_instructions`）/ `unclear` | relate | 只有 `reusable` 经 D3a 后存；工具结果说明为什么没存 | 无 | 没判定 = 不存 |
+| D3a | `memory.merge` | 每条新经验落盘前 | 规则挑出最像的 6 条已有经验（词面重合）；每条：`same` / `refines` / `contradicts` / `unrelated` / `unclear` | relate | same → 不存新的，旧的算确认；refines → 新的替代旧的（`superseded`）；contradicts → 用户的话让旧的退役，模型和子代理的新经验不存；逐字相同由规则判 same | 无 | 没判定 = 无关，照第一版直接存 |
+| D3b | `memory.applied` | `agent_end`（后台） | 每条这一轮注入过的经验："从 `turn_digest` 看，助手照做了吗？" | relate | 确信是 → `uses.applied + 1`；召回 ≥ 8 次、从未照做、这次确信否 → 规则退役（`memory.retired`） | 无 | 只读确信的"否"；shadow / 失败都不退役；`applied: false` 关掉 |
 | E2 | `cache.warming` | `cache_warming_decision` | 用户最后一句是在收尾吗？代理最后一句是在提问吗？ | classify | 提问 → 保温；收尾 → 停；否则用 pi 的默认 | 无 | 最多多付或少付一次缓存刷新 |
 | E1 (beta) | `context.compact` | `session_before_compact` | 每个旧工具调用：输出是什么类型（classify）？全文还需要吗、这次调用还要紧吗（relate）？ | classify + relate | **不写总结**：用户和助手说过的话逐字保留，只裁剪过时的工具输出（留开头 300 字符 + 归档路径）；先规则、再词法相关度、再判断模型打分、最后按预算从低分裁起 | 改前缀，但只发生在压缩边界（缓存本来就会丢） | 被裁的全文都存了文件；说的话本身就超预算时回落到 pi 的总结 |
 | F | `files.locate` | `locate` 工具内 | 每个候选路径："可能包含要找的东西吗？" | relate | 词法预筛 40 个 → 判断模型排序 → 返回 12 个 | 无 | 没答案就返回词法排序 |
@@ -334,6 +342,20 @@ pi 只在代理启动时才把用户消息画进聊天区，而 `input` 处理�
 
 `THINKING_LEVELS` 多认 `max`（pi 本来就收）。B7（逐轮升降档）由此从"待接"改为"不接"：它的前提就是切换便宜。
 
+## 10.10 经验库第二版（2026-09-23）
+
+设计和实现记录在 `features/experience-library.md`。一句话：经验库从"只记用户纠正、按文件末尾 24 条召回"变成会从五个地方学、落盘前先整理、知道哪条有用的库。
+
+| 之前 | 现在 |
+|---|---|
+| 只从用户纠正里学 | 另有四个来源：代理打转后自己爬出来（D2b）、模型调 `remember`（D2c）、子代理报告里的 `Lesson:` 行（D2c）、`/remember` |
+| 同一件事存两遍；改口后新旧两条都会被召回 | 落盘前过 D3a：同一条不再存，更准的替代旧的，用户的新说法让矛盾的旧经验退役 |
+| 召回候选是文件末尾的 24 条 | 同作用域的活跃经验按照做次数、再按新旧排序；注入即记账 |
+| 召回几十次从未照做的经验一直占名额 | D3b 在一轮结束时判照没照做；召回 ≥ 8 次从未照做的由规则退役 |
+| 子代理什么经验都拿不到 | 简报里多一段"Known lessons"（A5 v2 对着任务问）；子代理不写经验库，在报告里写 `Lesson:` 行 |
+
+文件仍是只增不减的 `lessons.jsonl`，按 `id` 折叠，第一版的行照读；增量读取。命令 `/lessons`、`/lessons all`、`/forget <id 前缀>`；展示事件 `memory.stored` / `recalled` / `applied` / `retired` / `merged`。新决策点和其他点一样跟着模式走（默认 shadow）：shadow 下判官只记账，`remember` 工具和子代理的 `Lesson:` 行都存不进去，整理只按规则挡住逐字相同的，也不退役任何经验。
+
 ## 11. 还没接的点（按价值排序）
 
 | 编号 | 内容 | 卡在哪里 |
@@ -345,4 +367,4 @@ pi 只在代理启动时才把用户消息画进聊天区，而 `input` 处理�
 | C4 | 子代理结果准入（够不够？要不要压缩？） | 扩展 API 够用 |
 | E1 | 已有 beta（§9）。待做：自动压缩阈值下的长会话实测、与 B2 遗忘的协同（同一份打分） | — |
 | E3 | 旁支探索自动隔离到会话分支 | `navigateTree` 只在命令上下文里可用，需要内核补丁 P7 |
-| B4 / D3 / D4 / E4–E6 | 见 01 文档 §4 | — |
+| B4 / D4 / E4–E6 | 见 01 文档 §4（D3 已接，见 §10.10） | — |

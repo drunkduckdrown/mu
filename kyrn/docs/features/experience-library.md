@@ -1,6 +1,6 @@
 # 经验库（`memory`）第二版：Jev 深度融合
 
-更新日期：2026-09-23。状态：设计已定，实现进行中（harness 分支 `claude/mu-experience-library`）。第一版（只记用户纠正、按触发条件召回）见 `04-injection-points.md` A5 / D2。
+更新日期：2026-09-23。状态：已实现（harness 分支 `claude/mu-experience-library`，mock 判官测试 `packages/kyrn-judge/test/memory.test.ts`；真实 Jev 的验证脚本还没跑，见 §10）。实现和设计的出入、设计没说时的决定见 §11。第一版（只记用户纠正、按触发条件召回）见 `04-injection-points.md` A5 / D2。
 
 ## 1. 要解决什么
 
@@ -88,7 +88,9 @@
 
 ## 9. 没做、待定
 
-- `memory.applied` 用的是轮摘要（`recentTurnDigests`），长轮里被截断的部分看不见；先接受。
+- `memory.applied` 和 `memory.outcome` 读的轮摘要是经验库自己记的：请求、开头 6 步、最后 14 步、结束语（一轮最多记 48 步，多出来的从中间丢）。中间的步骤看不见；先接受。
+- 文件只增不减，记账行（`{ id, uses }`）会让它慢慢变长；读取是增量的（只解析新追加的部分），还没做压实。
+- 桌面端：`DECISIONS` 表和各语言文案还不认识四个新决策 id（`memory.outcome` / `memory.worth` / `memory.merge` / `memory.applied`）和四个新展示事件，需要在桌面仓库补。
 - 经验按语言 / 工具分作用域（比如"pytest 相关"）：等有真实数据再说。
 - 蒸馏成 Laya 可用的分类：召回题是布尔题，本地判官偏软（见 `03-local-judge.md`），先只在 Jev 上开。
 
@@ -96,3 +98,40 @@
 
 - 单元测试（mock 判官）：写入折叠、五种来源各一条、`merge` 四种结果、召回排序与记账、`applied` 与退役、`/lessons` / `/forget`、子代理简报里的经验段。
 - 真实 Jev：一次脚本跑通"纠正 → 存 → 改口 → 旧的退役 → 召回只给新的"，记录延迟与 token。
+
+## 11. 实现记录：和设计的出入、设计没说时的决定
+
+代码：`src/decisions/memory.ts`（五个决策）、`src/memory/store.ts`（文件、折叠、排序、近邻）、`src/memory/phrasing.ts`（`Lesson:` 行、轮摘要）、`src/extension/features/memory.ts`（接线、工具、命令）。
+
+**判官的题面**（准确措辞在代码里，这里是要点）：
+
+| 决策 | 题 | 选项 / 读法 |
+| --- | --- | --- |
+| `memory.outcome` v1 | `way_out`（布尔）："Judging by `turn_digest`, is the approach that finally worked different from the one the agent started with, which ran into `trouble`?" | 确信是 → 学；状态字段 `trouble`、`turn_digest`（长的放最后） |
+| `memory.worth` v1 | `worth_N`（选择）："What is `lesson_N` to a coding agent that works in this project later?" | `reusable` / `one_off` / `already_known` / `unclear`；状态 `lesson_1…`、最后是 `project_instructions` |
+| `memory.merge` v1 | `merge_N`（选择）："Compared with `candidate`, what is `existing_N`?" | `same` / `refines` / `contradicts` / `unrelated` / `unclear` |
+| `memory.applied` v1 | `applied_N`（布尔）："Judging by `turn_digest`, did the assistant do what `lesson_N` says?" | 确信是 → 照做；确信否 → 退役规则读它；不确定两边都不算 |
+| `memory.recall` v2 | 同 v1 的每条布尔题，只是对着 `task`（子代理的任务）而不是 `user_message` | 两个版本同一个 id、同一个模式开关，账本里分得开 |
+| `memory.capture` v2 | 题面不变 | 结果从"记 / 不记"变成 `correction` / `preference` / `skip`，决定 `kind` |
+
+**出入**：
+
+- `memory.worth`、`memory.merge` 各多一个 `unclear` 选项。Jev 的规矩：选择题必须有逃生选项，否则无关输入也会被高置信地塞进某个真选项。`unclear` 读作"不存"（worth）和"无关"（merge）。
+- 一条 `way_out` 由 writer 写；没配 writer 时用会话自己的模型（thinking 关）写，因为这里没有用户原话可以兜底。两个都没有时，`memory.outcome` 干脆不问。
+- 轮摘要不用 `recentTurnDigests`，见 §9。
+
+**设计没说时的决定**：
+
+- `kind`：`/remember` 记成 `preference`（用户立的规则）；`remember` 工具和子代理的 `Lesson:` 行记成 `fact`（判官只判值不值得，不分坑和事实）；`memory.outcome` 记成 `workaround`；第一版的旧行读作 `correction`。
+- 逐字相同（忽略大小写和空白）的新经验按规则算 `same`，不问判官；`/remember` 的原话也走这条规则和 merge，但不问 `memory.worth`。
+- 近邻（merge 的 K 条）：只取同作用域（本项目或到处适用）的活跃经验，按共同词数 ÷ 两者中较短的词数排序，至少共一个词。词 = 三个字母以上、去掉少量虚词；中日韩文字按相邻两字切。
+- 一条用户的新经验同时和一条旧的 `same`、和另一条 `contradicts`：矛盾的退役，然后按 `same` 处理（新的不存）。模型或子代理的新经验遇到 `contradicts`：新的不存，展示 `memory.merged`（`how: "contradicts"`，`into` 是站得住的那条），工具结果写明原因。
+- 退役规则只读判官在 active 模式下的确信"否"：shadow、off、判官失败都不会让经验退役；照做过一次（`applied > 0`）的永不自动退役。`retireAfter: 0` 关掉退役，`applied: false` 连问题一起关。
+- 记账只追加 `{ id, uses }`，不动 `updated`（`updated` 只表示写入、确认或改状态），并且按记账那一刻的文件读，另一个会话刚记过的不会被覆盖。
+- 子代理简报的召回（§7）不记账：简报不是父会话的一轮，父会话也看不见子代理照没照做。展示仍是 `memory.recalled`，载荷多一个 `task`。它和路由并行问，最多等 `waitMs`。
+- 子代理进程里（`KYRN_SWARM_DEPTH`）经验库整个不启用：不写文件，也没有 `remember` 工具。角色文件教它写 `Lesson: <什么时候> -> <该怎么做>`；父会话从 `delegate` / `hive` 结果的 `details.reports` 里读，每个结果最多 8 行，一次 `memory.worth` 请求判完，再逐条过 merge（两只蜂学到同一件事只存一次）。
+- `memory.worth` 的 `project_instructions` 是这一轮交给代理的上下文文件（AGENTS.md 等），最多 6000 字符。
+- 展示事件：`memory.retired.reason` 是 `unused` / `contradicted` / `forgotten`；`memory.merged` 在 `same` 时的 `id` 是新经验本来会有的 id（它没有被存）。
+- `/forget` 只认本项目和到处适用的经验；前缀对上多条时列出来让用户多给几位；已退役的会说明。`/remember` 不带文字时等同 `/lessons`。`/lessons all` 把已退役、已替代的也列上，活跃的在前。
+- 注入了 `config` 或 `provider`、又没给 `roots` 和 `memory.path` 的调用方（测试、嵌入），经验只存在内存里，随会话结束。
+- 文件读取是增量的：记住读到的偏移、inode 和 mtime，只解析新追加的部分；文件被替换或变短就从头读；最后一行没有换行也算，等换行来了再读一次结果不变。追加时如果文件末尾没有换行，先补一个。

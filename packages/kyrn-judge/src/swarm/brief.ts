@@ -20,6 +20,8 @@ export interface SwarmBrief {
 	readonly done: readonly string[];
 	/** In a chain: what the step before found. */
 	readonly previous?: { readonly title: string; readonly report: string };
+	/** What earlier work in this project taught that applies to this part: the parent's lessons, as recall found them. */
+	readonly lessons?: readonly string[];
 }
 
 export const BRIEF_ENV = "KYRN_SWARM_BRIEF";
@@ -91,10 +93,23 @@ export function briefFor(
 	};
 }
 
-/** What goes into the child's environment: its frame needs no report of a step before, the message has that. */
+/** What goes into the child's environment: its frame needs no report of a step before, nor the lessons; the message has them. */
 export function briefEnv(brief: SwarmBrief): string {
-	const { previous: _previous, ...rest } = brief;
+	const { previous: _previous, lessons: _lessons, ...rest } = brief;
 	return JSON.stringify(rest);
+}
+
+/**
+ * The "known lessons" of a sub-agent's first message: what the parent's experience library holds that
+ * applies to this task. Empty when nothing does. The sub-agent keeps no lessons itself; it reports
+ * what it learned as `Lesson:` lines, and the parent decides what to keep.
+ */
+export function knownLessons(lessons: readonly string[] | undefined): string[] {
+	if (!lessons || lessons.length === 0) return [];
+	return [
+		"Known lessons from earlier work in this project. Follow them where they apply:",
+		...lessons.map((lesson) => `- ${lesson}`),
+	];
 }
 
 /** The sub-agent's first frame: its part as the goal, and the parent's criteria as its acceptance list. */
@@ -125,6 +140,8 @@ export function briefMessage(instructions: string, brief: SwarmBrief | undefined
 			"</previous-step>",
 		);
 	}
+	const lessons = knownLessons(brief.lessons);
+	if (lessons.length > 0) lines.push("", ...lessons);
 	if (brief.done.length > 0) {
 		lines.push(
 			"",

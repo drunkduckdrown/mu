@@ -173,7 +173,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		["preflight", registerPreflight],
 		// Right after preflight, which counts the turns: the frame has to be current before anything reads it.
 		["frame", registerFrame],
-		["memory", registerMemory],
+		["memory", (shared) => registerMemory(shared, roots)],
 		["skills", registerSkills],
 		// Registered before the features that add capabilities, and that is fine: it reads the catalog when a turn starts.
 		["catalog", registerCatalog],
