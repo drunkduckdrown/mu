@@ -1,4 +1,5 @@
 import type { ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import { say } from "../../../language.ts";
 import {
 	type ApplyOutcome,
 	applyPlan,
@@ -40,23 +41,33 @@ export function registerCommit(shared: PackShared, options: { maxPlanChars: numb
 				const why =
 					repo.reason === "no-git"
 						? installHint("git", shared.platform)
-						: `Not a git repository here: ${repo.message}`;
+						: say({ zh: `这里不是 git 仓库：${repo.message}`, en: `Not a git repository here: ${repo.message}` });
 				ctx.ui.notify(why, "warning");
 				return;
 			}
 			if (repo.inProgress) {
 				ctx.ui.notify(
-					`A ${repo.inProgress} is in progress. Finish or abort it first: new commits now would get in its way.`,
+					say({
+						zh: `有一个 ${repo.inProgress} 正在进行。先完成或放弃它：现在提交会打乱它。`,
+						en: `A ${repo.inProgress} is in progress. Finish or abort it first: new commits now would get in its way.`,
+					}),
 					"warning",
 				);
 				return;
 			}
 			const change = await readChange(git, repo.root, repo.head);
 			if (change.units.length === 0) {
+				const some = `${change.untracked.slice(0, 5).join(", ")}${change.untracked.length > 5 ? ", ..." : ""}`;
 				ctx.ui.notify(
 					change.untracked.length > 0
-						? `Nothing to commit: only files git does not track (${change.untracked.slice(0, 5).join(", ")}${change.untracked.length > 5 ? ", ..." : ""}). \`git add\` the ones that belong in, then run /commit again.`
-						: "Nothing to commit: the working tree matches HEAD.",
+						? say({
+								zh: `没有可提交的：只有 git 没在跟踪的文件（${some}）。把该进去的 \`git add\` 上，再运行 /commit。`,
+								en: `Nothing to commit: only files git does not track (${some}). \`git add\` the ones that belong in, then run /commit again.`,
+							})
+						: say({
+								zh: "没有可提交的：工作区和 HEAD 一样。",
+								en: "Nothing to commit: the working tree matches HEAD.",
+							}),
 					"info",
 				);
 				return;
@@ -66,7 +77,10 @@ export function registerCommit(shared: PackShared, options: { maxPlanChars: numb
 			const shown = `${describePlan(change, plan)}${note ? `\n\n${note}` : ""}`;
 			if (!ctx.hasUI) {
 				ctx.ui.notify(
-					`${shown}\n\nNot committed: /commit asks before it commits, and there is nobody to ask here.`,
+					`${shown}\n\n${say({
+						zh: "没有提交：/commit 提交前要先问你，而这里没有人可问。",
+						en: "Not committed: /commit asks before it commits, and there is nobody to ask here.",
+					})}`,
 					"info",
 				);
 				return;
@@ -74,10 +88,13 @@ export function registerCommit(shared: PackShared, options: { maxPlanChars: numb
 			const count = plan.commits.length;
 			const agreed = await ctx.ui.confirm(
 				TITLE,
-				`${shown}\n\nMake ${count === 1 ? "this commit" : `these ${count} commits`}? Nothing is pushed.`,
+				`${shown}\n\n${say({
+					zh: `${count === 1 ? "做这个提交" : `做这 ${count} 个提交`}？不会推送。`,
+					en: `Make ${count === 1 ? "this commit" : `these ${count} commits`}? Nothing is pushed.`,
+				})}`,
 			);
 			if (!agreed) {
-				ctx.ui.notify("Nothing was committed.", "info");
+				ctx.ui.notify(say({ zh: "什么都没有提交。", en: "Nothing was committed." }), "info");
 				return;
 			}
 			const outcome = await applyPlan(git, repo, change, plan, ctx.signal);
@@ -101,8 +118,11 @@ async function propose(
 	const model = ctx.model;
 	const complete: LlmCompletion | undefined =
 		runtime.writer() ?? (model ? runtime.llm(`${model.provider}/${model.id}`, { thinking: "off" }) : undefined);
-	const byRule = (why: string) => ({ plan: rulePlan(change), note: `${why}: one commit per file instead.` });
-	if (!complete) return byRule("No model to propose a split");
+	const byRule = (why: string) => ({
+		plan: rulePlan(change),
+		note: say({ zh: `${why}：改为每个文件一个提交。`, en: `${why}: one commit per file instead.` }),
+	});
+	if (!complete) return byRule(say({ zh: "没有模型来提议怎么拆", en: "No model to propose a split" }));
 
 	const request = planRequest(change, hint, maxChars);
 	let user = request;
@@ -112,7 +132,8 @@ async function propose(
 		try {
 			reply = (await complete({ system: PLAN_SYSTEM, user, signal: ctx.signal })).text;
 		} catch (error) {
-			return byRule(`No proposal from the model (${error instanceof Error ? error.message : String(error)})`);
+			const message = error instanceof Error ? error.message : String(error);
+			return byRule(say({ zh: `模型没有给出提议（${message}）`, en: `No proposal from the model (${message})` }));
 		}
 		const parsed = parsePlanReply(reply);
 		const problems = parsed.ok ? validatePlan(parsed.plan, change.units) : [parsed.problem];
@@ -120,21 +141,26 @@ async function propose(
 		problem = problems.slice(0, 3).join("; ");
 		user = `${request}\n\nYOUR LAST REPLY:\n${reply.slice(0, 4000)}\n\nIT CANNOT BE USED: ${problems.join("; ")}. Reply again with every unit in exactly one commit.`;
 	}
-	return byRule(`The model's proposal could not be used (${problem})`);
+	return byRule(
+		say({ zh: `模型的提议用不了（${problem}）`, en: `The model's proposal could not be used (${problem})` }),
+	);
 }
 
 function report(outcome: ApplyOutcome): string {
 	if (outcome.status === "done") {
 		const count = outcome.commits.length;
 		return [
-			`Made ${count} commit${count === 1 ? "" : "s"}:`,
+			say({ zh: `做了 ${count} 个提交：`, en: `Made ${count} commit${count === 1 ? "" : "s"}:` }),
 			...outcome.commits.map((commit) => `  ${commit.sha.slice(0, 9)}  ${commit.subject}`),
-			"Nothing was pushed.",
+			say({ zh: "没有推送。", en: "Nothing was pushed." }),
 		].join("\n");
 	}
 	const undone = outcome.undone.length;
 	return [
-		`Stopped at ${outcome.step}: ${outcome.reason}`,
-		`Nothing of the plan remains: HEAD and the index are as they were${undone > 0 ? ` (the ${undone} commit${undone === 1 ? "" : "s"} made before the stop are only in the reflog)` : ""}. The working tree was not touched.`,
+		say({ zh: `停在 ${outcome.step}：${outcome.reason}`, en: `Stopped at ${outcome.step}: ${outcome.reason}` }),
+		say({
+			zh: `计划里的都没有留下：HEAD 和 index 都和原来一样${undone > 0 ? `（停下前做的 ${undone} 个提交只在 reflog 里）` : ""}。工作区没有动过。`,
+			en: `Nothing of the plan remains: HEAD and the index are as they were${undone > 0 ? ` (the ${undone} commit${undone === 1 ? "" : "s"} made before the stop are only in the reflog)` : ""}. The working tree was not touched.`,
+		}),
 	].join("\n");
 }

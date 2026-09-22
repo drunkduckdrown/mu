@@ -18,6 +18,7 @@ import {
 import { BoardProjects } from "../../board/projects.ts";
 import { isCheckCommand } from "../../checkpoint/mutating.ts";
 import { type BoardInput, type BoardPhase, type BoardStep, boardRead } from "../../decisions/board-read.ts";
+import { appLanguage } from "../../language.ts";
 import type { LlmCompletion } from "../../providers/llm.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
 import { isShellTool } from "../shell-tools.ts";
@@ -136,10 +137,14 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		if (!ctx?.hasUI || ctx.mode !== "tui") return;
 		ctx.ui.setWidget(WIDGET_KEY, board && on(ctx) ? boardWidget(board, language()) : undefined);
 	};
+	/** A fixed language first, then the app's (MU_LANG), then the language the user writes in. */
 	const language = (): BoardLanguage => {
 		if (options.language === "zh" || options.language === "en") return options.language;
-		return languageOf(`${runtime.frame?.goal ?? ""} ${runtime.turn.userMessage}`);
+		return appLanguage()?.wording ?? languageOf(`${runtime.frame?.goal ?? ""} ${runtime.turn.userMessage}`);
 	};
+	/** What the writer is told to write in: the app's own language when it has one mu has no wording for. */
+	const writeIn = (): string | undefined =>
+		options.language === "zh" || options.language === "en" ? undefined : appLanguage()?.name;
 
 	/** The plain-speaking model: the one named for the board, else the writer, else the session's own. */
 	const writerModel = (ctx: ExtensionContext): LlmCompletion | undefined => {
@@ -185,7 +190,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		if (complete) {
 			try {
 				const reply = await complete({
-					system: narratorSystem(facts.language),
+					system: narratorSystem(facts.language, writeIn()),
 					user: narratorRequest(facts),
 					signal: AbortSignal.any([AbortSignal.timeout(options.narrateTimeoutMs), gone]),
 				});

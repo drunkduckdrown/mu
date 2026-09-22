@@ -2,7 +2,7 @@ import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:
 import { join } from "node:path";
 import { fauxAssistantMessage } from "@earendil-works/pi-ai";
 import type { ExtensionUIContext } from "@earendil-works/pi-coding-agent";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createHarness, type Harness } from "../../coding-agent/test/suite/harness.ts";
 import { parseConfig } from "../src/config.ts";
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
@@ -380,6 +380,17 @@ describe("/commit: a change split into commits", () => {
 			expect(harness.getPendingResponseCount()).toBe(0);
 			expect(ui.asked[0]).toContain("could not be used (not in any commit: u3)");
 			expect(log(repo)).toEqual(["b.txt", "a.txt", "init"]);
+		});
+
+		it("asks and answers in Chinese when the app is in Chinese", async () => {
+			vi.stubEnv("MU_LANG", "zh-CN");
+			const refusing = scriptedUi(false);
+			const { harness, repo } = await session(refusing);
+			harness.setResponses([fauxAssistantMessage('{"commits":[{"message":"all","units":["u1","u2","u3"]}]}')]);
+			await harness.session.prompt("/commit");
+			expect(refusing.asked.at(-1)).toContain("做这个提交？不会推送。");
+			expect(refusing.notes.at(-1)).toBe("什么都没有提交。");
+			expect(log(repo)).toEqual(["init"]);
 		});
 
 		it("commits nothing when the user says no, or when there is nobody to ask", async () => {

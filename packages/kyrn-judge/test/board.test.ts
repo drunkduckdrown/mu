@@ -403,6 +403,23 @@ describe("board feature", () => {
 		expect(count.reads).toBe(before);
 	});
 
+	it("writes in the app's language when the desktop says which, even one mu has no wording for", async () => {
+		vi.stubEnv("MU_LANG", "ja-JP");
+		const { harness } = await start(reading(() => ({ phase: choice("changing"), needs_user: no, changed: yes })));
+		await harness.session.prompt("/board on");
+		const asked: string[] = [];
+		const agent = [work("edit", { path: "a.ts" }), fauxAssistantMessage("Edited a.ts.")];
+		harness.setResponses(
+			Array.from({ length: 6 }, () =>
+				router(agent, [JSON.stringify({ progress: "半分", now: "a.ts を変更", confirm: [] })], asked),
+			),
+		);
+		await harness.session.prompt("Change a.ts.");
+		await vi.waitFor(() => expect(boards(harness)).toHaveLength(1), { timeout: 5000 });
+		expect(asked[0]).toContain("Write in Japanese.");
+		expect(boards(harness)[0]).toMatchObject({ now: "a.ts を変更", by: "model" });
+	});
+
 	it("a reopened session shows the last board again, marked as restored", async () => {
 		const dir = mkdtempSync(join(tmpdir(), "mu-board-reopen-"));
 		try {

@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { say } from "../language.ts";
 import { type Git, lastLine, lines, splitZ } from "./git.ts";
 import { type DiffFile, displayPath, filePatch, hunkText, parseDiff } from "./unified-diff.ts";
 
@@ -238,7 +239,7 @@ export function describePlan(change: Change, plan: CommitPlan): string {
 	const untracked =
 		change.untracked.length > 0
 			? [
-					`Not included (untracked): ${change.untracked.slice(0, 8).join(", ")}${change.untracked.length > 8 ? ", ..." : ""}`,
+					`${say({ zh: "不包含（未跟踪）：", en: "Not included (untracked): " })}${change.untracked.slice(0, 8).join(", ")}${change.untracked.length > 8 ? ", ..." : ""}`,
 				]
 			: [];
 	return [...rows, ...untracked].join("\n");

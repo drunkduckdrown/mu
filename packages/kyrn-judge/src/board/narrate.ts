@@ -35,8 +35,9 @@ export function languageOf(text: string): BoardLanguage {
 	return /[㐀-鿿豈-﫿]/.test(text) ? "zh" : "en";
 }
 
-export function narratorSystem(language: BoardLanguage): string {
-	const tongue = language === "zh" ? "Simplified Chinese" : "English";
+/** `writeIn` names another language for the model (the app's, e.g. "Japanese"); the fixed sentences stay zh or en. */
+export function narratorSystem(language: BoardLanguage, writeIn?: string): string {
+	const tongue = writeIn ?? (language === "zh" ? "Simplified Chinese" : "English");
 	return `You tell a person who is not a programmer what their coding agent is doing, in plain everyday words. No jargon: when a technical word cannot be avoided, say in a few words what it means. Short sentences, a calm tone. Never claim progress the facts do not show, and never make up what is next.
 
 Write in ${tongue}. Reply with one JSON object and nothing else:

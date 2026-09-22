@@ -1,4 +1,5 @@
 import { toolRisk } from "../../decisions/tool-risk.ts";
+import { say } from "../../language.ts";
 import { clip, failOpen, type KyrnRuntime } from "../runtime.ts";
 import { SHELL_TOOLS } from "../shell-tools.ts";
 
@@ -26,6 +27,19 @@ const RULES: readonly (readonly [RegExp, string])[] = [
 	[/\b(curl|wget)\b[^|;&]*\|\s*(sudo\s+)?(ba|z)?sh\b/, "runs a downloaded script"],
 	[/\bsudo\b/, "runs as root"],
 ];
+
+/** What each flag says to a person reading Chinese. The judge and the model read the English. */
+const FLAG_ZH: Readonly<Record<string, string>> = {
+	"recursive or forced delete": "递归或强制删除",
+	"discards git work": "丢弃 git 里的改动",
+	"force push": "强制推送",
+	"drops database objects": "删除数据库对象",
+	"overwrites a device": "覆盖整个设备",
+	"opens permissions recursively": "递归放开权限",
+	"runs a downloaded script": "运行下载来的脚本",
+	"runs as administrator": "以管理员身份运行",
+	"runs as root": "以 root 身份运行",
+};
 
 /** Tools whose `command` is a shell command line. A command is no safer for running in the background. */
 const COMMAND_TOOLS: ReadonlySet<string> = new Set([...SHELL_TOOLS, "bg_start"]);
@@ -62,7 +76,10 @@ export function registerGuard(runtime: KyrnRuntime): void {
 			if (decision.mode !== "active" || decision.outcome === "allow") return undefined;
 			if (!ctx.hasUI)
 				return { block: true, reason: `mu: "${flag}" needs confirmation, which this mode cannot ask for.` };
-			const approved = await ctx.ui.confirm(`mu: ${flag}`, `Run this command?\n\n${clip(command, 600)}`);
+			const approved = await ctx.ui.confirm(
+				`mu: ${say({ zh: FLAG_ZH[flag] ?? flag, en: flag })}`,
+				`${say({ zh: "要运行这条命令吗？", en: "Run this command?" })}\n\n${clip(command, 600)}`,
+			);
 			return approved ? undefined : { block: true, reason: `The user declined this command (${flag}).` };
 		}),
 	);

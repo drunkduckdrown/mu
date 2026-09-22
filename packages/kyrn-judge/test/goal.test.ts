@@ -156,6 +156,21 @@ describe("goal mode", () => {
 		expect(sent(harness).some((message) => message.includes("not met yet"))).toBe(false);
 	});
 
+	it("gives its reasons in Chinese when the app is in Chinese", async () => {
+		vi.stubEnv("MU_LANG", "zh-CN");
+		const harness = await start(verdicts());
+		harness.setResponses([
+			fauxAssistantMessage("I think this is fine."),
+			fauxAssistantMessage("As I said, this is fine."),
+			fauxAssistantMessage("unused"),
+		]);
+		await harness.session.prompt("/goal the importer handles empty files");
+		await settled(harness, 1);
+		expect(states(harness).at(-1)).toMatchObject({ status: "paused", reason: "代理连续 2 次什么都没做就停下了" });
+		// What the model reads stays in English.
+		expect(sent(harness)[1]).toContain("not met yet");
+	});
+
 	it("stops by itself when the agent twice ends a run without doing anything", async () => {
 		const harness = await start(verdicts());
 		harness.setResponses([
