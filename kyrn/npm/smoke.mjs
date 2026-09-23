@@ -8,7 +8,7 @@
 // be called. The judgment layer is checked over RPC: its commands, prompt templates and skills are listed
 // without a turn being taken.
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -79,8 +79,14 @@ check(
 	imports.stderr.trim() || imports.stdout.trim().slice(0, 300),
 );
 
+// Within the heap of a 1 GB server. mu 0.1.3 transpiled the judgment layer with Babel at every start, which took
+// more than 500 MB, and there V8 aborted before the first frame. A transpiled copy is cached in the temp folder, and
+// with one from an earlier run 0.1.3 passed here, so the temp folder is a new one.
+const temp = join(home, "tmp");
+mkdirSync(temp);
+const heapCap = { ...env, NODE_OPTIONS: "--max-old-space-size=200", TMPDIR: temp, TMP: temp, TEMP: temp };
 const commands = await new Promise((resolve) => {
-	const child = spawn(mu, ["--mode", "rpc", "--no-session"], { ...options, stdio: ["pipe", "pipe", "pipe"] });
+	const child = spawn(mu, ["--mode", "rpc", "--no-session"], { ...options, env: heapCap, stdio: ["pipe", "pipe", "pipe"] });
 	let out = "";
 	let err = "";
 	const timer = setTimeout(() => {
@@ -106,11 +112,17 @@ const commands = await new Promise((resolve) => {
 		err += data;
 	});
 	child.on("error", (error) => resolve({ error: error.message }));
+	// After an answer the promise is settled already, and this changes nothing.
+	child.on("close", (code, signal) => {
+		clearTimeout(timer);
+		const heap = /Reached heap limit|heap out of memory/.test(err) ? ", out of heap" : "";
+		resolve({ error: `exited (${code ?? signal}${heap}) without an answer. stderr: ${err.slice(-800)}` });
+	});
 	child.stdin.write(`${JSON.stringify({ id: "smoke", type: "get_commands" })}\n`);
 });
 const expected = ["extension:board", "extension:goal", "extension:permissions", "prompt:implement", "skill:skill:mu-browser"];
 check(
-	"judgment layer loaded (RPC get_commands)",
+	"judgment layer loaded in a 200 MB heap (RPC get_commands)",
 	!commands.error && expected.every((name) => commands.names.includes(name)),
 	commands.error ?? `${commands.names.length} commands, ${expected.filter((name) => !commands.names.includes(name)).join(", ") || "all expected ones"} ${expected.every((name) => commands.names.includes(name)) ? "present" : "missing"}`,
 );
