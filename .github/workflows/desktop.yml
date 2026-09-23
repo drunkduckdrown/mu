@@ -78,23 +78,34 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  # A job-level if cannot read matrix, so a manual run narrows the matrix here.
+  # A push still builds every platform.
+  select:
+    name: Select platforms
+    runs-on: ubuntu-latest
+    outputs:
+      include: ${{ steps.pick.outputs.include }}
+    steps:
+      - id: pick
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PLATFORM: ${{ github.event_name == 'workflow_dispatch' && inputs.platform || 'all' }}
+        run: |
+          include='[{"platform":"macos-arm64","os":"macos-14","arch":"arm64","command":"node scripts/build-with-builder.js arm64 --mac --arm64"},{"platform":"macos-x64","os":"macos-14","arch":"x64","command":"node scripts/build-with-builder.js x64 --mac --x64"},{"platform":"windows-x64","os":"windows-2022","arch":"x64","command":"node scripts/build-with-builder.js x64 --win --x64"},{"platform":"windows-arm64","os":"windows-11-arm","arch":"arm64","command":"node scripts/build-with-builder.js arm64 --win --arm64"},{"platform":"linux-x64","os":"ubuntu-latest","arch":"x64","command":"node scripts/build-with-builder.js x64 --linux --x64"},{"platform":"linux-arm64","os":"ubuntu-24.04-arm","arch":"arm64","command":"node scripts/build-with-builder.js arm64 --linux --arm64"}]'
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$PLATFORM" != "all" ]; then
+            include=$(printf '%s' "$include" | jq -c --arg platform "$PLATFORM" 'map(select(.platform == $platform))')
+          fi
+          echo "include=$include" >> "$GITHUB_OUTPUT"
+
   build:
     name: Build ${{ matrix.platform }}
-    needs: harness
-    # A manual run can build one platform. A push still builds every one.
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == matrix.platform }}
+    needs: [harness, select]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - { platform: macos-arm64, os: macos-14, arch: arm64, command: 'node scripts/build-with-builder.js arm64 --mac --arm64' }
-          - { platform: macos-x64, os: macos-14, arch: x64, command: 'node scripts/build-with-builder.js x64 --mac --x64' }
-          - { platform: windows-x64, os: windows-2022, arch: x64, command: 'node scripts/build-with-builder.js x64 --win --x64' }
-          - { platform: windows-arm64, os: windows-11-arm, arch: arm64, command: 'node scripts/build-with-builder.js arm64 --win --arm64' }
-          - { platform: linux-x64, os: ubuntu-latest, arch: x64, command: 'node scripts/build-with-builder.js x64 --linux --x64' }
-          - { platform: linux-arm64, os: ubuntu-24.04-arm, arch: arm64, command: 'node scripts/build-with-builder.js arm64 --linux --arm64' }
+        include: ${{ fromJSON(needs.select.outputs.include) }}
     defaults:
       run:
         working-directory: desktop
