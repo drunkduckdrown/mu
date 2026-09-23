@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { delimiter, join } from "node:path";
+import { delimiter, join, win32 } from "node:path";
 import { spawn, spawnSync } from "child_process";
 import { getBinDir } from "../config.ts";
 
@@ -58,10 +58,35 @@ function findExecutableOnPath(executable: string): string | null {
 }
 
 /**
+ * Where Git for Windows puts its bash, in the order they are tried: the machine-wide installs, the per-user install,
+ * then beside each git.exe on PATH (Git adds its `cmd` folder there), whose bash is in the `bin` folder next to it.
+ * `exists` is asked only about git.exe; the caller checks the bash paths.
+ */
+export function gitBashCandidates(env: NodeJS.ProcessEnv, exists: (path: string) => boolean = existsSync): string[] {
+	const paths: string[] = [];
+	const add = (path: string) => {
+		if (!paths.some((known) => known.toLowerCase() === path.toLowerCase())) paths.push(path);
+	};
+	const programFiles = env.ProgramFiles;
+	if (programFiles) add(win32.join(programFiles, "Git", "bin", "bash.exe"));
+	const programFilesX86 = env["ProgramFiles(x86)"];
+	if (programFilesX86) add(win32.join(programFilesX86, "Git", "bin", "bash.exe"));
+	const localAppData = env.LOCALAPPDATA;
+	if (localAppData) add(win32.join(localAppData, "Programs", "Git", "bin", "bash.exe"));
+	// Windows spells it Path; the environment of a real process answers to any spelling, a plain object does not.
+	const pathKey = Object.keys(env).find((key) => key.toLowerCase() === "path");
+	for (const entry of (pathKey ? (env[pathKey] ?? "") : "").split(";")) {
+		const dir = entry.trim().replace(/^"(.*)"$/, "$1");
+		if (dir && exists(win32.join(dir, "git.exe"))) add(win32.join(dir, "..", "bin", "bash.exe"));
+	}
+	return paths;
+}
+
+/**
  * Resolve shell configuration based on platform and an optional explicit shell path.
  * Resolution order:
  * 1. User-specified shellPath
- * 2. On Windows: Git Bash in known locations, then bash on PATH
+ * 2. On Windows: Git Bash where Git for Windows installs it (see gitBashCandidates), then bash on PATH
  * 3. On Unix: /bin/bash, then bash on PATH, then fallback to sh
  */
 export function getShellConfig(customShellPath?: string): ShellConfig {
@@ -74,17 +99,8 @@ export function getShellConfig(customShellPath?: string): ShellConfig {
 	}
 
 	if (process.platform === "win32") {
-		// 2. Try Git Bash in known locations
-		const paths: string[] = [];
-		const programFiles = process.env.ProgramFiles;
-		if (programFiles) {
-			paths.push(`${programFiles}\\Git\\bin\\bash.exe`);
-		}
-		const programFilesX86 = process.env["ProgramFiles(x86)"];
-		if (programFilesX86) {
-			paths.push(`${programFilesX86}\\Git\\bin\\bash.exe`);
-		}
-
+		// 2. Try Git Bash where Git for Windows installs it
+		const paths = gitBashCandidates(process.env);
 		for (const path of paths) {
 			if (existsSync(path)) {
 				return getBashShellConfig(path);
