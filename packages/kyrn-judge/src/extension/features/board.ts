@@ -26,6 +26,16 @@ import {
 	parseBoardText,
 	plainBoard,
 } from "../../board/narrate.ts";
+import {
+	type BoardNote,
+	type NoteCode,
+	type NoteKind,
+	type NoteParams,
+	noteText,
+	parseBoardNote,
+	reasonTail,
+	shortPath,
+} from "../../board/notes.ts";
 import { BoardProjects } from "../../board/projects.ts";
 import { isCheckCommand } from "../../checkpoint/mutating.ts";
 import {
@@ -52,6 +62,13 @@ export const BOARD_ENTRY = "kyrn.board";
 const WIDGET_KEY = "mu-board";
 /** Events kept: enough for a long run's tail, and for the news picked earlier in it. */
 const MAX_LOG = 64;
+/** Lines of the running account kept in memory, and sent with each board so a reopened session has them. */
+const MAX_NOTES = 200;
+const LOG_LINES = 40;
+/** The latest account lines the writer is shown, so it adds to them instead of repeating them. */
+const ACCOUNT_LINES = 6;
+/** Tools that change a file: the account names the file. */
+const CHANGE_TOOLS = new Set(["edit", "write", "sg_rewrite", "conflicts_resolve", "apply_patch_from"]);
 /** Reading and looking up: when it went fine, nothing a person would hear about. */
 const ROUTINE_TOOLS = new Set([
 	"read",
@@ -79,19 +96,30 @@ const PERMISSION_KINDS: Readonly<Record<string, { zh: string; en: string }>> = {
 	other: { zh: "对外操作", en: "act outside" },
 };
 
-/** A delegation as a person hears of it: how many were sent and for what, not the JSON of the call. */
-export function describeSwarmCall(name: string, input: Record<string, unknown>): string | undefined {
+/** How many sub-agents a delegation sends out, and for what: the task titles, or the hive's goal. */
+export function swarmParts(
+	name: string,
+	input: Record<string, unknown>,
+): { count: number; titles: string } | undefined {
 	if (name === "delegate" && Array.isArray(input.tasks)) {
 		const titles = input.tasks.map((task) => {
 			const title = (task as { title?: unknown } | null)?.title;
 			return typeof title === "string" && title.trim() ? title.trim() : "a task";
 		});
-		return `${titles.length} sub-agent${titles.length === 1 ? "" : "s"}: ${titles.join(", ")}`;
+		return { count: titles.length, titles: titles.join(", ") };
 	}
 	if (name === "hive" && Array.isArray(input.bees)) {
-		return `${input.bees.length} investigator${input.bees.length === 1 ? "" : "s"} on: ${clip(String(input.goal ?? ""), 120)}`;
+		return { count: input.bees.length, titles: clip(String(input.goal ?? ""), 120) };
 	}
 	return undefined;
+}
+
+/** A delegation as a person hears of it: how many were sent and for what, not the JSON of the call. */
+export function describeSwarmCall(name: string, input: Record<string, unknown>): string | undefined {
+	const parts = swarmParts(name, input);
+	if (!parts) return undefined;
+	if (name === "hive") return `${parts.count} investigator${parts.count === 1 ? "" : "s"} on: ${parts.titles}`;
+	return `${parts.count} sub-agent${parts.count === 1 ? "" : "s"}: ${parts.titles}`;
 }
 
 /** The sub-agents at work, a line per run, for the judge and the writer: who is doing what, who is back. */
@@ -144,6 +172,8 @@ export interface BoardUpdate extends BoardText {
 	 * words above are the writer's telling of these. Since the last update, or over the whole run once it ended.
 	 */
 	readonly news?: readonly string[];
+	/** The latest lines of the running account, oldest first: what the agent did, as the board told it. */
+	readonly log?: readonly BoardNote[];
 }
 
 export function parseBoardEntry(data: unknown): BoardUpdate | undefined {
@@ -168,26 +198,38 @@ export function parseBoardEntry(data: unknown): BoardUpdate | undefined {
 		by: value.by === "model" ? "model" : "rules",
 		ended: value.ended === true,
 		...(Array.isArray(value.news) ? { news: value.news.filter((line) => typeof line === "string") } : {}),
+		...(Array.isArray(value.log) ? { log: value.log.flatMap((line) => parseBoardNote(line) ?? []) } : {}),
 	};
 }
 
-/** The board above the editor of the terminal: the desktop draws its own panel from the presentation event. */
-export function boardWidget(board: BoardUpdate, language: BoardLanguage): string[] {
+/**
+ * The board above the editor of the terminal: the desktop draws its own panel from the presentation events.
+ * `latest` is the newest line of the running account, shown under the state.
+ */
+export function boardWidget(board: BoardUpdate, language: BoardLanguage, latest?: BoardNote): string[] {
 	const zh = language === "zh";
 	return [
 		`${zh ? "\u03bc 看板" : "\u03bc board"} · ${board.progress}`,
 		`  ${board.now}`,
 		...board.confirm.map((item) => `  ${zh ? "要你确认" : "For you"}: ${item}`),
+		...(latest ? [`  · ${latest.text}`] : []),
 	];
 }
 
-export function describeBoard(board: BoardUpdate | undefined, language: BoardLanguage): string {
+/** For `/board`: the state, then the latest lines of the running account (`account`, else the board's own log). */
+export function describeBoard(
+	board: BoardUpdate | undefined,
+	language: BoardLanguage,
+	account?: readonly BoardNote[],
+): string {
 	if (!board) return language === "zh" ? "看板还没有内容：等代理做一会儿再看。" : "Nothing on the board yet.";
 	const zh = language === "zh";
 	const lines = [`${zh ? "进展" : "Progress"}: ${board.progress}`, `${zh ? "正在做" : "Now"}: ${board.now}`];
 	if (board.confirm.length > 0) {
 		lines.push(`${zh ? "需要你确认" : "Waiting on you"}:`, ...board.confirm.map((item) => `  - ${item}`));
 	}
+	const told = (account ?? board.log ?? []).slice(-8);
+	if (told.length > 0) lines.push(`${zh ? "它做了什么" : "What it did"}:`, ...told.map((note) => `  · ${note.text}`));
 	return lines.join("\n");
 }
 
@@ -207,6 +249,14 @@ export function describeBoard(board: BoardUpdate | undefined, language: BoardLan
  * what came after), and the board sums the run up. So the person has two
  * accounts of the same work: the agent's own, in the conversation, and the
  * board's, in plain words.
+ *
+ * The board also keeps a running account, so the person is never left with
+ * "done" and no idea what was done: every step becomes one fixed sentence the
+ * moment it ends (a file changed, a check passed or failed, a command run;
+ * reading is folded into one growing line), free of any model call, and
+ * every time the agent says something the judge is asked at once whether it
+ * is news. When it is, the writer retells it for a person, and its telling
+ * joins the account. The summing up at the end is the account's last line.
  *
  * Off by default and switched per project (`/board on`), because every
  * update costs a model call. The first time it is switched on, the person
@@ -243,6 +293,11 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	let sequence = 0;
 	/** The last event a written board covered. */
 	let reported = 0;
+	/**
+	 * The last event the judge weighed while the agent worked. What it called routine is not asked about again
+	 * at the next look; the summing up at the end weighs the whole run once more.
+	 */
+	let judged = 0;
 	/** The last event before this run started. */
 	let runStart = 0;
 	/** A check ran or an item was ticked: the next look need not wait for `everyTools` more steps. */
@@ -252,6 +307,10 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	let toolsSinceLook = 0;
 	let lastLookAt = 0;
 	let board: BoardUpdate | undefined;
+	/** The running account, oldest first. */
+	let notes: BoardNote[] = [];
+	/** The line "looked at N files" that grows while the agent reads file after file; anything else ends it. */
+	let reading: BoardNote | undefined;
 	/** The clock the board looks by while sub-agents work. */
 	let following: ReturnType<typeof setInterval> | undefined;
 	/** The person's turn the current run belongs to: a run mu starts itself (a goal continuation, a nudge) carries it on. */
@@ -319,7 +378,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 	};
 	const showWidget = (ctx: ExtensionContext | undefined) => {
 		if (!ctx?.hasUI || ctx.mode !== "tui") return;
-		ctx.ui.setWidget(WIDGET_KEY, board && on(ctx) ? boardWidget(board, language()) : undefined);
+		ctx.ui.setWidget(WIDGET_KEY, board && on(ctx) ? boardWidget(board, language(), notes.at(-1)) : undefined);
 	};
 	/** A fixed language first, then the app's (MU_LANG), then the language the user writes in. */
 	const language = (): BoardLanguage => {
@@ -424,6 +483,90 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		});
 		if (step.check) moment = true;
 	};
+	/** A line of the account, shown at once; the same line sent again (same sequence and time) replaces itself. */
+	const noteNow = (note: BoardNote) => {
+		const index = notes.findIndex((known) => known.sequence === note.sequence && known.at === note.at);
+		notes =
+			index >= 0
+				? notes.map((known, at) => (at === index ? note : known))
+				: [...notes.slice(-(MAX_NOTES - 1)), note];
+		runtime.present("board.note", note);
+		showWidget(runtime.ctx);
+	};
+	/** A fixed sentence on the account, when the board is on here. */
+	const tell = (kind: NoteKind, code: NoteCode, params: NoteParams, failed = false) => {
+		reading = undefined;
+		const ctx = runtime.ctx;
+		if (!ctx || !on(ctx)) return;
+		noteNow({
+			sequence: ++sequence,
+			at: Date.now(),
+			kind,
+			text: noteText(code, params, language()),
+			by: "rules",
+			code,
+			...(Object.keys(params).length > 0 ? { params } : {}),
+			...(failed ? { failed: true } : {}),
+		});
+	};
+	/** The writer's own words on the account. */
+	const tellModel = (kind: NoteKind, text: string) => {
+		reading = undefined;
+		noteNow({ sequence: ++sequence, at: Date.now(), kind, text, by: "model" });
+	};
+	/** Reading that went fine: one line that counts up, not a line per file. */
+	const looked = () => {
+		const ctx = runtime.ctx;
+		if (!ctx || !on(ctx)) return;
+		const count = Number(reading?.params?.count ?? 0) + 1;
+		const params = { count };
+		reading = {
+			sequence: reading?.sequence ?? ++sequence,
+			at: reading?.at ?? Date.now(),
+			kind: "step",
+			text: noteText("looked", params, language()),
+			by: "rules",
+			code: "looked",
+			params,
+		};
+		noteNow(reading);
+	};
+	/** The account's line for a step, the moment it ended. */
+	const account = (name: string, input: Record<string, unknown>, step: BoardStep) => {
+		if (!step.failed && ROUTINE_TOOLS.has(name)) {
+			looked();
+			return;
+		}
+		if (name === "todo") {
+			if (step.failed) return;
+			const action = String(input.action ?? "");
+			const item = runtime.frame?.acceptance.find((entry) => entry.id === input.id);
+			if (action === "done" && item) tell("ticked", "item_done", { item: clip(item.text, 120) });
+			else if (action === "add") tell("step", "item_added", { item: clip(String(input.text ?? ""), 120) });
+			return;
+		}
+		if (SWARM_TOOLS.has(name)) {
+			tell("helpers", "helpers_back", { count: swarmParts(name, input)?.count ?? 0 }, step.failed);
+			return;
+		}
+		if (isShellTool(name)) {
+			const command = clip(String(input.command ?? ""), 80);
+			if (step.check) tell("check", step.failed ? "check_failed" : "check_passed", { command }, step.failed);
+			else tell("step", step.failed ? "command_failed" : "ran_command", { command }, step.failed);
+			return;
+		}
+		const path = String(input.path ?? input.file_path ?? input.file ?? "");
+		if (CHANGE_TOOLS.has(name) && path) {
+			tell(
+				"step",
+				name === "write" ? "wrote_file" : "changed_file",
+				{ file: clip(shortPath(path), 80) },
+				step.failed,
+			);
+			return;
+		}
+		tell("step", "did", { tool: name, what: clip(describeCall(name, input), 80) }, step.failed);
+	};
 	/**
 	 * What the judge picks the news from: what happened since the last board. Once the run ended, the news it
 	 * picked earlier in this run as well, so the summing up covers the whole run and not only its tail.
@@ -434,7 +577,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 					.filter((event) => event.key && event.sequence > runStart && event.sequence <= reported)
 					.slice(-MAX_KEY)
 			: [];
-		const since = ended ? Math.max(reported, runStart) : reported;
+		const since = ended ? Math.max(reported, runStart) : Math.max(reported, judged);
 		const fresh = events.filter((event) => event.sequence > since).slice(-(MAX_EVENTS - earlier.length));
 		return [...earlier, ...fresh];
 	};
@@ -458,21 +601,26 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			last: board ? { phase: board.phase, focus: board.focus, now: board.now } : undefined,
 			...(swarm ? { swarm } : {}),
 		};
-		const reading = (await runtime.engine.decide(boardRead, input)).outcome;
+		const decision = await runtime.engine.decide(boardRead, input);
+		const read = decision.outcome;
 		if (at !== epoch) return;
 		toolsSinceLook = 0;
 		lastLookAt = Date.now();
-		if (!reading.update) return;
+		// More happened while the judge read: the look queued behind this one covers all of it, this one would
+		// only cost a writer call for a board that is already out of date.
+		if (!ended && again !== undefined) return;
+		if (!ended && decision.source === "judge") judged = Math.max(judged, upTo);
+		if (!read.update) return;
 
-		const focusItem = reading.focus ? items.find((item) => item.id === reading.focus) : undefined;
-		const news = reading.key.flatMap((index) => (weighed[index] ? [weighed[index]] : []));
+		const focusItem = read.focus ? items.find((item) => item.id === read.focus) : undefined;
+		const news = read.key.flatMap((index) => (weighed[index] ? [weighed[index]] : []));
 		const facts: BoardFacts = {
 			language: language(),
 			goal: input.goal,
 			items,
-			phase: reading.phase,
+			phase: read.phase,
 			focus: focusItem?.text,
-			needsUser: reading.needsUser,
+			needsUser: read.needsUser,
 			// With the news picked, the last few steps are enough to say what it is doing now.
 			steps: (weighed.length > 0 ? input.steps.slice(-4) : input.steps).map(
 				(step) => `${step.tool} ${step.what} -> ${step.failed ? "error" : "ok"}`,
@@ -481,6 +629,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			...(weighed.length > 0 ? { keyEvents: news.map(describeEvent) } : {}),
 			ended,
 			...(swarm ? { swarm } : {}),
+			...(notes.length > 0 ? { account: notes.slice(-ACCOUNT_LINES).map((note) => note.text) } : {}),
 		};
 		let text: BoardText | undefined;
 		const complete = writerModel(ctx);
@@ -497,17 +646,26 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			}
 		}
 		if (at !== epoch) return;
+		// The account: the writer's telling of the news, or, when it did not answer, the agent's own last
+		// words as a quote; a run that ended gets its last line either way.
+		const lastKind = news.at(-1)?.kind;
+		const kind: NoteKind = ended ? "ended" : lastKind === "ticked" ? "ticked" : lastKind === "said" ? "said" : "step";
+		const said = [...news].reverse().find((event) => event.kind === "said");
+		if (text?.note) tellModel(kind, text.note);
+		else if (ended) tell("ended", read.needsUser ? "waiting_reply" : "ended", {});
+		else if (complete && said) tell("said", "said_quote", { text: clip(said.text, 160) });
 		const update: BoardUpdate = {
 			...(text ?? plainBoard(facts)),
-			phase: reading.phase,
-			focus: reading.focus ?? undefined,
+			phase: read.phase,
+			focus: read.focus ?? undefined,
 			...(focusItem ? { focusText: focusItem.text } : {}),
-			needsUser: reading.needsUser,
+			needsUser: read.needsUser,
 			done: items.filter((item) => item.done).length,
 			total: items.length,
 			by: text ? "model" : "rules",
 			ended,
 			...(news.length > 0 ? { news: news.map(describeEvent) } : {}),
+			...(notes.length > 0 ? { log: notes.slice(-LOG_LINES) } : {}),
 		};
 		for (const event of news) event.key = true;
 		reported = Math.max(reported, upTo);
@@ -575,6 +733,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			total: items.length,
 			by: "rules",
 			ended: false,
+			...(notes.length > 0 ? { log: notes.slice(-LOG_LINES) } : {}),
 		};
 	};
 	/** Says something on the board now, without a look: what the person has to act on cannot wait for the next one. */
@@ -608,6 +767,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			text: `asked the person's permission for: ${summary} -> ${denied ? "not allowed" : "allowed"}`,
 			...(denied ? { failed: true } : {}),
 		});
+		tell("asked", denied ? "permission_denied" : "permission_allowed", { summary: clip(summary, 120) }, denied);
 		if (board?.needsUser) sayNow({ ...board, confirm: [], confirmCodes: [], needsUser: false });
 	});
 
@@ -621,18 +781,25 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			continuations?: unknown;
 		};
 		const reason = typeof state.reason === "string" && state.reason ? clip(state.reason, 160) : "";
+		const tail = reasonTail(reason, language());
 		if (state.status === "active" && typeof state.continuations === "number" && state.continuations > 0) {
 			const next = typeof state.next === "string" && state.next ? ` (next: ${clip(state.next, 160)})` : "";
 			log({
 				kind: "step",
 				text: `mu sent it back to work, round ${state.continuations}${reason ? `: ${reason}` : ""}${next}`,
 			});
+			tell("goal", "goal_round", { round: state.continuations, reason: tail });
 		} else if (state.status === "met") {
-			log({ kind: "ticked", text: `the goal holds: ${clip(String(state.text ?? ""), 200)}` });
+			const text = clip(String(state.text ?? ""), 200);
+			log({ kind: "ticked", text: `the goal holds: ${text}` });
+			tell("goal", "goal_met", { text });
 		} else if (state.status === "paused") {
 			log({ kind: "step", text: `the goal is paused${reason ? `: ${reason}` : ""}`, failed: true });
+			tell("goal", "goal_paused", { reason: tail }, true);
 		} else return;
 		moment = true;
+		const ctx = runtime.ctx;
+		if (ctx && on(ctx)) schedule(ctx, false);
 	});
 
 	// The monitor's word that the agent goes in circles is what a person would most want to hear, and at once.
@@ -645,6 +812,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 					: `mu noticed: ${clip(detail, 160)}`,
 			failed: true,
 		});
+		tell("trouble", kind === "loop" ? "trouble_loop" : "trouble", { detail: clip(detail, 160) }, true);
 		moment = true;
 		const ctx = runtime.ctx;
 		if (ctx && on(ctx)) schedule(ctx, false);
@@ -665,7 +833,10 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			steps = [];
 			latest = "";
 			events = [];
+			notes = board?.log ? [...board.log] : [];
+			reading = undefined;
 			reported = sequence;
+			judged = sequence;
 			runStart = sequence;
 			moment = false;
 			toldUnusable = false;
@@ -697,6 +868,8 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			calls.set(event.toolCallId, { name: event.toolName, input });
 			if (SWARM_TOOLS.has(event.toolName)) {
 				log({ kind: "step", text: `sent out ${describeSwarmCall(event.toolName, input) ?? "sub-agents"}` });
+				const parts = swarmParts(event.toolName, input);
+				tell("helpers", "helpers_sent", { count: parts?.count ?? 0, titles: parts?.titles ?? "" });
 				moment = true;
 				if (announce(ctx)) follow(ctx);
 			}
@@ -722,9 +895,12 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 			};
 			steps = [...steps.slice(-(options.maxSteps * 2)), step];
 			record(name, input, step);
+			account(name, input, step);
 			toolsSinceLook++;
 			if (!announce(ctx)) return undefined;
-			if ((toolsSinceLook >= options.everyTools || moment) && Date.now() - lastLookAt >= options.minIntervalMs) {
+			// A moment (a check, an item ticked, helpers sent or back) is looked at right away; plain steps every
+			// few, and not too often.
+			if (moment || (toolsSinceLook >= options.everyTools && Date.now() - lastLookAt >= options.minIntervalMs)) {
 				schedule(ctx, false);
 			}
 			return undefined;
@@ -733,13 +909,17 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 
 	pi.on(
 		"message_end",
-		failOpen<MessageEndEvent, undefined>((event) => {
+		failOpen<MessageEndEvent, undefined>((event, ctx) => {
 			if (event.message.role !== "assistant") return undefined;
 			const said = textOf((event.message as { content?: unknown }).content).trim();
-			if (said) {
-				latest = said;
-				log({ kind: "said", text: clip(said.replace(/\s+/g, " "), 300) });
-			}
+			if (!said) return undefined;
+			latest = said;
+			reading = undefined;
+			log({ kind: "said", text: clip(said.replace(/\s+/g, " "), 300) });
+			// What the agent says is the jargon the board exists to retell: the judge is asked at once whether it
+			// is news, and the writer speaks only when it is. A message that ends the run is covered by the look
+			// the end brings a moment later.
+			if (event.message.stopReason === "toolUse" && announce(ctx)) schedule(ctx, false);
 			return undefined;
 		}),
 	);
@@ -760,6 +940,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 		"agent_end",
 		failOpen<AgentEndEvent, undefined>((_event, ctx) => {
 			runtime.touch(ctx);
+			reading = undefined;
 			// With a goal still running, the goal check has just sent the agent back: nothing has ended for the person.
 			if (announce(ctx)) schedule(ctx, !runtime.goalActive);
 			return undefined;
@@ -815,8 +996,8 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 					ctx.ui.notify(
 						word === "on"
 							? zh
-								? `这个项目的人话看板已打开：代理每做一段，就用大白话告诉你进展，由 ${writerName(ctx)} 来讲。每次更新会调用一次模型。`
-								: `The plain-language board is on for this project, written by ${writerName(ctx)}. Each update costs one model call.`
+								? `这个项目的人话看板已打开：代理每做一步，看板就记一行；它说的话、发现的事，由 ${writerName(ctx)} 用大白话讲给你。每讲一次调用一次模型。`
+								: `The plain-language board is on for this project: every step is a line on it, and what the agent says or finds is retold by ${writerName(ctx)}. Each telling costs one model call.`
 							: zh
 								? "这个项目的人话看板已关闭。"
 								: "The plain-language board is off for this project.",
@@ -836,7 +1017,7 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 				);
 				return;
 			}
-			ctx.ui.notify(describeBoard(board, zh ? "zh" : "en"), "info");
+			ctx.ui.notify(describeBoard(board, zh ? "zh" : "en", notes), "info");
 		},
 	});
 }

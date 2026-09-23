@@ -26,6 +26,7 @@ export interface KyrnPresentationEvent {
 		| "constraint.blocked"
 		| "goal.state"
 		| "board.update"
+		| "board.note"
 		| "board.switched"
 		| "board.model_needed"
 		| "permissions.mode"

@@ -162,6 +162,36 @@ Only the updates with `by: "rules"` are fixed sentences.
 - `progress` is rebuilt from `done` and `total`: none yet, all done, or N of M done.
 - `now` is rebuilt from `phase` (the table in plain-language-board.md) plus `focusText`, the text of the item being worked on, which is new.
 - `confirmCodes` holds one entry per `confirm` line: `waiting_reply` ("It waits for your reply."), or `null` for a line quoted from the agent.
+- `log` is the running account's latest lines (up to 40, oldest first), the same objects as `board.note` sends; the update replayed on opening (`restored: true`) carries it so a reopened conversation has its account.
+
+## board.note
+
+One line of the board's running account. `sequence` and `at` together identify a line: the same two sent again replace the earlier line (the `looked` line grows while the agent reads file after file). `by: "model"` lines are the board model's own words and have no code. `by: "rules"` lines carry `code` and `params`; `failed` marks a check that failed, a command that errored, a denied permission, trouble.
+
+| code | params | zh / en |
+| --- | --- | --- |
+| `looked` | `count` | 看了 N 个文件或地方 / Looked at N files or places |
+| `changed_file` | `file` | 改了 … / Changed … |
+| `wrote_file` | `file` | 写了 … / Wrote … |
+| `ran_command` | `command` | 运行了 … / Ran … |
+| `command_failed` | `command` | 运行 … 出错了 / … failed |
+| `check_passed` | `command` | 检查通过了：… / A check passed: … |
+| `check_failed` | `command` | 检查没通过：… / A check failed: … |
+| `item_done` | `item` | 做完了一条：… / Done: … |
+| `item_added` | `item` | 清单上加了一条：… / Added to the checklist: … |
+| `helpers_sent` | `count`, `titles` | 派出 N 个助手：… / Sent out N helpers: … |
+| `helpers_back` | `count` | N 个助手回来了 / N helpers came back |
+| `permission_allowed` | `summary` | 你允许了：… / You allowed: … |
+| `permission_denied` | `summary` | 你没允许：… / You did not allow: … |
+| `goal_round` | `round`, `reason` (already "：…" / ": …", or empty) | 目标还没达成，mu 让它接着干（第 N 轮）… / The goal is not met yet; mu sent it back to work (round N)… |
+| `goal_met` | `text` | 目标达成了：… / The goal holds: … |
+| `goal_paused` | `reason` (as above) | 目标暂停了… / The goal is paused… |
+| `trouble_loop` | `detail` | mu 发现它在重复同一步：… / mu noticed it repeating the same step: … |
+| `trouble` | `detail` | mu 发现：… / mu noticed: … |
+| `did` | `tool`, `what` | 用 … 做了：… / Used …: … |
+| `said_quote` | `text` | 它说：… / It said: … (the agent's own words, when the model did not retell them) |
+| `ended` | | 停下来了。 / Stopped. |
+| `waiting_reply` | | 停下来了，在等你回复。 / Stopped, waiting for your reply. |
 
 ## frame.updated
 

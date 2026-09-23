@@ -396,8 +396,8 @@ export const MANIFEST: HarnessManifest = {
 			feature: "board",
 			title: { zh: "人话看板：现在在干什么", en: "Plain-language board: where things stand" },
 			summary: {
-				zh: "打开人话看板的项目里，代理每做几步、跑完检查或勾掉一条验收条件时、以及每次停下时，用选择题读出它处在哪个阶段、在做哪条验收条件、是不是在等你，并把这段时间发生的事逐条分成「你会想知道的」和「例行步骤」。只有出现新情况，才把挑出来的要点交给会说人话的模型重写看板；一轮结束时再挑一次整轮的要点，做个总结。",
-				en: "In a project with the board on, every few tool calls, after a check or a ticked acceptance item, and whenever the agent stops, multiple-choice questions read its phase, the acceptance item it works on and whether it waits for you, and sort what happened since the last board into news and routine. Only something new has a plain-speaking model write the board again, from the news picked; when a run ends, the news of the whole run is picked again for a summing up.",
+				zh: "打开人话看板的项目里，代理每说一段话、跑完检查或勾掉一条验收条件时、每做几步、以及每次停下时，用选择题读出它处在哪个阶段、在做哪条验收条件、是不是在等你，并把这段时间发生的事逐条分成「你会想知道的」和「例行步骤」。只有出现新情况，才把挑出来的要点交给会说人话的模型重写看板、并在流水里重讲一句；一轮结束时再挑一次整轮的要点，做个总结。",
+				en: "In a project with the board on, whenever the agent says something, after a check or a ticked acceptance item, every few tool calls, and whenever the agent stops, multiple-choice questions read its phase, the acceptance item it works on and whether it waits for you, and sort what happened since the last board into news and routine. Only something new has a plain-speaking model write the board again and retell the news on the running account; when a run ends, the news of the whole run is picked again for a summing up.",
 			},
 		},
 		{
@@ -1363,8 +1363,8 @@ export const MANIFEST: HarnessManifest = {
 			name: "board",
 			title: { zh: "人话看板", en: "Plain-language board" },
 			summary: {
-				zh: "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。Jev 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关；第一次打开时选一个模型来讲，之后可以换。",
-				en: "Tells you in plain words how far the work is, what is happening now and what waits on you. Jev picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it).",
+				zh: "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认，并记一份流水：代理每做一步就记一行，它说的话、发现的事由会说人话的模型当场重讲，Jev 决定什么值得讲；一轮做完再总结一遍，过程留在流水里。只给人看，不进模型的上下文。每个项目单独开关；第一次打开时选一个模型来讲，之后可以换。",
+				en: "Tells you in plain words how far the work is, what is happening now and what waits on you, and keeps a running account: a line for every step as it happens, and what the agent says or finds retold at once by a plain-speaking model, with Jev deciding what is worth telling; a finished run is summed up once more, with the account kept. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it).",
 			},
 			defaultEnabled: true,
 			options: [
