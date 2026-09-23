@@ -35,6 +35,7 @@ import {
 	parseTasklist,
 	parseWindowsProcesses,
 	planAuth,
+	planImport,
 	planJudge,
 	planLaunch,
 	planLink,
@@ -690,6 +691,99 @@ describe("the local judge away from macOS", () => {
 			url: "http://10.0.0.5:47823/health",
 		});
 		expect(planJudge({ platform: "win32", env, argv: ["start"], bin: "bin" }).kind).toBe("unsupported");
+	});
+});
+
+describe("mu import", () => {
+	const importArgs = { env: {}, argv: ["--list"], home: "/home/bai", execPath: "/usr/bin/node" };
+
+	it("runs the importer's TypeScript with Node itself in a checkout, the built one in the npm package", () => {
+		const source = `${POSIX_ROOT}/packages/kyrn-judge/src/import/cli.ts`;
+		const checkout = planImport({ ...importArgs, platform: "linux", root: POSIX_ROOT, fs: disk({ [source]: "" }) });
+		expect(checkout).toMatchObject({
+			command: "/usr/bin/node",
+			args: ["--disable-warning=ExperimentalWarning", source, "--list"],
+			agentDir: "/home/bai/.mu/agent",
+		});
+		expect(checkout.error === undefined && checkout.env.MU_CODING_AGENT_DIR).toBe("/home/bai/.mu/agent");
+
+		const built = `${POSIX_ROOT}/judge/dist/import.js`;
+		expect(
+			planImport({ ...importArgs, platform: "linux", root: POSIX_ROOT, fs: disk({ [built]: "" }) }),
+		).toMatchObject({
+			args: [built, "--list"],
+		});
+		expect(planImport({ ...importArgs, platform: "linux", root: POSIX_ROOT, fs: disk({}) }).error).toContain(
+			"mu import is missing",
+		);
+	});
+
+	it("builds Windows paths on Windows, and follows MU_AGENT_DIR", () => {
+		const source = `${WIN_ROOT}\\packages\\kyrn-judge\\src\\import\\cli.ts`;
+		const plan = planImport({
+			...importArgs,
+			platform: "win32",
+			root: WIN_ROOT,
+			home: WIN_HOME,
+			execPath: "node.exe",
+			env: { MU_AGENT_DIR: "D:\\mu-test" },
+			fs: disk({ [source]: "" }),
+		});
+		expect(plan).toMatchObject({
+			command: "node.exe",
+			args: ["--disable-warning=ExperimentalWarning", source, "--list"],
+		});
+		expect(plan.error === undefined && plan.env.MU_CODING_AGENT_DIR).toBe("D:\\mu-test");
+	});
+
+	it.skipIf(process.platform === "win32")("imports through the launcher without tsx", () => {
+		const dir = temp();
+		const transcript = join(dir, "claude", "projects", "p", "0b9c6f7e-1111-4222-8333-444455556666.jsonl");
+		mkdirSync(dirname(transcript), { recursive: true });
+		const base = {
+			parentUuid: null,
+			isSidechain: false,
+			cwd: "/tmp/mu-import-fixture/project",
+			sessionId: "0b9c6f7e-1111-4222-8333-444455556666",
+			timestamp: "2026-01-02T03:04:05.000Z",
+		};
+		writeFileSync(
+			transcript,
+			[
+				{ ...base, type: "user", uuid: "u1", message: { role: "user", content: "Say hello" } },
+				{
+					...base,
+					parentUuid: "u1",
+					type: "assistant",
+					uuid: "a1",
+					message: {
+						id: "m1",
+						role: "assistant",
+						model: "claude-test-1",
+						content: [{ type: "text", text: "Hello." }],
+					},
+				},
+			]
+				.map((line) => JSON.stringify(line))
+				.join("\n"),
+		);
+		const agentDir = join(dir, "mu-agent");
+		const result = spawnSync(join(repo, "kyrn/bin/mu"), ["import", "--json", transcript], {
+			encoding: "utf8",
+			env: {
+				PATH: `${dirname(process.execPath)}:/usr/bin:/bin`,
+				HOME: dir,
+				MU_AGENT_DIR: agentDir,
+				CLAUDE_CONFIG_DIR: join(dir, "claude"),
+			},
+			timeout: 60_000,
+		});
+		expect(result.stderr).toBe("");
+		expect(result.status).toBe(0);
+		const [imported] = (JSON.parse(result.stdout) as { results: { status: string; sessionFile: string }[] }).results;
+		expect(imported.status).toBe("imported");
+		expect(imported.sessionFile.startsWith(join(agentDir, "sessions"))).toBe(true);
+		expect(readFileSync(imported.sessionFile, "utf8")).toContain('"customType":"mu.import"');
 	});
 });
 

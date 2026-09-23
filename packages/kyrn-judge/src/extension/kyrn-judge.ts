@@ -38,6 +38,7 @@ import { registerGoal } from "./features/goal.ts";
 import { registerGoogleLogin } from "./features/google-login.ts";
 import { registerGuard } from "./features/guard.ts";
 import { registerHive } from "./features/hive.ts";
+import { registerImport } from "./features/import.ts";
 import { type HarnessRoots, registerInherit } from "./features/inherit.ts";
 import { registerInterjection } from "./features/interjection.ts";
 import { registerLsp } from "./features/lsp.ts";
@@ -162,6 +163,7 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		options.roots ?? (options.config || options.provider ? undefined : { home: homedir(), agentDir: getAgentDir() });
 	if (loaded.disabled) {
 		registerCommands(runtime, roots);
+		registerImport(pi);
 		return;
 	}
 
@@ -216,4 +218,5 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 		if (!options.only || options.only.includes(name)) register(runtime);
 	}
 	registerCommands(runtime, roots);
+	registerImport(pi);
 }

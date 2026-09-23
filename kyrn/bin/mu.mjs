@@ -102,6 +102,7 @@ export function usage(platform) {
 		"  mu -c | -r               continue the last session | pick one to resume",
 		"  mu judge <cmd>           the local judge (Laya): setup | start | stop | status | run",
 		"  mu ledger [n] [--json]   what the judge decided in the last n sessions",
+		"  mu import --list | <file>...   bring Claude Code and Codex conversations into mu (mu import --help)",
 		"  mu doctor                check the installation",
 		"  mu auth <cmd>            subscription sign-in for the desktop app, as JSON lines:",
 		"                           status | login <provider> | logout <provider>",
@@ -556,6 +557,34 @@ export function planJudge({ platform, env, argv, bin, wsl = false }) {
 	if (support.runs) return { kind: "script", command: pathFor(platform).join(bin, "kyrn-judge-local"), args };
 	if (args[0] === "status" && support.url) return { kind: "health", url: `${support.url.replace(/\/+$/, "")}/health` };
 	return { kind: "unsupported", message: support.message };
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// mu import
+// ---------------------------------------------------------------------------------------------------------
+
+/**
+ * `mu import`: Claude Code and Codex conversations into mu's sessions (packages/kyrn-judge/src/import). The importer
+ * needs nothing but Node, so a checkout runs its TypeScript with Node's own type stripping (on by default from
+ * 22.18) and the npm package runs its build, judge/dist/import.js. Neither needs tsx.
+ */
+export function planImport({ platform, env, argv, root, home, execPath, fs }) {
+	const path = pathFor(platform);
+	const source = path.join(root, "packages", "kyrn-judge", "src", "import", "cli.ts");
+	const built = path.join(root, "judge", "dist", "import.js");
+	const entry = fs.exists(source)
+		? ["--disable-warning=ExperimentalWarning", source]
+		: fs.exists(built)
+			? [built]
+			: undefined;
+	if (!entry) return { error: `mu import is missing from this installation (looked for ${source} and ${built})` };
+	const agentDir = agentDirFor({ env, muDir: muHome({ home, platform, isDir: fs.isDir }), platform });
+	const childEnv = {};
+	for (const [key, value] of Object.entries(env)) if (typeof value === "string") childEnv[key] = value;
+	childEnv.MU_CODING_AGENT_DIR = agentDir;
+	childEnv.KYRN_CODING_AGENT_DIR = agentDir;
+	childEnv.PI_CODING_AGENT_DIR = agentDir;
+	return { command: execPath, args: [...entry, ...argv], env: childEnv, agentDir };
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -1066,6 +1095,22 @@ export async function main(argv = process.argv.slice(2)) {
 	}
 	if (command === "ledger") {
 		return handOver({ command: process.execPath, args: [path.join(bin, "kyrn-ledger"), ...rest], env, strategy });
+	}
+	if (command === "import") {
+		const plan = planImport({
+			platform,
+			env,
+			argv: rest,
+			root,
+			home,
+			execPath: process.execPath,
+			fs: { exists: existsSync, isDir },
+		});
+		if (plan.error) {
+			err(plan.error);
+			return 1;
+		}
+		return handOver({ command: plan.command, args: plan.args, env: plan.env, strategy });
 	}
 	if (command === "doctor") {
 		const link = linkPath({ platform, env, home });

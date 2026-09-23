@@ -118,6 +118,16 @@ export function planJudge(input: {
 	wsl?: boolean;
 }): JudgePlan;
 
+export function planImport(input: {
+	platform: Platform;
+	env: Env;
+	argv: readonly string[];
+	root: string;
+	home: string;
+	execPath: string;
+	fs: { exists(path: string): boolean; isDir(path: string): boolean };
+}): { error?: undefined; command: string; args: string[]; env: Record<string, string>; agentDir: string } | { error: string };
+
 export function linkPath(input: { platform: Platform; env: Env; home: string }): string;
 export function shimContent(input: { linkDir: string; bin: string }): string;
 export function findOnPath(input: {
