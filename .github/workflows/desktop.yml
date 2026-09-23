@@ -4,6 +4,9 @@ name: Desktop app
 # A push to main that touches the app keeps the installers as workflow artifacts; a `v*` tag also
 # publishes them, with a source archive, as a GitHub pre-release.
 #
+# The app carries mu inside it: the harness job packs mu-agent from the same commit (as npm.yml does), and
+# every build puts it into the app (desktop/scripts/kyrn/bundle-harness.mjs, through MU_HARNESS_TARBALL).
+#
 # Adapted from AionUi's own build pipeline (desktop/.github/workflows/_build-reusable.yml). The macOS builds
 # are signed with a Developer ID certificate and notarized with an App Store Connect API key when the
 # repository has the secrets (BUILD_CERTIFICATE_BASE64, P12_PASSWORD, KEYCHAIN_PASSWORD, APPLE_TEAM_ID,
@@ -25,8 +28,40 @@ concurrency:
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
+  harness:
+    name: Pack mu
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Build pi
+        run: npm run build
+
+      - name: Build and pack mu-agent
+        run: node kyrn/npm/build.mjs --pack
+
+      - name: Upload the tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: mu-agent-tarball
+          path: .artifacts/npm/mu-agent-*.tgz
+          if-no-files-found: error
+          retention-days: 14
+
   build:
     name: Build ${{ matrix.platform }}
+    needs: harness
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     strategy:
@@ -57,6 +92,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Download mu
+        uses: actions/download-artifact@v4
+        with:
+          name: mu-agent-tarball
+          path: ${{ runner.temp }}/mu-agent
+
+      - name: Use this commit's mu
+        shell: bash
+        run: echo "MU_HARNESS_TARBALL=$(ls "$RUNNER_TEMP"/mu-agent/mu-agent-*.tgz)" >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -369,7 +414,7 @@ jobs:
             else
               echo "- Not code-signed yet: macOS asks you to confirm the first start in System Settings → Privacy & Security; Windows SmartScreen shows a warning."
             fi
-            echo "- The app does not carry mu inside it yet: it runs mu from a checkout of this repository on the same machine (set KYRN_ROOT to it). See the README."
+            echo "- The app carries mu inside it: nothing else to install, no Node.js, no download at the first start."
             echo "- The \`mu\` command line: \`npm i -g mu-agent\` (Node.js 22.19 or newer), or from source (the archive below, or a clone)."
             if [ "$BUILD_RESULT" != "success" ]; then
               echo
