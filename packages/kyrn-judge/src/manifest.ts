@@ -1036,6 +1036,32 @@ export const MANIFEST: HarnessManifest = {
 					unit: { zh: "MB", en: "MB" },
 				},
 				{
+					key: "maxFiles",
+					kind: "number",
+					default: 5000,
+					min: 100,
+					max: 1000000,
+					label: { zh: "一次快照最多的文件数", en: "Most files a snapshot takes in" },
+					help: {
+						zh: "要拍的文件更多时，这个会话就不拍检查点，并说一次原因。你的主目录和 mu 自己的目录从来不拍。",
+						en: "With more files to take in, the session goes without checkpoints and says so once. Your home folder and mu's own folders are never snapshotted.",
+					},
+					unit: { zh: "个", en: "files" },
+				},
+				{
+					key: "maxTotalMb",
+					kind: "number",
+					default: 200,
+					min: 1,
+					max: 100000,
+					label: { zh: "一次快照最多的总大小", en: "Most a snapshot takes in, in all" },
+					help: {
+						zh: "要拍的文件加起来更大时，这个会话就不拍检查点，并说一次原因。",
+						en: "With more to take in, the session goes without checkpoints and says so once.",
+					},
+					unit: { zh: "MB", en: "MB" },
+				},
+				{
 					key: "ignore",
 					kind: "list",
 					default: [],

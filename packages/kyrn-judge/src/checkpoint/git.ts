@@ -5,7 +5,17 @@ export interface GitResult {
 	readonly code: number;
 	readonly stdout: string;
 	readonly stderr: string;
+	/** Output stopped at `OutputLimit.maxEntries` and git was ended: `stdout` holds only the first entries. */
+	readonly truncated?: boolean;
 }
+
+/** How much NUL-separated output (`-z`) is wanted at most. A listing of a huge folder is cut off there. */
+export interface OutputLimit {
+	readonly maxEntries: number;
+}
+
+/** The exit code a command gets when it outlived the runner's time limit. */
+export const TIMED_OUT = 124;
 
 /**
  * Runs git with exactly this environment. Injected into the store so its logic is tested without
@@ -15,6 +25,7 @@ export type GitRun = (
 	args: readonly string[],
 	env: Readonly<Record<string, string>>,
 	input?: string,
+	limit?: OutputLimit,
 ) => Promise<GitResult>;
 
 /** git is not installed, or could not be started. The feature says so once and stays quiet. */
@@ -38,10 +49,11 @@ export class GitFailed extends Error {
 /**
  * The real runner: no shell, an argument array, no console window on Windows. `git.exe` is a real
  * executable there, so no `.cmd` shim is involved. A command that outlives `timeoutMs` is killed and
- * reported as failed, so a huge project costs a turn its checkpoint rather than its start.
+ * reported as failed, so a huge project costs a turn its checkpoint rather than its start. With a
+ * `limit`, git is ended as soon as its output holds more entries than that, and only those are kept.
  */
 export function spawnGit(binary = "git", timeoutMs = 30_000): GitRun {
-	return (args, env, input) =>
+	return (args, env, input, limit) =>
 		new Promise<GitResult>((resolve, reject) => {
 			let child: ReturnType<typeof spawn>;
 			try {
@@ -53,12 +65,23 @@ export function spawnGit(binary = "git", timeoutMs = 30_000): GitRun {
 			const out: Buffer[] = [];
 			const err: Buffer[] = [];
 			let timedOut = false;
+			let entries = 0;
+			let truncated = false;
 			const timer = setTimeout(() => {
 				timedOut = true;
 				child.kill();
 			}, timeoutMs);
 			timer.unref?.();
-			child.stdout?.on("data", (chunk: Buffer) => out.push(chunk));
+			child.stdout?.on("data", (chunk: Buffer) => {
+				if (truncated) return;
+				out.push(chunk);
+				if (!limit) return;
+				for (let at = chunk.indexOf(0); at !== -1; at = chunk.indexOf(0, at + 1)) entries++;
+				if (entries > limit.maxEntries) {
+					truncated = true;
+					child.kill();
+				}
+			});
 			child.stderr?.on("data", (chunk: Buffer) => err.push(chunk));
 			child.on("error", (error) => {
 				clearTimeout(timer);
@@ -66,8 +89,12 @@ export function spawnGit(binary = "git", timeoutMs = 30_000): GitRun {
 			});
 			child.on("close", (code) => {
 				clearTimeout(timer);
+				if (truncated) {
+					resolve({ code: 0, stdout: Buffer.concat(out).toString("utf8"), stderr: "", truncated: true });
+					return;
+				}
 				resolve({
-					code: timedOut ? 124 : (code ?? 1),
+					code: timedOut ? TIMED_OUT : (code ?? 1),
 					stdout: Buffer.concat(out).toString("utf8"),
 					stderr: timedOut ? `timed out after ${timeoutMs} ms` : Buffer.concat(err).toString("utf8"),
 				});

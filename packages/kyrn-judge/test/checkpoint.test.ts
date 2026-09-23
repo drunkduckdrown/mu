@@ -25,6 +25,7 @@ import { turnRewind } from "../src/decisions/turn-rewind.ts";
 import {
 	CHECKPOINT_ENTRY,
 	type CheckpointEntry,
+	offNotice,
 	REWIND_MESSAGE,
 	REWOUND_ENTRY,
 } from "../src/extension/features/checkpoint.ts";
@@ -455,7 +456,78 @@ describe("checkpoints and the judged rewind", () => {
 		expect(entries(CHECKPOINT_ENTRY)).toEqual([]);
 		expect(ui.notes.filter((note) => note.includes("git was not found"))).toHaveLength(1);
 		await harness.session.prompt("/rewind");
-		expect(ui.notes.at(-1)).toContain("Checkpoints are off");
+		expect(ui.notes.at(-1)).toContain("checkpoints are off");
+	});
+
+	// mu 0.1.3 started in a home folder on a small server: the first change of every turn snapshotted the whole
+	// home into ~/.mu, mu's own snapshots included, so the copy grew with every turn.
+	it("takes no checkpoint in the home folder, copies nothing, and says why once, in one line", async () => {
+		const ui = scriptedUi({});
+		const { harness, root, shadow, file, entries, events } = await start({ ui, navigation: true });
+		const saved = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
+		process.env.HOME = root;
+		process.env.USERPROFILE = root;
+		try {
+			harness.setResponses([call("write", { path: "app.ts", content: "v2\n" }), fauxAssistantMessage("Done.")]);
+			await harness.session.prompt("Change it.");
+			harness.setResponses([call("write", { path: "app.ts", content: "v3\n" }), fauxAssistantMessage("Done.")]);
+			await harness.session.prompt("Change it again.");
+			await harness.session.prompt("/checkpoints");
+			await harness.session.prompt("/rewind");
+		} finally {
+			for (const [key, value] of Object.entries(saved)) {
+				if (value === undefined) delete process.env[key];
+				else process.env[key] = value;
+			}
+		}
+
+		expect(file("app.ts")).toBe("v3\n");
+		expect(entries(CHECKPOINT_ENTRY)).toEqual([]);
+		expect(readdirSync(shadow)).toEqual([]);
+		const line =
+			"mu: checkpoints are off in this session, because this folder is your home folder or holds it. Start mu in a project folder to get them.";
+		// Once for the session's first change; /checkpoints and /rewind say it again because they were asked.
+		expect(ui.notes).toEqual([line, line, line]);
+		expect(events.filter((event) => event.kind === "checkpoint.off").map((event) => event.payload)).toEqual([
+			{ code: "home_folder", params: {}, message: line },
+		]);
+	});
+
+	it("goes without checkpoints for the session once a snapshot would take in too many files", async () => {
+		const ui = scriptedUi({});
+		const { harness, file, entries, events } = await start({ ui, navigation: true, options: { maxFiles: 1 } });
+		harness.setResponses([call("write", { path: "app.ts", content: "v2\n" }), fauxAssistantMessage("Done.")]);
+		await harness.session.prompt("Change it.");
+		harness.setResponses([call("write", { path: "app.ts", content: "v3\n" }), fauxAssistantMessage("Done.")]);
+		await harness.session.prompt("Change it again.");
+		await harness.session.prompt("/rewind");
+
+		expect(file("app.ts")).toBe("v3\n");
+		expect(entries(CHECKPOINT_ENTRY)).toEqual([]);
+		const said = ui.notes.filter((note) => note.includes("more than 1 files to snapshot"));
+		expect(said).toHaveLength(2);
+		expect(said[0]).toContain("raise features.checkpoint.maxFiles");
+		expect(events.filter((event) => event.kind === "checkpoint.off").map((event) => event.payload)).toEqual([
+			{ code: "too_many_files", params: { limit: 1 }, message: said[0] },
+		]);
+	});
+
+	it("says why in the user's language", () => {
+		const limits = { maxFiles: 5000, maxTotalMb: 200, timeoutMs: 30_000 };
+		const saved = process.env.MU_LANG;
+		process.env.MU_LANG = "zh-CN";
+		try {
+			expect(offNotice("too_many_bytes", limits)).toEqual({
+				line: "mu：本次会话不拍检查点，因为这个文件夹要拍的文件加起来超过 200 MB。在项目文件夹里启动 mu 就有检查点，或者调高 features.checkpoint.maxTotalMb。",
+				params: { limitMb: 200 },
+			});
+		} finally {
+			if (saved === undefined) delete process.env.MU_LANG;
+			else process.env.MU_LANG = saved;
+		}
+		expect(offNotice("too_slow", limits).line).toBe(
+			"mu: checkpoints are off in this session, because listing this folder's files took longer than 30 s. Start mu in a project folder to get them.",
+		);
 	});
 });
 

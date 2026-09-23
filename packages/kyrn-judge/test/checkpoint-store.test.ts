@@ -18,17 +18,20 @@ import {
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { GitMissing, type GitRun, shadowEnv, spawnGit } from "../src/checkpoint/git.ts";
+import { GitMissing, type GitRun, shadowEnv, spawnGit, TIMED_OUT } from "../src/checkpoint/git.ts";
 import {
 	applyRestore,
 	diff,
 	hasCommit,
 	isSafePath,
+	isWithin,
 	openStore,
+	ownFolderPatterns,
 	planRestore,
 	projectKey,
 	prune,
 	releaseLocks,
+	SnapshotTooLarge,
 	scan,
 	snapshot,
 	sweepProjects,
@@ -293,6 +296,13 @@ describe("checkpoint store", () => {
 		expect(sweepProjects(base, 30, Date.now() + 31 * 86_400_000)).toEqual([projectKey(root)]);
 		expect(existsSync(store.gitDir)).toBe(false);
 		expect(existsSync(join(base, "not-ours", "data.txt"))).toBe(true);
+
+		// A folder that may not be snapshotted any more (a home folder an older mu took in) goes at once.
+		const again = await openStore({ baseDir: base, root, run: spawnGit() });
+		expect(sweepProjects(base, 30, Date.now(), (project) => project !== root)).toEqual([]);
+		expect(sweepProjects(base, 30, Date.now(), (project) => project === root)).toEqual([projectKey(root)]);
+		expect(existsSync(again.gitDir)).toBe(false);
+		expect(existsSync(join(base, "not-ours", "data.txt"))).toBe(true);
 	});
 
 	it("clears a lock a dead process left behind, but not one that is fresh", async () => {
@@ -318,6 +328,61 @@ describe("checkpoint store", () => {
 			openStore({ baseDir: temp("mu-shadow-"), root, run: spawnGit("mu-test-no-such-git-binary") }),
 		).rejects.toBeInstanceOf(GitMissing);
 	});
+
+	// mu 0.1.3 run in a home folder: the first snapshot took in ~/.mu, the snapshots themselves among it, so every
+	// later snapshot copied the store's own new objects again, and the store grew with every turn that changed a file.
+	it("never snapshots mu's own folders, the snapshots among them, and reads their names literally", async () => {
+		const root = temp("mu-own-");
+		write(root, "src/app.ts", "v1\n");
+		write(root, ".mu/agent/sessions/one.jsonl", '{"type":"session"}\n');
+		write(root, "[odd] dir/x.txt", "mu's\n");
+		// What "[odd] dir" would match as a pattern: it is the user's, and stays in.
+		write(root, "o dir/y.txt", "the user's\n");
+		const store = await openStore({
+			baseDir: join(root, ".mu", "agent", "mu", "checkpoints"),
+			root,
+			run: spawnGit(),
+			ownFolders: [join(root, ".mu"), join(root, "[odd] dir")],
+		});
+		await snapshot(store, "s/1");
+		// The second snapshot sees what the first one wrote into the store.
+		write(root, "src/app.ts", "v2\n");
+		const second = await snapshot(store, "s/2");
+		const listed = await store.run(["ls-tree", "-r", "-z", "--name-only", second.commit], store.env);
+		expect(listed.stdout.split("\0").filter(Boolean).sort()).toEqual(["o dir/y.txt", "src/app.ts"]);
+	});
+
+	it("stops a scan past its limits before it writes anything, and the listing at the limit", async () => {
+		const root = temp("mu-limits-");
+		for (let index = 0; index < 40; index++) write(root, `data/file-${index}.txt`, "0123456789\n");
+		const store = await open(root);
+		const objects = () => readdirSync(join(store.gitDir, "objects")).filter((name) => /^[0-9a-f]{2}$/.test(name));
+
+		const tooMany = await scan(store, { maxFiles: 10, maxBytes: 1024 * 1024 }).catch((error: unknown) => error);
+		expect(tooMany).toBeInstanceOf(SnapshotTooLarge);
+		expect((tooMany as SnapshotTooLarge).reason).toBe("files");
+		const tooBig = await scan(store, { maxFiles: 100, maxBytes: 100 }).catch((error: unknown) => error);
+		expect((tooBig as SnapshotTooLarge).reason).toBe("bytes");
+		expect(objects()).toEqual([]);
+
+		// git itself is ended once its listing passes the limit, and what it would still print is not kept.
+		const list = ["ls-files", "-z", "--others", "--exclude-standard"];
+		expect((await spawnGit()(list, store.env, undefined, { maxEntries: 10 })).truncated).toBe(true);
+		expect((await spawnGit()(list, store.env, undefined, { maxEntries: 40 })).truncated).toBeUndefined();
+
+		// A listing that outlives the time limit counts as too large, not as one failed turn.
+		const slow: GitRun = (args, env, input, limit) =>
+			args[0] === "ls-files"
+				? Promise.resolve({ code: TIMED_OUT, stdout: "", stderr: "timed out" })
+				: spawnGit()(args, env, input, limit);
+		const slowReason = await scan({ ...store, run: slow }, { maxFiles: 100, maxBytes: 1024 * 1024 }).catch(
+			(error: unknown) => (error as SnapshotTooLarge).reason,
+		);
+		expect(slowReason).toBe("slow");
+
+		expect((await scan(store, { maxFiles: 40, maxBytes: 1024 * 1024 })).tree).toMatch(/^[0-9a-f]{40,64}$/);
+		expect(objects().length).toBeGreaterThan(0);
+	});
 });
 
 describe("checkpoint paths and environment", () => {
@@ -336,6 +401,29 @@ describe("checkpoint paths and environment", () => {
 		expect(env).toMatchObject({ PATH: "/bin", HOME: "/home/u", GIT_DIR: "/shadow", GIT_WORK_TREE: "/project" });
 		expect(env.GIT_INDEX_FILE).toBe(join("/shadow", "index"));
 		expect(env.git_work_tree).toBeUndefined();
+	});
+
+	it("tells which folders lie inside the project, through symlinks, and anchors their patterns at it", () => {
+		const root = temp("mu-within-");
+		mkdirSync(join(root, "project", ".agent"), { recursive: true });
+		symlinkSync(join(root, "project"), join(root, "link"), process.platform === "win32" ? "junction" : "dir");
+		const project = join(root, "project");
+		expect(isWithin(project, project)).toBe(true);
+		expect(isWithin(join(root, "link"), join(project, ".agent"))).toBe(true);
+		expect(isWithin(project, join(project, "not-yet", "made"))).toBe(true);
+		expect(isWithin(project, root)).toBe(false);
+		expect(isWithin(project, join(root, "project-2"))).toBe(false);
+		// A name that only starts with two dots is a folder like any other.
+		expect(isWithin(project, join(project, "..hidden"))).toBe(true);
+
+		expect(
+			ownFolderPatterns(join(root, "link"), [
+				project,
+				join(project, ".agent"),
+				join(project, "a [b]", "c*"),
+				join(root, "elsewhere"),
+			]),
+		).toEqual(["/.agent/", "/a \\[b\\]/c\\*/"]);
 	});
 
 	it("accepts only relative paths inside the project that are not part of a repository's own folder", () => {

@@ -7,9 +7,10 @@
  * the same way. git never adds a path with a `.git` component, so the real repository is not copied either.
  *
  * What goes into a snapshot: everything the project's `.gitignore` does not ignore, minus a built-in
- * list of heavy folders and minus files over a size cap. What a restore may touch follows from that:
- * only paths that are in one of the two trees it compares. An ignored or oversized file is in neither,
- * so it is never overwritten and never deleted.
+ * list of heavy folders, minus mu's own folders (the snapshots themselves among them) and minus files
+ * over a size cap. What a restore may touch follows from that: only paths that are in one of the two
+ * trees it compares. An ignored or oversized file is in neither, so it is never overwritten and never
+ * deleted.
  */
 import { createHash, randomUUID } from "node:crypto";
 import {
@@ -28,8 +29,8 @@ import {
 	unlinkSync,
 	writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
-import { GitFailed, type GitRun, shadowEnv } from "./git.ts";
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { GitFailed, type GitRun, shadowEnv, TIMED_OUT } from "./git.ts";
 
 /** Folders that are practically never source and are expensive to copy, ignored even when the project does not ignore them. */
 export const BUILT_IN_IGNORES: readonly string[] = [
@@ -102,6 +103,33 @@ export interface StoreOptions {
 	readonly maxFileBytes?: number;
 	/** gitignore-style patterns on top of the project's own ignore rules. Default: `BUILT_IN_IGNORES`. */
 	readonly ignore?: readonly string[];
+	/**
+	 * Folders never snapshotted wherever they are, e.g. mu's home and pi's agent folder: they hold the
+	 * snapshots, sessions and credentials. `baseDir` is always one of them.
+	 */
+	readonly ownFolders?: readonly string[];
+}
+
+/** What one scan may take in: files it would add or update, and their bytes. Past either, nothing is written. */
+export interface ScanLimits {
+	readonly maxFiles: number;
+	readonly maxBytes: number;
+}
+
+/** A scan past its `ScanLimits`, or one whose listing outlived the git time limit (`slow`). Nothing was written. */
+export class SnapshotTooLarge extends Error {
+	readonly reason: "files" | "bytes" | "slow";
+	constructor(reason: "files" | "bytes" | "slow", limits: ScanLimits) {
+		super(
+			reason === "files"
+				? `more than ${limits.maxFiles} files to snapshot`
+				: reason === "bytes"
+					? `more than ${Math.round(limits.maxBytes / 1024 / 1024)} MB to snapshot`
+					: "listing the files to snapshot took too long",
+		);
+		this.name = "SnapshotTooLarge";
+		this.reason = reason;
+	}
 }
 
 export interface Store {
@@ -181,6 +209,49 @@ export function isSafePath(path: string): boolean {
 
 const onDisk = (store: Store, path: string): string => join(store.root, ...path.split("/"));
 
+/** The path with symlinks resolved as far as it exists; the part that does not exist yet stays as written. */
+function realPath(path: string): string {
+	const absolute = resolve(path);
+	try {
+		return realpathSync.native(absolute);
+	} catch {
+		const parent = dirname(absolute);
+		return parent === absolute ? absolute : join(realPath(parent), basename(absolute));
+	}
+}
+
+/** `inner` relative to `outer`, or undefined when it is not inside it. "" when they are the same folder. */
+function inside(outer: string, inner: string): string | undefined {
+	const rel = relative(realPath(outer), realPath(inner));
+	return rel === ".." || rel.startsWith(`..${sep}`) || isAbsolute(rel) ? undefined : rel;
+}
+
+/** Whether `inner` is `outer` or lies inside it, with symlinks resolved. */
+export function isWithin(outer: string, inner: string): boolean {
+	return inside(outer, inner) !== undefined;
+}
+
+/**
+ * gitignore patterns for those of `folders` that lie inside `root`, anchored at it and written literally:
+ * `/.agent/` for pi's agent folder kept at `<root>/.agent`, say. A folder that is the root itself gets
+ * none; a caller must not snapshot such a root at all.
+ */
+export function ownFolderPatterns(root: string, folders: readonly string[]): string[] {
+	const patterns = new Set<string>();
+	for (const folder of folders) {
+		const rel = inside(root, folder);
+		if (!rel) continue;
+		// A folder called "[draft]" or "a*b" is meant as it is, not as a pattern.
+		patterns.add(
+			`/${rel
+				.split(sep)
+				.map((part) => part.replace(/[\\*?[\]!#]/g, "\\$&"))
+				.join("/")}/`,
+		);
+	}
+	return [...patterns];
+}
+
 /**
  * Opens the project's shadow repository, creating it on first use. A lock left behind by a process
  * that died is cleared; a fresh one belongs to a live command of another session and is left alone.
@@ -204,7 +275,8 @@ export async function openStore(options: StoreOptions): Promise<Store> {
 	const config = join(gitDir, "config");
 	if (!readFileSync(config, "utf8").includes(CONFIG_MARKER)) appendFileSync(config, `\n${shadowConfig(gitDir)}`);
 	mkdirSync(join(gitDir, "info"), { recursive: true });
-	writeFileSync(join(gitDir, "info", "exclude"), `${(options.ignore ?? BUILT_IN_IGNORES).join("\n")}\n`);
+	const own = ownFolderPatterns(options.root, [options.baseDir, ...(options.ownFolders ?? [])]);
+	writeFileSync(join(gitDir, "info", "exclude"), `${[...(options.ignore ?? BUILT_IN_IGNORES), ...own].join("\n")}\n`);
 	writeFileSync(join(gitDir, "info", "attributes"), SHADOW_ATTRIBUTES);
 	writeFileSync(join(gitDir, PROJECT_FILE), `${JSON.stringify({ root: options.root, lastUsed: Date.now() })}\n`);
 	releaseLocks(store, STALE_LOCK_MS);
@@ -230,17 +302,31 @@ export function releaseLocks(store: Store, olderThanMs: number): void {
 	}
 }
 
+const LIST_CHANGES = ["ls-files", "-z", "--others", "--modified", "--deleted", "--exclude-standard"] as const;
+
 /**
  * Brings the shadow index up to date with the working tree and returns the tree. Only what changed
  * since the last scan is looked at, so after the first one this costs a directory walk, not a copy.
+ *
+ * With `limits`, a scan that would take in more than that throws `SnapshotTooLarge` before it writes
+ * anything. The first scan takes in the whole folder: in a home folder or a data folder that is the
+ * difference between a second and a copy of everything, so the listing itself stops at the limit.
  */
-export async function scan(store: Store): Promise<{ tree: string; leftOut: string[] }> {
-	const listed = zList(
-		await git(store, ["ls-files", "-z", "--others", "--modified", "--deleted", "--exclude-standard"]),
+export async function scan(store: Store, limits?: ScanLimits): Promise<{ tree: string; leftOut: string[] }> {
+	const listing = await store.run(
+		LIST_CHANGES,
+		store.env,
+		undefined,
+		limits ? { maxEntries: limits.maxFiles } : undefined,
 	);
+	if (limits && listing.truncated) throw new SnapshotTooLarge("files", limits);
+	if (limits && listing.code === TIMED_OUT) throw new SnapshotTooLarge("slow", limits);
+	if (listing.code !== 0) throw new GitFailed(LIST_CHANGES, listing);
+	const listed = zList(listing.stdout);
 	const update: string[] = [];
 	const drop: string[] = [];
 	const leftOut: string[] = [];
+	let bytes = 0;
 	for (const path of new Set(listed)) {
 		// A nested repository shows up as "folder/": it is somebody else's history, never part of a snapshot.
 		if (path.endsWith("/")) leftOut.push(path);
@@ -264,8 +350,12 @@ export async function scan(store: Store): Promise<{ tree: string; leftOut: strin
 		else if (stats && stats.size > store.maxFileBytes) {
 			leftOut.push(path);
 			drop.push(path);
-		} else update.push(path);
+		} else {
+			update.push(path);
+			bytes += stats?.size ?? 0;
+		}
 	}
+	if (limits && bytes > limits.maxBytes) throw new SnapshotTooLarge("bytes", limits);
 	if (update.length > 0)
 		await git(store, ["update-index", "-z", "--add", "--remove", "--stdin"], `${update.join("\0")}\0`);
 	// A file that grew past the cap leaves the index, so no later tree claims to know its content.
@@ -274,8 +364,8 @@ export async function scan(store: Store): Promise<{ tree: string; leftOut: strin
 }
 
 /** A scan kept as a commit under `refs/mu/<name>`, with a note of what existed but was left out. */
-export async function snapshot(store: Store, name: string): Promise<Snapshot> {
-	const { tree, leftOut } = await scan(store);
+export async function snapshot(store: Store, name: string, limits?: ScanLimits): Promise<Snapshot> {
+	const { tree, leftOut } = await scan(store, limits);
 	const ignored = zList(
 		await git(store, ["ls-files", "-z", "--others", "--ignored", "--exclude-standard", "--directory"]),
 	);
@@ -474,8 +564,17 @@ export async function collectGarbage(store: Store): Promise<void> {
 	await git(store, ["gc", "--quiet", "--prune=3.days.ago"]);
 }
 
-/** Removes the shadow repositories of projects nobody has opened for `maxAgeDays`. Only folders mu itself marked are touched. */
-export function sweepProjects(baseDir: string, maxAgeDays: number, now = Date.now()): string[] {
+/**
+ * Removes the shadow repositories of projects nobody has opened for `maxAgeDays`, and at once those of
+ * folders that are `offLimits` now (a home folder snapshotted by an older mu). Only folders mu itself
+ * marked are touched.
+ */
+export function sweepProjects(
+	baseDir: string,
+	maxAgeDays: number,
+	now = Date.now(),
+	offLimits: (root: string) => boolean = () => false,
+): string[] {
 	const removed: string[] = [];
 	let names: string[] = [];
 	try {
@@ -485,8 +584,13 @@ export function sweepProjects(baseDir: string, maxAgeDays: number, now = Date.no
 	}
 	for (const name of names) {
 		try {
-			const project = JSON.parse(readFileSync(join(baseDir, name, PROJECT_FILE), "utf8")) as { lastUsed?: unknown };
-			if (typeof project.lastUsed !== "number" || now - project.lastUsed < maxAgeDays * 86_400_000) continue;
+			const project = JSON.parse(readFileSync(join(baseDir, name, PROJECT_FILE), "utf8")) as {
+				lastUsed?: unknown;
+				root?: unknown;
+			};
+			const unusable = typeof project.root === "string" && offLimits(project.root);
+			const stale = typeof project.lastUsed === "number" && now - project.lastUsed >= maxAgeDays * 86_400_000;
+			if (!unusable && !stale) continue;
 			rmSync(join(baseDir, name), { recursive: true, force: true });
 			removed.push(name);
 		} catch {

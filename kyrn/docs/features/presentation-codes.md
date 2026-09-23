@@ -244,3 +244,16 @@ A server that dies during its start now sends one `mcp.failed` (its start failur
 
 - `same_command_failed`: `{ times, command }`, where `command` is data
 - `monitor_trouble`: `{ times, kind, detail }`, where `detail` is data
+
+## checkpoint.off
+
+A new event, sent once per session, when the session goes without checkpoints: `{ code, params, message }`. `message` is the line the terminal shows, already in Chinese or English. It is sent at the session's first call that could change a file, not at the start.
+
+| code | params | English |
+| --- | --- | --- |
+| `git_missing` | | checkpoints are off, because git was not found on this machine |
+| `home_folder` | | checkpoints are off in this session, because this folder is your home folder or holds it. Start mu in a project folder to get them |
+| `mu_folder` | | … because this folder is inside mu's own folder |
+| `too_many_files` | `limit` | … because this folder has more than N files to snapshot. Start mu in a project folder to get them, or raise features.checkpoint.maxFiles |
+| `too_many_bytes` | `limitMb` | … because this folder has more than N MB of files to snapshot. … or raise features.checkpoint.maxTotalMb |
+| `too_slow` | `seconds` | … because listing this folder's files took longer than N s. Start mu in a project folder to get them |

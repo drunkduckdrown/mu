@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import type {
 	ExtensionCommandContext,
@@ -15,12 +16,15 @@ import {
 	collectGarbage,
 	diff,
 	hasCommit,
+	isWithin,
 	openStore,
 	planRestore,
 	prune,
 	type RestorePlan,
 	type RestoreResult,
 	releaseLocks,
+	type ScanLimits,
+	SnapshotTooLarge,
 	type Store,
 	scan,
 	snapshot,
@@ -29,6 +33,7 @@ import {
 import { turnRewind } from "../../decisions/turn-rewind.ts";
 import type { Coded } from "../../language.ts";
 import { say } from "../../language.ts";
+import { muHome } from "../../naming.ts";
 import { clip, failOpen, type KyrnRuntime, textOf } from "../runtime.ts";
 import { describeCall } from "./admission.ts";
 import type { HarnessRoots } from "./inherit.ts";
@@ -133,6 +138,77 @@ const describeResult = (result: RestoreResult): string =>
 			: ""
 	}`;
 
+/**
+ * Why a session goes without checkpoints. The folder alone says `home_folder` (the user's home, or a folder
+ * that holds it) and `mu_folder`; the first snapshot says the size ones, and stops before it writes anything.
+ */
+export type CheckpointsOff =
+	| "git_missing"
+	| "home_folder"
+	| "mu_folder"
+	| "too_many_files"
+	| "too_many_bytes"
+	| "too_slow";
+
+/** The one line that tells the user, in their language, and what it names for a client that translates. */
+export function offNotice(
+	code: CheckpointsOff,
+	limits: { readonly maxFiles: number; readonly maxTotalMb: number; readonly timeoutMs: number },
+): { line: string; params: Record<string, number> } {
+	const start = { zh: "在项目文件夹里启动 mu 就有检查点", en: "Start mu in a project folder to get them" };
+	const seconds = Math.round(limits.timeoutMs / 1000);
+	switch (code) {
+		case "git_missing":
+			return {
+				line: say({
+					zh: "mu：检查点已关闭，因为这台机器上找不到 git。",
+					en: "mu: checkpoints are off, because git was not found on this machine.",
+				}),
+				params: {},
+			};
+		case "home_folder":
+			return {
+				line: say({
+					zh: `mu：本次会话不拍检查点，因为这个文件夹是你的主目录，或者包含它。${start.zh}。`,
+					en: `mu: checkpoints are off in this session, because this folder is your home folder or holds it. ${start.en}.`,
+				}),
+				params: {},
+			};
+		case "mu_folder":
+			return {
+				line: say({
+					zh: "mu：本次会话不拍检查点，因为这个文件夹在 mu 自己的目录里。",
+					en: "mu: checkpoints are off in this session, because this folder is inside mu's own folder.",
+				}),
+				params: {},
+			};
+		case "too_many_files":
+			return {
+				line: say({
+					zh: `mu：本次会话不拍检查点，因为这个文件夹要拍的文件超过 ${limits.maxFiles} 个。${start.zh}，或者调高 features.checkpoint.maxFiles。`,
+					en: `mu: checkpoints are off in this session, because this folder has more than ${limits.maxFiles} files to snapshot. ${start.en}, or raise features.checkpoint.maxFiles.`,
+				}),
+				params: { limit: limits.maxFiles },
+			};
+		case "too_many_bytes":
+			return {
+				line: say({
+					zh: `mu：本次会话不拍检查点，因为这个文件夹要拍的文件加起来超过 ${limits.maxTotalMb} MB。${start.zh}，或者调高 features.checkpoint.maxTotalMb。`,
+					en: `mu: checkpoints are off in this session, because this folder has more than ${limits.maxTotalMb} MB of files to snapshot. ${start.en}, or raise features.checkpoint.maxTotalMb.`,
+				}),
+				params: { limitMb: limits.maxTotalMb },
+			};
+		case "too_slow":
+			return {
+				line: say({
+					zh: `mu：本次会话不拍检查点，因为列出这个文件夹里要拍的文件用了超过 ${seconds} 秒。${start.zh}。`,
+					en: `mu: checkpoints are off in this session, because listing this folder's files took longer than ${seconds} s. ${start.en}.`,
+				}),
+				params: { seconds },
+			};
+	}
+}
+
 const WRITER_PROMPT = `You write a note for a coding agent about an attempt that was abandoned and undone.
 Reply with exactly two short lines of plain text and nothing else:
 Tried: <what the attempt did>
@@ -147,6 +223,12 @@ Abandoned because: <why it did not work>`;
  * navigation, leaving one `kyrn.rewind` message about what was abandoned. When the monitor sees the agent
  * go in circles, `turn.rewind` asks the judge whether this is a dead end; a confident yes PROPOSES the
  * rewind to the user. Nothing here rewinds on its own, and any failure leaves pi's plain behaviour.
+ *
+ * A session goes without checkpoints, and says so once in one line, where a snapshot would copy what is
+ * no project: the home folder (or one that holds it), mu's own folders, or a first snapshot past
+ * `maxFiles` / `maxTotalMb`. Copying only the files a turn touches is no way out: a checkpoint is taken
+ * before the turn's first change, when nobody knows which files the turn will change (a shell command
+ * names none), and a rewind would then claim to restore a state it never saw.
  */
 export function registerCheckpoint(
 	runtime: KyrnRuntime,
@@ -163,6 +245,12 @@ export function registerCheckpoint(
 		maxAgeDays: 14,
 		/** Larger files stay out of snapshots and are never touched by a rewind. */
 		maxFileMb: 5,
+		/**
+		 * A snapshot that would take in more files than this, or more MB in all, is not taken, and the session
+		 * goes without checkpoints: such a folder is no project, and copying it would cost minutes and disk.
+		 */
+		maxFiles: 5000,
+		maxTotalMb: 200,
 		/** gitignore-style patterns on top of the project's own and the built-in list. */
 		ignore: [] as string[],
 		timeoutMs: 30_000,
@@ -177,9 +265,20 @@ export function registerCheckpoint(
 	// No home to keep snapshots in (an embedder that injected its own setup): the feature stays out of the way.
 	if (!baseDir) return;
 	const { pi } = runtime;
+	const home = (): string => roots?.home ?? homedir();
+	/** mu's own folders hold the snapshots, the sessions and the credentials: never in a snapshot, and no place to take one. */
+	const muFolders = (): string[] => [baseDir, muHome(home()), ...(roots ? [roots.agentDir] : [])];
+	const limits: ScanLimits = { maxFiles: options.maxFiles, maxBytes: options.maxTotalMb * 1024 * 1024 };
+
+	/** Why no snapshot of this folder may be taken at all: it holds everything the user has, or it is mu's own. */
+	const placeOff = (cwd: string): CheckpointsOff | undefined => {
+		if (isWithin(cwd, home())) return "home_folder";
+		return muFolders().some((folder) => isWithin(folder, cwd)) ? "mu_folder" : undefined;
+	};
 
 	let store: Store | undefined;
-	let unavailable = false;
+	/** Set when checkpoints are off for the rest of the session, with the line that said why. */
+	let off: { code: CheckpointsOff; line: string } | undefined;
 	let turn = newTurn(0);
 	let pending: PendingRewind | undefined;
 	/** The tree right after the agent's last action. What differs from it later was changed by somebody else. */
@@ -196,11 +295,28 @@ export function registerCheckpoint(
 		return next;
 	};
 
+	/** Checkpoints stop for the rest of the session, and the user hears why once, in one line. */
+	const switchOff = (ctx: ExtensionContext, code: CheckpointsOff): void => {
+		if (off) return;
+		const notice = offNotice(code, options);
+		off = { code, line: notice.line };
+		if (ctx.hasUI) ctx.ui.notify(notice.line, "warning");
+		runtime.present("checkpoint.off", { code, params: notice.params, message: notice.line });
+	};
+
+	/** What keeps a command from opening the snapshots at all, as the line to say. */
+	const refusal = (cwd: string): string | undefined => {
+		if (off?.code === "git_missing") return off.line;
+		const place = placeOff(cwd);
+		return place ? offNotice(place, options).line : undefined;
+	};
+
 	const giveUp = (ctx: ExtensionContext, error: unknown): void => {
-		if (unavailable) return;
-		if (error instanceof GitMissing) {
-			unavailable = true;
-			if (ctx.hasUI) ctx.ui.notify("mu: checkpoints are off, because git was not found on this machine.", "warning");
+		if (off) return;
+		if (error instanceof GitMissing) switchOff(ctx, "git_missing");
+		else if (error instanceof SnapshotTooLarge) {
+			const codes = { files: "too_many_files", bytes: "too_many_bytes", slow: "too_slow" } as const;
+			switchOff(ctx, codes[error.reason]);
 		} else if (!turn.snapshotFailed) {
 			turn.snapshotFailed = true;
 			const reason = error instanceof Error ? error.message : String(error);
@@ -216,6 +332,7 @@ export function registerCheckpoint(
 			run: deps.run ?? spawnGit("git", options.timeoutMs),
 			maxFileBytes: options.maxFileMb * 1024 * 1024,
 			ignore: [...BUILT_IN_IGNORES, ...options.ignore],
+			ownFolders: muFolders(),
 		});
 		store = opened;
 		// Old snapshots go when a project is first used in a session; their objects follow in the background.
@@ -259,7 +376,7 @@ export function registerCheckpoint(
 	const takeCheckpoint = async (ctx: ExtensionContext): Promise<void> => {
 		const opened = await open(ctx);
 		const id = nextId(ctx);
-		const taken = await snapshot(opened, `${ctx.sessionManager.getSessionId()}/${id}`);
+		const taken = await snapshot(opened, `${ctx.sessionManager.getSessionId()}/${id}`, limits);
 		const entry: CheckpointEntry = { id, turn: turn.n, commit: taken.commit, at: Date.now(), ...turnStart(ctx) };
 		turn.checkpoint = entry;
 		lastAgentTree = taken.tree;
@@ -270,7 +387,8 @@ export function registerCheckpoint(
 	pi.on(
 		"session_start",
 		failOpen(() => {
-			sweepProjects(baseDir, options.maxAgeDays);
+			// A home folder snapshotted by an older mu is never used again: its copy goes now, not in two weeks.
+			sweepProjects(baseDir, options.maxAgeDays, Date.now(), (root) => placeOff(root) !== undefined);
 			return undefined;
 		}),
 	);
@@ -301,7 +419,12 @@ export function registerCheckpoint(
 			pending = undefined;
 			const mutating = isMutatingCall(event.toolName, event.input);
 			calls.set(event.toolCallId, { name: event.toolName, input: event.input, mutating });
-			if (!mutating || unavailable || turn.checkpoint || turn.snapshotFailed) return undefined;
+			if (!mutating || off || turn.checkpoint || turn.snapshotFailed) return undefined;
+			const place = placeOff(ctx.cwd);
+			if (place) {
+				switchOff(ctx, place);
+				return undefined;
+			}
 			// Before the first call that can change a file, and only then: a turn that reads costs nothing.
 			await exclusive(() => takeCheckpoint(ctx)).catch((error) => giveUp(ctx, error));
 			return undefined;
@@ -329,7 +452,7 @@ export function registerCheckpoint(
 			}
 			if (call.mutating && store && turn.checkpoint) {
 				const opened = store;
-				lastAgentTree = await exclusive(() => scan(opened))
+				lastAgentTree = await exclusive(() => scan(opened, limits))
 					.then((scanned) => scanned.tree)
 					.catch(() => undefined);
 			}
@@ -690,11 +813,10 @@ export function registerCheckpoint(
 		handler: async (_args, ctx) => {
 			runtime.touch(ctx);
 			const entries = checkpointsOn(ctx).reverse();
-			if (entries.length === 0 || unavailable) {
+			const refused = refusal(ctx.cwd);
+			if (entries.length === 0 || refused) {
 				return ctx.ui.notify(
-					unavailable
-						? "Checkpoints are off: git was not found."
-						: "No checkpoints yet: one is taken before the first change to a file in a turn.",
+					refused ?? off?.line ?? "No checkpoints yet: one is taken before the first change to a file in a turn.",
 					"info",
 				);
 			}
@@ -736,7 +858,8 @@ export function registerCheckpoint(
 				if (words[0] === "--resume") return await resume(ctx, words[1] ?? "");
 				if (!ctx.isIdle())
 					return ctx.ui.notify("The agent is still working. Stop it first (esc), then rewind.", "warning");
-				if (unavailable) return ctx.ui.notify("Checkpoints are off: git was not found.", "warning");
+				const refused = refusal(ctx.cwd);
+				if (refused) return ctx.ui.notify(refused, "warning");
 				if (!ctx.hasUI)
 					return ctx.ui.notify("A rewind needs somebody to confirm it, and this mode cannot ask.", "warning");
 				if (words[0] === "undo") return await undoLast(ctx);
@@ -747,7 +870,9 @@ export function registerCheckpoint(
 					: entries[entries.length - 1];
 				if (!checkpoint)
 					return ctx.ui.notify(
-						wanted ? `No checkpoint #${wanted} on this branch. /checkpoints lists them.` : "No checkpoints yet.",
+						wanted
+							? `No checkpoint #${wanted} on this branch. /checkpoints lists them.`
+							: (off?.line ?? "No checkpoints yet."),
 						"info",
 					);
 				if (!(await hasCommit(await exclusive(() => open(ctx)), checkpoint.commit))) {
