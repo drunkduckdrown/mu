@@ -45,16 +45,16 @@ describe('Jev preflight row', () => {
   });
 
   it('reads the English title of conversations recorded before the bridge sent that data', () => {
-    expect(readJevPreflightRow('jev:r:1', 'JeV · chat', { turnType: 'chat', state: 'applied' })).toEqual({
+    expect(readJevPreflightRow('jev:r:1', 'Jev · chat', { turnType: 'chat', state: 'applied' })).toEqual({
       state: 'verdict',
       turnType: 'chat',
     });
-    expect(readJevPreflightRow('jev:r:1', 'JeV · Classifying', undefined)).toEqual({ state: 'pending' });
-    expect(readJevPreflightRow('jev:r:1', 'JeV · research', {})).toEqual({ state: 'verdict', turnType: 'research' });
-    expect(readJevPreflightRow('jev:r:1', 'JeV · Default', {})).toEqual({ state: 'verdict' });
-    expect(readJevPreflightRow('jev:r:1', 'JeV · Fallback', {})).toEqual({ state: 'fallback' });
+    expect(readJevPreflightRow('jev:r:1', 'Jev · Classifying', undefined)).toEqual({ state: 'pending' });
+    expect(readJevPreflightRow('jev:r:1', 'Jev · research', {})).toEqual({ state: 'verdict', turnType: 'research' });
+    expect(readJevPreflightRow('jev:r:1', 'Jev · Default', {})).toEqual({ state: 'verdict' });
+    expect(readJevPreflightRow('jev:r:1', 'Jev · Fallback', {})).toEqual({ state: 'fallback' });
     expect(readJevPreflightRow('jev:r:1', 'Something else', {})).toBeUndefined();
-    expect(readJevPreflightRow('call-1', 'JeV · Classifying', { preflight: 'pending' })).toBeUndefined();
+    expect(readJevPreflightRow('call-1', 'Jev · Classifying', { preflight: 'pending' })).toBeUndefined();
   });
 });
 

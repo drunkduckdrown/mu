@@ -9,8 +9,11 @@ if (base.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(b
 }
 const NAME = 'mu';
 const FORMER_NAMES = ['KYRN'];
-const DESCRIPTION = 'mu harness · local Codex login · JeV judgment';
-const FORMER_DESCRIPTIONS = ['KYRN', 'KYRN harness · local Codex login · JeV judgment'];
+const DESCRIPTION = 'mu harness · local Codex login · Jev judgment';
+// Compared case-insensitively: a record written before the judge's name took its present capitalization is ours.
+const OWN_DESCRIPTIONS = ['KYRN', 'KYRN harness · local Codex login · Jev judgment', DESCRIPTION].map((text) =>
+  text.toLowerCase()
+);
 // Scheduled tasks and team agents run in AionCore's "full auto", read from `yolo_id`: mu's full access.
 const FULL_AUTO_MODE = 'full';
 const LEGACY_FULL_AUTO = ['yolo', 'yoloNoSandbox'];
@@ -40,7 +43,9 @@ async function update(before) {
   // Without the variables in hand the update would clear them. Keeping an old label costs less than that.
   if (!record) throw new Error('the backend did not hand over the whole record');
   // The update replaces the whole record, so everything already there goes back with it.
-  const ours = record.description === undefined || FORMER_DESCRIPTIONS.includes(record.description);
+  const ours =
+    record.description === undefined ||
+    (typeof record.description === 'string' && OWN_DESCRIPTIONS.includes(record.description.toLowerCase()));
   const updated = await request(
     `/api/agents/custom/${encodeURIComponent(before.id)}`,
     {

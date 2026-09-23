@@ -851,7 +851,7 @@
         "skills": "Choix des compétences dont cette session a besoin",
         "capabilities": "Choix des capacités dont cette tâche a besoin",
         "goal_check": "Vérification de l'atteinte de l'objectif",
-        "permissionReview": "JeV examine : {{summary}}"
+        "permissionReview": "Jev examine : {{summary}}"
       },
       "goal": {
         "paused": "En pause : {{reason}}",

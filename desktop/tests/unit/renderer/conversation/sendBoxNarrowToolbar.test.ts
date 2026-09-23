@@ -32,7 +32,7 @@ describe('SendBox toolbar in a narrow composer', () => {
     expect(rule('.sendbox-toolbar > .sendbox-actions')).toContain('margin-inline-start: auto');
   });
 
-  // Round 2 of the visual QA: at 900px with the panel open, "权限 · JeV 审批" was cut mid-character at rest.
+  // Round 2 of the visual QA: at 900px with the panel open, "权限 · Jev 审批" was cut mid-character at rest.
   it('wraps a chip that does not fit to the next line whole, instead of cutting its label', () => {
     expect(rule('.sendbox-toolbar > .sendbox-tools')).toContain('display: flex');
     const group = rule('.sendbox-toolbar .sendbox-left-tool-group');

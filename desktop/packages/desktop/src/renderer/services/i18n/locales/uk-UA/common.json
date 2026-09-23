@@ -896,7 +896,7 @@
         "skills": "Вибір навичок, потрібних для цього сеансу",
         "capabilities": "Вибір можливостей, потрібних для цього завдання",
         "goal_check": "Перевірка, чи досягнуто мети",
-        "permissionReview": "JeV розглядає: {{summary}}"
+        "permissionReview": "Jev розглядає: {{summary}}"
       },
       "goal": {
         "paused": "На паузі: {{reason}}",

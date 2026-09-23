@@ -29,7 +29,7 @@ const lines = (...values: Array<string | undefined>): string[] => values.filter(
 
 const PROGRESS_STEPS = new Set(['frame', 'lessons', 'skills', 'capabilities', 'goal_check']);
 
-/** The step being worked out before a turn ("choosing skills"); a permission review names what JeV looks at. */
+/** The step being worked out before a turn ("choosing skills"); a permission review names what Jev looks at. */
 function progressStep(t: TFunction, coded: Coded | undefined): string | undefined {
   if (!coded) return undefined;
   if (PROGRESS_STEPS.has(coded.code)) return t(`${KEY}.progress.${coded.code}`);

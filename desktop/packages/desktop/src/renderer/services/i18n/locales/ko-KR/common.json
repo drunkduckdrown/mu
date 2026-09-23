@@ -851,7 +851,7 @@
         "skills": "이 세션에 필요한 스킬을 고르는 중",
         "capabilities": "이 작업에 필요한 기능 확장을 고르는 중",
         "goal_check": "목표가 달성되었는지 확인하는 중",
-        "permissionReview": "JeV 검토 중: {{summary}}"
+        "permissionReview": "Jev 검토 중: {{summary}}"
       },
       "goal": {
         "paused": "일시정지됨: {{reason}}",

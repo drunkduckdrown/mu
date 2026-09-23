@@ -211,7 +211,7 @@
         "title": "Vollzugriff"
       },
       "jev": {
-        "title": "JeV gibt frei"
+        "title": "Jev gibt frei"
       },
       "ask": {
         "title": "Minimale Berechtigungen"
@@ -229,9 +229,9 @@
     },
     "reason": {
       "ask": "Minimale Berechtigungen: Vor jedem Schritt wirst du gefragt.",
-      "unsure": "JeV ist nicht sicher, ob du diesen Schritt willst.",
-      "beyond": "JeV meint, das geht über das hinaus, worum du gebeten hast.",
-      "unrelated": "JeV meint, das gehört nicht zur Aufgabe.",
+      "unsure": "Jev ist nicht sicher, ob du diesen Schritt willst.",
+      "beyond": "Jev meint, das geht über das hinaus, worum du gebeten hast.",
+      "unrelated": "Jev meint, das gehört nicht zur Aufgabe.",
       "protected": "Das betrifft die Einstellungen von mu selbst; nur du kannst es erlauben."
     },
     "answer": {

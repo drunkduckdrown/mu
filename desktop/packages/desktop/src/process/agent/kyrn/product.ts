@@ -27,8 +27,14 @@ export type BackendRequest = <T>(method: string, path: string, body?: unknown) =
 export const AGENT_NAME = 'mu';
 /** What the registration was called before the rename. Found under these names too, and then renamed. */
 const FORMER_NAMES = ['KYRN'];
-export const AGENT_DESCRIPTION = 'mu harness · local Codex login · JeV judgment';
-const FORMER_DESCRIPTIONS = new Set(['KYRN', 'KYRN harness · local Codex login · JeV judgment']);
+export const AGENT_DESCRIPTION = 'mu harness · local Codex login · Jev judgment';
+/**
+ * The descriptions mu has written, compared case-insensitively: a record written before the judge's name took
+ * its present capitalization is still ours to update.
+ */
+const OWN_DESCRIPTIONS = new Set(
+  ['KYRN', 'KYRN harness · local Codex login · Jev judgment', AGENT_DESCRIPTION].map((text) => text.toLowerCase())
+);
 /**
  * The permission mode of a run nobody watches: a scheduled task, a team's agents. AionCore gives them its "full auto",
  * which it reads from the registration's `yolo_id`; nobody could answer a question there, so mu runs with full access.
@@ -71,7 +77,9 @@ async function wholeRecord(request: BackendRequest, row: AgentRow): Promise<Agen
  * access unless someone chose one of mu's modes for it.
  */
 export function updated(row: AgentRow, command: string): Record<string, unknown> {
-  const description = row.description === undefined || FORMER_DESCRIPTIONS.has(row.description);
+  const description =
+    row.description === undefined ||
+    (typeof row.description === 'string' && OWN_DESCRIPTIONS.has(row.description.toLowerCase()));
   return {
     name: AGENT_NAME,
     command,

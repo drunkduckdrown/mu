@@ -221,7 +221,7 @@ describe('mu-only backend catalog', () => {
         command: '/kyrn/acp',
         enabled: true,
         icon: 'icon.svg',
-        description: 'KYRN harness · local Codex login · JeV judgment',
+        description: 'KYRN harness · local Codex login · Jev judgment',
         args: ['--flag'],
         // Not in the list the backend returns. An update built from the list would clear it.
         env: [{ name: 'A', value: 'b' }],
@@ -252,7 +252,7 @@ describe('mu-only backend catalog', () => {
             yolo_id: 'full',
             native_skills_dirs: ['/skills'],
             behavior_policy: { supports_side_question: true },
-            description: 'mu harness · local Codex login · JeV judgment',
+            description: 'mu harness · local Codex login · Jev judgment',
           },
         },
       },
@@ -273,6 +273,20 @@ describe('mu-only backend catalog', () => {
     await initializeKyrn(request, '/kyrn/acp');
     const put = puts(calls)[0]?.body as { advanced: { description: string } };
     expect(put.advanced.description).toBe('my own words');
+  });
+  it('knows its own description in any capitalization, and writes it as the judge is spelled now', async () => {
+    const { calls, request } = backend([
+      {
+        id: 'k',
+        name: 'KYRN',
+        command: '/kyrn/acp',
+        enabled: true,
+        description: 'mu harness · local codex login · jev judgment',
+      },
+    ]);
+    await initializeKyrn(request, '/kyrn/acp');
+    const put = puts(calls)[0]?.body as { advanced: { description: string } };
+    expect(put.advanced.description).toBe('mu harness · local Codex login · Jev judgment');
   });
   it('keeps the old name rather than update a record it could not read whole', async () => {
     const { calls, request } = backend(

@@ -15,6 +15,7 @@ const PACKAGE_FILES = [
   'dist/bundle/cli.js',
   'judge/dist/kyrn-judge.js',
   'judge/dist/auth.js',
+  'judge/dist/import.js',
   'judge/manifest.json',
 ];
 

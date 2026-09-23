@@ -211,7 +211,7 @@
         "title": "Tam erişim"
       },
       "jev": {
-        "title": "JeV onaylar"
+        "title": "Jev onaylar"
       },
       "ask": {
         "title": "En az izin"
@@ -229,9 +229,9 @@
     },
     "reason": {
       "ask": "En az izin: her adımda önce size sorulur.",
-      "unsure": "JeV bu adımın istediğiniz şey olduğundan emin değil.",
-      "beyond": "JeV bunun istediğiniz şeyin ötesine geçtiğini düşünüyor.",
-      "unrelated": "JeV bunun görevin bir parçası olmadığını düşünüyor.",
+      "unsure": "Jev bu adımın istediğiniz şey olduğundan emin değil.",
+      "beyond": "Jev bunun istediğiniz şeyin ötesine geçtiğini düşünüyor.",
+      "unrelated": "Jev bunun görevin bir parçası olmadığını düşünüyor.",
       "protected": "Bu, mu'nun kendi ayarlarına dokunuyor; buna yalnızca siz izin verebilirsiniz."
     },
     "answer": {

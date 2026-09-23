@@ -851,7 +851,7 @@
         "skills": "Eligiendo las habilidades que necesita esta sesión",
         "capabilities": "Eligiendo las capacidades que necesita esta tarea",
         "goal_check": "Comprobando si se ha alcanzado el objetivo",
-        "permissionReview": "JeV está revisando: {{summary}}"
+        "permissionReview": "Jev está revisando: {{summary}}"
       },
       "goal": {
         "paused": "En pausa: {{reason}}",

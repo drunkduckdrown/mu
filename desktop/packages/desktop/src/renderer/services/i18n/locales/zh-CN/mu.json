@@ -133,7 +133,7 @@
     "keyPlaceholder": "粘贴 TypeSafe 或 Vercel AI Gateway 的密钥",
     "choices": {
       "jev": {
-        "title": "JeV",
+        "title": "Jev",
         "tag": "推荐",
         "description": "又快又准，按次计费。需要 TypeSafe 或 Vercel AI Gateway 的密钥。"
       },
@@ -211,7 +211,7 @@
         "title": "完全访问"
       },
       "jev": {
-        "title": "JeV 审批"
+        "title": "Jev 审批"
       },
       "ask": {
         "title": "最小权限"
@@ -229,9 +229,9 @@
     },
     "reason": {
       "ask": "最小权限模式：每一步都先问你。",
-      "unsure": "JeV 拿不准这一步是不是你要的。",
-      "beyond": "JeV 认为这一步超出了你的要求。",
-      "unrelated": "JeV 认为这一步和当前任务无关。",
+      "unsure": "Jev 拿不准这一步是不是你要的。",
+      "beyond": "Jev 认为这一步超出了你的要求。",
+      "unrelated": "Jev 认为这一步和当前任务无关。",
       "protected": "这会动到 mu 自己的设置，只能由你决定。"
     },
     "flagged": "危险操作：{{flag}}。",

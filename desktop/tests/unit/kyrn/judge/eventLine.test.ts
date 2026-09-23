@@ -80,7 +80,7 @@ const walk = (value: unknown, path: string[] = []): string[] =>
     : [path.join('.')];
 
 describe('Runtime event lines by the harness codes', () => {
-  it('names the progress step by its code, with the permission review naming what JeV looks at', () => {
+  it('names the progress step by its code, with the permission review naming what Jev looks at', () => {
     const cases: Array<[string, string, string]> = [
       ['frame', 'Updating the task frame', '正在更新任务帧'],
       ['lessons', 'Checking lessons from earlier sessions', '正在查看以往会话中的经验'],
@@ -92,15 +92,15 @@ describe('Runtime event lines by the harness codes', () => {
       expect(both('progress', { step: 'english step', code })).toEqual([[english], [chinese]]);
     }
     const review = {
-      step: 'JeV is reviewing: rm -rf dist',
+      step: 'Jev is reviewing: rm -rf dist',
       code: 'permission_review',
       params: { summary: 'rm -rf dist' },
     };
-    expect(both('progress', review)).toEqual([['JeV is reviewing: rm -rf dist'], ['JeV 在审批：rm -rf dist']]);
+    expect(both('progress', review)).toEqual([['Jev is reviewing: rm -rf dist'], ['Jev 在审批：rm -rf dist']]);
     // No code, an unknown one, or a review without its summary: the step as the harness wrote it.
     expect(say(zh, 'progress', { step: 'choosing skills' })).toEqual(['choosing skills']);
     expect(say(zh, 'progress', { step: 'later step', code: 'future' })).toEqual(['later step']);
-    expect(say(zh, 'progress', { step: 'JeV 在审批：x', code: 'permission_review' })).toEqual(['JeV 在审批：x']);
+    expect(say(zh, 'progress', { step: 'Jev 在审批：x', code: 'permission_review' })).toEqual(['Jev 在审批：x']);
   });
 
   it('keeps the goal as written and says why it paused by its code', () => {

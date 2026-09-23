@@ -31,7 +31,7 @@ a signed/notarized distributable.
   office assistant catalog, bot/channel adapter, provider SDK, analytics or
   promotional entry is installed or imported by this target.
 - Only the KYRN launcher starts agents. Its existing model configuration and
-  OAuth login remain authoritative. JeV/Laya selection stays in KYRN's config.
+  OAuth login remain authoritative. Jev/Laya selection stays in KYRN's config.
 - Keys are never returned to the renderer. BrowserWindow uses context isolation,
   sandboxing, no Node integration, a restricted IPC surface and no navigation.
 
@@ -40,7 +40,7 @@ a signed/notarized distributable.
 - Project selection; desktop task history and restart/resume of its pi session.
 - Real model list from the local CLI; streaming chat, tool results, Queue/Steer,
   abort and extension approval dialogs.
-- Native JeV pending / verdict / late / fallback cards and decision timeline.
+- Native Jev pending / verdict / late / fallback cards and decision timeline.
   These are actual typed outputs, not inferred chain-of-thought.
 - Hive/delegate snapshots as per-bee cards, shared findings and wrap-up/kill.
 - Git file listing, code editing with stale-revision protection, worktree/staged

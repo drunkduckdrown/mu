@@ -851,7 +851,7 @@
         "skills": "このセッションに必要なスキルを選んでいます",
         "capabilities": "このタスクに必要なケイパビリティを選んでいます",
         "goal_check": "目標が達成されたか確認しています",
-        "permissionReview": "JeV が審査しています: {{summary}}"
+        "permissionReview": "Jev が審査しています: {{summary}}"
       },
       "goal": {
         "paused": "一時停止中: {{reason}}",

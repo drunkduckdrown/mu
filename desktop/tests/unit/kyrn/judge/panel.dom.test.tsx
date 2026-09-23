@@ -249,7 +249,7 @@ describe('a judgment, opened', () => {
     expect(screen.queryByText(copy.questions.other)).not.toBeInTheDocument();
   });
 
-  it('asks the hive’s relate question and JeV’s approval question, not a nameless recorded judgment', () => {
+  it('asks the hive’s relate question and Jev’s approval question, not a nameless recorded judgment', () => {
     view([
       event(
         'decision',
@@ -529,7 +529,7 @@ describe('the judge log', () => {
 
   it('says the permission mode in words, by the name the permission menu gives it', () => {
     showLog([
-      event('permissions.mode', { mode: 'jev', label: 'JeV approves', conversationSwitch: true, modes: [] }),
+      event('permissions.mode', { mode: 'jev', label: 'Jev approves', conversationSwitch: true, modes: [] }),
       event('permissions.mode', { mode: 'someday', conversationSwitch: true, modes: [] }),
     ]);
 
@@ -542,7 +542,7 @@ describe('the judge log', () => {
   it('says how things stand once: reopening the conversation adds no lines, a change adds one', () => {
     // Each open starts the harness again, and each start reports the permission mode, the board and what it inherited.
     const opened = (runtime: string, sequence: number) => [
-      event('permissions.mode', { mode: 'jev', label: 'JeV approves', modes: [] }, turn(runtime, 0, sequence)),
+      event('permissions.mode', { mode: 'jev', label: 'Jev approves', modes: [] }, turn(runtime, 0, sequence)),
       event(
         'board.switched',
         { on: false, cwd: '/p', model: null, modelChosen: false },
@@ -580,7 +580,7 @@ describe('the judge log', () => {
       'mcp.failed',
       'board.switched',
       'permissions.mode',
-      // The next open reports the board off and the mode JeV again: both changed back, so both get a line.
+      // The next open reports the board off and the mode Jev again: both changed back, so both get a line.
       'permissions.mode',
       'board.switched',
     ]);

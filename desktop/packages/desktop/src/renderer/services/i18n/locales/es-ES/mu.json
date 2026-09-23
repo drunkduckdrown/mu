@@ -211,7 +211,7 @@
         "title": "Acceso completo"
       },
       "jev": {
-        "title": "JeV aprueba"
+        "title": "Jev aprueba"
       },
       "ask": {
         "title": "Permisos mínimos"
@@ -229,9 +229,9 @@
     },
     "reason": {
       "ask": "Permisos mínimos: te pregunta antes de cada paso.",
-      "unsure": "JeV no está seguro de que este paso sea lo que quieres.",
-      "beyond": "JeV cree que esto va más allá de lo que has pedido.",
-      "unrelated": "JeV cree que esto no forma parte de la tarea.",
+      "unsure": "Jev no está seguro de que este paso sea lo que quieres.",
+      "beyond": "Jev cree que esto va más allá de lo que has pedido.",
+      "unrelated": "Jev cree que esto no forma parte de la tarea.",
       "protected": "Esto afecta a la propia configuración de mu; solo tú puedes permitirlo."
     },
     "answer": {

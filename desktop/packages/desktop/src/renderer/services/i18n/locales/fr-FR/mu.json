@@ -211,7 +211,7 @@
         "title": "Accès complet"
       },
       "jev": {
-        "title": "JeV approuve"
+        "title": "Jev approuve"
       },
       "ask": {
         "title": "Autorisations minimales"
@@ -229,9 +229,9 @@
     },
     "reason": {
       "ask": "Autorisations minimales : chaque étape vous est d’abord soumise.",
-      "unsure": "JeV n’est pas sûr que cette étape corresponde à ce que vous voulez.",
-      "beyond": "JeV estime que cela dépasse ce que vous avez demandé.",
-      "unrelated": "JeV estime que cela ne fait pas partie de la tâche.",
+      "unsure": "Jev n’est pas sûr que cette étape corresponde à ce que vous voulez.",
+      "beyond": "Jev estime que cela dépasse ce que vous avez demandé.",
+      "unrelated": "Jev estime que cela ne fait pas partie de la tâche.",
       "protected": "Cela touche aux paramètres de mu ; l’autorisation ne peut venir que de vous."
     },
     "answer": {

@@ -223,7 +223,7 @@
       "noteMissing": "未記錄發現。",
       "allFlow": "所有送達",
       "beeFlow": "{{name}} 的送達",
-      "audit": "JeV 判定",
+      "audit": "Jev 判定",
       "waitingRun": "正在等待這次蜂群執行的紀錄。",
       "recordedAt": "記錄時間 {{time}}",
       "beeMissing": "此蜂群成員不在已記錄的快照中。",
@@ -556,7 +556,7 @@
       "auto_compaction_end": "壓縮結束",
       "hive.note": "共享發現",
       "hive.delivery": "送達已確認",
-      "hive.gate": "JeV 閘門",
+      "hive.gate": "Jev 閘門",
       "hive.manifest": "蜂群任務分配",
       "bee.event": "執行步驟",
       "memory.recalled": "引用經驗",
@@ -836,12 +836,12 @@
     "compactionDropped_one": "移除 {{count}} 次呼叫",
     "compactionDropped_other": "移除 {{count}} 次呼叫",
     "jevLine": {
-      "classifying": "JeV 正在分類這則訊息…",
-      "classified": "JeV 分類為{{type}}",
+      "classifying": "Jev 正在分類這則訊息…",
+      "classified": "Jev 分類為{{type}}",
       "byRule": "依規則分類為{{type}}",
       "shadow": "{{line}}（僅觀察，沒有生效）",
       "late": "{{line}}（來晚了，這一輪沒用上）",
-      "fallback": "JeV 這次沒給出分類，按預設方式繼續"
+      "fallback": "Jev 這次沒給出分類，按預設方式繼續"
     },
     "eventLine": {
       "detail": "詳細資訊：{{detail}}",
@@ -851,7 +851,7 @@
         "skills": "正在挑選這個工作階段需要的技能",
         "capabilities": "正在挑選這個任務需要的能力",
         "goal_check": "正在檢查目標是否達成",
-        "permissionReview": "JeV 正在審批：{{summary}}"
+        "permissionReview": "Jev 正在審批：{{summary}}"
       },
       "goal": {
         "paused": "已暫停：{{reason}}",

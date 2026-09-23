@@ -129,12 +129,12 @@ describe('reading Jev’s class from the tool call the adapter sends', () => {
   it('is only a jev: call, classifying while it runs', () => {
     expect(jevLine(call('bash-1', { title: 'bash' }))).toBeUndefined();
     expect(jevLine({ ...call('x', {}), type: 'text' } as unknown as TMessage)).toBeUndefined();
-    expect(jevLine(jev({ title: 'JeV · Classifying', status: 'in_progress' }))).toEqual({ stage: 'classifying' });
+    expect(jevLine(jev({ title: 'Jev · Classifying', status: 'in_progress' }))).toEqual({ stage: 'classifying' });
   });
 
   it('takes the class and its state from the verdict, and from the title when the verdict is not kept', () => {
     expect(
-      jevLine(jev({ title: 'JeV · chat', rawOutput: { turnType: 'chat', state: 'applied', by: 'jev-latest' } }))
+      jevLine(jev({ title: 'Jev · chat', rawOutput: { turnType: 'chat', state: 'applied', by: 'jev-latest' } }))
     ).toEqual({
       stage: 'classified',
       turnType: 'chat',
@@ -142,13 +142,13 @@ describe('reading Jev’s class from the tool call the adapter sends', () => {
       byRule: false,
     });
     expect(
-      jevLine(jev({ title: 'JeV · research', raw_output: { turnType: 'research', state: 'shadow', by: 'rule' } }))
+      jevLine(jev({ title: 'Jev · research', raw_output: { turnType: 'research', state: 'shadow', by: 'rule' } }))
     ).toMatchObject({
       turnType: 'research',
       state: 'shadow',
       byRule: true,
     });
-    expect(jevLine(jev({ title: 'JeV · single_edit' }))).toMatchObject({
+    expect(jevLine(jev({ title: 'Jev · single_edit' }))).toMatchObject({
       stage: 'classified',
       turnType: 'single_edit',
       state: 'applied',
@@ -156,11 +156,11 @@ describe('reading Jev’s class from the tool call the adapter sends', () => {
   });
 
   it('is a fallback when no class came: the wait ended, the class is unknown, or there was no verdict', () => {
-    expect(jevLine(jev({ title: 'JeV · Fallback' }))).toEqual({ stage: 'fallback' });
-    expect(jevLine(jev({ title: 'JeV · Default', rawOutput: { turnType: 'unknown', state: 'applied' } }))).toEqual({
+    expect(jevLine(jev({ title: 'Jev · Fallback' }))).toEqual({ stage: 'fallback' });
+    expect(jevLine(jev({ title: 'Jev · Default', rawOutput: { turnType: 'unknown', state: 'applied' } }))).toEqual({
       stage: 'fallback',
     });
-    expect(jevLine(jev({ title: 'JeV · Default', rawOutput: { turnType: 'unknown', state: 'none' } }))).toEqual({
+    expect(jevLine(jev({ title: 'Jev · Default', rawOutput: { turnType: 'unknown', state: 'none' } }))).toEqual({
       stage: 'fallback',
     });
   });
@@ -184,9 +184,9 @@ const showLine = (lng: 'zh' | 'en', message: IMessageAcpToolCall) => {
 
 describe('the line, in the language of the app', () => {
   it('says what Jev made of the message, in Chinese and in English', () => {
-    const chat = jev({ title: 'JeV · chat', rawOutput: { turnType: 'chat', state: 'applied', by: 'jev-latest' } });
+    const chat = jev({ title: 'Jev · chat', rawOutput: { turnType: 'chat', state: 'applied', by: 'jev-latest' } });
     const zh = showLine('zh', chat);
-    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^JeV 归类为闲聊$/);
+    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^Jev 归类为闲聊$/);
     zh.unmount();
     showLine('en', chat);
     expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^Classified by Jev: Conversation$/);
@@ -195,35 +195,35 @@ describe('the line, in the language of the app', () => {
   it('keeps shadow, late, rule and fallback apart', () => {
     const { unmount } = showLine(
       'zh',
-      jev({ title: 'JeV · research', rawOutput: { turnType: 'research', state: 'shadow' } })
+      jev({ title: 'Jev · research', rawOutput: { turnType: 'research', state: 'shadow' } })
     );
-    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('JeV 归类为调研（仅观察，没有生效）');
+    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('Jev 归类为调研（仅观察，没有生效）');
     unmount();
-    const late = showLine('zh', jev({ title: 'JeV · chat', rawOutput: { turnType: 'chat', state: 'late' } }));
+    const late = showLine('zh', jev({ title: 'Jev · chat', rawOutput: { turnType: 'chat', state: 'late' } }));
     expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('（来晚了，这一轮没用上）');
     late.unmount();
     const rule = showLine(
       'zh',
-      jev({ title: 'JeV · chat', rawOutput: { turnType: 'chat', state: 'applied', by: 'rule' } })
+      jev({ title: 'Jev · chat', rawOutput: { turnType: 'chat', state: 'applied', by: 'rule' } })
     );
     expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('按规则归类为闲聊');
     rule.unmount();
-    const none = showLine('en', jev({ title: 'JeV · Fallback' }));
+    const none = showLine('en', jev({ title: 'Jev · Fallback' }));
     expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('No class from Jev this time');
     none.unmount();
-    showLine('zh', jev({ title: 'JeV · Classifying', status: 'in_progress' }));
-    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('JeV 正在归类…');
+    showLine('zh', jev({ title: 'Jev · Classifying', status: 'in_progress' }));
+    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('Jev 正在归类…');
   });
 
   it('names a class it has no word for as "other", never by its raw id', () => {
     // A class a newer harness added, and a word that is a judge value but no class.
     for (const turnType of ['pair_programming', 'shadow']) {
       const message = jev({
-        title: `JeV · ${turnType}`,
+        title: `Jev · ${turnType}`,
         rawOutput: { turnType, state: 'applied', preflight: 'verdict' },
       });
       const zh = showLine('zh', message);
-      expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^JeV 归类为其他$/);
+      expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^Jev 归类为其他$/);
       zh.unmount();
       const en = showLine('en', message);
       expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^Classified by Jev: Other$/);
@@ -247,7 +247,7 @@ function Wrapper({ children, messages }: PropsWithChildren<{ messages: TMessage[
 describe('in the conversation', () => {
   it('is one line of its own, and the tool box keeps only the real tools', () => {
     const messages: TMessage[] = [
-      jev({ title: 'JeV · chat', rawOutput: { turnType: 'chat', state: 'applied' } }),
+      jev({ title: 'Jev · chat', rawOutput: { turnType: 'chat', state: 'applied' } }),
       call('bash-1', { title: 'bash' }),
       call('read-1', { title: 'read', kind: 'read' }),
     ];

@@ -20,7 +20,7 @@ const noop = (): void => {};
 
 const MODES = [
   { id: 'full', label: 'Full access', description: 'Everything runs without asking.' },
-  { id: 'jev', label: 'JeV approves', description: 'JeV approves what the task needs.' },
+  { id: 'jev', label: 'Jev approves', description: 'Jev approves what the task needs.' },
   { id: 'ask', label: 'Minimal permissions', description: 'Reading only; the rest asks.' },
 ];
 /** A presentation event the way mu sends it: JSON on its status channel. */
@@ -497,7 +497,7 @@ describe('KYRN ACP bridge', () => {
         type: 'extension_ui_request',
         id: 'ui-1',
         method: 'select',
-        title: 'mu wants to run a command\nnpm test\n  -- --watch=false\nJeV is not sure this step is what you want.',
+        title: 'mu wants to run a command\nnpm test\n  -- --watch=false\nJev is not sure this step is what you want.',
         options: answers,
       });
       await tick();
@@ -507,7 +507,7 @@ describe('KYRN ACP bridge', () => {
         kind: 'execute',
         rawInput: {
           command: 'npm test\n  -- --watch=false',
-          description: 'JeV is not sure this step is what you want.',
+          description: 'Jev is not sure this step is what you want.',
         },
       });
       expect(f.permissions[0].options.map((option) => option.kind)).toEqual([

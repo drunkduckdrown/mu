@@ -211,7 +211,7 @@
         "title": "Acesso total"
       },
       "jev": {
-        "title": "O JeV aprova"
+        "title": "O Jev aprova"
       },
       "ask": {
         "title": "Permissões mínimas"
@@ -229,9 +229,9 @@
     },
     "reason": {
       "ask": "Permissões mínimas: o mu pergunta a você antes de cada passo.",
-      "unsure": "O JeV não tem certeza de que este passo é o que você quer.",
-      "beyond": "O JeV acha que isto vai além do que você pediu.",
-      "unrelated": "O JeV acha que isto não faz parte da tarefa.",
+      "unsure": "O Jev não tem certeza de que este passo é o que você quer.",
+      "beyond": "O Jev acha que isto vai além do que você pediu.",
+      "unrelated": "O Jev acha que isto não faz parte da tarefa.",
       "protected": "Isto mexe nas configurações do próprio mu; só você pode permitir."
     },
     "answer": {

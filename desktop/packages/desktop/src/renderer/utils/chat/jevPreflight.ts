@@ -9,7 +9,7 @@
  * id starts with `jev:`. The bridge has no i18n and its title is stored with the conversation, so the row is read from
  * stable data, `rawOutput.preflight` and the verdict's turn type, and named in the reader's language where it is shown
  * (`Messages/acp/jevLine.ts`). Conversations recorded before the bridge sent that data carry only the English title
- * (`JeV · Classifying`, `JeV · multi_step_task`, …), which is read instead.
+ * (`Jev · Classifying`, `Jev · multi_step_task`, …, the name in any capitalization), which is read instead.
  */
 export type JevPreflightRow = { state: 'pending' | 'verdict' | 'fallback'; turnType?: string };
 

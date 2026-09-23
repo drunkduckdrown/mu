@@ -851,7 +851,7 @@
         "skills": "در حال انتخاب مهارت‌هایی که این نشست لازم دارد",
         "capabilities": "در حال انتخاب توانمندی‌هایی که این وظیفه لازم دارد",
         "goal_check": "در حال بررسی اینکه هدف محقق شده است",
-        "permissionReview": "JeV در حال بررسی است: {{summary}}"
+        "permissionReview": "Jev در حال بررسی است: {{summary}}"
       },
       "goal": {
         "paused": "مکث شد: {{reason}}",

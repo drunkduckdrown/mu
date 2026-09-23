@@ -895,7 +895,7 @@
         "skills": "Выбор навыков, нужных для этого сеанса",
         "capabilities": "Выбор возможностей, нужных для этой задачи",
         "goal_check": "Проверка, достигнута ли цель",
-        "permissionReview": "JeV проверяет: {{summary}}"
+        "permissionReview": "Jev проверяет: {{summary}}"
       },
       "goal": {
         "paused": "На паузе: {{reason}}",

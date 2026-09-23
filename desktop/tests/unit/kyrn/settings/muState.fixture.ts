@@ -6,7 +6,7 @@
 export const PERMISSIONS_FEATURE = {
   name: 'permissions',
   title: { zh: '权限模式', en: 'Permission modes' },
-  summary: { zh: '完全访问、JeV 审批、最小权限三种模式。', en: 'Full access, JeV approves, or minimal permissions.' },
+  summary: { zh: '完全访问、Jev 审批、最小权限三种模式。', en: 'Full access, Jev approves, or minimal permissions.' },
   defaultEnabled: true,
   options: [
     {
@@ -15,7 +15,7 @@ export const PERMISSIONS_FEATURE = {
       default: 'jev',
       choices: [
         { value: 'full', label: { zh: '完全访问', en: 'Full access' } },
-        { value: 'jev', label: { zh: 'JeV 审批', en: 'JeV approves' } },
+        { value: 'jev', label: { zh: 'Jev 审批', en: 'Jev approves' } },
         { value: 'ask', label: { zh: '最小权限', en: 'Minimal permissions' } },
       ],
       label: { zh: '新对话的默认模式', en: 'Mode of a new conversation' },

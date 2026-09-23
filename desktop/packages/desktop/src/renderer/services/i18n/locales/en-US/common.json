@@ -851,7 +851,7 @@
         "skills": "Choosing which skills this session needs",
         "capabilities": "Choosing which capabilities this task needs",
         "goal_check": "Checking whether the goal holds",
-        "permissionReview": "JeV is reviewing: {{summary}}"
+        "permissionReview": "Jev is reviewing: {{summary}}"
       },
       "goal": {
         "paused": "Paused: {{reason}}",

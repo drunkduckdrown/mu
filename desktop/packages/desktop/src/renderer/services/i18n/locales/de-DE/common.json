@@ -851,7 +851,7 @@
         "skills": "Benötigte Skills für diese Sitzung werden ausgewählt",
         "capabilities": "Benötigte Fähigkeiten für diese Aufgabe werden ausgewählt",
         "goal_check": "Es wird geprüft, ob das Ziel erreicht ist",
-        "permissionReview": "JeV prüft: {{summary}}"
+        "permissionReview": "Jev prüft: {{summary}}"
       },
       "goal": {
         "paused": "Pausiert: {{reason}}",

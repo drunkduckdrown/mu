@@ -211,7 +211,7 @@
         "title": "Full access"
       },
       "jev": {
-        "title": "JeV approves"
+        "title": "Jev approves"
       },
       "ask": {
         "title": "Minimal permissions"
@@ -229,9 +229,9 @@
     },
     "reason": {
       "ask": "Minimal permissions: every step asks you first.",
-      "unsure": "JeV is not sure this step is what you want.",
-      "beyond": "JeV thinks this goes beyond what you asked for.",
-      "unrelated": "JeV thinks this is not part of the task.",
+      "unsure": "Jev is not sure this step is what you want.",
+      "beyond": "Jev thinks this goes beyond what you asked for.",
+      "unrelated": "Jev thinks this is not part of the task.",
       "protected": "This touches mu’s own settings; only you can allow it."
     },
     "flagged": "Risky: {{flag}}.",

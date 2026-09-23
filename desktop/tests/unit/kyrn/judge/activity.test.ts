@@ -18,7 +18,7 @@ import zhCN from '../../../../packages/desktop/src/renderer/services/i18n/locale
 import zhTW from '../../../../packages/desktop/src/renderer/services/i18n/locales/zh-TW/common.json';
 import { event, gate, ledger, turn, verdict } from './judgeFixtures';
 
-describe('JeV judgment cards: what is folded together', () => {
+describe('Jev judgment cards: what is folded together', () => {
   it('folds the phases of one classification that share a runtime and a turn', () => {
     const cards = judgeCards([
       event('preflight.pending', { judge: 'jev-latest', mode: 'active' }, turn('runtime-a', 3, 20)),
@@ -108,7 +108,7 @@ describe('JeV judgment cards: what is folded together', () => {
   });
 });
 
-describe('JeV judgment cards: what a verdict did to execution', () => {
+describe('Jev judgment cards: what a verdict did to execution', () => {
   const stateOf = (payload: Record<string, unknown>) =>
     judgeCards([event('preflight.verdict', payload, turn('runtime-a', 1, 2))])[0];
 
@@ -243,7 +243,7 @@ describe('JeV judgment cards: what a verdict did to execution', () => {
   });
 });
 
-describe('JeV judgment cards: Hive gates', () => {
+describe('Jev judgment cards: Hive gates', () => {
   const deliverGate = (overrides: Record<string, unknown> = {}) =>
     event(
       'hive.gate',
@@ -312,7 +312,7 @@ describe('JeV judgment cards: Hive gates', () => {
   });
 });
 
-describe('JeV judgment cards: readable result and details', () => {
+describe('Jev judgment cards: readable result and details', () => {
   const card = (payload: Record<string, unknown>) =>
     judgeCards([event('decision', payload, turn('runtime-a', 1, 5))])[0];
 
@@ -446,7 +446,7 @@ describe('JeV judgment cards: readable result and details', () => {
   });
 });
 
-describe('JeV judgment cards: what the view can translate', () => {
+describe('Jev judgment cards: what the view can translate', () => {
   it('knows every decision point of the harness, and has its question in each reference language', () => {
     // The spec ids of packages/kyrn-judge/src/decisions/*.ts in the harness repository.
     const harness = [

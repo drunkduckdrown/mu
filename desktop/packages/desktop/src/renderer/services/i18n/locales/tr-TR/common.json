@@ -851,7 +851,7 @@
         "skills": "Bu oturum için gereken beceriler seçiliyor",
         "capabilities": "Bu görev için gereken yetenekler seçiliyor",
         "goal_check": "Hedefe ulaşılıp ulaşılmadığı kontrol ediliyor",
-        "permissionReview": "JeV inceliyor: {{summary}}"
+        "permissionReview": "Jev inceliyor: {{summary}}"
       },
       "goal": {
         "paused": "Duraklatıldı: {{reason}}",
