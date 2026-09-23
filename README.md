@@ -1,154 +1,116 @@
 <p align="center">
-  <img alt="μ" src="desktop/resources/app.png" width="112">
+  <img src="desktop/resources/app.png" width="96" alt="mu">
 </p>
-
-<h1 align="center">mu</h1>
-
-<p align="center"><b>A coding agent that thinks before it acts.</b><br>
-A small, fast judge makes the routine calls. The big model keeps its attention for the work.</p>
+<p align="center">μ · Only what's needed.</p>
 
 <p align="center">
   <b>English</b> · <a href="docs/readme/README.zh-CN.md">简体中文</a> · <a href="docs/readme/README.zh-TW.md">繁體中文</a> · <a href="docs/readme/README.ja.md">日本語</a> · <a href="docs/readme/README.ko.md">한국어</a>
 </p>
 
-> **Status: early development.** mu works day to day for its authors, but nothing here is released yet. Names, settings and file formats may still change. Features marked *experimental* have not been tried on real accounts or real machines of every kind; the docs say exactly what has and has not been verified.
+# mu
 
----
+mu is a coding agent with a judgment kernel: a deep fork of pi, a layer of judgment called Jev, and a desktop app.
 
-## Why mu
+- **mu**: the command line. Everything pi does, plus Jev's judgment layer.
+- **mu desktop**: a native desktop app that carries mu inside it. Download and run.
+- **Jev**: a small judge model that answers in about a hundred milliseconds. The big model does the work; at each decision point, Jev answers one question: what is needed now?
 
-A coding agent spends a surprising share of its model calls, and of its context window, on small questions. Is this message a new task or a correction? Does this command need the user's permission? Which part of a 4,000-line test log matters? Is the agent going in circles? Which sub-agent and which model fit this job? What should the browser click next?
-
-mu hands those questions to a **judge**: a fast model that answers typed yes/no and multiple-choice questions in a fraction of a second. Code acts on the answers. The main model, the one that reads and writes your code, only sees what it needs.
-
-- **Every decision is visible.** Each one has a mode: `off`, `shadow` (asked and logged, but not acted on) or `active`. The verdicts and timings go to a ledger (`/ledger`, `mu ledger`).
-- **Every decision fails open.** If the judge is unsure, slow or unreachable, a plain rule decides, or pi's stock behaviour runs.
-- **The judge is pluggable.** mu can use [JeV](kyrn/docs/08-jev-retrospective.md) (hosted, through the Vercel AI Gateway), *Laya* (a local judge on macOS, Core ML), any language model you already use, or several of these in tiers, where a later judge only gets what an earlier one was unsure of.
-
-mu is built on [pi](https://github.com/earendil-works/pi), a minimal, extensible terminal coding agent. It keeps pi's core almost untouched and adds its judgment layer as an extension (`packages/kyrn-judge`). The desktop app is built on [AionUi](https://github.com/iOfficeAI/AionUi).
-
-## What it does today
-
-**Judgment layer**, with 29 decision points in 32 features:
-
-- **Reads every message first.** The judge decides what kind of turn it is (new task, correction, new constraint, side question), how much reasoning it needs and whether to plan first. The message waits above the editor while this happens (`esc` skips the wait), and the verdict stays under it in the chat.
-- **Task frame.** mu keeps the goal, your hard constraints in your own words with where you said them, the current subgoal and an acceptance checklist. Before an edit, the change is checked against your constraints, and a clear violation is blocked with your words quoted. `/frame` shows it.
-- **Keeps the context lean.** Repeated failures in test logs are kept once. Tools, MCP servers, language servers and packs are installed but hidden until the task needs them (capability catalog). Only new compiler errors are reported (LSP diagnostics against a baseline). Skills and lessons are chosen per task.
-- **Permissions in three modes.** *Full access*; *JeV approves* (the judge approves what the task clearly needs and asks you about the rest); *Minimal* (everything but reading asks). Switch with `/permissions`. When a step needs your approval, a prompt appears in the status bar.
-- **Goal mode.** `/goal <condition>` keeps the agent working until the condition holds. A language model reads the evidence each time the agent wants to stop. Hard facts win: an open checklist item, or an edit nothing checked, means not done yet.
-- **Plain-language board.** Every few steps, the judge picks what is actually news and a model that explains well retells it, for people who do not read code: how far the work is, what is happening now, what waits on you. When a run ends, the board sums it up. Switch it on per project with `/board on`.
-- **Checkpoints and rewind.** Before the first edit of each turn, the workspace is snapshotted in a shadow git directory; your own index and stash are never touched. `/rewind` restores the files, the conversation, or both. When the agent keeps failing the same way, the judge can suggest a rewind; it never rewinds by itself.
-
-**Sub-agents and the browser**
-
-- **`delegate`.** Independent parts run in parallel, or as a chain of steps. Parts that edit work in their own git worktree and hand back a patch. Each sub-agent works to its own checklist and reports it back. `/implement`, `/scout-and-plan` and `/implement-and-review` are ready-made chains.
-- **`hive`.** For one hard problem, several investigators work at once, and the judge decides which findings pass between them.
-- **Built-in browser.** `browse` runs a loop of observe, one judge call, act. In the desktop app you watch every step in its own browser panel and can take over at any time. Anything irreversible asks first.
-
-**Everyday tools**
-
-- **Picks up what you already have.** mu reads the rules, skills and MCP servers you set up for Claude Code, Cursor and Codex.
-- **Packs.** `/review` with findings ranked P0–P3, and `/commit`, which splits a change into commits and shows the plan first. Also ast-grep, GitHub through `gh`, conflict resolution and a DAP debugger (debugpy, delve, lldb-dap).
-- **Background jobs, web fetch and search** (with sources that work from mainland China), and **sign-in** with Claude, ChatGPT, Grok and Google (Google through Gemini CLI or Antigravity is *experimental*: mu states the risk and asks before the browser opens).
-
-**Desktop app** (`desktop/`)
-
-- A JeV panel shows every verdict.
-- The browser panel is driven by mu.
-- It shows the plain-language board and the permission prompts.
-- Settings are generated from the harness's own manifest: judges, decision modes, features, providers with OpenAI- or Anthropic-compatible endpoints.
-- A guided first start and sign-in.
-- The interface in 13 languages.
-
-## Repository layout
-
-| Path | What it is |
-| --- | --- |
-| `packages/kyrn-judge` | mu itself: the judgment kernel, the 29 decision specs and every feature above, as a pi extension |
-| `packages/*` (others) | pi's monorepo: `ai` (providers), `agent` (the loop), `coding-agent` (the CLI), `tui`, … with a few small patches |
-| `kyrn/bin` | the `mu` launcher (`mu`, `mu.cmd`, `mu.ps1`; Node, no dependencies) |
-| `kyrn/docs` | design notes, the product plan and one document per feature (mostly in Chinese) |
-| `kyrn/local-judge` | the local judge Laya (macOS, Core ML) |
-| `desktop/` | the desktop app (Electron, an AionUi fork) |
-
-*KYRN* was the project's earlier name. It survives in folder and package names.
+> Early development. Its authors use it every day, but nothing has been released yet. Names, settings and file formats may still change.
 
 ## Install
+
+**Desktop.** GitHub Actions builds the installers and publishes them under [Releases](https://github.com/qybaihe/mu/releases): macOS (Apple silicon / Intel), Windows (x64 / Arm), Linux (x64 / Arm). The app carries its runtime and mu itself, so there is no Node to install and nothing to configure. Open it, connect a model (an API key or a subscription sign-in) and Jev's key, and start.
+
+<!-- Keep this line until the app is signed and notarized -->
+If macOS says the developer cannot be verified: right-click the app in Finder and choose Open, once.
+
+**Command line.**
 
 ```bash
 npm i -g mu-agent
 mu
 ```
 
-You need Node.js 22.19 or newer. The package is called `mu-agent`; the command is `mu`. It runs on macOS, Linux, Windows and WSL. `npm i -g mu-agent@latest` updates it. Everything below works the same way, except that the JeV key goes in your environment or in `~/.mu/.env`, not in `kyrn/.env`.
+Node 22.19 or newer. The desktop app and the command line share the accounts, settings and lessons in `~/.mu`.
 
-## Get started from source
+## Where Jev is
 
-You need Node.js 22.19 or newer (24 recommended), npm and git.
+You do not notice Jev. It never asks you one more question on the model's behalf, and it adds no button to the interface; it only changes what the model does next. In every turn, it is here:
+
+- **When you speak.** Whether this message is a new task, a follow-up or a correction, before any work starts; whether to interrupt when you say something while the agent is busy.
+- **Before acting.** Whether a command could do something irreversible; whether it passes the rules you set; in the *Jev approves* permission mode, what needs your approval and what does not.
+- **When a tool returns.** What belongs in the context and what is repetition and noise; in a test log, the failures stay and the repeats go; stale results are let go.
+- **As the context grows.** What can be dropped without writing a summary; whether a cache about to expire is worth keeping warm. This is why the cache hit rate stays high and the context never fills up.
+- **When a turn ends.** Whether the work is done, checked by the big model with Jev as the fallback; whether the agent drifted from the task; whether to go back to a checkpoint.
+- **When learning.** Your corrections, the traps the agent worked around, the lessons sub-agents bring back: whether they are worth keeping, whether they are the same as an existing lesson or contradict it, whether they were followed this time. A lesson nobody follows retires on its own.
+- **With several agents.** Which role a task goes to; whether a sub-agent's patch stayed within its bounds; which finding in a hive is worth passing to another bee.
+
+More than thirty decision points, each chosen separately in the settings: Jev, a local judge (Laya, a model that runs on your machine and never touches the network), or off. Every verdict goes to a ledger that the desktop app's side panel shows.
+
+## The hive
+
+Every multi-agent system has to answer the same question: should what one agent knows be told to another? There are four common answers: pass nothing and report only to the main agent; pass everything, the whole history in a group chat or a hand-off; let each agent's own big model decide; or rely on fixed rules and the environment (subscriptions, git). mu's answer is a fifth: let Jev be the gate.
+
+A hive is two to six bees, each with its own focus, that read code, run commands and browse; bees never edit, the main model makes the change. Each time a bee finishes saying something, Jev judges once: is there anything here worth sharing, and is it a finding, a dead end, a decision or a blocker? What is worth it goes on a shared board. For each new note on the board, Jev judges once more per other bee: is this related to its focus? If so, the note is delivered to it, marked "a finding, not an instruction".
+
+The board only grows, so a later conclusion can overturn an earlier one: a bee first says the tests will not run, then clears an environment variable and they do. Jev reads the relation between two notes (supersedes, contradicts, supports). A superseded conclusion becomes a correction, delivered to every bee that holds the old one; two notes that contradict each other both stay, marked as a dispute, and if nobody settles it within a minute a verifying bee is sent to find out.
+
+<p align="center"><img src="docs/readme/swarm.png" width="960" alt="The desktop app's hive tab: what four bees are doing, the map of connections between them, and each delivery's words"></p>
+
+The desktop app's hive tab is where all of this happens. One row per bee: its role, its model, what it is doing or has just said. The map draws who delivered a finding to whom: the more went along a line, the thicker it is; corrections and disputes have their own marks; a finding lights its line the moment it arrives. The flow lists every delivery's words, and the judgments list every verdict Jev gave. The hive card in the conversation carries the map in miniature and opens this tab.
+
+A real run: three bees, nine minutes, Jev judged 117 candidates, 27 went on the board, 16 were delivered to the bee that needed them. Every verdict is written to the run's log, so it can be reviewed afterwards.
+
+`/swarm` shows what each bee is doing right now, `/swarm stop` asks them to report now, `/swarm kill` ends them at once. A bee out of time is asked for its report and ended if none comes; a stuck model or tool is handled by the watchdog. A hive always returns.
+
+## The plain-language board
+
+Someone who does not read code can still tell how far the agent has got. Turn the board on (`/board`, or the switch at the top of the desktop app's board tab), and every few steps it says three things in plain words: what is happening now, how many items on the checklist are done, and what waits on you; below, every earlier update stays in order. When a run ends, the board sums it up.
+
+<p align="center"><img src="docs/readme/board.png" width="960" alt="The desktop app's plain-language board: how far the work is, what is happening now, what happened before; context use and cache hit rate at the top"></p>
+
+These words are not an abbreviation of what the model said. Jev picks out, from the verdicts and the events, the few that are actually news, and a model that explains well tells them; the board follows the permission mode, the goal and the sub-agents, and when the agent changes course, so does the wording. The two numbers at the top are how much of the context is in use and the cache hit rate: the result of the calls Jev makes about context and cache, and your measure of how much further this turn can go.
+
+## Also
+
+- **Three permission modes.** Full access, Jev approves, minimal; switch any time from the composer.
+- **Goals.** `/goal <condition>` keeps the agent working until the condition holds; `/goal clear` ends it.
+- **Lessons.** Append-only, editable, retirable; shared between the command line and the desktop app.
+- **Subscription sign-in.** ChatGPT, Claude, Grok, and Google sign-in for Gemini CLI / Antigravity, inside the app.
+- **Conversations you bring along.** Claude Code and Codex CLI conversations can be imported and continued.
+- **Built-in browser, background jobs, MCP.** The agent works through a browser one step at a time; dev servers and long builds run in the background; MCP servers start when needed.
+
+## Commands
+
+Type `/` in the composer; in the desktop app the command palette (⌘K) finds them too.
+
+| Command | What it does |
+| --- | --- |
+| `/goal <condition>` | Keep working until the condition holds |
+| `/permissions` | Full access / Jev approves / minimal |
+| `/board` | Turn the plain-language board on or off |
+| `/remember`, `/lessons`, `/forget` | Keep a lesson, list the lessons, retire one |
+| `/review`, `/commit` | Review the change with findings ranked by severity; write the commits |
+| `/checkpoints`, `/rewind` | List the checkpoints; go back to one |
+| `/agents`, `/swarm` | Send sub-agents; watch every one at work |
+| `/browse`, `/jobs` | The built-in browser; background jobs |
+| `/import` | Import a Claude Code or Codex conversation |
+| `/doctor` | Check the setup and the connections |
+
+## Privacy
+
+Keys stay on this machine, in `~/.mu`. mu never downloads a model or a runtime for you: anything that needs a download asks first. Jev sees only the pieces a verdict needs.
+
+## Development
 
 ```bash
-git clone https://github.com/qybaihe/mu.git
-cd MU
-npm install
-kyrn/bin/mu            # Windows: kyrn\bin\mu.cmd
+npm install --ignore-scripts   # dependencies, without lifecycle scripts
+npm run check                  # formatting, lint, types
+./test.sh                      # tests (the ones that need a model are skipped without a key)
 ```
 
-Inside mu, `/login` signs in to a model provider and `/model` picks a model. `/help` lists everything, and `/doctor` checks the setup. To put `mu` on your PATH, run `kyrn/bin/mu link`.
-
-**Choose a judge.** Without one, mu works like pi with the extra tools.
-
-- **JeV:** put a Vercel AI Gateway key in `kyrn/.env` as `AI_GATEWAY_API_KEY` (see `kyrn/.env.example`).
-- **Laya, local, macOS only:** run `mu judge setup`. It downloads about 930 MB and asks before it starts.
-- **Any model you already use:** `/mu judge llm:<provider>/<model>`.
-
-Decisions start in `shadow` mode, so you can watch what the judge would do. When you trust it, run `/mu mode default active`, or set `"modes": {"default": "active"}` in `~/.mu/agent/mu.json`.
-
-**Desktop app from source**, with [Bun](https://bun.sh):
-
-```bash
-cd desktop
-bun install
-KYRN_ROOT="$(cd .. && pwd)" bun run start     # Windows (PowerShell): $env:KYRN_ROOT = (Resolve-Path ..); bun run start
-```
-
-The app runs mu from the checkout that `KYRN_ROOT` names, so run `npm install` at the repository root first.
-
-## Builds
-
-GitHub Actions checks every push. It builds the desktop app for every common platform, and publishes a release for every `v*` tag:
-
-| | x64 | arm64 |
-| --- | --- | --- |
-| **macOS** | `.dmg`, `.zip` (Intel) | `.dmg`, `.zip` (Apple silicon) |
-| **Windows** | `.exe` installer | `.exe` installer |
-| **Linux** | `.deb` | `.deb` |
-
-Every release also has a source archive of the repository.
-
-These are **preview builds**:
-
-- They are not code-signed yet. macOS asks you to confirm the first start in *System Settings → Privacy & Security*, and Windows SmartScreen shows a warning.
-- The app does not carry mu inside it yet. It runs mu from a checkout of this repository on the same machine, so set `KYRN_ROOT` to that checkout.
-
-The `mu` command line comes from npm (`npm i -g mu-agent`, see above) on all of these platforms, or runs from source.
-
-## What we are working on
-
-- **mu inside the app, and as standalone binaries.** A downloaded app should work on its own, with no checkout and no `KYRN_ROOT`, and the `mu` command should come as one file per platform.
-- **The app as the main way to use mu.** The whole flow runs inside the desktop app, not through a terminal bridge. That means a native conversation view fed by one ordered event stream.
-- **One-click local judge.** Install Laya from the settings, with its size and source shown and your consent asked before anything downloads.
-- **Windows and WSL on real machines.** The code paths exist and are unit-tested; they still need a real Windows machine.
-- **Measuring the judge.** For each decision point, how often JeV and Laya are right on real sessions, so the thresholds can be tuned.
-- **Semantic drift checks** (*experimental*). The judge watches the model's output as it streams and stops it only when it clearly breaks a rule you set.
-
-The detailed plan, with the status of each item, is in [kyrn/docs/11-out-of-the-box-roadmap.md](kyrn/docs/11-out-of-the-box-roadmap.md) (Chinese).
-
-## Contributing
-
-Read [AGENTS.md](AGENTS.md) first. In short: tab indentation, relative imports with `.ts`, only erasable TypeScript syntax, exact dependency versions. Run `npm run check` and the tests you touched. The full suite is slow, so leave it to CI, which runs it on every push. Tests use a mock judge and a fake model, and never call a real model.
+The desktop app is in `desktop/`: `bun install`, then `KYRN_ROOT="$(cd .. && pwd)" bun run start` runs the development build against the mu in this repository (run `npm install` at the root first). The repository layout and the contribution rules are in [AGENTS.md](AGENTS.md).
 
 ## Credits and license
 
-- **pi**, by Mario Zechner and contributors, is MIT-licensed. The root [LICENSE](LICENSE) covers `packages/` and `kyrn/`.
-- **The desktop app is based on [AionUi](https://github.com/iOfficeAI/AionUi)** by iOfficeAI, licensed under Apache 2.0. It is called mu inside the app, but much of its code comes from AionUi, and we are grateful for it. `desktop/` keeps AionUi's [LICENSE](desktop/LICENSE).
-- Third-party code in the judgment layer is listed in [packages/kyrn-judge/THIRD_PARTY_NOTICES.md](packages/kyrn-judge/THIRD_PARTY_NOTICES.md).
+mu is built on [pi](https://github.com/earendil-works/pi) (the coding agent, MIT; the root [LICENSE](LICENSE) covers `packages/` and `kyrn/`) and [AionUi](https://github.com/iOfficeAI/AionUi) (the desktop app, Apache 2.0; `desktop/` keeps its [LICENSE](desktop/LICENSE)). We are grateful to both. Third-party code in the judgment layer is listed in [THIRD_PARTY_NOTICES.md](packages/kyrn-judge/THIRD_PARTY_NOTICES.md).
