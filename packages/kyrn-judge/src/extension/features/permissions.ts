@@ -14,6 +14,7 @@ import {
 	type PermissionNeed,
 	parseMode,
 	permissionNeed,
+	protectedSpellings,
 } from "../../permissions/modes.ts";
 import { clip, type KyrnRuntime } from "../runtime.ts";
 import { isShellTool } from "../shell-tools.ts";
@@ -62,10 +63,7 @@ export function modeLabel(mode: PermissionMode): string {
 
 /** Where mu keeps its own settings, as a command may spell it: a call touching it is the user's to allow. */
 function protectedPaths(roots: HarnessRoots | undefined): string[] {
-	if (!roots) return [];
-	const home = homedir();
-	const dir = roots.agentDir;
-	return dir.startsWith(`${home}/`) ? [dir, `~${dir.slice(home.length)}`, `$HOME${dir.slice(home.length)}`] : [dir];
+	return roots ? protectedSpellings(roots.agentDir, homedir(), process.platform) : [];
 }
 
 /**

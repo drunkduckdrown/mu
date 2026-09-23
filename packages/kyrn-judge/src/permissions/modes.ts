@@ -133,6 +133,30 @@ export function insideProject(cwd: string, path: string): boolean {
 	return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
 }
 
+/**
+ * Where mu keeps its own settings, as a command may spell it: a call touching it is the user's to allow. From the home
+ * it is `~`, `$HOME`; on Windows also `%USERPROFILE%` or `$env:USERPROFILE`, with either slash, and `/c/...` as Git
+ * Bash (the shell mu's commands run in there) spells a drive.
+ */
+export function protectedSpellings(agentDir: string, home: string, platform: NodeJS.Platform): string[] {
+	if (platform !== "win32") {
+		return agentDir.startsWith(`${home}/`)
+			? [agentDir, `~${agentDir.slice(home.length)}`, `$HOME${agentDir.slice(home.length)}`]
+			: [agentDir];
+	}
+	const forward = (path: string) => path.replace(/\\/g, "/");
+	const back = (path: string) => path.replace(/\//g, "\\");
+	const dir = back(agentDir);
+	const drive = /^([A-Za-z]):\\/.exec(dir);
+	const spellings = [dir, forward(dir), ...(drive ? [`/${drive[1].toLowerCase()}${forward(dir.slice(2))}`] : [])];
+	const base = back(home);
+	if (!dir.toLowerCase().startsWith(`${base.toLowerCase()}\\`)) return spellings;
+	const rest = dir.slice(base.length);
+	for (const from of ["~", "$HOME", "%USERPROFILE%", "$env:USERPROFILE"])
+		spellings.push(`${from}${rest}`, forward(`${from}${rest}`));
+	return spellings;
+}
+
 const clip = (value: string, length: number) => {
 	const line = value.replace(/\s+/g, " ").trim();
 	return line.length <= length ? line : `${line.slice(0, length - 1)}…`;
@@ -149,7 +173,11 @@ export function permissionNeed(
 	cwd: string,
 	protectedPaths: readonly string[] = [],
 ): PermissionNeed | undefined {
-	const touches = (value: string) => protectedPaths.find((path) => value.includes(path));
+	// Without regard to case: Windows and macOS name a folder in any case, and more protection is the safe direction.
+	const touches = (value: string) => {
+		const said = value.toLowerCase();
+		return protectedPaths.find((path) => said.includes(path.toLowerCase()));
+	};
 	if (LOOKING.has(toolName)) return undefined;
 	if (isShellTool(toolName) || toolName === "bg_start") {
 		const command = text(input.command);

@@ -12,7 +12,13 @@ import { permissionEnv } from "../src/extension/features/swarm.ts";
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
 import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
 import type { KyrnRuntime } from "../src/extension/runtime.ts";
-import { commandPrefix, PermissionDefaults, parseMode, permissionNeed } from "../src/permissions/modes.ts";
+import {
+	commandPrefix,
+	PermissionDefaults,
+	parseMode,
+	permissionNeed,
+	protectedSpellings,
+} from "../src/permissions/modes.ts";
 import { MockJudgeProvider, type MockResponder } from "../src/providers/mock.ts";
 import type { Answer } from "../src/types.ts";
 
@@ -98,6 +104,37 @@ describe("what needs permission", () => {
 		);
 		expect(command).toMatchObject({ protected: "~/.mu/agent" });
 		expect(command?.grant).toBeUndefined();
+	});
+
+	it("leaves mu's own settings to the user on Windows too: either slash, from the home, in any case", () => {
+		const protectedPaths = protectedSpellings("C:\\Users\\Me\\.mu\\agent", "C:\\Users\\Me", "win32");
+		for (const command of [
+			"echo {} > C:\\Users\\Me\\.mu\\agent\\mu\\permissions.json",
+			"echo {} > c:/users/me/.mu/agent/mu/permissions.json",
+			"echo {} > ~/.mu/agent/mu/permissions.json",
+			"echo {} > $HOME/.mu/agent/mu.json",
+			"echo {} > /c/Users/Me/.mu/agent/mu.json",
+			"Set-Content $env:USERPROFILE\\.mu\\agent\\mu.json '{}'",
+			"type nul > %USERPROFILE%\\.mu\\agent\\mu.json",
+		]) {
+			const need = permissionNeed("bash", { command }, "C:\\work\\project", protectedPaths);
+			expect(need?.protected, command).toBeDefined();
+			expect(need?.grant, command).toBeUndefined();
+		}
+		expect(permissionNeed("bash", { command: "npm test" }, "C:\\work\\project", protectedPaths)?.protected).toBe(
+			undefined,
+		);
+		// Elsewhere as before; an agent folder outside the home is only itself.
+		expect(protectedSpellings("/home/me/.mu/agent", "/home/me", "linux")).toEqual([
+			"/home/me/.mu/agent",
+			"~/.mu/agent",
+			"$HOME/.mu/agent",
+		]);
+		expect(protectedSpellings("D:\\mu\\agent", "C:\\Users\\Me", "win32")).toEqual([
+			"D:\\mu\\agent",
+			"D:/mu/agent",
+			"/d/mu/agent",
+		]);
 	});
 
 	it("reads the mode by any of its names, and nothing else", () => {
