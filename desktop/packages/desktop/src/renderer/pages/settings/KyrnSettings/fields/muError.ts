@@ -86,6 +86,10 @@ export function muErrorText(t: TFunction, language: string, error: MuError, mani
       return only(t('mu.errors.otherRegistration'));
     case 'backend':
       return withDetail(t('mu.errors.backend', { status: word(params.status) }));
+    case 'importMissing':
+      return only(t('mu.errors.importMissing'));
+    case 'importFailed':
+      return withDetail(t('mu.errors.importFailed'));
     case 'invalid':
       return withDetail(t('mu.errors.invalid'));
     case 'unknown':

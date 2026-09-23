@@ -588,6 +588,60 @@
     "invalid": "有一项填写的值无效。",
     "unknown": "mu 出了点问题。",
     "unwritable": "无法写入 {{file}}。",
-    "contextLimit": "上下文上限必须是 0，或 {{min}} 到 {{max}} 之间的整数。"
+    "contextLimit": "上下文上限必须是 0，或 {{min}} 到 {{max}} 之间的整数。",
+    "importMissing": "当前的 mu 版本还不能导入对话，请先更新 mu。",
+    "importFailed": "mu 没能导入这些对话。"
+  },
+  "importChats": {
+    "title": "导入对话",
+    "description": "把这台电脑上在 Claude Code 或 Codex 里聊过的对话带进 mu，在这里接着聊。",
+    "open": "选择对话",
+    "dialog": {
+      "title": "导入对话",
+      "hint": "选中的每段对话都会变成 mu 里的一个对话，放在原来的项目文件夹下。mu 会读到之前说过的全部内容，思考过程和图片不会带过来。",
+      "search": "按内容或文件夹搜索",
+      "loading": "正在找对话…",
+      "empty": "这台电脑上没有找到 Claude Code 或 Codex 的对话。",
+      "noMatch": "没有符合的对话。",
+      "noTitle": "（没有消息）",
+      "folderUnknown": "不知道在哪个文件夹",
+      "inList": "已在对话列表里",
+      "open": "打开",
+      "selected": "已选 {{count}} 段",
+      "import": "导入",
+      "importing": "正在导入…",
+      "retry": "再试一次"
+    },
+    "done": "已导入 {{count}} 段对话，可以在对话列表里找到。",
+    "done_one": "已导入 {{count}} 段对话，可以在对话列表里找到。",
+    "done_other": "已导入 {{count}} 段对话，可以在对话列表里找到。",
+    "someFailed": "有 {{count}} 段对话没能导入，原因写在它下面。",
+    "someFailed_one": "有 {{count}} 段对话没能导入，原因写在它下面。",
+    "someFailed_other": "有 {{count}} 段对话没能导入，原因写在它下面。",
+    "failure": {
+      "missing": "文件已经不在了。",
+      "notFile": "这不是一个文件。",
+      "notTranscript": "这不是 Claude Code 或 Codex 的对话。",
+      "empty": "里面没有消息。",
+      "folderMissing": "它的项目文件夹已经不在了：{{folder}}",
+      "other": "没能导入：{{detail}}"
+    },
+    "notice": {
+      "title": "从 {{tool}} 导入的对话",
+      "counts": "你的消息 {{user}} 条 · 回答 {{assistant}} 条 · 工具调用 {{toolCalls}} 次",
+      "goOn": "在下面接着说就行，之前的内容 mu 都读过了。思考过程和图片没有带过来。",
+      "read": "查看之前的对话"
+    },
+    "history": {
+      "title": "之前在 {{tool}} 里的对话",
+      "loading": "正在读取对话…",
+      "you": "你",
+      "summary": "更早内容的摘要",
+      "tools": "用了：{{tools}}",
+      "earlier": "更早的 {{count}} 段没有显示。",
+      "earlier_one": "更早的 {{count}} 段没有显示。",
+      "earlier_other": "更早的 {{count}} 段没有显示。",
+      "empty": "没有可显示的内容。"
+    }
   }
 }

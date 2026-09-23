@@ -588,6 +588,60 @@
     "invalid": "Une des valeurs n’est pas valide.",
     "unknown": "Une erreur s’est produite dans mu.",
     "unwritable": "Impossible d’écrire {{file}}.",
-    "contextLimit": "La limite de contexte doit être 0 ou un nombre entier de {{min}} à {{max}}."
+    "contextLimit": "La limite de contexte doit être 0 ou un nombre entier de {{min}} à {{max}}.",
+    "importMissing": "Cette version de mu ne sait pas encore importer de conversations. Mettez d’abord mu à jour.",
+    "importFailed": "mu n’a pas pu importer les conversations."
+  },
+  "importChats": {
+    "title": "Importer des conversations",
+    "description": "Faites entrer dans mu les conversations menées dans Claude Code ou Codex sur cet ordinateur, et poursuivez-les ici.",
+    "open": "Choisir…",
+    "dialog": {
+      "title": "Importer des conversations",
+      "hint": "Chaque conversation choisie devient une conversation mu dans son dossier de projet. mu lit tout ce qui a été dit ; le raisonnement et les images restent de côté.",
+      "search": "Rechercher par mots ou par dossier",
+      "loading": "Recherche des conversations…",
+      "empty": "Aucune conversation Claude Code ou Codex n’a été trouvée sur cet ordinateur.",
+      "noMatch": "Aucune conversation ne correspond.",
+      "noTitle": "(aucun message)",
+      "folderUnknown": "Dossier inconnu",
+      "inList": "Déjà dans la liste",
+      "open": "Ouvrir",
+      "selected": "Choisies : {{count}}",
+      "import": "Importer",
+      "importing": "Importation…",
+      "retry": "Réessayer"
+    },
+    "done": "{{count}} conversations importées. Elles sont dans votre liste de conversations.",
+    "done_one": "{{count}} conversation importée. Elle est dans votre liste de conversations.",
+    "done_other": "{{count}} conversations importées. Elles sont dans votre liste de conversations.",
+    "someFailed": "{{count}} conversations n’ont pas pu être importées. La raison est indiquée sous chacune.",
+    "someFailed_one": "{{count}} conversation n’a pas pu être importée. La raison est indiquée en dessous.",
+    "someFailed_other": "{{count}} conversations n’ont pas pu être importées. La raison est indiquée sous chacune.",
+    "failure": {
+      "missing": "Le fichier n’existe plus.",
+      "notFile": "Ce n’est pas un fichier.",
+      "notTranscript": "Ce n’est pas une conversation Claude Code ou Codex.",
+      "empty": "Elle ne contient aucun message.",
+      "folderMissing": "Son dossier de projet n’existe plus : {{folder}}",
+      "other": "Import impossible : {{detail}}"
+    },
+    "notice": {
+      "title": "Importée depuis {{tool}}",
+      "counts": "Vos messages : {{user}} · réponses : {{assistant}} · appels d’outils : {{toolCalls}}",
+      "goOn": "Continuez simplement ci-dessous : mu a lu la conversation. Le raisonnement et les images n’ont pas été repris.",
+      "read": "Lire la conversation précédente"
+    },
+    "history": {
+      "title": "Avant, dans {{tool}}",
+      "loading": "Lecture de la conversation…",
+      "you": "Vous",
+      "summary": "Résumé de ce qui précède",
+      "tools": "Outils utilisés : {{tools}}",
+      "earlier": "{{count}} étapes antérieures ne sont pas affichées.",
+      "earlier_one": "{{count}} étape antérieure n’est pas affichée.",
+      "earlier_other": "{{count}} étapes antérieures ne sont pas affichées.",
+      "empty": "Rien à afficher."
+    }
   }
 }

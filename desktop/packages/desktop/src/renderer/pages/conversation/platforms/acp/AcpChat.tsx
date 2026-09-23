@@ -37,6 +37,8 @@ const AcpChat: React.FC<{
   cron_job_id?: string;
   hideSendBox?: boolean;
   emptySlot?: React.ReactNode;
+  /** Above the first message: where an imported conversation came from. */
+  headerSlot?: React.ReactNode;
   loadedSkills?: string[];
   loadedMcpServers?: string[];
   loadedMcpStatuses?: IConversationMcpStatus[];
@@ -54,6 +56,7 @@ const AcpChat: React.FC<{
   cron_job_id,
   hideSendBox,
   emptySlot,
+  headerSlot,
   loadedSkills,
   loadedMcpServers,
   loadedMcpStatuses,
@@ -91,7 +94,7 @@ const AcpChat: React.FC<{
       <ConversationArtifactProvider conversation_id={conversation_id}>
         <div className={`${CHAT_SURFACE_CONTAINER_CLASS} flex-1 flex flex-col px-20px min-h-0`}>
           <FlexFullContainer>
-            <MessageList className='flex-1' emptySlot={emptySlot} />
+            <MessageList className='flex-1' emptySlot={emptySlot} headerSlot={headerSlot} />
           </FlexFullContainer>
           <AcpE2EStreamInjector conversationId={conversation_id} />
           <ConversationPlanBar conversation_id={conversation_id} />

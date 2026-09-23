@@ -180,4 +180,32 @@ describe('ChatConversation legacy runtime rendering', () => {
     rerender(<ChatConversation conversation={acpConversation} />);
     expect(screen.getByTestId('mock-runtime-restart').getAttribute('data-availability')).toBe('ready');
   });
+
+  it('says where an imported conversation came from, above its messages and where a new one greets', () => {
+    const mark = { tool: 'codex', source: '/tmp/rollout.jsonl', user: 2, assistant: 3, toolCalls: 4 };
+    const conversation = (extra: Record<string, unknown>) =>
+      ({
+        id: 'conv-imported',
+        user_id: 'user-1',
+        name: 'Imported',
+        type: 'acp',
+        model: {},
+        extra: { workspace: '/tmp/project', backend: 'kyrn', ...extra },
+        status: 'finished',
+        created_at: 1,
+        modified_at: 1,
+        pinned: false,
+      }) as TChatConversation;
+    type Slots = { headerSlot?: React.ReactElement<Record<string, unknown>> | null; emptySlot?: React.ReactElement };
+
+    render(<ChatConversation conversation={conversation({ mu_import: mark })} />);
+    const imported = acpChatMock.mock.calls[0]?.[0] as Slots | undefined;
+    expect(imported?.headerSlot?.props).toEqual({ conversationId: 'conv-imported', mark, inline: true });
+    expect(imported?.emptySlot?.props).toEqual({ conversationId: 'conv-imported', mark });
+
+    acpChatMock.mockClear();
+    render(<ChatConversation conversation={conversation({})} />);
+    const plain = acpChatMock.mock.calls[0]?.[0] as Slots | undefined;
+    expect(plain?.headerSlot).toBeNull();
+  });
 });

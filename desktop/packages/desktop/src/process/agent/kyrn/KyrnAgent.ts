@@ -16,12 +16,13 @@ import {
   type SessionConfigOption,
 } from '@agentclientprotocol/sdk';
 import { randomUUID } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { realpath } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { PiRpc, array, asRecord, text, type JsonRecord, type RpcPort } from './piRpc.ts';
 import { mapEvent, messageText, messageThinking } from './events.ts';
+import { isConversationId, readImportRecord, writeImportRecord, type ImportRecord } from './importChats.ts';
 import { muHome } from './naming.ts';
 import { Telemetry } from './telemetry.ts';
 import { slashCommands } from './commands.ts';
@@ -464,10 +465,36 @@ export class KyrnAgent implements Agent {
   }
   async newSession(params: NewSessionRequest): Promise<NewSessionResponse> {
     const id = randomUUID();
-    await this.attach(id, await realpath(params.cwd));
+    const cwd = await realpath(params.cwd);
+    const imported = await this.importFor(cwd);
+    await this.attach(id, cwd, imported?.record.file);
+    if (imported) this.adopted(imported.conversationId, imported.record, id);
     const configOptions = await this.options(id);
     this.advertise(id);
     return { sessionId: id, configOptions };
+  }
+  /**
+   * The session a conversation the app made from a Claude Code or Codex transcript goes on with, until an adapter
+   * session has opened it (process/agent/kyrn/importChats.ts). The backend starts an adapter for each conversation and
+   * names the conversation in the adapter's environment (`AIONUI_CONVERSATION_ID`, the backend's own variable).
+   */
+  private async importFor(cwd: string): Promise<{ conversationId: string; record: ImportRecord } | undefined> {
+    const conversationId = process.env.AIONUI_CONVERSATION_ID;
+    if (!isConversationId(conversationId)) return undefined;
+    const record = readImportRecord(this.store, conversationId);
+    if (!record || record.session || !existsSync(record.file)) return undefined;
+    // The conversation runs in the folder the transcript ran in; a folder that moved since cannot take the session.
+    const folder = await realpath(record.cwd).catch(() => record.cwd);
+    if (folder !== cwd) throw new Error(MU_TURN_ERRORS.wrongProject);
+    return { conversationId, record };
+  }
+  /** Marks an imported session as taken: a conversation reset later starts a session of its own. */
+  private adopted(conversationId: string, record: ImportRecord, session: string): void {
+    try {
+      writeImportRecord(this.store, conversationId, { ...record, session });
+    } catch {
+      // Unmarked, the conversation's next new session opens the same file again: the conversation, as it was.
+    }
   }
   async loadSession(params: LoadSessionRequest): Promise<LoadSessionResponse> {
     const saved = asRecord(JSON.parse(readFileSync(this.path(params.sessionId), 'utf8')));

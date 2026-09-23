@@ -1,5 +1,6 @@
 import { bridge } from '../platform/bridge';
 import { KyrnError, type KyrnResult } from './errors';
+import type { ImportedHistory, ImportList, ImportOutcome } from './importChats';
 import type { LessonChange, LessonsView } from './lessons';
 import type { LocalJudgeAction, LocalJudgeState } from './localJudge';
 import type { LoginState, LoginStatus, SubscriptionProvider } from './login';
@@ -25,6 +26,18 @@ export const kyrnBridge = {
   lessons: bridge.buildProvider<KyrnResult<LessonsView>, { conversationId: string }>('kyrn.lessons'),
   /** A new text or the retirement of one lesson, appended to the file as a line; answers with the lessons after it. */
   lessonsChange: bridge.buildProvider<KyrnResult<LessonsView>, LessonChange>('kyrn.lessons.change'),
+  /**
+   * Claude Code and Codex conversations on this computer (common/kyrn/importChats.ts); with `cwd`, only that project's.
+   * Each says whether an app conversation holds it already.
+   */
+  importList: bridge.buildProvider<KyrnResult<ImportList>, { cwd?: string }>('kyrn.import.list'),
+  /**
+   * Brings these transcripts into mu and makes each an app conversation in its project folder, created with the
+   * assistant snapshot in `locale`. One outcome per transcript; a failed one does not stop the others.
+   */
+  importRun: bridge.buildProvider<KyrnResult<ImportOutcome[]>, { paths: string[]; locale: string }>('kyrn.import.run'),
+  /** What an imported conversation said before it came to mu, to read back. */
+  importHistory: bridge.buildProvider<KyrnResult<ImportedHistory>, { conversationId: string }>('kyrn.import.history'),
   /** Signing in to a subscription with pi's OAuth flow; see common/kyrn/login.ts. */
   loginStart: bridge.buildProvider<KyrnResult<LoginState>, { provider: SubscriptionProvider }>('kyrn.login.start'),
   loginState: bridge.buildProvider<KyrnResult<LoginState>, void>('kyrn.login.state'),

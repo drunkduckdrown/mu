@@ -588,6 +588,60 @@
     "invalid": "Uno de los valores no es válido.",
     "unknown": "Algo salió mal en mu.",
     "unwritable": "No se pudo escribir {{file}}.",
-    "contextLimit": "El límite de contexto debe ser 0 o un número entero de {{min}} a {{max}}."
+    "contextLimit": "El límite de contexto debe ser 0 o un número entero de {{min}} a {{max}}.",
+    "importMissing": "Esta versión de mu aún no puede importar conversaciones. Actualiza mu primero.",
+    "importFailed": "mu no pudo importar las conversaciones."
+  },
+  "importChats": {
+    "title": "Importar conversaciones",
+    "description": "Trae a mu las conversaciones que tuviste en Claude Code o Codex en este ordenador y continúalas aquí.",
+    "open": "Elegir…",
+    "dialog": {
+      "title": "Importar conversaciones",
+      "hint": "Cada conversación que elijas se convierte en una conversación de mu en su carpeta de proyecto. mu lee todo lo que se dijo; el razonamiento y las imágenes se quedan fuera.",
+      "search": "Buscar por palabras o carpeta",
+      "loading": "Buscando conversaciones…",
+      "empty": "No se encontraron conversaciones de Claude Code ni de Codex en este ordenador.",
+      "noMatch": "Ninguna conversación coincide.",
+      "noTitle": "(sin mensajes)",
+      "folderUnknown": "Carpeta desconocida",
+      "inList": "Ya está en la lista",
+      "open": "Abrir",
+      "selected": "Elegidas: {{count}}",
+      "import": "Importar",
+      "importing": "Importando…",
+      "retry": "Reintentar"
+    },
+    "done": "Se importaron {{count}} conversaciones. Están en tu lista de conversaciones.",
+    "done_one": "Se importó {{count}} conversación. Está en tu lista de conversaciones.",
+    "done_other": "Se importaron {{count}} conversaciones. Están en tu lista de conversaciones.",
+    "someFailed": "No se pudieron importar {{count}} conversaciones. El motivo aparece debajo de cada una.",
+    "someFailed_one": "No se pudo importar {{count}} conversación. El motivo aparece debajo.",
+    "someFailed_other": "No se pudieron importar {{count}} conversaciones. El motivo aparece debajo de cada una.",
+    "failure": {
+      "missing": "El archivo ya no existe.",
+      "notFile": "Esto no es un archivo.",
+      "notTranscript": "Esto no es una conversación de Claude Code ni de Codex.",
+      "empty": "No contiene ningún mensaje.",
+      "folderMissing": "Su carpeta de proyecto ya no existe: {{folder}}",
+      "other": "No se pudo importar: {{detail}}"
+    },
+    "notice": {
+      "title": "Importada de {{tool}}",
+      "counts": "Tus mensajes: {{user}} · respuestas: {{assistant}} · llamadas a herramientas: {{toolCalls}}",
+      "goOn": "Sigue escribiendo abajo: mu ya leyó la conversación. El razonamiento y las imágenes no se trajeron.",
+      "read": "Leer la conversación anterior"
+    },
+    "history": {
+      "title": "Antes, en {{tool}}",
+      "loading": "Leyendo la conversación…",
+      "you": "Tú",
+      "summary": "Resumen de lo anterior",
+      "tools": "Usó: {{tools}}",
+      "earlier": "No se muestran {{count}} pasos anteriores.",
+      "earlier_one": "No se muestra {{count}} paso anterior.",
+      "earlier_other": "No se muestran {{count}} pasos anteriores.",
+      "empty": "No hay nada que mostrar."
+    }
   }
 }

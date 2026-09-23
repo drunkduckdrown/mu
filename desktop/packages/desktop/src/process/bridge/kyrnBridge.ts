@@ -11,6 +11,7 @@ import { testProvider } from '../agent/kyrn/config/connection';
 import { envFileOf, expectedHarness, findHarness, launcherOf, manifestOf } from '../agent/kyrn/harness';
 import { LocalJudge } from '../agent/kyrn/localJudge';
 import { OnnxLocalJudge, openFolder, usesOnnxJudge } from '../agent/kyrn/localJudgeOnnx';
+import { importCli, importService } from '../agent/kyrn/importChats';
 import { LessonsStore, lessonsProject, type LessonsProject } from '../agent/kyrn/lessons';
 import { activityPage, modelLevels } from '../agent/kyrn/telemetry';
 import { findRegistration, initializeKyrn } from '../agent/kyrn/product';
@@ -66,7 +67,9 @@ export function initKyrnBridge(): void {
   // that is its own copy, which only a broken build lacks.
   const found = findHarness(checkout);
   const harness = found ?? expectedHarness(checkout, process.resourcesPath);
-  console.log(`[mu] harness: ${found ? `${found.source}, ${found.layout}` : 'none found, expected'} at ${harness.root}`);
+  console.log(
+    `[mu] harness: ${found ? `${found.source}, ${found.layout}` : 'none found, expected'} at ${harness.root}`
+  );
   const root = harness.root;
   const home = muHome();
   const agentDir = muEnv('AGENT_DIR') || join(home, 'agent');
@@ -81,15 +84,14 @@ export function initKyrnBridge(): void {
   const launchers = app.isPackaged ? join(process.resourcesPath, 'mu') : join(desktopRoot, 'scripts', 'kyrn');
   const command = join(launchers, process.platform === 'win32' ? 'acp.cmd' : 'acp');
   let initialization: Promise<KyrnCatalog> | undefined;
-  kyrnBridge.catalog.provider(() =>
-    result(() => {
-      initialization ??= initializeKyrn(httpRequest, command).catch((error) => {
-        initialization = undefined;
-        throw error;
-      });
-      return initialization;
-    })
-  );
+  const catalog = (): Promise<KyrnCatalog> => {
+    initialization ??= initializeKyrn(httpRequest, command).catch((error) => {
+      initialization = undefined;
+      throw error;
+    });
+    return initialization;
+  };
+  kyrnBridge.catalog.provider(() => result(catalog));
   kyrnBridge.settings.provider(() => result(() => settings.read()));
   kyrnBridge.save.provider((input) => result(() => settings.save(input)));
   kyrnBridge.availableModels.provider(() =>
@@ -148,4 +150,20 @@ export function initKyrnBridge(): void {
   kyrnBridge.lessonsChange.provider((change) =>
     result(async () => lessons.change(await projectOf(change.conversationId), change))
   );
+  const imports = importService({
+    cli: importCli(harness),
+    // A conversation deleted since it was made is no error here: the import makes a new one.
+    request: <T>(method: string, path: string, body?: unknown) =>
+      httpRequest<T>(method, path, body, { silentStatuses: [404] }),
+    store,
+    assistant: async () => {
+      const { assistants } = await catalog();
+      const assistant = assistants.find((row) => row.enabled !== false) ?? assistants[0];
+      if (!assistant) throw new KyrnError('runtimeOffline', 'mu has no assistant to start a conversation with');
+      return assistant.id;
+    },
+  });
+  kyrnBridge.importList.provider(({ cwd }) => result(() => imports.list(cwd)));
+  kyrnBridge.importRun.provider(({ paths, locale }) => result(() => imports.run(paths, locale)));
+  kyrnBridge.importHistory.provider(({ conversationId }) => result(() => imports.history(conversationId)));
 }

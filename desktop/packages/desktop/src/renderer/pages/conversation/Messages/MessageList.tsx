@@ -446,7 +446,12 @@ const MessageItem: React.FC<{
         (prev.turnTexts ?? []).every((segment, i) => segment === next.turnTexts?.[i])))
 );
 
-const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }> = ({ emptySlot }) => {
+const MessageList: React.FC<{
+  className?: string;
+  emptySlot?: React.ReactNode;
+  /** Shown above the first message once the list reaches it, e.g. where an imported conversation came from. */
+  headerSlot?: React.ReactNode;
+}> = ({ emptySlot, headerSlot }) => {
   // At most one redraw a frame while a reply streams; a new or removed row still lands at once.
   const list = useCoalescedMessages(useMessageList());
   const isMessageListLoading = useMessageListLoading();
@@ -989,6 +994,7 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
               }}
             >
               <div className='h-10px' />
+              {headerSlot && !pagination.hasMoreBefore ? headerSlot : null}
               {processedList.map((item, index) => (
                 <React.Fragment key={getProcessedItemKey(item) || index}>{renderItem(index, item)}</React.Fragment>
               ))}

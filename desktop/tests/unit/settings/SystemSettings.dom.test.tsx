@@ -72,6 +72,14 @@ describe('the pages that were one long system page', () => {
     }
   );
 
+  it('offers to import Claude Code and Codex conversations below the conversation rows, and looks for none until asked', () => {
+    render(<ConversationSettings />);
+    const row = screen.getByTestId('import-chats');
+    expect(within(row).getByText('mu.importChats.title')).toBeInTheDocument();
+    expect(within(row).getByRole('button', { name: 'mu.importChats.open' })).toBeInTheDocument();
+    expect(screen.queryByText('mu.importChats.dialog.title')).not.toBeInTheDocument();
+  });
+
   it('keeps About and the conversation rows off the system page: they are pages of their own now', () => {
     render(<SystemSettings />);
     expect(screen.getByTestId('system-modal-content')).toBeInTheDocument();

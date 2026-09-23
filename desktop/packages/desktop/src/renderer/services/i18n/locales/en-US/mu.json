@@ -588,6 +588,60 @@
     "invalid": "One of the values is not valid.",
     "unknown": "Something went wrong in mu.",
     "unwritable": "{{file}} could not be written.",
-    "contextLimit": "The context cap must be 0 or a whole number from {{min}} to {{max}}."
+    "contextLimit": "The context cap must be 0 or a whole number from {{min}} to {{max}}.",
+    "importMissing": "This version of mu cannot import conversations yet. Update mu first.",
+    "importFailed": "mu could not import the conversations."
+  },
+  "importChats": {
+    "title": "Import conversations",
+    "description": "Bring conversations you had in Claude Code or Codex on this computer into mu, and continue them here.",
+    "open": "Choose…",
+    "dialog": {
+      "title": "Import conversations",
+      "hint": "Each conversation you choose becomes a mu conversation in its project folder. mu reads everything that was said; thinking and images stay behind.",
+      "search": "Search by words or folder",
+      "loading": "Looking for conversations…",
+      "empty": "No Claude Code or Codex conversations were found on this computer.",
+      "noMatch": "No conversation matches.",
+      "noTitle": "(no message)",
+      "folderUnknown": "Folder unknown",
+      "inList": "In your list",
+      "open": "Open",
+      "selected": "Chosen: {{count}}",
+      "import": "Import",
+      "importing": "Importing…",
+      "retry": "Try again"
+    },
+    "done": "{{count}} conversations imported. They are in your conversation list.",
+    "done_one": "{{count}} conversation imported. It is in your conversation list.",
+    "done_other": "{{count}} conversations imported. They are in your conversation list.",
+    "someFailed": "{{count}} conversations could not be imported. The reason is under each.",
+    "someFailed_one": "{{count}} conversation could not be imported. The reason is under it.",
+    "someFailed_other": "{{count}} conversations could not be imported. The reason is under each.",
+    "failure": {
+      "missing": "The file is gone.",
+      "notFile": "This is not a file.",
+      "notTranscript": "This is not a Claude Code or Codex conversation.",
+      "empty": "There is no message in it.",
+      "folderMissing": "Its project folder is gone: {{folder}}",
+      "other": "It could not be imported: {{detail}}"
+    },
+    "notice": {
+      "title": "Imported from {{tool}}",
+      "counts": "Your messages: {{user}} · answers: {{assistant}} · tool calls: {{toolCalls}}",
+      "goOn": "Just keep going below: mu has read the conversation. Thinking and images were not brought along.",
+      "read": "Read the earlier conversation"
+    },
+    "history": {
+      "title": "Earlier, in {{tool}}",
+      "loading": "Reading the conversation…",
+      "you": "You",
+      "summary": "Summary of what came before",
+      "tools": "Used: {{tools}}",
+      "earlier": "{{count}} earlier steps are not shown.",
+      "earlier_one": "{{count}} earlier step is not shown.",
+      "earlier_other": "{{count}} earlier steps are not shown.",
+      "empty": "There is nothing to show."
+    }
   }
 }

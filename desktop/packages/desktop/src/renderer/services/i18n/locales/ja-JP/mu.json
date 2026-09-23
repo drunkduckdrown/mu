@@ -588,6 +588,60 @@
     "invalidJson": "{{file}} は有効な JSON ではありません。手動で修正してから再読み込みしてください。",
     "unreadable": "{{file}} を読み取れませんでした。",
     "runtimeOffline": "mu のランタイムがオフラインです。ローカルのランチャーとログイン状態を確認してください。",
-    "sharedKey": "{{providers}} が同じキー変数を共有することになります。いずれかの ID を変更してください。"
+    "sharedKey": "{{providers}} が同じキー変数を共有することになります。いずれかの ID を変更してください。",
+    "importMissing": "このバージョンの mu はまだ会話を取り込めません。先に mu を更新してください。",
+    "importFailed": "mu は会話を取り込めませんでした。"
+  },
+  "importChats": {
+    "title": "会話を取り込む",
+    "description": "このコンピューターで Claude Code や Codex と交わした会話を mu に取り込み、ここで続けます。",
+    "open": "会話を選ぶ",
+    "dialog": {
+      "title": "会話を取り込む",
+      "hint": "選んだ会話はそれぞれ、元のプロジェクトフォルダーにある mu の会話になります。mu はそれまでのやり取りをすべて読みます。思考過程と画像は取り込まれません。",
+      "search": "内容やフォルダーで検索",
+      "loading": "会話を探しています…",
+      "empty": "このコンピューターに Claude Code や Codex の会話は見つかりませんでした。",
+      "noMatch": "一致する会話はありません。",
+      "noTitle": "（メッセージなし）",
+      "folderUnknown": "フォルダー不明",
+      "inList": "会話リストにあります",
+      "open": "開く",
+      "selected": "選択中：{{count}}",
+      "import": "取り込む",
+      "importing": "取り込み中…",
+      "retry": "もう一度試す"
+    },
+    "done": "{{count}} 件の会話を取り込みました。会話リストにあります。",
+    "done_one": "{{count}} 件の会話を取り込みました。会話リストにあります。",
+    "done_other": "{{count}} 件の会話を取り込みました。会話リストにあります。",
+    "someFailed": "{{count}} 件の会話を取り込めませんでした。理由はそれぞれの下にあります。",
+    "someFailed_one": "{{count}} 件の会話を取り込めませんでした。理由はそれぞれの下にあります。",
+    "someFailed_other": "{{count}} 件の会話を取り込めませんでした。理由はそれぞれの下にあります。",
+    "failure": {
+      "missing": "ファイルがもうありません。",
+      "notFile": "これはファイルではありません。",
+      "notTranscript": "これは Claude Code や Codex の会話ではありません。",
+      "empty": "メッセージが入っていません。",
+      "folderMissing": "プロジェクトフォルダーがもうありません：{{folder}}",
+      "other": "取り込めませんでした：{{detail}}"
+    },
+    "notice": {
+      "title": "{{tool}} から取り込んだ会話",
+      "counts": "あなたのメッセージ {{user}} 件 · 回答 {{assistant}} 件 · ツール呼び出し {{toolCalls}} 回",
+      "goOn": "下でそのまま続けてください。mu はここまでの会話を読んでいます。思考過程と画像は取り込まれていません。",
+      "read": "これまでの会話を見る"
+    },
+    "history": {
+      "title": "{{tool}} でのこれまでの会話",
+      "loading": "会話を読み込んでいます…",
+      "you": "あなた",
+      "summary": "それ以前の内容の要約",
+      "tools": "使用：{{tools}}",
+      "earlier": "それ以前の {{count}} 件は表示していません。",
+      "earlier_one": "それ以前の {{count}} 件は表示していません。",
+      "earlier_other": "それ以前の {{count}} 件は表示していません。",
+      "empty": "表示できる内容はありません。"
+    }
   }
 }

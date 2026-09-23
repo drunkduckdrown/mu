@@ -22,6 +22,8 @@ import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { emitter } from '../../../utils/emitter';
 import AcpChat from '../platforms/acp/AcpChat';
+import ImportedChatNotice from '../platforms/acp/ImportedChat';
+import { importMarkOf } from '@/common/kyrn/importChats';
 import ChatLayout from './ChatLayout';
 import ChatSlider from './ChatSlider.tsx';
 import AcpRuntimeRestartButton from '@/renderer/components/agent/AcpRuntimeRestartButton';
@@ -311,15 +313,21 @@ const ChatConversation: React.FC<{
 
   const conversationNode = useMemo(() => {
     if (!conversation || isAionrsConversation) return null;
+    // A conversation made from a Claude Code or Codex transcript says so where a new one greets, then stays above its
+    // first message.
+    const imported = importMarkOf(conversation.extra);
     // Greeting shown while the conversation has no messages yet (freshly created
     // or cloned window). Each *Chat forwards it to MessageList's empty slot.
-    const emptySlot = (
+    const emptySlot = imported ? (
+      <ImportedChatNotice conversationId={conversation.id} mark={imported} />
+    ) : (
       <SingleChatEmptyState
         conversation_id={conversation.id}
         assistant_name={assistantDisplayName}
         assistant_backend={resolvedConversationBackend}
       />
     );
+    const headerSlot = imported ? <ImportedChatNotice conversationId={conversation.id} mark={imported} inline /> : null;
     if (isLegacyReadOnlyConversation) {
       return <LegacyReadOnlyConversation key={conversation.id} conversation={conversation} emptySlot={emptySlot} />;
     }
@@ -342,6 +350,7 @@ const ChatConversation: React.FC<{
             cron_job_id={cronJobId}
             hideSendBox={resolvedHideSendBox}
             emptySlot={emptySlot}
+            headerSlot={headerSlot}
             loadedSkills={(conversation.extra as { skills?: string[] } | undefined)?.skills}
             loadedMcpServers={(conversation.extra as { mcp_servers?: string[] } | undefined)?.mcp_servers}
             loadedMcpStatuses={

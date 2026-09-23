@@ -588,6 +588,60 @@
     "invalid": "Değerlerden biri geçerli değil.",
     "unknown": "mu'da bir sorun oluştu.",
     "unwritable": "{{file}} yazılamadı.",
-    "contextLimit": "Bağlam sınırı 0 ya da {{min}} ile {{max}} arasında bir tam sayı olmalıdır."
+    "contextLimit": "Bağlam sınırı 0 ya da {{min}} ile {{max}} arasında bir tam sayı olmalıdır.",
+    "importMissing": "Bu mu sürümü henüz konuşmaları içe aktaramıyor. Önce mu’yu güncelleyin.",
+    "importFailed": "mu konuşmaları içe aktaramadı."
+  },
+  "importChats": {
+    "title": "Konuşmaları içe aktar",
+    "description": "Bu bilgisayarda Claude Code veya Codex ile yaptığınız konuşmaları mu’ya getirin ve burada sürdürün.",
+    "open": "Seç…",
+    "dialog": {
+      "title": "Konuşmaları içe aktar",
+      "hint": "Seçtiğiniz her konuşma, kendi proje klasöründe bir mu konuşması olur. mu söylenen her şeyi okur; düşünme adımları ve görseller aktarılmaz.",
+      "search": "Sözcüğe veya klasöre göre ara",
+      "loading": "Konuşmalar aranıyor…",
+      "empty": "Bu bilgisayarda Claude Code veya Codex konuşması bulunamadı.",
+      "noMatch": "Eşleşen konuşma yok.",
+      "noTitle": "(mesaj yok)",
+      "folderUnknown": "Klasör bilinmiyor",
+      "inList": "Listenizde",
+      "open": "Aç",
+      "selected": "Seçilen: {{count}}",
+      "import": "İçe aktar",
+      "importing": "İçe aktarılıyor…",
+      "retry": "Yeniden dene"
+    },
+    "done": "{{count}} konuşma içe aktarıldı. Konuşma listenizdeler.",
+    "done_one": "{{count}} konuşma içe aktarıldı. Konuşma listenizde.",
+    "done_other": "{{count}} konuşma içe aktarıldı. Konuşma listenizdeler.",
+    "someFailed": "{{count}} konuşma içe aktarılamadı. Nedeni her birinin altında yazıyor.",
+    "someFailed_one": "{{count}} konuşma içe aktarılamadı. Nedeni altında yazıyor.",
+    "someFailed_other": "{{count}} konuşma içe aktarılamadı. Nedeni her birinin altında yazıyor.",
+    "failure": {
+      "missing": "Dosya artık yok.",
+      "notFile": "Bu bir dosya değil.",
+      "notTranscript": "Bu bir Claude Code veya Codex konuşması değil.",
+      "empty": "İçinde hiç mesaj yok.",
+      "folderMissing": "Proje klasörü artık yok: {{folder}}",
+      "other": "İçe aktarılamadı: {{detail}}"
+    },
+    "notice": {
+      "title": "İçe aktarılan konuşma · {{tool}}",
+      "counts": "Mesajlarınız: {{user}} · yanıtlar: {{assistant}} · araç çağrıları: {{toolCalls}}",
+      "goOn": "Aşağıda devam etmeniz yeterli: mu konuşmayı okudu. Düşünme adımları ve görseller aktarılmadı.",
+      "read": "Önceki konuşmayı oku"
+    },
+    "history": {
+      "title": "Önceki konuşma · {{tool}}",
+      "loading": "Konuşma okunuyor…",
+      "you": "Siz",
+      "summary": "Öncesinin özeti",
+      "tools": "Kullanılan: {{tools}}",
+      "earlier": "Önceki {{count}} adım gösterilmiyor.",
+      "earlier_one": "Önceki {{count}} adım gösterilmiyor.",
+      "earlier_other": "Önceki {{count}} adım gösterilmiyor.",
+      "empty": "Gösterilecek bir şey yok."
+    }
   }
 }

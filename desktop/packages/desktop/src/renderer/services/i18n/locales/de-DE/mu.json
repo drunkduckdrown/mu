@@ -588,6 +588,60 @@
     "invalid": "Einer der Werte ist ungültig.",
     "unknown": "In mu ist etwas schiefgelaufen.",
     "unwritable": "{{file}} konnte nicht geschrieben werden.",
-    "contextLimit": "Die Kontextgrenze muss 0 oder eine ganze Zahl von {{min}} bis {{max}} sein."
+    "contextLimit": "Die Kontextgrenze muss 0 oder eine ganze Zahl von {{min}} bis {{max}} sein.",
+    "importMissing": "Diese mu-Version kann noch keine Unterhaltungen importieren. Aktualisiere mu zuerst.",
+    "importFailed": "mu konnte die Unterhaltungen nicht importieren."
+  },
+  "importChats": {
+    "title": "Unterhaltungen importieren",
+    "description": "Hol Unterhaltungen, die du auf diesem Computer in Claude Code oder Codex geführt hast, in mu und führe sie hier fort.",
+    "open": "Auswählen…",
+    "dialog": {
+      "title": "Unterhaltungen importieren",
+      "hint": "Jede ausgewählte Unterhaltung wird zu einer mu-Unterhaltung in ihrem Projektordner. mu liest alles, was gesagt wurde; Denkschritte und Bilder bleiben zurück.",
+      "search": "Nach Wörtern oder Ordner suchen",
+      "loading": "Unterhaltungen werden gesucht…",
+      "empty": "Auf diesem Computer wurden keine Unterhaltungen aus Claude Code oder Codex gefunden.",
+      "noMatch": "Keine Unterhaltung passt.",
+      "noTitle": "(keine Nachricht)",
+      "folderUnknown": "Ordner unbekannt",
+      "inList": "Schon in der Liste",
+      "open": "Öffnen",
+      "selected": "Ausgewählt: {{count}}",
+      "import": "Importieren",
+      "importing": "Wird importiert…",
+      "retry": "Erneut versuchen"
+    },
+    "done": "{{count}} Unterhaltungen importiert. Sie stehen in deiner Unterhaltungsliste.",
+    "done_one": "{{count}} Unterhaltung importiert. Sie steht in deiner Unterhaltungsliste.",
+    "done_other": "{{count}} Unterhaltungen importiert. Sie stehen in deiner Unterhaltungsliste.",
+    "someFailed": "{{count}} Unterhaltungen konnten nicht importiert werden. Der Grund steht jeweils darunter.",
+    "someFailed_one": "{{count}} Unterhaltung konnte nicht importiert werden. Der Grund steht darunter.",
+    "someFailed_other": "{{count}} Unterhaltungen konnten nicht importiert werden. Der Grund steht jeweils darunter.",
+    "failure": {
+      "missing": "Die Datei gibt es nicht mehr.",
+      "notFile": "Das ist keine Datei.",
+      "notTranscript": "Das ist keine Unterhaltung aus Claude Code oder Codex.",
+      "empty": "Sie enthält keine Nachricht.",
+      "folderMissing": "Ihr Projektordner existiert nicht mehr: {{folder}}",
+      "other": "Import nicht möglich: {{detail}}"
+    },
+    "notice": {
+      "title": "Aus {{tool}} importiert",
+      "counts": "Deine Nachrichten: {{user}} · Antworten: {{assistant}} · Werkzeugaufrufe: {{toolCalls}}",
+      "goOn": "Schreib einfach unten weiter: mu hat die Unterhaltung gelesen. Denkschritte und Bilder wurden nicht übernommen.",
+      "read": "Frühere Unterhaltung lesen"
+    },
+    "history": {
+      "title": "Vorher, in {{tool}}",
+      "loading": "Unterhaltung wird gelesen…",
+      "you": "Du",
+      "summary": "Zusammenfassung des Früheren",
+      "tools": "Verwendet: {{tools}}",
+      "earlier": "{{count}} frühere Schritte werden nicht angezeigt.",
+      "earlier_one": "{{count}} früherer Schritt wird nicht angezeigt.",
+      "earlier_other": "{{count}} frühere Schritte werden nicht angezeigt.",
+      "empty": "Es gibt nichts anzuzeigen."
+    }
   }
 }
