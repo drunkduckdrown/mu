@@ -1,9 +1,12 @@
 # Changelog
 
-## [0.1.1] - 2026-09-22
+## [0.1.2] - 2026-09-23
+
+0.1.1 was prepared on 2026-09-22 but never published; its changes are in this release.
 
 ### Added
 
+- `mu import --list` finds your Claude Code and Codex conversations, `mu import <file>...` brings them into mu as sessions to continue; `/import-chat` does the same inside a session. Thinking and images are not imported; a transcript is never imported twice.
 - `judge/manifest.json`, the description of every decision and feature the desktop app draws its settings from, so the app can run an mu that came from npm.
 - The settings texts in eleven more languages (zh-TW, ja-JP, ko-KR, de-DE, fr-FR, es-ES, pt-BR, ru-RU, uk-UA, tr-TR, fa-IR).
 - `mu auth status | login <provider> | logout <provider>`: the subscription sign-in (ChatGPT, Claude, Grok, and Google while `googleLogin` is on) as JSON lines, which the desktop app runs, also with the copy of mu it carries inside it.
@@ -11,6 +14,7 @@
 ### Fixed
 
 - `mu doctor` no longer reports a login on a fresh install, where pi has only written an empty auth.json.
+- mu started by the desktop app's Electron no longer hands `ELECTRON_RUN_AS_NODE` to the programs it starts.
 
 ## [0.1.0] - 2026-09-22
 
