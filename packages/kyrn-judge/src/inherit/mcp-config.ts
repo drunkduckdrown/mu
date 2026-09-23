@@ -1,5 +1,6 @@
 import { join, resolve } from "node:path";
-import { projectChain, readText } from "./files.ts";
+import { projectChain, readBytes, readText } from "./files.ts";
+import { type JsonSelection, parseSelected } from "./json-members.ts";
 import { readMcpServerTables } from "./toml.ts";
 import type {
 	HttpServer,
@@ -140,12 +141,13 @@ function overlayOf(raw: unknown): Overlay | undefined {
 	};
 }
 
-function parseJson(path: string, problems: InheritProblem[]): Json | undefined {
-	const text = readText(path, problems, 32 * 1024 * 1024);
-	if (text === undefined) return undefined;
+/** The selected members of the object in a JSON file (see `parseSelected`); the rest of the file is never built. */
+function parseJson(path: string, problems: InheritProblem[], selection: JsonSelection): Json | undefined {
+	const bytes = readBytes(path, problems, 32 * 1024 * 1024);
+	if (bytes === undefined) return undefined;
 	try {
-		const parsed: unknown = JSON.parse(text);
-		if (isRecord(parsed)) return parsed;
+		const parsed = parseSelected(bytes, selection);
+		if (parsed) return parsed;
 		problems.push({ source: path, message: "skipped: it does not hold a JSON object" });
 	} catch {
 		// The parser's message can quote the file, and the file can hold tokens.
@@ -221,12 +223,18 @@ export function discoverMcpServers(options: McpDiscoveryOptions, problems: Inher
 	let disabledInClaude = new Set<string>();
 	if (inherit && switches.claude) {
 		const path = join(roots.home, ".claude.json");
-		const config = parseJson(path, problems);
+		// The user's own servers for this project, nearest folder first. They live in the home folder, so they are the user's.
+		const dirs = [resolve(roots.projectDir), ...chain.slice(1)];
+		const wanted = new Set(dirs.map((dir) => pathKey(dir, platform)));
+		// Every project Claude Code has seen is in this file, with its prompt history. Only this project's are built.
+		const config = parseJson(path, problems, {
+			mcpServers: true,
+			projects: (key) => wanted.has(pathKey(key, platform)),
+		});
 		if (config) {
 			const projects = isRecord(config.projects) ? config.projects : {};
 			const keys = new Map(Object.keys(projects).map((key) => [pathKey(key, platform), key]));
-			// The user's own servers for this project, nearest folder first. They live in the home folder, so they are the user's.
-			for (const dir of [resolve(roots.projectDir), ...chain.slice(1)]) {
+			for (const dir of dirs) {
 				const key = keys.get(pathKey(dir, platform));
 				const project = key ? projects[key] : undefined;
 				if (!isRecord(project)) continue;
@@ -242,7 +250,7 @@ export function discoverMcpServers(options: McpDiscoveryOptions, problems: Inher
 	}
 	if (inherit && switches.cursor) {
 		const path = join(roots.home, ".cursor", "mcp.json");
-		add(parseJson(path, problems)?.mcpServers, { source: path, tool: "cursor", scope: "user" });
+		add(parseJson(path, problems, { mcpServers: true })?.mcpServers, { source: path, tool: "cursor", scope: "user" });
 	}
 	if (inherit && switches.codex) {
 		const path = join(roots.home, ".codex", "config.toml");
@@ -275,7 +283,7 @@ export function discoverMcpServers(options: McpDiscoveryOptions, problems: Inher
 					continue;
 				}
 				add(
-					parseJson(file.path, problems)?.mcpServers,
+					parseJson(file.path, problems, { mcpServers: true })?.mcpServers,
 					{ source: file.path, tool: file.tool, scope: "project" },
 					disabledInClaude,
 				);

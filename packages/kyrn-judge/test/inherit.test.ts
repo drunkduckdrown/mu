@@ -1,9 +1,10 @@
 import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { listOf, readFrontmatter } from "../src/inherit/frontmatter.ts";
 import { globToRegExp, matchesAnyGlob } from "../src/inherit/glob.ts";
+import { type JsonSelection, parseSelected } from "../src/inherit/json-members.ts";
 import { expandPlaceholders } from "../src/inherit/mcp-config.ts";
 import { ruleLabel, rulesForFile } from "../src/inherit/rules.ts";
 import { inheritanceSummary, readInheritState, scanInheritance, writeInheritState } from "../src/inherit/scan.ts";
@@ -238,6 +239,57 @@ when = 1979-05-27T07:32:00Z
 	});
 });
 
+describe("the selective JSON reader", () => {
+	const read = (text: string, selection: JsonSelection) => parseSelected(Buffer.from(text), selection);
+
+	it("builds the selected members as JSON.parse does, and steps over the rest", () => {
+		const text = JSON.stringify(
+			{
+				history: [{ display: 'a "quoted" } and { in a prompt', path: "C:\\dir\\", note: "\\" }],
+				mcpServers: { a: { command: "x", args: ["{", "}", '"', "\\"] } },
+				projects: { "/a": { mcpServers: { b: {} } }, "/b": { big: "x".repeat(1000) }, "/c": [1, { d: null }] },
+				flag: true,
+				count: -1.5e3,
+			},
+			null,
+			"\t",
+		);
+		const whole = JSON.parse(text);
+		expect(read(text, { mcpServers: true, flag: true, count: true })).toEqual({
+			mcpServers: whole.mcpServers,
+			flag: true,
+			count: -1500,
+		});
+		// Of an object member, only the entries whose key passes.
+		expect(read(text, { projects: (key) => key !== "/b" })).toEqual({
+			projects: { "/a": whole.projects["/a"], "/c": whole.projects["/c"] },
+		});
+		expect(read(`\uFEFF ${text}\n`, { missing: true })).toEqual({});
+		expect(read('{"\\u0061": 1}', { a: true })).toEqual({ a: 1 });
+		// The last of two equal keys wins; one a key test selects has to be an object.
+		expect(read('{"a": 1, "a": {"b": 2, "c": 3}}', { a: (key) => key === "b" })).toEqual({ a: { b: 2 } });
+		expect(read('{"a": {"b": 2}, "a": [1]}', { a: () => true })).toEqual({});
+	});
+
+	it("tells an object from anything else, and throws on an object that is not JSON", () => {
+		expect(read("[]", { a: true })).toBeUndefined();
+		expect(read("", { a: true })).toBeUndefined();
+		for (const broken of [
+			'{"a": 1',
+			'{"a": 1} x',
+			'{"a" 1}',
+			"{a: 1}",
+			'{"a": 1,}',
+			'{"a": "never closed}',
+			'{"a": }',
+			'{"a": [1, 2}',
+			'{"a": tru}',
+		]) {
+			expect(() => read(broken, { a: true }), broken).toThrow(SyntaxError);
+		}
+	});
+});
+
 describe("MCP server definitions", () => {
 	const claudeJson = (project: string) =>
 		JSON.stringify({
@@ -321,6 +373,37 @@ describe("MCP server definitions", () => {
 		expect(reasons["github@/code/app/.mcp.json"]).toContain("is used instead");
 		expect(scan.problems).toEqual([]);
 		expect(inheritanceSummary(scan)).toBe("Inherited 6 MCP servers from Claude Code, Cursor and Codex.");
+	});
+
+	// A VPS with 1 GB: Claude Code's file had grown to 30 MB of prompt history, and building all of it, twice at every
+	// start, took the heap from about 40 MB to about 180 MB.
+	it("builds only this project's entries of a large ~/.claude.json", () => {
+		const { home, project } = fixture({});
+		const projects: Record<string, unknown> = {};
+		for (let index = 0; index < 2000; index++) {
+			projects[`/work/project-${index}`] = {
+				history: [{ display: "a long prompt ".repeat(100), pastedContents: {} }],
+				mcpServers: { [`other-${index}`]: { command: "other" } },
+			};
+		}
+		projects[project] = { mcpServers: { scratch: { command: "node", args: ["scratch.js"] } } };
+		const text = JSON.stringify({ numStartups: 5, projects, mcpServers: { github: { command: "npx" } } });
+		writeFileSync(join(home, ".claude.json"), text);
+
+		const parse = vi.spyOn(JSON, "parse");
+		let parsed: number;
+		let scan: ReturnType<typeof scanInheritance>;
+		try {
+			scan = scanInheritance({ roots: { home, projectDir: project, projectTrusted: true } });
+			parsed = parse.mock.calls.reduce((sum, [source]) => sum + source.length, 0);
+		} finally {
+			parse.mockRestore();
+		}
+		expect(scan.servers.map((server) => server.name)).toEqual(["scratch", "github"]);
+		expect(scan.problems).toEqual([]);
+		// The keys of the projects and the two members used, not the file.
+		expect(text.length).toBeGreaterThan(2_500_000);
+		expect(parsed).toBeLessThan(text.length / 20);
 	});
 
 	it("does not even parse project files of an untrusted project, but says they are there", () => {

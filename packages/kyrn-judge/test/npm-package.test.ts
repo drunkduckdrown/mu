@@ -75,7 +75,9 @@ async function bundle(source: string, outfile: string, plugin: Plugin): Promise<
 		plugins: [plugin],
 	});
 	return Object.values(result.metafile.outputs).flatMap((output) =>
-		output.imports.filter((imported) => imported.external && !isBuiltin(imported.path)).map((imported) => imported.path),
+		output.imports
+			.filter((imported) => imported.external && !isBuiltin(imported.path))
+			.map((imported) => imported.path),
 	);
 }
 

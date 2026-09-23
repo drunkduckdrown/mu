@@ -26,8 +26,8 @@ export function projectChain(projectDir: string, home: string): string[] {
 	return start === homeDir ? [] : [start];
 }
 
-/** The text of a file, `undefined` when it does not exist. Other failures are reported and skipped. */
-export function readText(path: string, problems: InheritProblem[], maxBytes = MAX_FILE_BYTES): string | undefined {
+/** The bytes of a file, `undefined` when it does not exist. Other failures are reported and skipped. */
+export function readBytes(path: string, problems: InheritProblem[], maxBytes = MAX_FILE_BYTES): Buffer | undefined {
 	try {
 		const stats = statSync(path);
 		if (!stats.isFile()) return undefined;
@@ -35,13 +35,18 @@ export function readText(path: string, problems: InheritProblem[], maxBytes = MA
 			problems.push({ source: path, message: `skipped: larger than ${maxBytes} bytes` });
 			return undefined;
 		}
-		return readFileSync(path, "utf8").replace(/^﻿/, "");
+		return readFileSync(path);
 	} catch (error) {
 		const code = (error as NodeJS.ErrnoException).code;
 		if (code === "ENOENT" || code === "ENOTDIR") return undefined;
 		problems.push({ source: path, message: `could not be read (${code ?? "error"})` });
 		return undefined;
 	}
+}
+
+/** The text of a file without a byte order mark, `undefined` when it does not exist, as with `readBytes`. */
+export function readText(path: string, problems: InheritProblem[], maxBytes = MAX_FILE_BYTES): string | undefined {
+	return readBytes(path, problems, maxBytes)?.toString("utf8").replace(/^﻿/, "");
 }
 
 /** Files below `dir` with one of the extensions, sorted, symlinks followed once. Missing folders are empty. */
