@@ -34,6 +34,7 @@ import {
 	parseEnvFile,
 	parseTasklist,
 	parseWindowsProcesses,
+	planAuth,
 	planJudge,
 	planLaunch,
 	planLink,
@@ -487,6 +488,88 @@ describe("the npm package (mu-agent)", () => {
 		expect(packageEntries({ root: POSIX_PACKAGE, platform: "linux" }).extension).toBe(
 			`${POSIX_PACKAGE}/judge/dist/kyrn-judge.js`,
 		);
+	});
+
+	it("signs in with `mu auth` from the package's built sign-in, in mu's agent folder, and reads no key for it", () => {
+		const plan = planAuth({
+			platform: "win32",
+			env: { Path: "C:\\Windows", TYPESAFE_API_KEY: undefined },
+			argv: ["login", "openai-codex"],
+			root: WIN_PACKAGE,
+			home: WIN_HOME,
+			execPath: "C:\\Program Files\\mu\\mu.exe",
+			fs: disk({
+				...winPackage,
+				[`${WIN_PACKAGE}\\judge\\dist\\auth.js`]: "",
+				"C:\\Users\\bai\\.mu\\.env": "TYPESAFE_API_KEY=x\n",
+			}),
+		});
+		if (plan.error !== undefined) throw new Error(plan.error);
+		expect(plan.command).toBe("C:\\Program Files\\mu\\mu.exe");
+		expect(plan.args).toEqual([`${WIN_PACKAGE}\\judge\\dist\\auth.js`, "login", "openai-codex"]);
+		expect(plan.strategy).toBe("spawn");
+		expect(plan.env).toEqual({ Path: "C:\\Windows", MU_AGENT_DIR: "C:\\Users\\bai\\.mu\\agent" });
+		expect(plan.agentDir).toBe("C:\\Users\\bai\\.mu\\agent");
+		// A package that lost its sign-in says so.
+		const broken = planAuth({
+			platform: "linux",
+			env: {},
+			argv: ["status"],
+			root: POSIX_PACKAGE,
+			home: "/home/bai",
+			execPath: "node",
+			fs: disk(posixPackage),
+		});
+		expect(broken.error).toContain(`${POSIX_PACKAGE}/judge/dist/auth.js is missing`);
+		expect(packageEntries({ root: POSIX_PACKAGE, platform: "linux" }).auth).toBe(
+			`${POSIX_PACKAGE}/judge/dist/auth.js`,
+		);
+	});
+});
+
+describe("mu auth in a checkout", () => {
+	it("runs the sign-in's sources through tsx, in the agent folder mu uses everywhere else", () => {
+		const plan = planAuth({
+			platform: "linux",
+			env: { MU_AGENT_DIR: "/srv/mu-agent" },
+			argv: ["status"],
+			root: POSIX_ROOT,
+			home: "/home/bai",
+			execPath: "/usr/bin/node",
+			canExec: true,
+			fs: disk(posixInstalled),
+		});
+		if (plan.error !== undefined) throw new Error(plan.error);
+		expect(plan.args).toEqual([
+			`${POSIX_ROOT}/node_modules/tsx/dist/cli.mjs`,
+			"--tsconfig",
+			`${POSIX_ROOT}/tsconfig.json`,
+			`${POSIX_ROOT}/packages/kyrn-judge/src/auth/main.ts`,
+			"status",
+		]);
+		expect(plan.strategy).toBe("exec");
+		expect(plan.env.MU_AGENT_DIR).toBe("/srv/mu-agent");
+		// Before the rename the home was ~/.kyrn; a machine that still has only that one keeps it.
+		const legacy = planAuth({
+			platform: "linux",
+			env: {},
+			argv: ["status"],
+			root: POSIX_ROOT,
+			home: "/home/bai",
+			execPath: "node",
+			fs: disk(posixInstalled, ["/home/bai/.kyrn"]),
+		});
+		expect(legacy.error === undefined && legacy.env.MU_AGENT_DIR).toBe("/home/bai/.kyrn/agent");
+		const bare = planAuth({
+			platform: "linux",
+			env: {},
+			argv: ["status"],
+			root: POSIX_ROOT,
+			home: "/home/bai",
+			execPath: "node",
+			fs: disk({}),
+		});
+		expect(bare.error).toContain("npm ci --ignore-scripts");
 	});
 });
 

@@ -39,7 +39,11 @@ export function resolveTsx(input: {
 export function installHint(input: { root: string; platform: Platform }): string;
 export type Layout = "repo" | "package";
 export function layoutOf(input: { root: string; platform: Platform; exists(path: string): boolean }): Layout;
-export function packageEntries(input: { root: string; platform: Platform }): { cli: string; extension: string };
+export function packageEntries(input: { root: string; platform: Platform }): {
+	cli: string;
+	extension: string;
+	auth: string;
+};
 export function envFilePath(input: { layout: Layout; root: string; muDir: string; platform: Platform }): string;
 export function agentDirFor(input: { env: Env; muDir: string; platform: Platform }): string;
 export function wantsLaya(input: {
@@ -81,6 +85,26 @@ export function planLaunch(input: {
 	wsl?: boolean;
 	fs: { exists(path: string): boolean; isDir(path: string): boolean; readFile(path: string): string };
 }): LaunchPlan | { error: string };
+
+export const AUTH_COMMANDS: readonly string[];
+export interface AuthPlan {
+	error?: undefined;
+	command: string;
+	args: string[];
+	env: Record<string, string>;
+	strategy: "exec" | "spawn";
+	agentDir: string;
+}
+export function planAuth(input: {
+	platform: Platform;
+	env: Env;
+	argv: readonly string[];
+	root: string;
+	home: string;
+	execPath: string;
+	canExec?: boolean;
+	fs: { exists(path: string): boolean; isDir(path: string): boolean; readFile(path: string): string };
+}): AuthPlan | { error: string };
 
 export type JudgePlan =
 	| { kind: "script"; command: string; args: string[] }

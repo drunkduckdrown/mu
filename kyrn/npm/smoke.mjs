@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// After `npm i -g mu-agent`: does the installed `mu` run, and does it load the judgment layer?
+// After `npm i -g mu-agent`: does the installed `mu` run, does it load the judgment layer, and does `mu auth` answer?
 //
 //   node kyrn/npm/smoke.mjs [the mu command]
 //
@@ -50,6 +50,21 @@ check("mu --help", help.status === 0 && help.stdout.includes("mu command line") 
 const doctor = spawnSync(mu, ["doctor"], options);
 console.log(doctor.stdout.trimEnd().replace(/^/gm, "     "));
 check("mu doctor", /^\s*ok\s+package\s/m.test(doctor.stdout), doctor.stderr.trim());
+
+// The desktop app's sign-in: one JSON line that offers pi's own subscriptions, and nobody signed in yet.
+const auth = spawnSync(mu, ["auth", "status"], options);
+let status;
+try {
+	status = JSON.parse(auth.stdout.trim().split("\n").at(-1));
+} catch {}
+check(
+	"mu auth status",
+	auth.status === 0 &&
+		status?.type === "status" &&
+		["openai-codex", "anthropic", "xai"].every((provider) => status.offered.includes(provider)) &&
+		status.signedIn.length === 0,
+	auth.stdout.trim() || auth.stderr.trim(),
+);
 
 const commands = await new Promise((resolve) => {
 	const child = spawn(mu, ["--mode", "rpc", "--no-session"], { ...options, stdio: ["pipe", "pipe", "pipe"] });

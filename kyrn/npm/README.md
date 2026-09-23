@@ -43,6 +43,7 @@ mu -c | -r               continue the last session | pick one to resume
 mu judge <cmd>           the local judge (Laya): setup | start | stop | status | run
 mu ledger [n] [--json]   what the judge decided in the last n sessions
 mu doctor                check the installation
+mu auth status           the subscription sign-in the desktop app uses (JSON lines)
 mu help | version
 ```
 

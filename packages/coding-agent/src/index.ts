@@ -193,6 +193,8 @@ export type { ReadonlyFooterDataProvider } from "./core/footer-data-provider.ts"
 export { convertToLlm } from "./core/messages.ts";
 export { ModelRegistry } from "./core/model-registry.ts";
 export {
+	// mu: `mu auth` lists an account's models with the one pi starts that provider on first, also from pi's bundle.
+	defaultModelPerProvider,
 	type ModelScopeDiagnostic,
 	type ResolveCliModelResult,
 	type ResolveModelScopeResult,

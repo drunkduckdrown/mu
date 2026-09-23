@@ -16,7 +16,8 @@
 //   dist/              pi's Node bundle (dist/bundle/cli.js), with its themes, assets, export templates and
 //                      the native clipboard helpers of pi-tui
 //   judge/             the judgment layer built to JavaScript, with its prompts, skills and agents, and the
-//                      manifest.json the desktop app reads its settings from
+//                      manifest.json the desktop app reads its settings from; dist/auth.js is `mu auth`, the
+//                      desktop app's subscription sign-in
 //   docs/, examples/   pi's documentation, which the agent reads when asked about itself
 //   package.json       names the app mu (piConfig), so pi keeps its files in ~/.mu
 import { execFileSync } from "node:child_process";
@@ -42,6 +43,9 @@ const judgeSource = join(repo, "packages", "kyrn-judge");
 
 /** Optional modules their callers try and do without, as pi's own bundle allows them (scripts/build-coding-agent-bundle.mjs). */
 const OPTIONAL = new Set(["bufferutil", "utf-8-validate", "kerberos", "supports-color"]);
+
+/** pi's bundle, where judge/dist/auth.js (`mu auth`) finds pi: the index of pi's public API. */
+const PI_BUNDLE_INDEX = "../../dist/bundle/index.js";
 
 /**
  * The module names pi hands to an extension from its own bundle (packages/coding-agent/src/core/extensions/
@@ -146,6 +150,41 @@ async function buildJudge(out) {
 				if (imported.external && !isBuiltin(imported.path) && !provided.has(imported.path) && !OPTIONAL.has(imported.path)) {
 					throw new Error(`the judge bundle leaves ${imported.path} to be found at run time, and nothing provides it`);
 				}
+			}
+		}
+	}
+	// `mu auth` (src/auth) runs outside pi, where no module is handed over: it carries what it imports, and takes
+	// pi's model runtime from pi's own bundle, whose index exports what it uses.
+	const auth = await build({
+		...common,
+		entryPoints: { auth: join(judgeSource, "src/auth/main.ts") },
+		outdir: join(judgeRoot, "dist"),
+		plugins: [
+			{
+				name: "pi-bundle",
+				setup(builder) {
+					builder.onResolve({ filter: /^@earendil-works\/pi-coding-agent(\/|$)/ }, (args) => {
+						if (args.path !== "@earendil-works/pi-coding-agent") throw new Error(`mu auth imports ${args.path}, which pi's bundle does not export`);
+						return { path: PI_BUNDLE_INDEX, external: true };
+					});
+				},
+			},
+			{
+				// A sign-in never sends a request to a model: the Google providers' request code, loaded only when one
+				// is sent, stays out, and with it Google's SDK (about 1 MB).
+				name: "no-requests",
+				setup(builder) {
+					builder.onResolve({ filter: /^\.\/cloud-code\.ts$/ }, () => ({ path: "cloud-code", namespace: "mu-auth-unused" }));
+					builder.onLoad({ filter: /.*/, namespace: "mu-auth-unused" }, () => ({ contents: "export {};", loader: "js" }));
+				},
+			},
+			plugins[1],
+		],
+	});
+	for (const output of Object.values(auth.metafile.outputs)) {
+		for (const imported of output.imports) {
+			if (imported.external && !isBuiltin(imported.path) && imported.path !== PI_BUNDLE_INDEX && !OPTIONAL.has(imported.path)) {
+				throw new Error(`mu auth leaves ${imported.path} to be found at run time, and nothing provides it`);
 			}
 		}
 	}

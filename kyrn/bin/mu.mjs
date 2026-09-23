@@ -103,6 +103,8 @@ export function usage(platform) {
 		"  mu judge <cmd>           the local judge (Laya): setup | start | stop | status | run",
 		"  mu ledger [n] [--json]   what the judge decided in the last n sessions",
 		"  mu doctor                check the installation",
+		"  mu auth <cmd>            subscription sign-in for the desktop app, as JSON lines:",
+		"                           status | login <provider> | logout <provider>",
 		`  mu link | unlink         put the \`mu\` command on your PATH (${linkDir}) | remove it`,
 		"  mu migrate [--dry-run]   once: move the home from before the rename, ~/.kyrn, to ~/.mu",
 		"  mu help | version",
@@ -313,12 +315,13 @@ export function layoutOf({ root, platform, exists }) {
 	return exists(path.join(root, "dist", "bundle", "cli.js")) ? "package" : "repo";
 }
 
-/** The two files the npm package runs. */
+/** The files the npm package runs: pi, the judgment layer, and the sign-in of `mu auth`. */
 export function packageEntries({ root, platform }) {
 	const path = pathFor(platform);
 	return {
 		cli: path.join(root, "dist", "bundle", "cli.js"),
 		extension: path.join(root, "judge", "dist", "kyrn-judge.js"),
+		auth: path.join(root, "judge", "dist", "auth.js"),
 	};
 }
 
@@ -503,6 +506,43 @@ export function planLaunch({ platform, env, argv, root, home, execPath, fs, canE
 		notes,
 		preface: argv[0] === "-h" || argv[0] === "--help" ? `${usage(platform)}\n\nAgent flags:\n` : undefined,
 	};
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// mu auth
+// ---------------------------------------------------------------------------------------------------------
+
+/** What `mu auth` answers itself. Every other `auth` command (check, print-api-key, ...) is pi's own. */
+export const AUTH_COMMANDS = ["status", "login", "logout"];
+
+/**
+ * `mu auth status | login <provider> | logout <provider>`: the sign-in the desktop app runs, with pi's own OAuth
+ * flows and credential store (packages/kyrn-judge/src/auth). It is pi's code, so it runs the way pi does here:
+ * through tsx in a checkout, built in the package. It reads no key, so no .env is read for it.
+ */
+export function planAuth({ platform, env, argv, root, home, execPath, fs, canExec = false }) {
+	const path = pathFor(platform);
+	let entry;
+	if (layoutOf({ root, platform, exists: fs.exists }) === "package") {
+		const { auth } = packageEntries({ root, platform });
+		if (!fs.exists(auth)) {
+			return { error: `This mu-agent package is incomplete (${auth} is missing). Reinstall it: npm i -g mu-agent` };
+		}
+		entry = [auth];
+	} else {
+		const tsx = resolveTsx({ root, platform, exists: fs.exists, readFile: fs.readFile });
+		if (!tsx) return { error: installHint({ root, platform }) };
+		const main = path.join(root, "packages", "kyrn-judge", "src", "auth", "main.ts");
+		entry = [tsx, "--tsconfig", path.join(root, "tsconfig.json"), main];
+	}
+	const agentDir = agentDirFor({ env, muDir: muHome({ home, platform, isDir: fs.isDir }), platform });
+	const childEnv = {};
+	for (const [key, value] of Object.entries(env)) {
+		if (typeof value === "string") childEnv[key] = value;
+	}
+	childEnv.MU_AGENT_DIR = agentDir;
+	const strategy = launchStrategy({ platform, env, canExec });
+	return { command: execPath, args: [...entry, ...argv], env: childEnv, strategy, agentDir };
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -957,6 +997,26 @@ export async function main(argv = process.argv.slice(2)) {
 	if (command === "help") {
 		out(usage(platform));
 		return 0;
+	}
+	if (command === "auth" && AUTH_COMMANDS.includes(rest[0])) {
+		const plan = planAuth({
+			platform,
+			env,
+			argv: rest,
+			root,
+			home,
+			execPath: process.execPath,
+			canExec,
+			fs: { exists: existsSync, isDir, readFile: readText },
+		});
+		if (plan.error) {
+			// The one reader is the desktop app, which reads stdout line by line.
+			out(JSON.stringify({ type: "error", message: plan.error }));
+			return 1;
+		}
+		// A fresh home has no agent folder yet, and the credential store is written into it.
+		mkdirSync(plan.agentDir, { recursive: true });
+		return handOver(plan);
 	}
 	if (command === "migrate") {
 		return migrate({
