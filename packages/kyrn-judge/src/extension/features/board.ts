@@ -823,8 +823,9 @@ export function registerBoard(runtime: KyrnRuntime, roots: HarnessRoots | undefi
 						"info",
 					);
 				}
-				// Switched on in the middle of things: the first board need not wait for the next tool call.
-				if (word === "on" && (steps.length > 0 || latest)) schedule(ctx, false);
+				// Switched on in the middle of things: the first board need not wait for the next tool call. Switched on
+				// once the agent stopped (the desktop's switch waits for that), it sums the run up as ended.
+				if (word === "on" && (steps.length > 0 || latest)) schedule(ctx, ctx.isIdle() && !runtime.goalActive);
 				return;
 			}
 			if (!ctx.hasUI) return;

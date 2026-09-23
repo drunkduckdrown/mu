@@ -551,6 +551,30 @@ describe("board feature", () => {
 		expect(notes.at(-1)).toContain("Now: It finished and checked its work.");
 	});
 
+	// The desktop's board switch sends `/board on` once the agent is idle: the run it sums up is over, so the first
+	// board says so (the app showed 「在收尾」 without 「已停下」 until the next turn).
+	it("switched on after the agent stopped, sums the run up as ended", async () => {
+		const { harness } = await start(
+			reading(() => ({ phase: choice("wrapping_up"), needs_user: no, changed: yes })),
+			{ everyTools: 100 },
+		);
+		const agent = [
+			work("edit", { path: "src/importer.ts" }),
+			fauxAssistantMessage("The importer skips empty files."),
+		];
+		const writer = (request: string) =>
+			request.includes("THE RUN HAS ENDED")
+				? JSON.stringify({ progress: "Done.", now: "It finished.", confirm: [] })
+				: JSON.stringify({ progress: "Halfway.", now: "It is still working.", confirm: [] });
+		harness.setResponses(Array.from({ length: 6 }, () => router(agent, writer, [])));
+		await harness.session.prompt("Make the importer skip empty files.");
+		expect(boards(harness)).toEqual([]);
+
+		await harness.session.prompt("/board on");
+		await vi.waitFor(() => expect(boards(harness)).toHaveLength(1), { timeout: 5000 });
+		expect(boards(harness)[0]).toMatchObject({ now: "It finished.", ended: true });
+	});
+
 	it("names what waits on the user, and speaks from fixed sentences when the writer does not answer as asked", async () => {
 		const { harness } = await start(reading(() => ({ phase: choice("waiting"), needs_user: yes, changed: yes })));
 		await harness.session.prompt("/board on");
