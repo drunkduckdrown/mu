@@ -4,6 +4,12 @@ name: Desktop app
 # A push to main that touches the app keeps the installers as workflow artifacts; a `v*` tag also
 # publishes them, with a source archive, as a GitHub pre-release.
 #
+# The installed app updates itself from the newest of these releases (electron-updater), so a release also
+# carries the update feed: latest-mac.yml, latest.yml (Windows), latest-linux.yml and latest-linux-arm64.yml,
+# which name each installer with its checksum, and the .blockmap files that let the app download only what
+# changed. Both macOS builds write latest-mac.yml and both Windows builds latest.yml, each listing only its own
+# architecture; the release job merges each pair into one file (scripts/merge-update-info.mjs).
+#
 # The app carries mu inside it: the harness job packs mu-agent from the same commit (as npm.yml does), and
 # every build puts it into the app (desktop/scripts/kyrn/bundle-harness.mjs, through MU_HARNESS_TARBALL).
 #
@@ -361,6 +367,18 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      # This build's update feed (latest*.yml) and blockmaps, for the release job to merge and attach. An app
+      # whose electron-builder.yml writes no feed only warns here; the release job reports the missing feed.
+      - name: Upload the update feed
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-info-${{ matrix.platform }}
+          path: |
+            desktop/out/latest*.yml
+            desktop/out/*.blockmap
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Remove the signing keychain and the API key
         if: always() && startsWith(matrix.platform, 'macos')
         run: |
@@ -379,12 +397,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
       - name: Download installers
         uses: actions/download-artifact@v4
         with:
           pattern: desktop-*
           path: dist
           merge-multiple: true
+
+      # One folder per build (update-info/update-info-macos-arm64/latest-mac.yml, ...): the macOS and the
+      # Windows builds write feeds of the same name.
+      - name: Download the update feed
+        uses: actions/download-artifact@v4
+        with:
+          pattern: update-info-*
+          path: update-info
 
       - name: Source archive and checksums
         run: |
@@ -394,6 +425,55 @@ jobs:
           cd dist
           sha256sum -- * > SHA256SUMS
           ls -lh
+
+      # electron-updater reads one feed file per system from the newest release and takes its architecture's
+      # installer from it, so each system's feed must list the files of both its builds: merged, x64 first. A
+      # system with a build missing gets no feed, rather than one that would give the other architecture's
+      # build to all of its users; the app then offers the installer instead. The merge also checks each
+      # listed file against the attached copy and takes its checksum from there (the macOS job signs and
+      # staples the disk image after electron-builder wrote the feed). A problem here fails the job, but only
+      # after the release is published: the installers do not wait for the feed.
+      - name: Update feed
+        id: feed
+        continue-on-error: true
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+        run: |
+          set -uo pipefail
+          mkdir -p updates
+          status=0
+          # A feed is missing when its build failed; when every build succeeded, that is a defect.
+          missing() {
+            if [ "$BUILD_RESULT" = "success" ]; then echo "::error::$1"; status=1; else echo "::warning::$1"; fi
+          }
+          # feed FILE PLATFORM...: FILE from the builds of these platforms, merged in this order.
+          feed() {
+            local file="$1" platform inputs=()
+            shift
+            for platform in "$@"; do
+              if [ ! -f "update-info/update-info-$platform/$file" ]; then
+                missing "No $file in this release: the $platform build wrote none."
+                return
+              fi
+              inputs+=("update-info/update-info-$platform/$file")
+            done
+            if ! node scripts/merge-update-info.mjs --out "updates/$file" --assets dist "${inputs[@]}"; then
+              echo "::error::Could not write $file (see above)."
+              status=1
+            fi
+          }
+          # The blockmaps of the attached files; the merge removes one whose file changed after it was made.
+          for blockmap in update-info/*/*.blockmap; do
+            [ -e "$blockmap" ] || continue
+            name="$(basename "$blockmap")"
+            if [ -e "dist/${name%.blockmap}" ]; then cp "$blockmap" updates/; fi
+          done
+          feed latest-mac.yml macos-x64 macos-arm64
+          feed latest.yml windows-x64 windows-arm64
+          feed latest-linux.yml linux-x64
+          feed latest-linux-arm64.yml linux-arm64
+          ls -lh updates
+          exit "$status"
 
       - name: Create the GitHub release
         env:
@@ -421,4 +501,12 @@ jobs:
               echo "⚠️ Not every platform built for this tag; the missing installers are not attached. See the workflow run."
             fi
           } > notes.md
-          gh release create "$tag" dist/* --title "mu ${tag}" --notes-file notes.md --prerelease --verify-tag
+          # The update feed goes along when there is one (SHA256SUMS covers the installers and the source only).
+          shopt -s nullglob
+          gh release create "$tag" dist/* updates/* --title "mu ${tag}" --notes-file notes.md --prerelease --verify-tag
+
+      - name: Report an incomplete update feed
+        if: steps.feed.outcome == 'failure'
+        run: |
+          echo "::error::The release is published without a complete update feed (see the Update feed step): the app offers the installer on the systems without one."
+          exit 1
