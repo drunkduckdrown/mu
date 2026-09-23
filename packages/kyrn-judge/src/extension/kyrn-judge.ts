@@ -59,6 +59,7 @@ import { registerWarmup } from "./features/warmup.ts";
 import { registerWeb } from "./features/web.ts";
 import { registerWelcome } from "./features/welcome.ts";
 import type { PresentationListener } from "./presentation.ts";
+import { registerRejectionLog } from "./rejections.ts";
 import { KyrnRuntime, recentTurnDigests } from "./runtime.ts";
 
 export { recentTurnDigests };
@@ -136,6 +137,8 @@ function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): voi
 	// inherits that variable: an Electron app the agent starts would run as a script. Only mu's own sub-agents, which
 	// run on this same binary, get it back (swarm.ts).
 	delete process.env.ELECTRON_RUN_AS_NODE;
+	// Whatever else is on or off: in RPC mode, a promise nothing handled is logged instead of ending mu.
+	registerRejectionLog(pi);
 	// An injected provider or config means the caller owns the setup: do not read the user's files.
 	const loaded =
 		options.config || options.provider
