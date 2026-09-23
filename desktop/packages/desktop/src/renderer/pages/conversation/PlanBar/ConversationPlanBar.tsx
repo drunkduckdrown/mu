@@ -44,6 +44,8 @@ const ConversationPlanBar: React.FC<{ conversation_id: string }> = ({ conversati
     // container is wide enough for `.chat-surface-fluid` to reserve gutters.
     <div
       data-testid='conversation-plan-bar'
+      // Part of the composer zone: the work panel, floating in a narrow window, stops above it.
+      data-composer-zone
       // No horizontal padding on the root: `.chat-surface-fluid` sets a computed
       // `width`, and with content-box that padding is ADDED on top — measured
       // 663px against the send box group's 647px, i.e. the bar overhung it by

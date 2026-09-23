@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import os from 'os';
 import { getDevAppName } from '@/common/platform';
+import { MU_DISPLAY_NAME } from '@/common/kyrn/displayName';
 import { applyGpuRecoveryFlags } from './gpuRecovery';
 
 // ============ E2E test isolation ============
@@ -38,39 +39,13 @@ if (!app.isPackaged && !e2eUserDataDir) {
   // Explicitly override userData to the dev directory.
   const appSupportDir = path.dirname(app.getPath('userData'));
   app.setPath('userData', path.join(appSupportDir, devAppName));
+  // The data folder keeps its legacy name (existing dev profiles), but the dock
+  // and the menu bar must say the product name.
+  app.setName(MU_DISPLAY_NAME);
 }
 
 // app.disableHardwareAcceleration() must run before app is ready.
 applyGpuRecoveryFlags();
-
-// Configure Chromium command-line flags for WebUI and CLI modes
-// 为 WebUI 和 CLI 模式配置 Chromium 命令行参数
-
-const isWebUI = process.argv.some((arg) => arg === '--webui');
-const isResetPassword = process.argv.includes('--resetpass');
-
-// Only configure flags for WebUI and --resetpass modes
-// 仅为 WebUI 和重置密码模式配置参数
-if (isWebUI || isResetPassword) {
-  // In WebUI/reset-password mode on Linux, force headless Ozone backend.
-  // This mode should never depend on X11/Wayland availability.
-  // 在 Linux 的 WebUI/重置密码模式下，强制使用 headless Ozone 后端，
-  // 避免因 DISPLAY 变量存在但显示服务不可用导致平台初始化失败。
-  // Note: Do NOT use --headless (browser automation mode that causes auto-exit).
-  // Instead, use --ozone-platform=headless which provides a proper display backend
-  // without requiring a display server, keeping the Electron process alive.
-  if (process.platform === 'linux') {
-    app.commandLine.appendSwitch('ozone-platform', 'headless');
-    app.commandLine.appendSwitch('disable-gpu');
-    app.commandLine.appendSwitch('disable-software-rasterizer');
-  }
-
-  // For root user, disable sandbox to prevent crash
-  // 对于 root 用户，禁用沙箱以防止崩溃
-  if (typeof process.getuid === 'function' && process.getuid() === 0) {
-    app.commandLine.appendSwitch('no-sandbox');
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Agent browser control (CDP) — user-facing on/off switch and its persisted config.

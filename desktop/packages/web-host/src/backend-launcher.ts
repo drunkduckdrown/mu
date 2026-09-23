@@ -71,6 +71,11 @@ type SpawnConfig = {
   appVersion: string;
   isPackaged: boolean;
   recoverCorruptedDatabase?: boolean;
+  /**
+   * Run an unpackaged backend in bundled mode too, so that it downloads no managed resources (see
+   * `BackendLifecycleManager.preferBundledManagedResources`). A packaged one always runs that way.
+   */
+  bundledManagedResources?: boolean;
 };
 
 export type BackendLaunchFlags = {
@@ -206,7 +211,7 @@ export function buildSpawnArgs(config: SpawnConfig): string[] {
     '--app-version',
     config.appVersion,
   ];
-  if (config.isPackaged) args.push('--managed-resources-mode', 'bundled');
+  if (config.isPackaged || config.bundledManagedResources) args.push('--managed-resources-mode', 'bundled');
   if (!config.isPackaged && process.env.AIONUI_DUMP_PROMPTS === '1') args.push('--dump-prompts');
   if (config.logDir) args.push('--log-dir', config.logDir);
   if (config.workDir) args.push('--work-dir', config.workDir);
@@ -524,6 +529,7 @@ export class BackendLifecycleManager {
   private restartWindowStart = 0;
   private readonly maxRestarts = 3;
   private readonly restartWindowMs = 60_000;
+  private bundledManagedResources = false;
 
   constructor(
     private readonly appMeta: AppMetadata,
@@ -536,6 +542,16 @@ export class BackendLifecycleManager {
 
   get status(): BackendStatus {
     return this._status;
+  }
+
+  /**
+   * Keep the backend from downloading its managed Node.js runtime (from nodejs.org) at every later start, crash
+   * restarts included: it runs in bundled mode, which only copies what ships next to its binary and reports what is
+   * missing instead of fetching it. A packaged app always runs that way; an unpackaged one does once the person put
+   * the download off.
+   */
+  preferBundledManagedResources(): void {
+    this.bundledManagedResources = true;
   }
 
   private isPeerAlreadyRunningError(error: unknown): boolean {
@@ -672,6 +688,7 @@ export class BackendLifecycleManager {
       appVersion,
       isPackaged: this.appMeta.isPackaged,
       recoverCorruptedDatabase: launchFlags.recoverCorruptedDatabase === true,
+      bundledManagedResources: this.bundledManagedResources,
     });
     console.log(`[aioncore] starting: ${binaryPath} ${args.join(' ')}`);
 

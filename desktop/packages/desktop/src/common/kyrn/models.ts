@@ -74,6 +74,13 @@ export type ModelsSettings = {
   problem: string;
 };
 
+/**
+ * The thinking levels each model a conversation's session can switch to takes, keyed by the model's
+ * `provider/model-id` (the value of the session's `model` option), weakest first. Recorded by the adapter from pi's
+ * own model list, so it covers built-in logins and custom providers alike.
+ */
+export type ModelThinkingLevels = Record<string, ThinkingLevel[]>;
+
 /** What a running mu last reported as usable: built-in logins and custom providers alike. A snapshot, not live. */
 export type AvailableModels = {
   providers: { id: string; models: { id: string; name: string }[] }[];
@@ -132,6 +139,55 @@ export const RESERVED_PROVIDER_IDS: ReadonlySet<string> = new Set(
     'xiaomi-token-plan-ams xiaomi-token-plan-cn xiaomi-token-plan-sgp xiaomi zai-coding-cn zai llama-cpp'
   ).split(' ')
 );
+
+/**
+ * What pi's built-in providers are called, by id: the names their makers use, so a menu reads "Vercel AI Gateway", not
+ * `vercel-ai-gateway`. Brands are not translated; a region shows as its code. A subscription goes by its product
+ * instead (ChatGPT for `openai-codex`), from the sign-in screens' words; an id missing here is shown as it is.
+ */
+export const BUILTIN_PROVIDER_NAMES: Readonly<Record<string, string>> = {
+  'amazon-bedrock': 'Amazon Bedrock',
+  'ant-ling': 'Ant Ling',
+  anthropic: 'Anthropic',
+  'azure-openai-responses': 'Azure OpenAI',
+  baseten: 'Baseten',
+  cerebras: 'Cerebras',
+  'cloudflare-ai-gateway': 'Cloudflare AI Gateway',
+  'cloudflare-workers-ai': 'Cloudflare Workers AI',
+  deepseek: 'DeepSeek',
+  fireworks: 'Fireworks',
+  'github-copilot': 'GitHub Copilot',
+  'google-vertex': 'Google Vertex AI',
+  google: 'Google Gemini',
+  groq: 'Groq',
+  huggingface: 'Hugging Face',
+  'kimi-coding': 'Kimi Coding',
+  'minimax-cn': 'MiniMax CN',
+  minimax: 'MiniMax',
+  mistral: 'Mistral',
+  'moonshotai-cn': 'Moonshot AI CN',
+  moonshotai: 'Moonshot AI',
+  nvidia: 'NVIDIA',
+  'openai-codex': 'OpenAI Codex',
+  openai: 'OpenAI',
+  'opencode-go': 'OpenCode Go',
+  opencode: 'OpenCode',
+  openrouter: 'OpenRouter',
+  'qwen-token-plan-cn': 'Qwen Token Plan CN',
+  'qwen-token-plan-individual': 'Qwen Token Plan Individual',
+  'qwen-token-plan': 'Qwen Token Plan',
+  radius: 'Radius',
+  together: 'Together AI',
+  'vercel-ai-gateway': 'Vercel AI Gateway',
+  xai: 'xAI',
+  'xiaomi-token-plan-ams': 'Xiaomi Token Plan AMS',
+  'xiaomi-token-plan-cn': 'Xiaomi Token Plan CN',
+  'xiaomi-token-plan-sgp': 'Xiaomi Token Plan SGP',
+  xiaomi: 'Xiaomi MiMo',
+  'zai-coding-cn': 'Z.ai Coding CN',
+  zai: 'Z.ai',
+  'llama-cpp': 'llama.cpp',
+};
 
 /**
  * Built-in providers pi reports as usable that nobody set up to talk to. The judge (Jev) takes its key from

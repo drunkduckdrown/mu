@@ -9,8 +9,8 @@
  * This file provides TypeScript types and helper functions for the color system
  *
  * Usage:
- * - CSS: use CSS variables directly: var(--color-bg-0)
- * - UnoCSS: use atomic classes: bg-bg-0, text-text, border-border
+ * - CSS: use CSS variables directly: var(--bg-base)
+ * - UnoCSS: use atomic classes: bg-bg-0, text-t-primary, border-border-2
  * - TypeScript: use this file for type safety and constants
  */
 

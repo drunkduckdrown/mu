@@ -1,21 +1,24 @@
 import React from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import type { StoredLesson } from '@/common/kyrn/lessons';
 import type { Activity, ActivityPage, Result } from '@/common/kyrn/types';
 import common from '@/renderer/services/i18n/locales/en-US/common.json';
 import mu from '@/renderer/services/i18n/locales/en-US/mu.json';
 import zhCommon from '@/renderer/services/i18n/locales/zh-CN/common.json';
 import zhMu from '@/renderer/services/i18n/locales/zh-CN/mu.json';
-import KyrnPanel from '@/renderer/pages/conversation/KyrnPanel';
-import Judge from '@/renderer/pages/conversation/KyrnPanel/Judge';
+import { KernelBody, useKyrnActivity } from '@/renderer/pages/conversation/KyrnPanel';
+import JudgeLog from '@/renderer/pages/conversation/KyrnPanel/Judge';
+import { judgeCards } from '@/renderer/pages/conversation/KyrnPanel/Judge/activity';
+import JudgeCardView from '@/renderer/pages/conversation/KyrnPanel/Judge/JudgeCardView';
 import { event, gate, ledger, turn, verdict } from './judgeFixtures';
 
-const { activity } = vi.hoisted(() => ({ activity: vi.fn() }));
+const { activity, lessons } = vi.hoisted(() => ({ activity: vi.fn(), lessons: vi.fn() }));
 vi.mock('@/common/kyrn/bridge', () => ({
-  kyrnBridge: { activity: { invoke: activity } },
+  kyrnBridge: { activity: { invoke: activity }, lessons: { invoke: lessons } },
   unwrap: (result: Result<ActivityPage>) => {
     if (result.ok === false) throw new Error(result.error);
     return result.data;
@@ -39,6 +42,16 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+/** Every judgment as a line of the log opens it, newest first. */
+function Judge({ events }: { events: Activity[] }) {
+  return (
+    <div data-testid='kyrn-judge'>
+      {judgeCards(events).map((card) => (
+        <JudgeCardView key={card.id} card={card} />
+      ))}
+    </div>
+  );
+}
 const view = (events: Activity[]) =>
   render(
     <I18nextProvider i18n={i18n}>
@@ -47,7 +60,7 @@ const view = (events: Activity[]) =>
   );
 const cards = () => screen.getAllByTestId('judge-card');
 
-describe('JeV panel', () => {
+describe('a judgment, opened', () => {
   it('shows each judgment as question, verdict and effect, with probabilities and JSON held back', () => {
     view([
       event('preflight.pending', { judge: 'jev-latest', mode: 'active' }, turn('runtime-a', 1, 2)),
@@ -140,7 +153,6 @@ describe('JeV panel', () => {
     expect(toReviewer.getByText(copy.actions.allowDelivery)).toBeInTheDocument();
     expect(toReviewer.queryByText(copy.actions.delivered)).not.toBeInTheDocument();
     expect(toReviewer.getByText('Prefix is stable.')).toBeInTheDocument();
-    expect(screen.getByText(copy.receiptCount).nextElementSibling).toHaveTextContent('1');
   });
 
   it('shows a conservative fallback as refused, with the number of unanswered candidates', () => {
@@ -191,57 +203,6 @@ describe('JeV panel', () => {
     expect(screen.getAllByText(copy.unlinked)).toHaveLength(2);
   });
 
-  it('filters by what was judged', async () => {
-    view([
-      event('preflight.verdict', verdict(), turn('runtime-a', 1, 2)),
-      event('decision', ledger({ id: 'drift-1', specId: 'turn.drift', outcome: 'on_track' }), turn('runtime-a', 1, 5)),
-    ]);
-    expect(cards()).toHaveLength(2);
-
-    fireEvent.click(screen.getByRole('combobox', { name: copy.filter }));
-    fireEvent.click(await screen.findByText(`${copy.questions.drift} · 1`));
-
-    await waitFor(() => expect(cards()).toHaveLength(1));
-    expect(within(cards()[0]).getByText(copy.values.on_track)).toBeInTheDocument();
-  });
-
-  it('is the JeV tab of the collaboration panel, with other runtime events listed under it', async () => {
-    activity.mockResolvedValue({
-      ok: true,
-      data: {
-        sessionId: 'session',
-        cursor: 1,
-        more: false,
-        events: [
-          event('preflight.verdict', verdict(), turn('runtime-a', 1, 2)),
-          event('agent_start', {}),
-          event('agent_settled', {}),
-        ],
-      },
-    });
-    render(
-      <I18nextProvider i18n={i18n}>
-        <MemoryRouter>
-          <KyrnPanel conversationId='conv' />
-        </MemoryRouter>
-      </I18nextProvider>
-    );
-    fireEvent.click(screen.getByRole('tab', { name: common.kyrn.decisions }));
-
-    expect(await screen.findByText(copy.title)).toBeInTheDocument();
-    expect(cards()).toHaveLength(1);
-    expect(screen.getByText(`${copy.runtimeEvents} · 2`)).toBeInTheDocument();
-    // The verdict is a card now, not a second raw row in the event list.
-    expect(screen.queryByText(common.kyrn.event['preflight.verdict'])).not.toBeInTheDocument();
-  });
-
-  it('says so when nothing was judged', () => {
-    view([event('agent_start', {})]);
-
-    expect(screen.getByText(copy.empty)).toBeInTheDocument();
-    expect(screen.queryByTestId('judge-card')).not.toBeInTheDocument();
-  });
-
   it('names the reason of a fallback in words, including a wait without an answer and every judge error', () => {
     view([
       event('preflight.verdict', verdict({ state: 'none', reason: 'no answer after 6.0 s', waitedMs: 6000 }), {
@@ -285,6 +246,52 @@ describe('JeV panel', () => {
       common.kyrn.boardView.phases.wrapping_up
     );
     expect(board.getByText(copy.fields.needsUser).parentElement).toHaveTextContent(copy.values.false);
+    expect(screen.queryByText(copy.questions.other)).not.toBeInTheDocument();
+  });
+
+  it('asks the hive’s relate question and JeV’s approval question, not a nameless recorded judgment', () => {
+    view([
+      event(
+        'decision',
+        ledger({ id: 'relate-1', specId: 'hive.relate', outcome: { relation: 'supersedes', score: 0.9 } }),
+        turn('r', 3, 2)
+      ),
+      event('decision', ledger({ id: 'approval-1', specId: 'tool.approval', outcome: 'beyond' }), turn('r', 3, 3)),
+    ]);
+
+    const [approval, relate] = cards().map((card) => within(card));
+    expect(relate.getByText(copy.questions.relate)).toBeInTheDocument();
+    expect(relate.getByText(copy.fields.relation).parentElement).toHaveTextContent(copy.values.supersedes);
+    expect(approval.getByText(copy.questions.approval)).toBeInTheDocument();
+    expect(approval.getByText(copy.fields.result).parentElement).toHaveTextContent(copy.values.beyond);
+    expect(screen.queryByText(copy.questions.other)).not.toBeInTheDocument();
+  });
+
+  it('asks the experience library’s questions and says which lessons were followed', () => {
+    view([
+      event(
+        'decision',
+        ledger({ id: 'merge-1', specId: 'memory.merge', outcome: ['same', 'unrelated'] }),
+        turn('r', 2, 2)
+      ),
+      event(
+        'decision',
+        ledger({
+          id: 'applied-1',
+          specId: 'memory.applied',
+          outcome: { applied: ['lesson-1'], notApplied: ['lesson-2'] },
+        }),
+        turn('r', 2, 3)
+      ),
+    ]);
+
+    const [applied, merge] = cards().map((card) => within(card));
+    expect(merge.getByText(copy.questions.merge)).toBeInTheDocument();
+    expect(merge.getByText(copy.values.same)).toBeInTheDocument();
+    expect(merge.getByText(copy.values.unrelated)).toBeInTheDocument();
+    expect(applied.getByText(copy.questions.applied)).toBeInTheDocument();
+    expect(applied.getByText(copy.fields.applied).parentElement).toHaveTextContent('lesson-1');
+    expect(applied.getByText(copy.fields.notApplied).parentElement).toHaveTextContent('lesson-2');
     expect(screen.queryByText(copy.questions.other)).not.toBeInTheDocument();
   });
 
@@ -431,10 +438,368 @@ describe('JeV panel', () => {
     // A hint without an id is shown as the main model was given it.
     expect(applied.getByText('An older hint without an id.')).toBeInTheDocument();
     fireEvent.click(applied.getByText(zh.details));
-    expect(applied.getByText(zh.answerIds.plan_first).parentElement).toHaveTextContent('判定为“是”的概率：80%');
+    expect(applied.getByText(zh.answerIds.plan_first).parentElement).toHaveTextContent('判定为「是」的概率：80%');
     // "Task type" also names the verdict's own field; the answer row is the one with the judge's choice.
     const turnType = applied.getAllByText(zh.answerIds.turn_type).map((label) => label.parentElement?.textContent);
     expect(turnType).toContain(`${zh.answerIds.turn_type}${zh.values.research} · ${zh.values.research} 60%`);
     expect(applied.queryByText('large or risky')).not.toBeInTheDocument();
+  });
+});
+
+/** A lesson as mu's file keeps it. */
+const stored = (id: string, text: string): StoredLesson => ({
+  id,
+  kind: 'correction',
+  trigger: `When ${id} comes up`,
+  lesson: text,
+  scope: {},
+  source: { origin: 'user' },
+  status: 'active',
+  uses: { recalled: 1, applied: 0 },
+  created: '2026-09-20T00:00:00.000Z',
+  updated: '2026-09-20T00:00:00.000Z',
+});
+
+/** The judge tab as the work panel shows it: the log, inside a router for its settings button. */
+const showLog = (events: Activity[]) => {
+  const result = render(
+    <I18nextProvider i18n={i18n}>
+      <MemoryRouter>
+        <JudgeLog events={events} />
+      </MemoryRouter>
+    </I18nextProvider>
+  );
+  const rerender = (next: Activity[]) =>
+    result.rerender(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter>
+          <JudgeLog events={next} />
+        </MemoryRouter>
+      </I18nextProvider>
+    );
+  return { ...result, rerender };
+};
+const lines = () => screen.getAllByTestId('judge-line');
+
+/**
+ * jsdom lays nothing out: the log's scroller gets a height of 100px and 20px per line, and remembers where it was
+ * scrolled to, as a browser would.
+ */
+function measure(scroller: HTMLElement) {
+  let top = 0;
+  Object.defineProperty(scroller, 'clientHeight', { configurable: true, get: () => 100 });
+  Object.defineProperty(scroller, 'scrollHeight', {
+    configurable: true,
+    get: () => scroller.querySelectorAll('[data-testid="judge-line"]').length * 20,
+  });
+  Object.defineProperty(scroller, 'scrollTop', {
+    configurable: true,
+    get: () => top,
+    set: (value: number) => {
+      top = Math.max(0, Math.min(value, scroller.scrollHeight - scroller.clientHeight));
+    },
+  });
+  return { bottom: () => scroller.scrollHeight - scroller.clientHeight };
+}
+
+describe('the judge log', () => {
+  it('says what happened one line at a time, oldest first: the time and a short sentence, the code only once opened', () => {
+    showLog([
+      event('preflight.verdict', verdict(), turn('runtime-a', 1, 2)),
+      event('decision', ledger({ id: 'drift-1', specId: 'turn.drift', outcome: 'on_track' }), turn('runtime-a', 1, 5)),
+      event('mcp.failed', { name: 'github', code: 'timeout', reason: 'no answer within 30000 ms' }),
+    ]);
+
+    expect(lines().map((line) => line.getAttribute('data-code'))).toEqual([
+      'input.preflight',
+      'turn.drift',
+      'mcp.failed',
+    ]);
+    expect(lines()[0]).toHaveTextContent(`Classified by Jev: ${copy.values.multi_step_task}`);
+    expect(lines()[1]).toHaveTextContent(`${copy.questions.drift} · ${copy.state.returned}`);
+    expect(lines()[2]).toHaveTextContent('github: it did not answer in time');
+    // No line leads with a code: it reads as a sentence, not a log record.
+    for (const [line, code] of lines().map((each) => [each, each.getAttribute('data-code')!] as const))
+      expect(line).not.toHaveTextContent(code);
+    // A line is one line: the whole record waits until it is opened, and the code with it.
+    expect(screen.queryByTestId('judge-card')).not.toBeInTheDocument();
+    fireEvent.click(within(lines()[1]).getByRole('button'));
+    expect(within(lines()[1]).getByTestId('judge-line-code')).toHaveTextContent('turn.drift');
+  });
+
+  it('says the permission mode in words, by the name the permission menu gives it', () => {
+    showLog([
+      event('permissions.mode', { mode: 'jev', label: 'JeV approves', conversationSwitch: true, modes: [] }),
+      event('permissions.mode', { mode: 'someday', conversationSwitch: true, modes: [] }),
+    ]);
+
+    expect(lines()[0]).toHaveTextContent(`Permission mode: ${mu.permissions.modes.jev.title}`);
+    // A mode this build does not know, without a label of its own, is named by the event alone.
+    expect(lines()[1]).toHaveTextContent(common.kyrn.event.permissions.mode);
+    expect(lines()[1]).not.toHaveTextContent('permissions.mode');
+  });
+
+  it('says how things stand once: reopening the conversation adds no lines, a change adds one', () => {
+    // Each open starts the harness again, and each start reports the permission mode, the board and what it inherited.
+    const opened = (runtime: string, sequence: number) => [
+      event('permissions.mode', { mode: 'jev', label: 'JeV approves', modes: [] }, turn(runtime, 0, sequence)),
+      event(
+        'board.switched',
+        { on: false, cwd: '/p', model: null, modelChosen: false },
+        turn(runtime, 0, sequence + 1)
+      ),
+      event('inherit.found', { rules: 2, skills: 1, servers: 0, problems: 0 }, turn(runtime, 0, sequence + 2)),
+      event(
+        'mcp.failed',
+        { id: 'mcp:github', name: 'github', code: 'project_untrusted', reason: 'x' },
+        turn(runtime, 0, sequence + 3)
+      ),
+    ];
+    const first = opened('runtime-a', 1);
+    const again = opened('runtime-b', 1);
+    const switched = [
+      event('board.switched', { on: true, cwd: '/p', model: null, modelChosen: false }, turn('runtime-b', 1, 9)),
+      event('permissions.mode', { mode: 'full', label: 'Full', modes: [] }, turn('runtime-b', 1, 10)),
+    ];
+    // The same frame recorded twice, under another id.
+    const repeated = { ...switched[0], id: 'copy-of-the-switch' };
+    const { rerender } = showLog(first);
+    const said = () => lines().map((line) => line.getAttribute('data-code'));
+    expect(said()).toEqual(['permissions.mode', 'board.switched', 'inherit.found', 'mcp.failed']);
+    expect(lines()[1]).toHaveTextContent('Board: off');
+    expect(lines()[1]).not.toHaveTextContent(common.kyrn.event.board.switched);
+
+    rerender([...first, ...again, ...opened('runtime-c', 1)]);
+    expect(said()).toEqual(['permissions.mode', 'board.switched', 'inherit.found', 'mcp.failed']);
+
+    rerender([...first, ...again, ...switched, repeated, ...opened('runtime-c', 1)]);
+    expect(said()).toEqual([
+      'permissions.mode',
+      'board.switched',
+      'inherit.found',
+      'mcp.failed',
+      'board.switched',
+      'permissions.mode',
+      // The next open reports the board off and the mode JeV again: both changed back, so both get a line.
+      'permissions.mode',
+      'board.switched',
+    ]);
+    expect(lines()[4]).toHaveTextContent('Board: on');
+    expect(lines()[5]).toHaveTextContent(`Permission mode: ${mu.permissions.modes.full.title}`);
+  });
+
+  it('names the lessons a turn followed by their words, as the lessons tab has them', async () => {
+    lessons.mockResolvedValue({
+      ok: true,
+      data: { project: '/work/app', lessons: [stored('lesson-1', 'Run the tests before saying it is done.')] },
+    });
+    render(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter>
+          <JudgeLog
+            conversationId='conv'
+            events={[
+              event(
+                'decision',
+                ledger({
+                  id: 'applied-1',
+                  specId: 'memory.applied',
+                  outcome: { applied: ['lesson-1'], notApplied: ['lesson-2-not-in-the-file'] },
+                }),
+                turn('r', 2, 3)
+              ),
+              event('memory.applied', { ids: ['lesson-1'] }),
+            ]}
+          />
+        </MemoryRouter>
+      </I18nextProvider>
+    );
+    await act(async () => undefined);
+    expect(lessons).toHaveBeenCalledWith({ conversationId: 'conv' });
+
+    const [judgment, followed] = lines();
+    fireEvent.click(within(judgment).getByRole('button'));
+    const card = within(within(judgment).getByTestId('judge-card'));
+    expect(card.getByText(copy.fields.applied).parentElement).toHaveTextContent(
+      'Run the tests before saying it is done.'
+    );
+    // A lesson that is not in the file goes by the start of its id, as the lessons tab names it.
+    expect(card.getByText(copy.fields.notApplied).parentElement).toHaveTextContent('lesson-2');
+    expect(card.queryByText(/lesson-1/)).not.toBeInTheDocument();
+
+    fireEvent.click(within(followed).getByRole('button'));
+    expect(within(followed).getByText('Run the tests before saying it is done.')).toBeInTheDocument();
+  });
+
+  it('reads no lessons file for a log that names no lesson', async () => {
+    render(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter>
+          <JudgeLog conversationId='conv' events={[event('preflight.verdict', verdict(), turn('runtime-a', 1, 2))]} />
+        </MemoryRouter>
+      </I18nextProvider>
+    );
+    await act(async () => undefined);
+    expect(lessons).not.toHaveBeenCalled();
+  });
+
+  it('opens a line to the whole record: a judgment as its card, an event as its words and raw payload', () => {
+    showLog([
+      event('preflight.verdict', verdict(), turn('runtime-a', 1, 2)),
+      event('mcp.failed', { name: 'github', code: 'timeout', reason: 'no answer within 30000 ms' }),
+    ]);
+
+    fireEvent.click(within(lines()[0]).getByRole('button'));
+    expect(within(lines()[0]).getByTestId('judge-card')).toHaveTextContent(copy.actions.toRuntime);
+
+    fireEvent.click(within(lines()[1]).getByRole('button'));
+    expect(within(lines()[1]).getByText('Details: no answer within 30000 ms')).toBeInTheDocument();
+    expect(within(lines()[1]).getByText(/"code": "timeout"/)).toBeInTheDocument();
+  });
+
+  it('keeps the verdict on the message being worked on pinned above the log while its turn runs', () => {
+    const start = event('agent_start', {});
+    const judged = event('preflight.verdict', verdict({ turnType: 'research' }), turn('runtime-a', 1, 2));
+    const { rerender } = showLog([start, judged]);
+
+    const pinned = screen.getByTestId('judge-pinned');
+    expect(pinned).toHaveTextContent(copy.log.thisTurn);
+    expect(pinned).toHaveTextContent(`Classified by Jev: ${copy.values.research}`);
+
+    rerender([start, judged, event('agent_settled', {})]);
+    expect(screen.queryByTestId('judge-pinned')).not.toBeInTheDocument();
+  });
+
+  it('follows new lines at the bottom, and stops following while the person reads further up', () => {
+    const events = Array.from({ length: 8 }, (_unused, index) => event('ttsr.interrupted', { text: `rule ${index}` }));
+    const { rerender } = showLog(events);
+    const scroller = screen.getByTestId('judge-log');
+    const { bottom } = measure(scroller);
+
+    // A new line arrives while the bottom is in view: the log follows it.
+    const more = [...events, event('ttsr.interrupted', { text: 'rule 8' })];
+    rerender(more);
+    expect(scroller.scrollTop).toBe(bottom());
+    expect(screen.queryByText(copy.log.latest)).not.toBeInTheDocument();
+
+    // Scrolled up to read: the next line leaves the view where it is, and offers the way back.
+    scroller.scrollTop = 20;
+    fireEvent.scroll(scroller);
+    const later = [...more, event('ttsr.interrupted', { text: 'rule 9' })];
+    rerender(later);
+    expect(scroller.scrollTop).toBe(20);
+    fireEvent.click(screen.getByText(copy.log.latest));
+    expect(scroller.scrollTop).toBe(bottom());
+
+    // Back at the bottom, it follows again.
+    rerender([...later, event('ttsr.interrupted', { text: 'rule 10' })]);
+    expect(scroller.scrollTop).toBe(bottom());
+    expect(screen.queryByText(copy.log.latest)).not.toBeInTheDocument();
+  });
+
+  it('shows the preflight’s hints as short chips after its verdict, and an unknown hint by its code', () => {
+    showLog([
+      event(
+        'preflight.verdict',
+        verdict({
+          hints: ['Act on the reply.', 'Plan aloud.', 'A later hint.'],
+          hintIds: ['answered', 'plan_first', 'someday_hint'],
+        }),
+        turn('runtime-a', 1, 2)
+      ),
+    ]);
+
+    const chips = within(lines()[0]).getAllByTestId('judge-hint-chip');
+    expect(chips.map((chip) => chip.getAttribute('data-hint'))).toEqual(['answered', 'plan_first', 'someday_hint']);
+    expect(chips.map((chip) => chip.textContent)).toEqual([
+      copy.hintChips.answered,
+      copy.hintChips.plan_first,
+      'someday_hint',
+    ]);
+  });
+
+  it('says the chips in the app language', async () => {
+    const chinese = createInstance();
+    await chinese.init({
+      lng: 'zh-CN',
+      resources: { 'zh-CN': { translation: { common: zhCommon, mu: zhMu } } },
+      interpolation: { escapeValue: false },
+    });
+    render(
+      <I18nextProvider i18n={chinese}>
+        <MemoryRouter>
+          <JudgeLog
+            events={[
+              event(
+                'preflight.verdict',
+                verdict({ hints: ['Look first.'], hintIds: ['resolve'] }),
+                turn('runtime-a', 1, 2)
+              ),
+            ]}
+          />
+        </MemoryRouter>
+      </I18nextProvider>
+    );
+    expect(screen.getByTestId('judge-hint-chip')).toHaveTextContent(zhCommon.kyrn.judgeView.hintChips.resolve);
+  });
+
+  it('opens the judges’ settings from its toolbar', async () => {
+    render(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter initialEntries={['/conversation/conv']}>
+          <Routes>
+            <Route path='/conversation/:id' element={<JudgeLog events={[]} />} />
+            <Route path='/settings/judges' element={<p>judges settings</p>} />
+          </Routes>
+        </MemoryRouter>
+      </I18nextProvider>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: common.kyrn.settings }));
+    expect(await screen.findByText('judges settings')).toBeInTheDocument();
+  });
+
+  it('says so when nothing was judged', () => {
+    showLog([]);
+
+    expect(screen.getByText(copy.empty)).toBeInTheDocument();
+    expect(screen.queryByTestId('judge-line')).not.toBeInTheDocument();
+  });
+
+  it('is the judge tab of the work panel, once the conversation’s record has arrived', async () => {
+    activity.mockResolvedValue({
+      ok: true,
+      data: {
+        sessionId: 'session',
+        cursor: 3,
+        more: false,
+        events: [
+          event('preflight.verdict', verdict(), turn('runtime-a', 1, 2)),
+          event('agent_start', {}),
+          event('agent_settled', {}),
+        ],
+      },
+    });
+    function Tab() {
+      const read = useKyrnActivity('conv');
+      return <KernelBody tab='judge' conversationId='conv' activity={read} />;
+    }
+    render(
+      <I18nextProvider i18n={i18n}>
+        <MemoryRouter>
+          <Tab />
+        </MemoryRouter>
+      </I18nextProvider>
+    );
+
+    expect(screen.getByText(common.loading)).toBeInTheDocument();
+    expect(await screen.findByTestId('kyrn-judge')).toBeInTheDocument();
+    // The verdict is one line, not also a raw row among the runtime events.
+    expect(lines().map((line) => line.getAttribute('data-code'))).toEqual([
+      'input.preflight',
+      'agent_start',
+      'agent_settled',
+    ]);
+    await act(async () => undefined);
   });
 });

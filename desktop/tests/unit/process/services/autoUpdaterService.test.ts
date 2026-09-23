@@ -170,17 +170,12 @@ describe('AutoUpdaterService', () => {
     expect(result).toEqual({ success: true, updateInfo });
   });
 
-  it('configures electron-updater to read stable metadata from the CDN', async () => {
+  it('leaves the electron-updater feed unset, because mu has no update feed yet', async () => {
     const { autoUpdaterService } = await import('@/process/services/autoUpdaterService');
-    const { CdnGenericProvider } = await import('@/process/services/cdnGenericProvider');
 
     autoUpdaterService.resetForTest();
 
-    expect(autoUpdaterMock.setFeedURL).toHaveBeenCalledWith({
-      provider: 'custom',
-      url: 'https://static.aionui.com/releases',
-      updateProvider: CdnGenericProvider,
-    });
+    expect(autoUpdaterMock.setFeedURL).not.toHaveBeenCalled();
   });
 
   it('enables forced updater checks in unpacked dev builds when requested', async () => {

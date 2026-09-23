@@ -216,6 +216,69 @@ export const resolveLocalFileLinkPath = (rawHref: string, resolvedHref?: string)
   return resolveLocalFileLinkReference(rawHref, resolvedHref)?.filePath ?? null;
 };
 
+/** A link that is an address of its own kind: a scheme (`https:`, `mailto:`, `vscode:`) or a protocol-relative host. */
+const URL_LIKE_HREF_RE = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+
+/** `path:12` and `path:12:7`, for a path that is not checked for being absolute. */
+const splitRelativeLocationSuffix = (
+  filePath: string
+): Omit<LocalFileLinkReference, 'rawReference'> & LocalFileLocation => {
+  const lineColumnMatch = /^(.+):(\d+):(\d+)$/.exec(filePath);
+  if (lineColumnMatch) {
+    const [, pathWithoutLocation, lineText, columnText] = lineColumnMatch;
+    return { filePath: pathWithoutLocation, line: Number(lineText), column: Number(columnText), source: 'colon' };
+  }
+  const lineMatch = /^(.+):(\d+)$/.exec(filePath);
+  if (!lineMatch) return { filePath };
+  const [, pathWithoutLocation, lineText] = lineMatch;
+  return { filePath: pathWithoutLocation, line: Number(lineText), source: 'colon' };
+};
+
+/**
+ * 写成相对路径的链接：`index.html`、`./src/a.ts:12`、`docs/x.md#L3`。模型在工作区里干活，写出来的相对路径指的就是
+ * 工作区里的那个文件；`filePath` 保持相对，由打开它的人（知道工作区或文档在哪）去补全。
+ * 不算在内的：以 `/` 开头的（`/settings` 可能是应用路由，`/Users/…` 走上面的绝对路径分支）、当前页的片段或
+ * 查询（`#top`、`?q`）、带 scheme 的地址、目录。
+ *
+ * A link written as a path relative to where its writer stands: `index.html`, `./src/a.ts:12`, `docs/x.md#L3`.
+ * The model works inside the workspace, so such a path names a file there; `filePath` stays relative and whoever
+ * opens it (knowing the workspace, or the document) completes it. Not included: root-relative paths (`/settings`
+ * may be an app route, `/Users/…` is the absolute case above), fragments and queries of the current page
+ * (`#top`, `?q`), addresses with a scheme, and directories.
+ */
+export const resolveRelativeFileLinkReference = (rawHref: string): LocalFileLinkReference | null => {
+  const href = safeDecodeURIComponent((rawHref || '').trim());
+  if (!href || /^[/#?]/.test(href) || URL_LIKE_HREF_RE.test(href)) return null;
+
+  const candidate = splitHashLocation(href);
+  if (candidate.hasInvalidHash) return null;
+  const colonReference = splitRelativeLocationSuffix(candidate.filePath);
+  if (!colonReference.filePath || colonReference.filePath.endsWith('/')) return null;
+
+  const reference =
+    candidate.hashLocation?.line == null
+      ? colonReference
+      : { ...candidate.hashLocation, filePath: colonReference.filePath };
+  const source = candidate.hashLocation?.line == null ? colonReference.source : 'hash';
+  const { source: _source, ...publicReference } = reference;
+  return { ...publicReference, rawReference: formatRawReference(publicReference, source) };
+};
+
+/**
+ * 一个不是文件的链接该去哪，按作者写下的地址算，而不是按 `<a>` 解析出来的：拿应用自己的页面当基准一解析，
+ * `index.html` 或 `#top` 就成了应用本身。协议相对的主机补上 https；片段、查询和空链接哪儿也不去。
+ *
+ * Where a link that is not a file goes, from the address the writer gave and not from the anchor's resolved one:
+ * resolved against the app's own page, `index.html` or `#top` becomes the app itself. A protocol-relative host gets
+ * https; fragments, queries and empty links go nowhere.
+ */
+export const resolveWebLinkHref = (rawHref: string): string | null => {
+  const href = (rawHref || '').trim();
+  if (!href || /^[#?]/.test(href)) return null;
+  if (href.startsWith('//')) return `https:${href}`;
+  return URL_LIKE_HREF_RE.test(href) ? href : null;
+};
+
 export const toLocalFileHref = (filePath: string): string => {
   const normalized = filePath.replace(/\\/g, '/');
   const withScheme = /^[A-Za-z]:\//.test(normalized) ? `file:///${normalized}` : `file://${normalized}`;

@@ -12,12 +12,7 @@
     "clearWorkspace": "Projeyi kaldır",
     "openFolder": "Klasör Aç",
     "none": "Hiçbiri",
-    "quickActionsTitle": "AionUi neler yapabilir?",
-    "quickActionFeedback": "Sorun Bildir",
-    "quickActionStar": "Bizi beğendiniz mi? Yıldız verin!",
-    "skillsMarket": "AionUi Skills Market",
-    "skillsMarketDesc": "Topluluk Skills'lerini ihtiyaç duyduğunuzda arayın ve etkinleştirin. Bir kez yapılandırın, tüm Agent'larda kullanılabilir.",
-    "skillsMarketDetails": "Ayrıntılar >>"
+    "quickActionsTitle": "mu neler yapabilir?"
   },
   "history": {
     "recents": "Son",
@@ -128,7 +123,7 @@
       "check_provider_base_url": "Model sağlayıcının Base URL, API yolu, proxy ve API uyumluluğunu kontrol edin.",
       "change_model": "Geçerli hesapta kullanılabilen ve bu isteği destekleyen bir model seçin.",
       "reduce_context": "Mesaj içeriğini, başvurulan dosyaları veya bağlam boyutunu azaltıp yeniden deneyin.",
-      "send_feedback": "Ekibin inceleyebilmesi için günlüklerle birlikte geri bildirim gönderin."
+      "send_feedback": "Yeniden deneyin; başarısız olmaya devam ederse uygulama günlüğünü kontrol edin."
     },
     "ownership": {
       "aionui": "Uygulama",
@@ -139,7 +134,7 @@
     "codes": {
       "AIONUI_STREAM_BROKEN": {
         "title": "Yanıt akışı kesildi",
-        "body": "Uygulama mesajınızı aldı ancak yanıt akışı beklenmedik şekilde sona erdi. Yeniden deneyin; tekrarlanırsa geri bildirim gönderin."
+        "body": "Uygulama mesajınızı aldı ancak yanıt akışı beklenmedik şekilde sona erdi. Yeniden deneyin; tekrarlanırsa uygulama günlüğünü kontrol edin."
       },
       "AIONUI_STATE_INCONSISTENT": {
         "title": "Konuşma durumu eşitlenmemiş",
@@ -151,7 +146,7 @@
       },
       "AIONUI_INTERNAL_ERROR": {
         "title": "İstek uygulamada başarısız oldu",
-        "body": "Uygulama isteği işlerken hata oluştu. Bir kez yeniden deneyin; tekrarlanırsa geri bildirim gönderin."
+        "body": "Uygulama isteği işlerken hata oluştu. Bir kez yeniden deneyin; tekrarlanırsa uygulama günlüğünü kontrol edin."
       },
       "AIONUI_CONVERSATION_BUSY": {
         "title": "Konuşma meşgul",
@@ -308,7 +303,7 @@
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
         "title": "Takım yardımcı işleminin yanıtı okunamadı",
-        "body": "AionUi, yerel takım yardımcı işleminin yanıtını okuyamadı. Bir kez yeniden deneyin; sorun sürerse uygulamayı yeniden başlatın."
+        "body": "mu, yerel takım yardımcı işleminin yanıtını okuyamadı. Bir kez yeniden deneyin; sorun sürerse uygulamayı yeniden başlatın."
       },
       "MCP_TOOL_REMOTE_ERROR": {
         "title": "Yerel takım yardımcı işlemi isteği reddetti",
@@ -316,11 +311,11 @@
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
         "title": "Takım yardımcı işlemi beklenmeyen bir yanıt döndürdü",
-        "body": "AionUi, yerel takım yardımcı işleminden beklenmeyen bir yanıt aldı. Bir kez yeniden deneyin; sorun sürerse bildirin."
+        "body": "mu, yerel takım yardımcı işleminden beklenmeyen bir yanıt aldı. Bir kez yeniden deneyin; sorun sürerse bildirin."
       },
       "MCP_TCP_READ_FAILED": {
         "title": "Yerel takım yardımcı işleminden okunamadı",
-        "body": "AionUi, yerel takım yardımcı işleminin TCP yanıtını okuyamadı. Bir kez yeniden deneyin; hata sürerse uygulamayı yeniden başlatın."
+        "body": "mu, yerel takım yardımcı işleminin TCP yanıtını okuyamadı. Bir kez yeniden deneyin; hata sürerse uygulamayı yeniden başlatın."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
         "title": "Takım hizmeti henüz hazır değil",
@@ -359,6 +354,7 @@
     "addFile": "Dosya Ekle",
     "refresh": "Yenile",
     "temporarySpace": "Geçici Alan",
+    "temporaryWorkspace": "Geçici çalışma alanı",
     "dragOverlayTitle": "İçe aktarmak için bırakın",
     "dragOverlayDesc": "Dosyaları veya klasörleri bu çalışma alanına kopyalamak için buraya sürükleyin.",
     "dragOverlayHint": "İpucu: seçili klasöre içe aktarmak için herhangi bir yere bırakın.",
@@ -424,11 +420,12 @@
       "vscode": "VS Code",
       "terminal": "Terminal",
       "explorer": "Dosya Gezgini",
-      "browser": "Tarayıcı"
+      "browser": "Tarayıcı",
+      "choose": "Açma yöntemini seç"
     },
-    "collapsePanel": "Proje panelini gizle",
+    "collapsePanel": "Çalışma panelini gizle",
     "togglePanel": "Proje panelini göster veya gizle",
-    "expandPanel": "Proje panelini göster"
+    "expandPanel": "Çalışma panelini göster"
   },
   "minimap": {
     "searchAria": "Sohbeti ara",
@@ -589,6 +586,7 @@
   "thinking": {
     "label": "Düşünüyor...",
     "history": "Düşünme geçmişi",
+    "thoughtFor": "{{time}} düşündü",
     "labelWithTime": "{{label}} · {{time}}",
     "completeWithTime": "Düşünme tamamlandı · {{time}}",
     "elapsed": "({{time}})"
@@ -618,6 +616,16 @@
     "mediaPathFallback": "Bu ajan bu dosya türünü yerel olarak desteklemiyor; dosya yolu olarak gönderilecek.",
     "hintWithSessions": "Komutlar için /, dosyalar için @, sohbetler için @@, geçmiş için ↑/↓"
   },
+  "composer": {
+    "goalLine": {
+      "running": "Hedef sürüyor: {{goal}}",
+      "paused": "Hedef duraklatıldı: {{goal}}",
+      "end": "Bitir",
+      "endLabel": "Hedefi bitir"
+    },
+    "thinkingNote": "Düşünme düzeyini değiştirmek istem önbelleğini düşürür; aynı modelde sabit tutun",
+    "modelBusy": "Bu yanıt bitince modeli değiştirin."
+  },
   "agentTip": {
     "codes": {
       "ACP_EMPTY_TURN": {
@@ -642,13 +650,13 @@
         "body": "{{count}} adım başarısız oldu ve etkili OLMADI. agy bu turları yine de başarılı olarak bitirir; bu yüzden yanıta değil gerçek sonuca bakın."
       },
       "CLI_VERSION_OLDER": {
-        "body": "Kurulu {{cli}} sürümü AionUi tarafından doğrulanan sürümden eski; bazı özellikler eksik olabilir. {{cli}} sürümünü yükseltmeyi düşünün. (kurulu: {{reported}} / AionUi tarafından doğrulanan: {{verified}})"
+        "body": "Kurulu {{cli}} sürümü mu tarafından doğrulanan sürümden eski; bazı özellikler eksik olabilir. {{cli}} sürümünü yükseltmeyi düşünün. (kurulu: {{reported}} / mu tarafından doğrulanan: {{verified}})"
       },
       "CLI_VERSION_NEWER": {
-        "body": "Kurulu {{cli}} sürümü AionUi tarafından doğrulanan sürümden yeni. Genelde çalışır; tuhaf bir davranış görürseniz bildirin. (kurulu: {{reported}} / AionUi tarafından doğrulanan: {{verified}})"
+        "body": "Kurulu {{cli}} sürümü mu tarafından doğrulanan sürümden yeni. Genelde çalışır; tuhaf bir davranış görürseniz bildirin. (kurulu: {{reported}} / mu tarafından doğrulanan: {{verified}})"
       },
       "CODEX_RETRYING": {
-        "body": "{{detail}} ({{attempts}}. deneme, {{elapsed}} geçti — aracının sağlayıcısı bağlantıyı sürekli kesiyor; AionUi bekliyor.)"
+        "body": "{{detail}} ({{attempts}}. deneme, {{elapsed}} geçti — aracının sağlayıcısı bağlantıyı sürekli kesiyor; mu bekliyor.)"
       }
     }
   },
@@ -728,7 +736,7 @@
         "conflicted": "!",
         "unknown": "?"
       },
-      "conflictedHint": "Bu çakışmayı önce AionUi dışında çözün",
+      "conflictedHint": "Bu çakışmayı önce mu dışında çözün",
       "opaqueHint": "Bu durum daha yeni bir arka uçtan geliyor — salt okunur gösteriliyor",
       "degraded": "git dizini güncellenemediği için yenileme daha yavaş bir modda çalışıyor",
       "truncated": "Listelenecek çok fazla değişiklik var — yalnızca ilk kısım gösteriliyor",
@@ -747,7 +755,7 @@
         "discard": "Değişiklikleri sil",
         "stageAll": "Tümünü hazırla",
         "unstageAll": "Tümünün hazırlamasını geri al",
-        "blockedHint": "Hazırlamadan veya silmeden önce çakışmayı AionUi dışında çözün",
+        "blockedHint": "Hazırlamadan veya silmeden önce çakışmayı mu dışında çözün",
         "confirmDiscardTitle": "Değişiklikler silinsin mi?",
         "confirmDiscardTracked": "{{count}} dosyadaki düzenlemeler kaybolacak. Bu geri alınamaz.",
         "confirmDiscardUntracked": "{{count}} yeni dosya çöp kutusuna taşınacak.",

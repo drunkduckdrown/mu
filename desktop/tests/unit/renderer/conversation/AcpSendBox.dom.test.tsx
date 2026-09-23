@@ -35,6 +35,7 @@ const {
   draftContentRef,
   messageWarningMock,
   stopInvokeMock,
+  goalState,
 } = vi.hoisted(() => ({
   sendMessageInvokeMock: vi.fn(),
   addOrUpdateMessageMock: vi.fn(),
@@ -48,8 +49,12 @@ const {
   mobileActionSheetEntries: {
     current: [] as Array<{
       key: string;
+      label?: unknown;
+      description?: unknown;
+      meta?: unknown;
       submenu?: {
         onSelect?: (value: string) => void;
+        options?: Array<{ key: string; active?: boolean }>;
       };
     }>,
   },
@@ -77,6 +82,9 @@ const {
   draftContentRef: { current: '' },
   messageWarningMock: vi.fn(),
   stopInvokeMock: vi.fn().mockResolvedValue(undefined),
+  goalState: {
+    current: null as { status: 'active' | 'paused' | 'met' | 'cleared'; text: string } | null,
+  },
 }));
 
 vi.mock('@/common', () => ({
@@ -98,7 +106,9 @@ vi.mock('@/renderer/components/chat/SendBox', () => ({
   default: ({
     onSend,
     onChange,
+    tools,
     rightTools,
+    placeholder,
     sendButtonPrefix,
     topRightOverlay,
     active,
@@ -114,7 +124,9 @@ vi.mock('@/renderer/components/chat/SendBox', () => ({
   }: {
     onSend: (message: string) => Promise<void>;
     onChange?: (value: string) => void;
+    tools?: React.ReactNode;
     rightTools?: React.ReactNode;
+    placeholder?: string;
     sendButtonPrefix?: React.ReactNode;
     topRightOverlay?: React.ReactNode;
     active?: boolean;
@@ -129,6 +141,7 @@ vi.mock('@/renderer/components/chat/SendBox', () => ({
     isTeamConversation?: boolean;
   }) => {
     sendBoxPropsSpy({
+      placeholder,
       active,
       onFocused,
       disabled,
@@ -141,6 +154,7 @@ vi.mock('@/renderer/components/chat/SendBox', () => ({
     });
     return (
       <div>
+        {tools}
         {rightTools}
         {sendButtonPrefix}
         {topRightOverlay}
@@ -172,6 +186,27 @@ vi.mock('@/renderer/components/chat/SendBox', () => ({
 }));
 
 vi.mock('@/renderer/components/agent/AgentModeSelector', () => ({ default: () => null }));
+// The goal as the harness last reported it, set by each test.
+vi.mock('@/renderer/pages/conversation/platforms/acp/Composer/useConversationGoal', () => ({
+  useConversationGoal: (_conversationId: string, enabled: boolean) => (enabled ? goalState.current : null),
+}));
+// The line above the input while a goal runs; its button stands in for the line's own 结束 link.
+vi.mock('@/renderer/pages/conversation/platforms/acp/Composer/GoalLine', () => ({
+  default: ({
+    goal,
+    onEnd,
+  }: {
+    goal: { status: string; text: string };
+    onEnd: (heard: (state: string) => void) => void;
+  }) => (
+    <div data-testid='composer-goal-line' data-status={goal.status}>
+      {goal.text}
+      <button type='button' onClick={() => onEnd(() => {})}>
+        end-goal
+      </button>
+    </div>
+  ),
+}));
 vi.mock('@/renderer/components/chat/CommandQueuePanel', () => ({
   default: (props: { onSendNow: (item: unknown) => void }) => {
     commandQueuePanelPropsSpy(props);
@@ -192,7 +227,7 @@ vi.mock('@/renderer/components/chat/MobileActionSheet', () => ({
     mobileActionSheetEntries.current = entries ?? [];
     return null;
   },
-  useAttachEntry: () => ({ entries: [], hiddenFileInput: null }),
+  useAttachEntry: () => ({ entries: [] }),
 }));
 vi.mock('@/renderer/components/chat/ThoughtDisplay', () => ({ default: () => null }));
 vi.mock('@/renderer/components/media/FileAttachButton', () => ({ default: () => null }));
@@ -340,6 +375,22 @@ const makeMessageState = (): UseAcpMessageReturn => ({
   slashCommands: [],
   fetchSlashCommands: vi.fn(),
 });
+
+/** mu's commands: the goal command is what brings goal mode. */
+const withGoal = (): UseAcpMessageReturn => ({
+  ...makeMessageState(),
+  slashCommands: [{ name: 'goal', description: 'Work until a condition holds', kind: 'template', source: 'acp' }],
+});
+const goalBox = (messageState: UseAcpMessageReturn = withGoal()) => (
+  <AcpSendBox conversation_id='conv-1' backend='kyrn' workspacePath='/tmp/workspace' messageState={messageState} />
+);
+const send = async () => {
+  await act(async () => {
+    screen.getByRole('button', { name: 'send' }).click();
+  });
+};
+const lastPlaceholder = () =>
+  (sendBoxPropsSpy.mock.calls.at(-1)?.[0] as { placeholder?: string } | undefined)?.placeholder;
 
 /** The send box's listener for commands the app sends for the person, as last registered. */
 const appCommand = () =>
@@ -850,14 +901,12 @@ describe('AcpSendBox', () => {
       expect(updater({ content: 'hello world' })).toEqual(expect.objectContaining({ content: '' }));
     });
 
-    it('shows the add-to-draft-box option for a supporting agent that is idle, as long as the draft is non-empty', async () => {
-      // Visibility is keyed only to the draft, not to the agent's busy state —
-      // clicking while idle is semantically fine (the queue's own mode governs).
+    it('offers no draft box while the agent is idle, even with a draft, and offers it once the agent is busy', async () => {
+      // Idle, a message goes out at once: a draft box entry would only be a disabled circle among the chips.
       runtimeViewMock.supportsMidturnDelivery = true;
       runtimeViewMock.isProcessing = false;
       draftContentRef.current = 'hello world';
-
-      render(
+      const box = () => (
         <AcpSendBox
           conversation_id='conv-1'
           backend='claude'
@@ -866,8 +915,14 @@ describe('AcpSendBox', () => {
         />
       );
 
-      const props = sendBoxPropsSpy.mock.calls.at(-1)?.[0] as { onAddToDraft?: () => void };
-      expect(props.onAddToDraft).toBeDefined();
+      const { rerender } = render(box());
+      const idle = sendBoxPropsSpy.mock.calls.at(-1)?.[0] as { onAddToDraft?: () => void };
+      expect(idle.onAddToDraft).toBeUndefined();
+
+      runtimeViewMock.isProcessing = true;
+      rerender(box());
+      const busy = sendBoxPropsSpy.mock.calls.at(-1)?.[0] as { onAddToDraft?: () => void };
+      expect(busy.onAddToDraft).toBeDefined();
     });
 
     it('disables the Draft box action for a supporting agent with an empty draft, even while replying', () => {
@@ -1095,7 +1150,8 @@ describe('AcpSendBox', () => {
     it('carries them into the draft box and clears them from the send box', async () => {
       // The draft box is the path most likely to lose them: enqueue rebuilds the
       // item, and a message that reaches the agent without its session block
-      // fails silently on both sides.
+      // fails silently on both sides. The draft box is offered while the agent works.
+      runtimeViewMock.isProcessing = true;
       render(
         <AcpSendBox
           conversation_id='conv-1'
@@ -1149,6 +1205,112 @@ describe('AcpSendBox', () => {
         isTeamConversation?: boolean;
       };
       expect(props.isTeamConversation).toBe(true);
+    });
+  });
+
+  describe('goals', () => {
+    beforeEach(() => {
+      goalState.current = null;
+      window.localStorage.clear();
+      sendMessageInvokeMock.mockResolvedValue({ turn_id: 'turn-1', runtime: null, msg_id: 'msg-1' });
+    });
+
+    it('sends every draft as it was written: Enter, the draft box and a team interrupt never wrap it in /goal', async () => {
+      // What the goal mode of an earlier version left behind changes nothing.
+      window.localStorage.setItem('mu.composer.mode.conv-1', 'goal');
+      draftContentRef.current = 'every test passes';
+      const onInterruptSend = vi.fn().mockResolvedValue(undefined);
+      const messageState = withGoal();
+      const box = () => (
+        <AcpSendBox
+          conversation_id='conv-1'
+          backend='kyrn'
+          workspacePath='/tmp/workspace'
+          messageState={messageState}
+          teamRuntime={{ loading: false, startedAtMs: null, onInterruptSend } as unknown as TeamSendBoxRuntime}
+        />
+      );
+      const { rerender } = render(box());
+
+      await send();
+      expect(sendMessageInvokeMock).toHaveBeenLastCalledWith(expect.objectContaining({ input: 'Hello' }));
+
+      // The draft box is offered while the agent works.
+      runtimeViewMock.isProcessing = true;
+      rerender(box());
+      await act(async () => {
+        screen.getByRole('button', { name: 'add-to-draft' }).click();
+      });
+      expect(enqueueMock).toHaveBeenCalledWith({ input: 'every test passes', files: [] });
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'team.interruptAndSend' }).click();
+      });
+      expect(onInterruptSend).toHaveBeenCalledWith({ input: 'every test passes', files: [] });
+    });
+
+    it('offers no mode to pick: the usual placeholder, and nothing about goals on the phone sheet', () => {
+      isMobileMock.current = true;
+      render(goalBox());
+      // No i18n instance here: the placeholder is its English fallback.
+      expect(lastPlaceholder()).toBe('Send message to {{backend}}...');
+      expect(mobileActionSheetEntries.current.map((item) => item.key)).not.toContain('composer-mode');
+      expect(screen.queryByTestId('composer-goal-line')).toBeNull();
+    });
+
+    it('shows a running goal in one line above the input, and a paused one too', () => {
+      goalState.current = { status: 'active', text: 'every test passes' };
+      const { unmount } = render(goalBox());
+      expect(screen.getByTestId('composer-goal-line').getAttribute('data-status')).toBe('active');
+      expect(screen.getByTestId('composer-goal-line').textContent).toContain('every test passes');
+      unmount();
+
+      goalState.current = { status: 'paused', text: 'every test passes' };
+      render(goalBox());
+      expect(screen.getByTestId('composer-goal-line').getAttribute('data-status')).toBe('paused');
+    });
+
+    it('shows no line once a goal is met or cleared', () => {
+      goalState.current = { status: 'met', text: 'every test passes' };
+      const { unmount } = render(goalBox());
+      expect(screen.queryByTestId('composer-goal-line')).toBeNull();
+      unmount();
+
+      goalState.current = { status: 'cleared', text: 'every test passes' };
+      render(goalBox());
+      expect(screen.queryByTestId('composer-goal-line')).toBeNull();
+    });
+
+    it('reads no goal for an agent without the goal command', () => {
+      goalState.current = { status: 'active', text: 'every test passes' };
+      render(goalBox(makeMessageState()));
+      expect(screen.queryByTestId('composer-goal-line')).toBeNull();
+    });
+
+    it('ends a goal with /goal clear through the command lane, stopping the run it keeps going', async () => {
+      goalState.current = { status: 'active', text: 'every test passes' };
+      runtimeViewMock.isProcessing = true;
+      runtimeViewMock.activeTurnId = 'turn-9';
+      render(goalBox());
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'end-goal' }).click();
+      });
+
+      expect(emitterEmitMock).toHaveBeenCalledWith('sendbox.command', '/goal clear', 'conv-1', expect.any(Function));
+      expect(stopInvokeMock).toHaveBeenCalledWith({ conversation_id: 'conv-1', turn_id: 'turn-9' });
+    });
+
+    it('ends a paused goal without stopping anything', async () => {
+      goalState.current = { status: 'paused', text: 'every test passes' };
+      render(goalBox());
+
+      await act(async () => {
+        screen.getByRole('button', { name: 'end-goal' }).click();
+      });
+
+      expect(emitterEmitMock).toHaveBeenCalledWith('sendbox.command', '/goal clear', 'conv-1', expect.any(Function));
+      expect(stopInvokeMock).not.toHaveBeenCalled();
     });
   });
 });

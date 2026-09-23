@@ -6,6 +6,7 @@
  * so existing renderer code works without changes.
  */
 
+import { showAsMu } from '../kyrn/displayName';
 import { refreshSession, WS_CLOSE_POLICY_VIOLATION } from './sessionRefresh';
 
 // ---------------------------------------------------------------------------
@@ -87,7 +88,11 @@ export class BackendHttpError extends Error {
   readonly status: number;
   /** Machine-readable error code from the backend `ErrorResponse.code`, or `''` when parse failed. */
   readonly code: string;
-  /** Backend-provided human message from `ErrorResponse.error`, or the raw body when parse failed. */
+  /**
+   * Backend-provided human message from `ErrorResponse.error`, or the raw body when parse failed. It is shown as it
+   * came, so the upstream product names in it are shown as mu (`showAsMu`), as they are in `message`; the raw body
+   * stays in `body`.
+   */
   readonly backendMessage: string;
   /** Structured backend metadata from `ErrorResponse.details`, when present. */
   readonly details: unknown;
@@ -107,11 +112,12 @@ export class BackendHttpError extends Error {
     } else if (typeof body === 'string') {
       backendMessage = body;
     }
-    super(`Backend ${method} ${path} failed (${status}): ${JSON.stringify(body)}`);
+    // Toasts show `message` too.
+    super(showAsMu(`Backend ${method} ${path} failed (${status}): ${JSON.stringify(body)}`));
     this.name = 'BackendHttpError';
     this.status = status;
     this.code = code;
-    this.backendMessage = backendMessage;
+    this.backendMessage = showAsMu(backendMessage);
     this.details = details;
     this.body = body;
   }
@@ -146,9 +152,8 @@ export function isBackendHttpError(error: unknown): error is BackendHttpError {
  * Per-request overrides for `httpRequest`.
  *
  * `silentStatuses` lets known-soft failures (e.g. a runtime-scoped lookup
- * returning 404 before the agent has attached) skip the noisy `console.error`
- * and the Sentry breadcrumb that comes with it. The error is still thrown so
- * the caller's existing try/catch keeps working.
+ * returning 404 before the agent has attached) skip the noisy `console.error`.
+ * The error is still thrown so the caller's existing try/catch keeps working.
  */
 export type HttpRequestOptions = {
   silentStatuses?: number[];

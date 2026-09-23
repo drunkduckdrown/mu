@@ -154,6 +154,17 @@ describe('a conversation without an avatar in the sidebar', () => {
     expect(trailing()?.className).not.toContain('group-hover:hidden');
   });
 
+  it('goes by the name the command palette gives it while nothing has named it, never a blank row', () => {
+    for (const name of ['', '   ']) {
+      const { container, unmount } = renderRow({ conversation: conversation({}, name) });
+      expect(row(container)).toHaveTextContent('conversation.welcome.newConversation');
+      unmount();
+    }
+    renderRow({ collapsed: true, conversation: conversation({}, '') });
+    // Collapsed, its initial comes from that name too.
+    expect(screen.getByTestId('conversation-initial-conv-1')).toHaveTextContent('C');
+  });
+
   it('keeps a pin where its drag handle appears when it is pinned', () => {
     const { container } = renderRow({ conversation: conversation({ pinned: true }) });
     expect(leading()?.querySelector('.i-icon-pushpin')).not.toBeNull();

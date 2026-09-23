@@ -203,7 +203,7 @@ describe('the step bar after the harness said how the run ended', () => {
       />
     );
     fireEvent.click(screen.getByText('步骤 3'));
-    expect(screen.getByText('“<img src=x onerror=alert(1)>”看起来无法撤销，且没有得到确认。')).toBeTruthy();
+    expect(screen.getByText('「<img src=x onerror=alert(1)>」看起来无法撤销，且没有得到确认。')).toBeTruthy();
     expect(document.querySelector('img')).toBeNull();
   });
 

@@ -128,13 +128,12 @@ function at(path: string, element: React.ReactElement) {
 
 describe('a settings section as its own page', () => {
   it('has no second menu, and one click on a judge choice is saved as the one judge', async () => {
-    at('/settings/kyrn/judges', <SettingsArea section='judges' />);
+    at('/settings/judges', <SettingsArea section='judges' />);
     fireEvent.click(await screen.findByTestId('mu-judge-choice-jev'));
     expect(screen.queryByTestId('mu-nav-judges')).not.toBeInTheDocument();
     expect(screen.getByTestId('mu-judge-choice-jev')).toHaveAttribute('aria-checked', 'true');
     // The chosen one asks for its key, and only that.
     expect(screen.getByLabelText('API key')).toBeInTheDocument();
-    expect(screen.queryByTestId('mu-judges-advanced-body')).not.toBeInTheDocument();
     fireEvent.change(screen.getByLabelText('API key'), { target: { value: 'jev-key' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(bridge.save).toHaveBeenCalledTimes(1));
@@ -159,7 +158,7 @@ describe('a settings section as its own page', () => {
       ok: true,
       data: { support: 'ok', installed: false, running: false, url, task },
     });
-    at('/settings/kyrn/judges', <SettingsArea section='judges' />);
+    at('/settings/judges', <SettingsArea section='judges' />);
     const panel = await screen.findByTestId('mu-laya');
     await waitFor(() => expect(panel).toHaveTextContent('Not installed yet.'));
     fireEvent.click(within(panel).getByTestId('mu-laya-install'));
@@ -186,7 +185,7 @@ describe('a settings section as its own page', () => {
       ok: true,
       data: { support: 'uv', installed: false, running: false, url },
     });
-    const { unmount } = at('/settings/kyrn/judges', <SettingsArea section='judges' />);
+    const { unmount } = at('/settings/judges', <SettingsArea section='judges' />);
     const panel = await screen.findByTestId('mu-laya');
     await waitFor(() => expect(panel).toHaveTextContent('Installing needs uv'));
     expect(within(panel).getByTestId('mu-laya-uv')).toBeInTheDocument();
@@ -196,31 +195,46 @@ describe('a settings section as its own page', () => {
       ok: true,
       data: { support: 'platform', installed: false, running: false, url },
     });
-    at('/settings/kyrn/judges', <SettingsArea section='judges' />);
+    at('/settings/judges', <SettingsArea section='judges' />);
     const other = await screen.findByTestId('mu-laya');
-    await waitFor(() => expect(other).toHaveTextContent('it needs a Mac with Apple Silicon'));
+    await waitFor(() => expect(other).toHaveTextContent('or a Mac with Apple Silicon'));
     expect(within(other).queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('keeps the order of several judges and every field under Advanced', async () => {
-    at('/settings/kyrn/judges', <SettingsArea section='judges' />);
-    fireEvent.click(await screen.findByTestId('mu-judges-advanced'));
-    expect(screen.getByTestId('mu-judges-advanced-body')).toBeInTheDocument();
-    expect(screen.getByLabelText('Order')).toBeInTheDocument();
+  it('keeps the order of several judges on the judge tiers page, in the open, each judge by its name', async () => {
+    at('/settings/judge-tiers', <SettingsArea section='judgeTiers' />);
+    const tiers = await screen.findByTestId('mu-judge-tiers');
+    expect(screen.getByRole('heading', { name: 'Judge tiers' })).toBeInTheDocument();
+    expect(within(tiers).getByLabelText('Order')).toBeInTheDocument();
+    // Laya, the one judge here, needs nothing on this page: the judges page installs and starts it.
+    const laya = within(tiers).getByTestId('mu-judge-tier-0');
+    expect(laya).toHaveTextContent('Tier 1: Local Laya');
+    expect(within(laya).queryByRole('textbox')).not.toBeInTheDocument();
+    expect(within(tiers).queryByTestId('mu-judge-tier-1')).not.toBeInTheDocument();
   });
 });
 
 describe('the first-run guide', () => {
+  it('tags only the most common way in: the Anthropic tile’s description already names Claude', async () => {
+    at('/welcome', <Welcome />);
+    fireEvent.click(await screen.findByTestId('mu-welcome-begin'));
+    expect(within(await screen.findByTestId('mu-welcome-way-openai')).getByText('Most common')).toBeInTheDocument();
+    const anthropic = screen.getByTestId('mu-welcome-way-anthropic');
+    expect(anthropic).toHaveTextContent('Claude, and services that speak the Messages format');
+    expect(within(anthropic).queryByText('Claude')).not.toBeInTheDocument();
+  });
+
   it('says what mu is, connects an API model, takes a judge key, saves once at the end, and is not shown again', async () => {
     at('/welcome', <Welcome />);
     expect(await screen.findByText('Welcome to mu')).toBeInTheDocument();
     expect(screen.getByText('A check at every step')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('mu-welcome-begin'));
     fireEvent.click(await screen.findByTestId('mu-welcome-way-openai'));
-    // Nothing filled in: the step stays and says why.
+    // Nothing filled in: the step stays and says why, and the field in question is marked.
     fireEvent.click(screen.getByTestId('mu-welcome-next'));
     expect(screen.getByTestId('mu-welcome-step-model')).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('https://');
+    expect(screen.getByLabelText('Base URL')).toHaveClass('arco-input-error');
 
     fireEvent.change(screen.getByLabelText('Base URL'), { target: { value: 'https://relay.example.com/v1' } });
     fireEvent.change(screen.getByLabelText('API key'), { target: { value: 'sk-relay' } });
@@ -327,6 +341,18 @@ describe('the first-run guide', () => {
       )
     ).toBeInTheDocument();
     expect(screen.queryByText(/Invalid credential/)).not.toBeInTheDocument();
+  });
+
+  it('skips a step with a quiet text button, even after a way is picked', async () => {
+    at('/welcome', <Welcome />);
+    fireEvent.click(await screen.findByTestId('mu-welcome-begin'));
+    fireEvent.click(await screen.findByTestId('mu-welcome-way-openai'));
+    // The way on is the primary button; skipping is not.
+    expect(screen.getByTestId('mu-welcome-next')).toHaveClass('arco-btn-primary');
+    expect(screen.getByTestId('mu-welcome-skip')).not.toHaveClass('arco-btn');
+    fireEvent.click(screen.getByTestId('mu-welcome-skip'));
+    expect(await screen.findByTestId('mu-welcome-step-judge')).toBeInTheDocument();
+    expect(bridge.save).not.toHaveBeenCalled();
   });
 
   it('can be skipped from the first page without saving anything', async () => {

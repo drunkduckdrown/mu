@@ -7,16 +7,36 @@
   "modified": "Changed",
   "applyNote": "Changes apply to new sessions. A running session keeps the configuration it started with; reconnect it to pick them up.",
   "apiKey": "API key",
-  "keyHelp": "Write-only: once saved it is never shown again. Kept in the harness .env on this machine (owner-only).",
+  "keyHelp": "Once saved it is never shown again. It stays on this computer, readable only by your account.",
   "keyKeep": "Leave empty to keep the saved key",
   "endpointRule": "Use HTTPS, or HTTP to this machine only (127.0.0.1, localhost). No user name, password, query or fragment in the address.",
   "sections": {
     "judges": "Judges",
+    "judgeTiers": "Judge tiers",
     "decisions": "Decision points",
     "features": "Features",
-    "models": "Models and providers",
+    "moreFeatures": "More features",
+    "providers": "Providers",
+    "defaultModel": "Default model",
     "permissions": "Permissions",
     "context": "Context"
+  },
+  "pages": {
+    "decisions": {
+      "input": "Decision points: Input",
+      "context": "Decision points: Context",
+      "memory": "Decision points: Lessons",
+      "tools": "Decision points: Tools and safety",
+      "turn": "Decision points: Turn",
+      "team": "Decision points: Teamwork"
+    },
+    "features": {
+      "input": "More features: Input",
+      "context": "More features: Context",
+      "tools": "More features: Tools and safety",
+      "turn": "More features: Turn",
+      "other": "More features: Other"
+    }
   },
   "modes": {
     "active": "Active",
@@ -24,11 +44,11 @@
     "off": "Off",
     "activeHelp": "The verdict takes effect.",
     "shadowHelp": "Asked and recorded, but nothing changes.",
-    "offHelp": "Not asked. Behaves like plain pi."
+    "offHelp": "Not asked. That step goes ahead without a verdict."
   },
   "harness": {
-    "tooOld": "This harness is too old to describe its decision points and features. Update the mu harness to see them here; the basic settings still work.",
-    "unsupported": "The harness describes itself in a format this app does not know (version {{version}}). Update the app to edit decision points and features."
+    "tooOld": "This version of mu is too old to list its decision points and features. Update mu to see them here; the basic settings still work.",
+    "unsupported": "mu describes itself in a format this app does not know (version {{version}}). Update the app to edit decision points and features."
   },
   "load": {
     "failed": "The settings could not be loaded"
@@ -43,7 +63,7 @@
     "failed": "Not saved: {{reason}}"
   },
   "units": {
-    "ms": "ms",
+    "s": "s",
     "tokens": "tokens"
   },
   "options": {
@@ -62,59 +82,58 @@
     "description": "Each point where the judge is asked. A point follows the default mode unless you give it one of its own.",
     "defaultMode": "Default mode",
     "defaultModeHelp": "For every decision point without a mode of its own.",
-    "follow": "Follow default ({{mode}})",
-    "feature": "Feature: {{name}}",
-    "featureOff": "Feature is off: not asked",
+    "useDefault": "Use the default ({{mode}})",
+    "featureOff": "Its feature is off, so this point is not asked now.",
     "groups": {
       "input": "Input",
       "context": "Context",
+      "memory": "Lessons",
       "tools": "Tools and safety",
       "turn": "Turn",
       "team": "Teamwork"
     },
-    "otherGroup": "Other"
+    "otherGroup": "Other",
+    "pageLead": "A point follows the default mode unless you give it one of its own. The default mode and the search are on {{page}}.",
+    "none": "No decision points here yet."
   },
   "features": {
-    "description": "What the harness does around the model. Values you have not changed keep following the harness defaults.",
+    "lead": "What mu does for you in the background. Switch one off and mu stops doing it.",
+    "moreLead": "Everything else mu can do, grouped by where it acts. Each feature’s options are one click away.",
     "beta": "Beta",
     "reset": "Restore defaults",
-    "asks": "Decision points: {{names}}.",
     "permissionsElsewhere": "The mode of a new conversation is chosen under Permissions.",
-    "boardModelElsewhere": "The model that writes the board is chosen under Models & providers."
+    "boardModelElsewhere": "The model that writes the board is chosen under Default model.",
+    "options": "Options",
+    "noOptions": "Nothing else to set: the switch is all there is.",
+    "noSuchFeature": "This version of mu has no such feature.",
+    "none": "No features here yet.",
+    "part": "Options, page {{part}} of {{parts}}",
+    "previousPart": "Previous page",
+    "nextPart": "Next page"
   },
   "judges": {
-    "tiers": "Tiers",
     "tiersHelp": "Judges are tried in order. A later one only sees what the earlier ones left uncertain.",
     "order": "Order",
-    "judge": "Judge",
+    "orderHelp": "The first one is the judge chosen on the Judges page.",
+    "tierTitle": "Tier {{index}}: {{name}}",
     "type": "How it is reached",
+    "access": {
+      "jev": "Automatic",
+      "typesafe": "TypeSafe directly",
+      "gateway": "Through Vercel AI Gateway"
+    },
     "model": "Judge model",
-    "modelHelp": "For a general model as judge: provider/model-id.",
-    "endpoint": "Endpoint",
+    "customTier": "A judge you added yourself. Change it in mu's settings file.",
     "endpointDefault": "Default address of the service",
-    "timeout": "Timeout",
-    "keyVariable": "Key variable",
-    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY, or a name starting with MU_JUDGE_.",
     "types": {
-      "jev": "Jev (automatic route)",
-      "typesafe": "Jev, direct (TypeSafe)",
-      "gateway": "Jev through Vercel AI Gateway",
-      "local": "Local judge (Laya)",
-      "http": "Your own HTTP judge service",
-      "llm": "A general model as judge",
-      "mock": "Mock (neutral answers)",
       "jevHelp": "TypeSafe directly when its key is set, otherwise the Vercel AI Gateway.",
       "typesafeHelp": "Always TypeSafe directly.",
       "gatewayHelp": "Always through the Vercel AI Gateway.",
-      "localHelp": "The Laya sidecar on this machine.",
-      "httpHelp": "Any endpoint that takes {state, questions} and returns {answers}.",
-      "llmHelp": "A generative model from your providers, prompted to answer as JSON.",
-      "mockHelp": "For tests and offline work: nothing is asked."
+      "localHelp": "Runs on this computer."
     },
     "intro": "While it works, mu makes many small calls: how to handle this message, whether this step breaks a rule you set. The judge answers them. Pick one.",
     "choose": "Choose a judge",
-    "custom": "The first judge right now is a custom one: see and change it under Advanced.",
-    "advanced": "Advanced",
+    "custom": "The first judge right now is a custom one: see and change it on the Judge tiers page.",
     "keyPlaceholder": "Paste a TypeSafe or Vercel AI Gateway key",
     "choices": {
       "jev": {
@@ -133,7 +152,7 @@
       "running": "Running on this machine",
       "stopped": "Installed, not running. mu starts it when it needs it.",
       "missing": "Not installed yet.",
-      "platform": "Laya cannot run on this computer: it needs a Mac with Apple Silicon. You can enter the address of a judge service of your own in the advanced view.",
+      "platform": "Laya cannot run on this computer: it needs Windows or Linux (x64 or arm64) or a Mac with Apple Silicon.",
       "needsUv": "Installing needs uv, a Python package manager. Install it, then come back here.",
       "uvLink": "How to install uv",
       "install": "Install Laya",
@@ -151,6 +170,26 @@
         "setup": "Installing did not finish. You can try again.",
         "start": "Laya did not start.",
         "stop": "Laya did not stop."
+      },
+      "onnx": {
+        "missing": "Laya's model is not on this computer yet (about {{size}} MB). mu does not download it for you: get the files from Hugging Face, put them in the model folder, then press Check and start.",
+        "stopped": "The model is in place, and Laya is not running. When Laya is your judge, mu starts it by itself when the app opens.",
+        "starting": "Checking the model and starting Laya… The first check reads the whole model and takes a moment.",
+        "missingFiles": "Still missing: {{files}}",
+        "wrongFiles": "Not the version mu was tested with, download these again: {{files}}",
+        "folder": "Model folder: {{folder}}",
+        "command": "With the Hugging Face command line (hf), this one command fetches everything:",
+        "page": "Get it on Hugging Face",
+        "openFolder": "Open the model folder",
+        "check": "Check and start",
+        "problem": {
+          "missing": "Some model files are missing.",
+          "wrong": "Some model files are not the version mu was tested with. Download them again.",
+          "runtime": "This computer could not run the model.",
+          "port": "Another program already uses Laya's port ({{port}}).",
+          "stopped": "Laya stopped before it was ready.",
+          "foreign": "A Laya that mu did not start is running here. Stop it where it was started."
+        }
       }
     }
   },
@@ -163,14 +202,12 @@
     "manual": "Set (edited by hand)"
   },
   "context": {
-    "description": "When the conversation is compacted, and how. Shared with pi's settings.json.",
+    "description": "When the conversation is compacted, and how. Kept in mu’s settings file, which mu on the command line uses too.",
     "auto": "Automatic compaction",
     "autoHelp": "Compacts the history when the context is nearly full.",
     "limit": "Context cap",
     "limitHelp": "0 follows the model's window minus the reserve. Otherwise {{min}} to {{max}}. Checked before the next model request; not a hard cut.",
-    "limitProblem": "Use 0, or a whole number from {{min}} to {{max}}.",
-    "beta": "Summary-free compaction",
-    "betaHelp": "Keeps or prunes original passages by judgment instead of writing a summary. The same switch as the compaction feature."
+    "limitProblem": "Use 0, or a whole number from {{min}} to {{max}}."
   },
   "permissions": {
     "description": "Whether mu asks you before it acts. This is the mode every new conversation starts in; each conversation can still be switched from “Permissions” in its send box.",
@@ -229,7 +266,7 @@
     }
   },
   "providers": {
-    "lead": "Where the models come from: subscriptions and endpoints, plus the model that writes the plain-language board. A conversation’s model and thinking level are picked in its send box.",
+    "lead": "Where the models come from: subscriptions and endpoints. A conversation’s model and thinking level are picked in its send box.",
     "title": "Providers",
     "custom": "Custom providers",
     "manualGroup": "Written by hand",
@@ -242,7 +279,7 @@
     "name": "Display name",
     "namePlaceholder": "e.g. My proxy",
     "id": "ID",
-    "idHelp": "Lowercase letters, digits and hyphens. Fixed once saved; used as provider/model.",
+    "idHelp": "Lowercase letters, digits and hyphens. It cannot change once saved.",
     "idProblem": {
       "format": "Use lowercase letters, digits and hyphens, starting with a letter or digit (at most 40).",
       "reserved": "This is the id of a built-in provider. An entry under it would reroute that provider instead of adding one.",
@@ -251,7 +288,6 @@
     "baseUrl": "Base URL",
     "keyEnter": "Paste the API key",
     "keyReplace": "A key written by hand is in use. Typing one here replaces it.",
-    "keyHelp": "Saved to the harness .env as {{variable}}; models.json only holds the reference. Never shown again.",
     "authHeader": "Also send Authorization: Bearer (some proxies need it)",
     "headers": "Extra headers written by hand are kept as they are: {{names}}. Their values are secrets and are edited in models.json.",
     "pick": "Choose a provider on the left, or add one.",
@@ -276,6 +312,18 @@
     "removeUnsaved": "It is not saved yet, so what you filled in here is discarded.",
     "removeEntry": "When you save, this hand-written entry is deleted from models.json. If it overrides a built-in provider, that provider goes back to its defaults.",
     "removeDefault": "New sessions start with it, so the default model is cleared too."
+  },
+  "defaults": {
+    "summary": "What a new session starts with. You can still switch inside a conversation.",
+    "provider": "Provider",
+    "model": "Model",
+    "level": "Thinking level",
+    "levelUnset": "Not set",
+    "levelHelp": "Levels this model does not take are disabled.",
+    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
+    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
+    "notSet": "Not set",
+    "pickProvider": "Choose a provider first."
   },
   "accounts": {
     "signIn": "Sign in",
@@ -344,7 +392,7 @@
   },
   "test": {
     "run": "Test connection",
-    "hint": "One minimal request from this app: the model list, or else a single token with the first model.",
+    "hint": "One minimal request from this app: the model list, or else a one-word reply from the first model.",
     "okModels": "Connected ({{ms}} ms). The endpoint lists {{count, number}} models.",
     "okCompletion": "Connected ({{ms}} ms). The model answered.",
     "auth": "The key was rejected (HTTP {{status}}).",
@@ -418,7 +466,6 @@
       },
       "anthropic": {
         "title": "Anthropic-compatible API",
-        "tag": "Claude",
         "description": "Claude, and services that speak the Messages format",
         "modelPlaceholder": "e.g. claude-sonnet-5"
       },

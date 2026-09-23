@@ -67,7 +67,7 @@ describe('what a provider is called on screen', () => {
     expect(customProviderName(tIn('en-US'), saved({ id: 'relay', name: '' }))).toBe('relay');
   });
 
-  it('names a provider by its own name, a hand-written entry’s, a subscription’s, or else its id', () => {
+  it('names a provider by its own name, a hand-written entry’s, a subscription’s, a built-in one’s, or else its id', () => {
     const models = {
       providers: [saved({ id: 'relay', name: 'Relay' })],
       foreign: [{ id: 'lab', name: 'Lab', api: 'bedrock-converse', baseUrl: '', modelCount: 1 }],
@@ -77,6 +77,9 @@ describe('what a provider is called on screen', () => {
     expect(providerLabel(t, models, 'lab')).toBe('Lab');
     expect(providerLabel(t, models, 'openai-codex')).toBe('ChatGPT');
     expect(providerLabel(t, models, 'anthropic')).toBe('Claude');
-    expect(providerLabel(t, models, 'openrouter')).toBe('openrouter');
+    // pi's built-in providers by their makers' names, never by an id like vercel-ai-gateway.
+    expect(providerLabel(t, models, 'openrouter')).toBe('OpenRouter');
+    expect(providerLabel(t, models, 'vercel-ai-gateway')).toBe('Vercel AI Gateway');
+    expect(providerLabel(t, models, 'corp-gateway')).toBe('corp-gateway');
   });
 });

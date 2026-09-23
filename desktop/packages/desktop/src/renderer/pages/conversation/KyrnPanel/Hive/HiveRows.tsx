@@ -1,0 +1,227 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Button, Collapse } from '@arco-design/web-react';
+import { Check, Close } from '@icon-park/react';
+import classNames from 'classnames';
+import type { TFunction } from 'i18next';
+import { useTranslation } from 'react-i18next';
+import { isBeeActive, parseSwarmSnapshot, type HiveBee, type HiveBeeStatus } from '@/common/kyrn/hive';
+import type { Activity } from '@/common/kyrn/types';
+import { thinkingLevelLabel } from '@/renderer/utils/model/thinkingLevel';
+import { list, record, str } from '../activity';
+import type { HiveFocusRequest } from '../focus';
+import { beeCounters, ErrorNotice, quietLabel } from '../text';
+import BeeActivityList from './BeeActivity';
+import { swarmTitleText } from './codes';
+import { beeLine } from './HiveToolCard';
+import Hive from './index';
+import styles from './Hive.module.css';
+
+/** One run of sub-agents as the tab lists it: a hive, or a delegate call's tasks. */
+type SwarmRun = { id: string; at: number; kind: 'hive' | 'delegate'; title: string; bees: HiveBee[]; asked: string[] };
+
+/**
+ * The runs of this conversation, newest first. Each snapshot is read by the parser the transcript's sub-agent card
+ * uses; a snapshot from a harness that did not name its kind is a delegate call's. A hive announced by its manifest
+ * but not yet reported lists the bees it asked for.
+ */
+function swarmRuns(t: TFunction, events: readonly Activity[]): SwarmRun[] {
+  const runs = new Map<string, SwarmRun>();
+  const runOf = (event: Activity & { run: string }): SwarmRun => {
+    const known = runs.get(event.run);
+    if (known) return known;
+    const run: SwarmRun = { id: event.run, at: event.at, kind: 'hive', title: '', bees: [], asked: [] };
+    runs.set(event.run, run);
+    return run;
+  };
+  for (const event of events) {
+    if (!event.run) continue;
+    if (event.kind === 'hive.manifest') {
+      const run = runOf({ ...event, run: event.run });
+      run.title ||= str(event.payload.goal);
+      run.asked = list(event.payload.bees)
+        .map((bee) => str(bee.name))
+        .filter(Boolean);
+    } else if (event.kind === 'swarm.snapshot') {
+      const payload = record(event.payload);
+      const snapshot = parseSwarmSnapshot(payload.kind === undefined ? { ...payload, kind: 'delegate' } : payload);
+      if (!snapshot) continue;
+      const run = runOf({ ...event, run: event.run });
+      run.kind = snapshot.kind;
+      run.title = swarmTitleText(t, snapshot) || run.title;
+      run.bees = snapshot.bees;
+    }
+  }
+  return [...runs.values()].toSorted((a, b) => b.at - a.at);
+}
+
+const rowKey = (runId: string, beeName: string): string => JSON.stringify([runId, beeName]);
+
+/** A bee's state as a mark, never as a colour: a dot while it works, a tick when done, a cross when it failed. */
+function StatusMark({ status }: { status: HiveBeeStatus }) {
+  const shape = isBeeActive(status)
+    ? 'active'
+    : status === 'done'
+      ? 'done'
+      : status === 'failed' || status === 'timed-out'
+        ? 'failed'
+        : status === 'queued'
+          ? 'queued'
+          : 'idle';
+  return (
+    <span className={styles.mark} data-shape={shape} aria-hidden='true'>
+      {shape === 'done' ? (
+        <Check size={11} strokeWidth={4} />
+      ) : shape === 'failed' ? (
+        <Close size={11} strokeWidth={4} />
+      ) : null}
+    </span>
+  );
+}
+
+/**
+ * The hive tab: every sub-agent of the conversation on one row — name, role, model and thinking level, and what it
+ * is doing or said — under a line per run that counts how many run, are done and failed. A row opens to its counts,
+ * its silence, why it stopped and its last steps; a hive run also opens to the full hive view (the map, the notes
+ * passed between bees, the gates). A request from the transcript opens the bee it names.
+ */
+export default function HiveRows({ events, focus }: { events: Activity[]; focus?: HiveFocusRequest }) {
+  const { t, i18n } = useTranslation();
+  const runs = useMemo(() => swarmRuns(t, events), [t, events]);
+  // The bee a request from the transcript names is open from the first frame it is drawn in.
+  const focusKey = focus?.beeName ? rowKey(focus.runId, focus.beeName) : undefined;
+  const [opened, setOpened] = useState<ReadonlySet<string>>(() => new Set(focusKey ? [focusKey] : []));
+  const [answered, setAnswered] = useState(focus);
+  if (focus !== answered) {
+    setAnswered(focus);
+    if (focusKey && !opened.has(focusKey)) setOpened(new Set([...opened, focusKey]));
+  }
+  const anchors = useRef(new Map<string, HTMLElement>());
+  const focusedRun = focus ? runs.find((run) => run.id === focus.runId) : undefined;
+
+  useEffect(() => {
+    if (!focus || !focusedRun) return;
+    const anchor = anchors.current.get(focus.beeName ? rowKey(focus.runId, focus.beeName) : focus.runId);
+    anchor?.scrollIntoView?.({ block: 'nearest' });
+  }, [focus, focusedRun]);
+
+  const toggle = (key: string) =>
+    setOpened((old) => {
+      const next = new Set(old);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  const anchor = (key: string) => (element: HTMLElement | null) => {
+    if (element) anchors.current.set(key, element);
+    else anchors.current.delete(key);
+  };
+
+  return (
+    <div className={styles.rowsTab} data-testid='kyrn-hive'>
+      {focus && !focusedRun ? <p className={styles.empty}>{t('common.kyrn.hiveView.waitingRun')}</p> : null}
+      {!runs.length && !focus ? <p className={styles.empty}>{t('common.kyrn.hiveView.none')}</p> : null}
+      {runs.map((run) => {
+        const running = run.bees.filter((bee) => isBeeActive(bee.status)).length;
+        const done = run.bees.filter((bee) => bee.status === 'done').length;
+        const failed = run.bees.filter((bee) => bee.status === 'failed' || bee.status === 'timed-out').length;
+        return (
+          <section key={run.id} className={styles.run} data-hive-run={run.id} ref={anchor(run.id)}>
+            <header className={styles.runHead}>
+              <span className={styles.runTitle} dir='auto' title={run.title}>
+                {run.title || t(run.kind === 'delegate' ? 'common.kyrn.hiveView.agents' : 'common.kyrn.hiveView.title')}
+              </span>
+              <span className={styles.runCounts}>{t('common.kyrn.hiveView.counts', { running, done, failed })}</span>
+            </header>
+            <ul className={styles.rows}>
+              {run.bees.map((bee) => {
+                const key = rowKey(run.id, bee.name);
+                const open = opened.has(key);
+                const status = t(
+                  bee.status === 'unknown' ? 'common.kyrn.hiveView.unknown' : `common.kyrn.beeStatus.${bee.status}`
+                );
+                return (
+                  <li key={bee.name} ref={anchor(key)} data-bee={bee.name}>
+                    <Button type='text' long className={styles.row} aria-expanded={open} onClick={() => toggle(key)}>
+                      <StatusMark status={bee.status} />
+                      <span className={styles.srOnly}>{status}</span>
+                      <span className={styles.rowMain}>
+                        <span className={styles.rowTop}>
+                          <span className={styles.rowName} dir='auto'>
+                            {bee.name}
+                          </span>
+                          {bee.role ? (
+                            <span className={styles.rowRole} dir='auto'>
+                              {bee.role}
+                            </span>
+                          ) : null}
+                          <span className={styles.rowModel}>
+                            {[bee.model, bee.thinking && thinkingLevelLabel(t, bee.thinking)]
+                              .filter(Boolean)
+                              .join(' · ')}
+                          </span>
+                        </span>
+                        {/* One line while closed; the whole of it once the row is open. */}
+                        <span
+                          className={classNames(
+                            bee.error ? styles.rowFailed : styles.rowDoing,
+                            bee.tool && !bee.error && styles.rowTool,
+                            open && styles.rowWhole
+                          )}
+                          dir='auto'
+                        >
+                          {beeLine(t, bee, i18n.language)}
+                        </span>
+                      </span>
+                    </Button>
+                    {open ? <BeeDetail bee={bee} /> : null}
+                  </li>
+                );
+              })}
+              {!run.bees.length
+                ? run.asked.map((name) => (
+                    <li key={name} className={styles.rowAsked}>
+                      <StatusMark status='queued' />
+                      <span className={styles.rowName} dir='auto'>
+                        {name}
+                      </span>
+                      <span className={styles.rowDoing}>{t('common.kyrn.hiveView.pending')}</span>
+                    </li>
+                  ))
+                : null}
+            </ul>
+            {run.kind === 'hive' ? <HiveDetails events={events} runId={run.id} /> : null}
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+/**
+ * What a row opens to, under its line (which then shows in full what it is doing, said or why it stopped): its
+ * counts, its silence, that it failed, its last steps.
+ */
+function BeeDetail({ bee }: { bee: HiveBee }) {
+  const { t, i18n } = useTranslation();
+  return (
+    <div className={styles.rowDetail}>
+      <p className={styles.quiet}>{beeCounters(t, bee)}</p>
+      {bee.quietMs > 0 ? <p className={styles.quiet}>{quietLabel(t, bee.quietMs, i18n.language)}</p> : null}
+      {bee.error ? <ErrorNotice title={t('common.kyrn.beeFailed')} /> : null}
+      <BeeActivityList entries={bee.recent} />
+    </div>
+  );
+}
+
+/** The full hive view of one run, on demand: the map, what passed between the bees, the gates, each bee's record. */
+function HiveDetails({ events, runId }: { events: Activity[]; runId: string }) {
+  const { t } = useTranslation();
+  // One request per run, kept: the hive view re-selects its run whenever the request changes.
+  const focus = useMemo<HiveFocusRequest>(() => ({ conversationId: '', runId }), [runId]);
+  return (
+    <Collapse bordered={false} className={styles.collapse}>
+      <Collapse.Item name='details' header={t('common.kyrn.hiveView.details')}>
+        <Hive events={events} focus={focus} />
+      </Collapse.Item>
+    </Collapse>
+  );
+}

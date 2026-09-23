@@ -55,14 +55,17 @@ export class SettingsStore {
   private agentDir: string;
   private root: string;
   private envPath: string;
+  private manifestPath?: string;
   private piPath: string;
   private modelsPath: string;
   private permissionsPath: string;
   private boardPath: string;
-  constructor(agentDir: string, root: string) {
+  /** @param files where the harness keeps its keys and its manifest, when not where a checkout does (see harness.ts) */
+  constructor(agentDir: string, root: string, files: { env?: string; manifest?: string } = {}) {
     this.agentDir = agentDir;
     this.root = root;
-    this.envPath = join(root, '.env');
+    this.envPath = files.env ?? join(root, '.env');
+    this.manifestPath = files.manifest;
     this.piPath = join(agentDir, 'settings.json');
     this.modelsPath = join(agentDir, 'models.json');
     this.permissionsPath = join(agentDir, 'mu', 'permissions.json');
@@ -79,7 +82,7 @@ export class SettingsStore {
     const permissionsRaw = readOptional(this.permissionsPath);
     const boardRaw = readOptional(this.boardPath);
     const config = parseObject(raw, this.path);
-    const harness = loadManifest(this.root);
+    const harness = loadManifest(this.root, this.manifestPath);
     const manifest = harness.status === 'ok' ? harness.manifest : undefined;
     const board = readBoardModel(manifest, config, boardRaw);
     return {

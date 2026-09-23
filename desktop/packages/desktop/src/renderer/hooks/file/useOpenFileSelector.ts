@@ -14,9 +14,7 @@ interface UseOpenFileSelectorResult {
  * Shared open-file selector behavior for send boxes.
  * Unifies '+' button and '/open' builtin command handling.
  *
- * In Electron: opens native file dialog.
- * In WebUI: routes through the registered web file picker (webFsPicker),
- * which browses the server filesystem via `/api/fs/dir`.
+ * Opens the native Electron file dialog.
  */
 export function useOpenFileSelector(options: UseOpenFileSelectorOptions): UseOpenFileSelectorResult {
   const { onFilesSelected } = options;
@@ -31,8 +29,7 @@ export function useOpenFileSelector(options: UseOpenFileSelectorOptions): UseOpe
         onFilesSelected(files);
       })
       .catch((error) => {
-        // In WebUI, dialog may fail if the web file picker (webFsPicker) is not
-        // registered or the bridge is not properly connected. Log for debugging.
+        // The dialog can still fail if the bridge is not connected. Log for debugging.
         console.warn('[useOpenFileSelector] Failed to open file selector:', error);
       });
   }, [onFilesSelected]);

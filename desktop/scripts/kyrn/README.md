@@ -36,6 +36,42 @@ Current limits: text/text-resource and raster image input; client-provided MCP s
 not imported, and free-text extension dialogs are cancelled rather than guessed.
 Built-in mu browser, hive, skills and tools still run inside mu.
 
+Where mu comes from (`process/agent/kyrn/harness.ts`): `MU_ROOT` / `KYRN_ROOT` when set; else a checkout beside
+this one (`../KYRN`, or `..` in the MU monorepo); else `mu-agent` installed with npm (`npm i -g mu-agent`), found from
+`mu` on PATH or in npm's usual global folders. The npm package keeps its keys in `~/.mu/.env` and its Laya venv in
+`~/.mu/local-judge`, and the settings follow it there.
+
+Windows has no bash. There the registration's command is `acp.cmd`, which runs `acp.mjs` with Node (22.19 or newer
+on PATH), and the adapter starts the harness as `node <root>/kyrn/bin/mu.mjs --mode rpc`, with no shell; closing a
+conversation ends the harness's whole process tree with `taskkill /T`. macOS and Linux keep the bash `acp` and the
+checkout's bash forwarder: the registration is found by its command, so that path must not change there. Not run on
+a real Windows machine yet.
+
+The packaged app has no desktop sources and no tsx. It carries the adapter bundled into one file,
+`out/main/mu-acp.js` (unpacked from the asar, built by `scripts/build-mcp-servers.js` like the builtin MCP servers),
+and registers `resources/mu/acp` (`acp.cmd` on Windows) as the command. On macOS and Linux that script picks a Node
+that can run mu (22.19 or newer: `MU_NODE`, PATH, nvm, Homebrew, /usr/local), since a Mac app's PATH is short and
+often starts with an old Node. The harness comes from `MU_ROOT` / `KYRN_ROOT` or from npm (`npm i -g mu-agent`).
+Checked outside any checkout with the bundle and the script in a mock `Resources` folder: with Node 20 first on
+PATH it chose nvm's Node 24, answered the ACP handshake and opened a session; not yet in a real packaged build.
+
+WSL (`process/agent/kyrn/wsl.ts`): on Windows, a conversation whose folder is inside a WSL distribution
+(`\\wsl.localhost\<distro>\...`, or `\\wsl$\...`) gets its harness started inside that distribution:
+`wsl.exe --distribution <distro> --cd <linux path> --exec bash -lc <start script>`. mu must be installed there
+(`npm i -g mu-agent`); the script finds it on the login PATH, through nvm or in npm's usual folders, and says what to
+install when it is missing. The harness shares the Windows side's agent folder (one sign-in, one configuration:
+`MU_AGENT_DIR`) and the app's session file, both translated by WSL through `WSLENV` (`/p`); keys in a `.env` come
+from the distribution's own `~/.mu/.env`. Closing a conversation ends mu's input first (it then shuts down by
+itself), and ends the `wsl.exe` tree only if that did not work. The app's local judge and browser bridge listen on
+Windows' loopback, which WSL reaches only in mirrored networking mode. The start script is tested with bash; nothing
+of this has run on a real Windows machine with WSL yet.
+
+`node scripts/kyrn/start-check/check.mjs [--packaged]` checks this whole chain on the machine it runs on, the way the
+app and AionCore run it (on Windows: `acp.cmd` through `cmd /d /c`, the harness as `node mu.mjs`, `taskkill /T` at the
+end): the harness is found, mu answers over RPC, the registration's command answers the ACP handshake and opens a
+session, and ending each leaves no process behind. With `--packaged` it does the same for the bundled adapter and
+`resources/mu`. It uses a throwaway home, calls no model and needs no key, so CI can run it on Windows runners.
+
 The earlier `kyrn/` prototype is paused. It is not the product UI direction.
 
 ## Local verification (2026-09-21)

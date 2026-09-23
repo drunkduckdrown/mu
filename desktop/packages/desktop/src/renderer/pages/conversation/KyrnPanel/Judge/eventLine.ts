@@ -27,7 +27,7 @@ const lines = (...values: Array<string | undefined>): string[] => values.filter(
 
 // ── progress ────────────────────────────────────────────────────────────────
 
-const PROGRESS_STEPS = new Set(['frame', 'lessons', 'skills', 'capabilities']);
+const PROGRESS_STEPS = new Set(['frame', 'lessons', 'skills', 'capabilities', 'goal_check']);
 
 /** The step being worked out before a turn ("choosing skills"); a permission review names what JeV looks at. */
 function progressStep(t: TFunction, coded: Coded | undefined): string | undefined {
@@ -344,6 +344,24 @@ function browserLines(t: TFunction, payload: Record<string, unknown>): string[] 
   return lines(label && reason ? t(`${KEY}.browser.finished`, { status: label, reason }) : label || reason);
 }
 
+// ── permissions.mode ────────────────────────────────────────────────────────
+
+/** The harness's permission modes, named as the send box's permission menu names them. */
+const PERMISSION_MODES: ReadonlySet<string> = new Set(['full', 'jev', 'ask']);
+
+/** The mode the conversation runs in; a mode this build does not know goes by the harness's own label for it. */
+function permissionsLine(t: TFunction, payload: Record<string, unknown>): string[] {
+  const mode = str(payload.mode);
+  const name = PERMISSION_MODES.has(mode) ? t(`mu.permissions.modes.${mode}.title`) : str(payload.label);
+  return lines(name ? t(`${KEY}.permissions.mode`, { mode: name }) : undefined);
+}
+
+// ── board.switched ──────────────────────────────────────────────────────────
+
+/** Whether the board is on: the harness says so whenever it starts and after each switch, so this is a state. */
+const boardLine = (t: TFunction, payload: Record<string, unknown>): string[] | undefined =>
+  typeof payload.on === 'boolean' ? [t(`${KEY}.board.${payload.on ? 'on' : 'off'}`)] : undefined;
+
 // ── entry ───────────────────────────────────────────────────────────────────
 
 /**
@@ -371,6 +389,10 @@ export function eventLines(
       return lines(rewindTrigger(t, payload) ?? str(payload.trigger));
     case 'browser.run':
       return browserLines(t, payload);
+    case 'permissions.mode':
+      return permissionsLine(t, payload);
+    case 'board.switched':
+      return boardLine(t, payload);
     default:
       return undefined;
   }

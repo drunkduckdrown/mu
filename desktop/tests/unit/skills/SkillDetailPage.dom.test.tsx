@@ -243,7 +243,7 @@ describe('SkillDetailPage', () => {
 
     await waitFor(() => expect(screen.getByTestId('skill-used-by-row-a1')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('skill-used-by-row-a1'));
-    expect(mocks.navigate).toHaveBeenCalledWith('/assistants', {
+    expect(mocks.navigate).toHaveBeenCalledWith('/settings/assistants', {
       state: { openAssistantEditor: true, openAssistantId: 'a1' },
     });
   });

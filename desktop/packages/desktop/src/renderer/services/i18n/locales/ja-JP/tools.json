@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "ツールの操作",
-    "calls": "{{count}} 回の呼び出し",
-    "calls_one": "{{count}} 回の呼び出し",
-    "commands": "{{count}} 件のコマンド",
-    "commands_one": "{{count}} 件のコマンド",
     "input": "入力",
     "output": "出力",
     "loading": "完全な出力を読み込み中…",
     "loadError": "完全な出力を読み込めませんでした。",
     "retry": "再試行",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "すべて表示",
+    "showLess": "折りたたむ"
+  },
+  "activity": {
+    "running": "{{steps}} ステップ · 実行中 {{label}}",
+    "summary": "{{steps}} ステップ",
+    "summaryFailed": "{{steps}} ステップ · {{failed}} 件失敗"
   },
   "kind": {
     "edit": "ファイル編集",

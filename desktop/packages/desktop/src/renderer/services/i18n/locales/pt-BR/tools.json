@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "Atividade de ferramentas",
-    "calls": "{{count}} chamadas",
-    "calls_one": "{{count}} chamada",
-    "commands": "{{count}} comandos",
-    "commands_one": "{{count}} comando",
     "input": "Entrada",
     "output": "Saída",
     "loading": "Carregando saída completa…",
     "loadError": "Não foi possível carregar a saída completa.",
     "retry": "Tentar novamente",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "Mostrar mais",
+    "showLess": "Mostrar menos"
+  },
+  "activity": {
+    "running": "{{steps}} passos · executando {{label}}",
+    "summary": "{{steps}} passos",
+    "summaryFailed": "{{steps}} passos · {{failed}} com falha"
   },
   "kind": {
     "edit": "Edição de arquivo",

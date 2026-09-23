@@ -23,8 +23,12 @@ export type DeepLinkAddProviderDetail = {
   platform?: string;
 };
 
-/** Pending deep link data for the add-provider action. Read-once: consumed by ModelModalContent on mount. */
+/**
+ * Pending deep link data for the add-provider action. Read-once: the providers page takes it when it opens, or at once
+ * when it is already open (it listens through {@link subscribePendingDeepLink}).
+ */
 let pendingDeepLinkData: DeepLinkAddProviderDetail | null = null;
+const pendingListeners = new Set<() => void>();
 
 /**
  * Consume (read and clear) pending deep link data.
@@ -36,6 +40,20 @@ export const consumePendingDeepLink = (): DeepLinkAddProviderDetail | null => {
   return data;
 };
 
+/** Keeps an add-provider link's details for the providers page and tells a page that is already open. */
+export const offerAddProviderLink = (detail: DeepLinkAddProviderDetail): void => {
+  pendingDeepLinkData = detail;
+  for (const listener of pendingListeners) listener();
+};
+
+/** Calls `listener` whenever an add-provider link arrives. Returns the unsubscribe function. */
+export const subscribePendingDeepLink = (listener: () => void): (() => void) => {
+  pendingListeners.add(listener);
+  return () => {
+    pendingListeners.delete(listener);
+  };
+};
+
 /**
  * Allowed route patterns for the navigate deep link action.
  * Only routes matching these patterns are permitted.
@@ -44,10 +62,9 @@ const ALLOWED_NAVIGATE_PATTERNS = [/^\/team\/[^/]+$/, /^\/conversation\/[^/]+$/]
 
 /**
  * Hook to listen for mu:// deep link events from main process.
- * Routes 'add-provider' action to the model settings page.
+ * Routes 'add-provider' action to the providers settings page, which opens a new provider filled from the link.
  * Routes 'navigate' action to the specified route (whitelist-validated).
- * The pre-fill data is stored in a module-level variable and consumed
- * by ModelModalContent on mount via consumePendingDeepLink().
+ * The pre-fill data is stored in a module-level variable and taken by the providers page via consumePendingDeepLink().
  */
 export const useDeepLink = () => {
   const navigate = useNavigate();
@@ -56,15 +73,15 @@ export const useDeepLink = () => {
     (payload: DeepLinkPayload) => {
       // Support both formats: "add-provider" and "provider/add" (one-api style)
       if (payload.action === 'add-provider' || payload.action === 'provider/add') {
-        pendingDeepLinkData = {
+        offerAddProviderLink({
           base_url: payload.params.base_url,
           api_key: payload.params.api_key || payload.params.key,
           name: payload.params.name,
           platform: payload.params.platform,
-        };
+        });
 
-        // Navigate to model settings page; ModelModalContent will pick up the pending data
-        void navigate('/settings/model');
+        // The providers page is where a provider is added. (`/settings/model` is retired: it only redirected here.)
+        void navigate('/settings/providers');
         return;
       }
 

@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "工具活動",
-    "calls": "{{count}} 次呼叫",
-    "calls_one": "{{count}} 次呼叫",
-    "commands": "{{count}} 條命令",
-    "commands_one": "{{count}} 條命令",
     "input": "輸入",
     "output": "輸出",
     "loading": "正在載入完整輸出…",
     "loadError": "無法載入完整輸出。",
     "retry": "重試",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "展開全部",
+    "showLess": "收合"
+  },
+  "activity": {
+    "running": "{{steps}} 步 · 正在執行 {{label}}",
+    "summary": "{{steps}} 步",
+    "summaryFailed": "{{steps}} 步 · {{failed}} 步失敗"
   },
   "kind": {
     "edit": "編輯檔案",

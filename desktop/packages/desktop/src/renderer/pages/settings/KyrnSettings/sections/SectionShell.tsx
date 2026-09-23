@@ -1,27 +1,28 @@
 import React from 'react';
 import classNames from 'classnames';
+import SettingsPageHeader from '../../components/SettingsPageHeader';
 import styles from './sections.module.css';
 
 type SectionShellProps = {
   id: string;
   title: string;
   description?: React.ReactNode;
-  /** Right of the heading: a search box, an add button. */
+  /** Right of the title: a search box, an add button, a switch. */
   actions?: React.ReactNode;
+  /** Above the title: the way back from a page that is opened from another one. */
+  back?: React.ReactNode;
   children: React.ReactNode;
 };
 
-/** Heading plus content of one section. The section is a size container: see sections.module.css. */
-export default function SectionShell({ id, title, description, actions, children }: SectionShellProps) {
+/**
+ * One page of mu's settings: the page title, as on every settings page, then the content. The section is a size
+ * container: see sections.module.css.
+ */
+export default function SectionShell({ id, title, description, actions, back, children }: SectionShellProps) {
   return (
     <section className={styles.section} data-testid={`mu-section-${id}`} aria-label={title}>
-      <div className={styles.heading}>
-        <div className='min-w-0'>
-          <h2 className={styles.title}>{title}</h2>
-          {description ? <p className={styles.description}>{description}</p> : null}
-        </div>
-        {actions}
-      </div>
+      {back}
+      <SettingsPageHeader sticky={false} title={title} description={description} actions={actions} />
       {children}
     </section>
   );

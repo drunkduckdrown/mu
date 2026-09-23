@@ -1,13 +1,103 @@
-import { sameFeatureState, type HarnessManifest } from '@/common/kyrn/manifest';
+import {
+  sameFeatureState,
+  type DecisionInfo,
+  type FeatureInfo,
+  type HarnessManifest,
+  type OptionInfo,
+} from '@/common/kyrn/manifest';
 import { providerKeyVariable, type ProviderSettings } from '@/common/kyrn/models';
 import type { Credential, KyrnSettings, SaveSettings } from '@/common/kyrn/types';
+import { DECISION_PAGES, FEATURE_PAGES, type DecisionPage, type FeaturePage } from '../settingsNav';
+import { choiceOf, choose, jevKeyVariable, profileFor } from './judgeChoice';
 
 /**
- * Models first: they are what a new user sets up; then how much mu may do without asking. The local judge is one of
- * the choices on the judges page.
+ * The parts of mu's settings, in the order of the settings rail: the providers and the model a new user sets up first,
+ * then the kernel. Each is one page, or — the decision points and the more features — a group of pages; all of them
+ * edit one draft, saved at once, and the save bar names the parts that changed.
  */
-export const SECTIONS = ['models', 'permissions', 'judges', 'decisions', 'features', 'context'] as const;
+export const SECTIONS = [
+  'providers',
+  'defaultModel',
+  'judges',
+  'judgeTiers',
+  'decisions',
+  'features',
+  'moreFeatures',
+  'context',
+  'permissions',
+] as const;
 export type SectionId = (typeof SECTIONS)[number];
+
+/** No settings page holds more rows than this: a longer list is split, onto entries of the rail or pages of options. */
+export const PAGE_ROWS = 12;
+
+/**
+ * The switches that say what mu is, in the order a person meets them: the board it writes in plain language, the goal
+ * it keeps to, the agents it may spawn, what it remembers and what it forgets. They are the features page; every other
+ * feature the harness describes is on one of the more-features pages.
+ */
+export const FEATURED_FEATURES = ['board', 'goal', 'swarm', 'hive', 'memory', 'forgetting'] as const;
+
+export const isFeatured = (name: string): boolean => (FEATURED_FEATURES as readonly string[]).includes(name);
+
+/**
+ * Features that only change the terminal (the welcome box drawn when mu starts there): nothing in the app shows what
+ * they do, so the app's feature lists leave them out. The harness's manifest does not say where a feature acts; once it
+ * does, that flag replaces this list.
+ */
+export const TERMINAL_ONLY_FEATURES = ['welcome'] as const;
+
+export const isTerminalOnly = (name: string): boolean => (TERMINAL_ONLY_FEATURES as readonly string[]).includes(name);
+
+export const isDecisionPage = (value: unknown): value is DecisionPage =>
+  (DECISION_PAGES as readonly unknown[]).includes(value);
+
+export const isFeaturePage = (value: unknown): value is FeaturePage =>
+  (FEATURE_PAGES as readonly unknown[]).includes(value);
+
+/**
+ * The page a decision point is on: the lessons' own for the experience library's points, else its group's. A point in
+ * a group the desktop has no page for is on the first page, under its group's name (see {@link isStrayDecision}).
+ */
+export function decisionPageOf(decision: Pick<DecisionInfo, 'group' | 'feature'>): DecisionPage {
+  if (decision.feature === 'memory' || decision.group === 'memory') return 'memory';
+  return isDecisionPage(decision.group) ? decision.group : DECISION_PAGES[0];
+}
+
+/** A decision point in a group the rail has no page for: it is shown on the first page, under its group's own name. */
+export const isStrayDecision = (decision: Pick<DecisionInfo, 'group' | 'feature'>): boolean =>
+  decisionPageOf(decision) !== 'memory' && decisionPageOf(decision) !== decision.group;
+
+/**
+ * The more-features page a feature is on: the group of the first decision point it acts at, as the decision points
+ * are grouped. A feature that acts at none, or in a group without a page here, is under Other.
+ */
+export function featurePageOf(manifest: HarnessManifest | undefined, feature: Pick<FeatureInfo, 'name'>): FeaturePage {
+  const group = manifest?.decisions.find((decision) => decision.feature === feature.name)?.group;
+  return group !== 'other' && isFeaturePage(group) ? group : 'other';
+}
+
+/**
+ * A feature's options as pages of at most {@link PAGE_ROWS}. A switch starts a set together with the options after
+ * it, and a page ends before a set that would not fit, so a switch stays on the page of its own settings. A set longer
+ * than a page is cut where the page is full. Always at least one page, empty for a feature without options.
+ */
+export function optionParts<T extends Pick<OptionInfo, 'kind'>>(options: readonly T[], size = PAGE_ROWS): T[][] {
+  const sets: T[][] = [];
+  for (const option of options) {
+    if (option.kind === 'boolean' || !sets.length) sets.push([option]);
+    else sets[sets.length - 1].push(option);
+  }
+  const parts: T[][] = [];
+  for (const set of sets)
+    for (let start = 0; start < set.length; start += size) {
+      const piece = set.slice(start, start + size);
+      const last = parts[parts.length - 1];
+      if (last && last.length + piece.length <= size) last.push(...piece);
+      else parts.push(piece);
+    }
+  return parts.length ? parts : [[]];
+}
 
 /** What is being edited: a copy of the settings, plus keys typed but not saved. Keys only ever travel towards the store. */
 export type Draft = {
@@ -52,30 +142,49 @@ export function dirtySections(base: KyrnSettings, draft: Draft): Set<SectionId> 
   const next = draft.settings;
   const manifest = manifestOf(base);
   const dirty = new Set<SectionId>();
-  if (!same(base.tiers, next.tiers) || !same(base.judges, next.judges) || hasKeys(draft.judgeKeys)) dirty.add('judges');
+  if (!same(base.tiers, next.tiers) || !same(base.judges, next.judges) || hasKeys(draft.judgeKeys))
+    for (const id of judgePagesOf(base, draft)) dirty.add(id);
   if (base.mode !== next.mode || !same(base.decisionModes, next.decisionModes)) dirty.add('decisions');
-  if (
-    manifest?.features.some(
-      (feature) => !sameFeatureState(feature, base.features[feature.name], next.features[feature.name])
-    )
-  )
-    dirty.add('features');
+  for (const feature of manifest?.features ?? [])
+    if (!sameFeatureState(feature, base.features[feature.name], next.features[feature.name]))
+      dirty.add(isFeatured(feature.name) ? 'features' : 'moreFeatures');
   if (
     !same(base.models.providers.map(editableProvider), next.models.providers.map(editableProvider)) ||
-    !same(base.models.defaults, next.models.defaults) ||
-    base.boardModel.model !== next.boardModel.model ||
     removedEntries(base, draft).length > 0 ||
     hasKeys(draft.providerKeys)
   )
-    dirty.add('models');
+    dirty.add('providers');
+  if (!same(base.models.defaults, next.models.defaults) || base.boardModel.model !== next.boardModel.model)
+    dirty.add('defaultModel');
   if (base.permissions.mode !== next.permissions.mode) dirty.add('permissions');
-  if (
-    base.autoCompaction !== next.autoCompaction ||
-    base.maxContextTokens !== next.maxContextTokens ||
-    base.betaCompression !== next.betaCompression
-  )
+  if (base.autoCompaction !== next.autoCompaction || base.maxContextTokens !== next.maxContextTokens)
     dirty.add('context');
+  // The summary-free compaction is one switch on the more-features page: the feature and the old beta flag as one.
+  if (base.betaCompression !== next.betaCompression) dirty.add('moreFeatures');
   return dirty;
+}
+
+/**
+ * Which of the two judge pages a change to the judges was made on. The judges page picks the first judge's kind and
+ * takes Jev's key while Jev is that judge; what that pick alone would not give (another order, the way Jev is reached,
+ * its model, the key of a Jev further down the order) is the tiers page's. A pick taken back leaves the judges page's
+ * own change behind.
+ */
+function judgePagesOf(base: KyrnSettings, draft: Draft): SectionId[] {
+  const next = draft.settings;
+  const choice = choiceOf(next);
+  const choiceKey = choice === 'jev' ? jevKeyVariable(next.judges[profileFor(next, 'jev') ?? '']) : undefined;
+  const typed = Object.keys(draft.judgeKeys).filter((variable) => draft.judgeKeys[variable]);
+  const byChoice = choice ? choose(base, choice) : base;
+  const pages: SectionId[] = [];
+  if (choice !== choiceOf(base) || (choiceKey !== undefined && typed.includes(choiceKey))) pages.push('judges');
+  if (
+    (!same(byChoice.tiers, next.tiers) && !same(base.tiers, next.tiers)) ||
+    !same(base.judges, next.judges) ||
+    typed.some((variable) => variable !== choiceKey)
+  )
+    pages.push('judgeTiers');
+  return pages.length ? pages : ['judges'];
 }
 
 /** Hand-written models.json entries that were there when the settings were read, and are removed in the draft. */
@@ -112,8 +221,8 @@ export function toSave(draft: Draft, base?: KyrnSettings): SaveSettings {
 }
 
 /**
- * The old beta switch and `features.compaction.enabled` are one thing shown in two sections.
- * Whichever is flipped, both follow, so the store never sees them disagree.
+ * The old beta switch and `features.compaction.enabled` are one thing, shown once: the compaction feature on the
+ * more-features page. Both follow its switch, so the store never sees them disagree.
  */
 export function setCompaction(settings: KyrnSettings, enabled: boolean): KyrnSettings {
   const compaction = settings.features.compaction;

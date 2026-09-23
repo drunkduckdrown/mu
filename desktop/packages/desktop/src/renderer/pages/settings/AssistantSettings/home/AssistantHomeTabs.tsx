@@ -12,6 +12,8 @@ import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import TalkToButlerButton from '@/renderer/components/base/TalkToButlerButton';
 import { AionSearchInput } from '@/renderer/components/base';
 import SettingsPageHeader from '../../components/SettingsPageHeader';
+import { SETTINGS_PAGE_COLUMN, SETTINGS_PAGE_GUTTER, SETTINGS_PAGE_TOP } from '../../components/SettingsPageWrapper';
+import classNames from 'classnames';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -94,11 +96,10 @@ const AssistantHomeTabs: React.FC<AssistantHomeTabsProps> = ({
 
   return (
     <div data-testid='assistant-home-shell' className='flex h-full min-h-0 flex-col overflow-hidden bg-transparent'>
-      <div
-        className={`border-b border-border-2 bg-bg-0 ${isMobile ? 'px-16px pt-14px' : 'px-12px pt-24px md:px-40px md:pt-32px'}`}
-      >
-        <div className='mx-auto w-full max-w-800px'>
+      <div className={isMobile ? 'px-16px pt-14px' : classNames(SETTINGS_PAGE_GUTTER, SETTINGS_PAGE_TOP)}>
+        <div className={SETTINGS_PAGE_COLUMN}>
           <SettingsPageHeader
+            sticky={false}
             data-testid='assistants-header'
             title={t('settings.assistants', { defaultValue: 'Assistants' })}
             description={t('settings.assistantHomeLeadShort', {
@@ -156,9 +157,12 @@ const AssistantHomeTabs: React.FC<AssistantHomeTabsProps> = ({
 
       <div
         data-testid='assistant-home-body'
-        className={`min-h-0 flex-1 overflow-auto ${isMobile ? 'px-16px pb-14px pt-14px' : 'px-12px pb-24px pt-18px md:px-40px'}`}
+        className={classNames(
+          'min-h-0 flex-1 overflow-auto',
+          isMobile ? 'px-16px pb-14px pt-14px' : classNames(SETTINGS_PAGE_GUTTER, 'pb-24px pt-16px')
+        )}
       >
-        <div className='mx-auto w-full max-w-800px'>
+        <div className={SETTINGS_PAGE_COLUMN}>
           {tab === 'enabled' ? (
             <EnabledAssistantsList
               assistants={filteredAssistants}

@@ -10,7 +10,7 @@ import type { ChatFileRef, ContentEncoding } from '@/common/types/chatFile';
 import { chatFileRefKey, isChatFileRef } from '@/common/types/chatFile';
 import { emitter } from '@/renderer/utils/emitter';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { BROWSER_BLANK_URL, MAX_BROWSER_TABS } from '../browser/constants';
+import { BROWSER_BLANK_URL, MAX_BROWSER_TABS, isAppAddress } from '../browser/constants';
 import { isBrowserMcpActivity, isBrowserMcpSettled } from '../browser/agentActivity';
 import { maybeNotifyFirstAgentBrowserUse } from '../browser/firstUseNotice';
 import { listPersistedPreviewScopeKeys, previewScopeStorageKey, type PreviewScopeKey } from './previewScope';
@@ -18,6 +18,7 @@ import { peKey } from '@/renderer/pages/conversation/explorer/explorerModel';
 import { reflessTabKey } from './reflessTabKey';
 import { fallbackTabTitle } from './tabTitle';
 import { onPreviewWatchChange, reconcilePreviewWatch, resetPreviewWatch } from './previewWatchStore';
+import { announcePreviewOpened, type PreviewOpener } from './previewOpeners';
 
 /** DOM 片段数据结构 / DOM snippet data structure */
 export interface DomSnippet {
@@ -85,6 +86,8 @@ export interface OpenPreviewOptions {
    * tab to avoid losing changes).
    */
   replace?: boolean;
+  /** Who opened it (see `previewOpeners.ts`); the person, unless said otherwise. */
+  by?: PreviewOpener;
 }
 
 /**
@@ -135,6 +138,8 @@ export interface PreviewContextValue {
    */
   openBrowserTab: (url?: string) => void;
   closePreview: () => void;
+  /** Show the panel's tabs again after `closePreview` hid them; nothing happens without tabs. */
+  showPreview: () => void;
   /** 切换最大化 / Toggle maximized. */
   toggleMaximized: () => void;
   /** Discard this scope's tabs entirely (see closePreview for the difference). */
@@ -853,6 +858,7 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       setActiveTabId(targetTabId);
       setIsOpen(true);
+      announcePreviewOpened(options?.by ?? 'user');
     },
     [extractFileName, findPreviewTabInList]
   );
@@ -871,7 +877,13 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
    */
   const openBrowserTab = useCallback(
     (url?: string) => {
-      openPreview(url?.trim() || BROWSER_BLANK_URL, 'browser');
+      const address = url?.trim() || BROWSER_BLANK_URL;
+      // The app is not a page to browse (see isAppAddress): such a tab would only show the web sign-in.
+      if (isAppAddress(address)) {
+        console.warn('[Preview] refused to open the app itself in a browser tab:', address);
+        return;
+      }
+      openPreview(address, 'browser');
     },
     [openPreview]
   );
@@ -900,6 +912,10 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
     // DOM snippets are per-session scratch state tied to the visible HTML inspector,
     // not tab content, so they are cleared with the view.
     setDomSnippets([]);
+  }, []);
+
+  const showPreview = useCallback(() => {
+    setIsOpen(tabsRef.current.length > 0);
   }, []);
 
   /**
@@ -1260,7 +1276,7 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
       metadata?: PreviewMetadata;
     }) => {
       if (data && data.content) {
-        openPreview(data.content, data.contentType, data.metadata);
+        openPreview(data.content, data.contentType, data.metadata, { by: 'agent' });
       }
     };
 
@@ -1270,7 +1286,7 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
       metadata?: PreviewMetadata;
     }) => {
       if (data && data.content) {
-        openPreview(data.content, data.content_type, data.metadata);
+        openPreview(data.content, data.content_type, data.metadata, { by: 'agent' });
       }
     };
 
@@ -1357,6 +1373,7 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
       activeTab,
       openPreview,
       closePreview,
+      showPreview,
       toggleMaximized,
       clearPreviewForScope,
       closeTab,
@@ -1388,6 +1405,7 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
     activeTab,
     openPreview,
     closePreview,
+    showPreview,
     toggleMaximized,
     clearPreviewForScope,
     closeTab,

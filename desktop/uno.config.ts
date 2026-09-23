@@ -11,6 +11,11 @@ const textColors = {
   't-secondary': 'var(--text-secondary)', // text-t-secondary - 次要文字
   't-tertiary': 'var(--bg-6)', // text-t-tertiary - 三级说明/提示文字
   't-disabled': 'var(--text-disabled)', // text-t-disabled - 禁用文字
+  // text-t-quaternary - 四级文字（计数、行号、弱标签），比 t-tertiary 再淡一级。用 Arco 的 text-3 而不是 text-4：
+  // text-4 就是禁用灰，放在 fill-2 的计数徽标上读不出来。
+  // One step fainter than t-tertiary (counts, line numbers, quiet labels). Arco's text-3 rather than text-4: text-4 is
+  // the disabled grey and cannot be read on a fill-2 count badge.
+  't-quaternary': 'var(--color-text-3)',
 };
 
 // ==================== 语义状态色 / Semantic State Colors ====================
@@ -46,6 +51,18 @@ const backgroundColors = {
   active: 'var(--bg-active)', // bg-active - 激活背景
 };
 
+// ==================== bg-bg-N 背景色阶别名 / bg-bg-N Alias ====================
+// bg-bg-0..10 是 styles/colors.ts 和不少组件对上面背景色阶的写法。没有这个键时这些类不产出任何 CSS：
+// 工具栏、菜单、吸顶标题是透明的，悬停也没有反馈。bg-bg-0 是页面底色（--bg-base），其余与 bg-N 相同；
+// 同时提供 border-bg-N（叠放头像之间用表面色描一圈）。
+// bg-bg-0..10 is how styles/colors.ts and many components spell the background scale above. Without this key those
+// classes emit no CSS: toolbars, menus and sticky headers stay transparent and hovers show nothing. bg-bg-0 is the page
+// colour (--bg-base); the rest equal bg-N. It also gives border-bg-N (a ring in a surface colour between stacked avatars).
+// The project scale, not Arco's --color-bg-N: Arco's five are all #fff in light mode, so hovers would stay invisible.
+const backgroundScaleAlias = {
+  bg: { 0: 'var(--bg-base)', ...backgroundColors },
+};
+
 // ==================== 边框颜色 / Border Colors ====================
 const borderColors = {
   'b-base': 'var(--border-base)', // border-b-base - 基础边框
@@ -53,6 +70,19 @@ const borderColors = {
   'b-1': 'var(--bg-3)', // border-b-1 - 基于 bg-3
   'b-2': 'var(--bg-4)', // border-b-2 - 基于 bg-4
   'b-3': 'var(--bg-5)', // border-b-3 - 基于 bg-5
+};
+
+// ==================== Arco 边框色阶 / Arco Border Scale ====================
+// border-border-1..4, divide-border-1..4 and b-border-1..4: Arco's own border scale, the same
+// variables the border-arco-N rule paints. Without these keys the classes emit no CSS at all.
+// Named 'border-N' rather than N because the numeric keys already belong to the bg-* scale.
+// border-border-base is the project's base border colour, the one border-color-b-base also paints.
+const arcoBorderColors = {
+  'border-base': 'var(--border-base)', // border-border-base - 基础边框 / the base border colour
+  'border-1': 'var(--color-border-1)', // border-border-1 - 最浅 / lightest
+  'border-2': 'var(--color-border-2)', // border-border-2 - 常规分隔线 / the usual hairline
+  'border-3': 'var(--color-border-3)', // border-border-3 - 较深 / darker
+  'border-4': 'var(--color-border-4)', // border-border-4 - 最深 / darkest
 };
 
 // ==================== 品牌色 / Brand Colors ====================
@@ -110,9 +140,17 @@ export default defineConfig({
     // Arco Design official text colors: text-1, text-2, text-3, text-4
     [/^text-([1-4])$/, ([, d]: RegExpExecArray) => ({ color: `var(--color-text-${d})` })],
 
-    // Arco Design 官方填充色 fill-1 到 fill-4
-    // Arco Design official fill colors: bg-fill-1, bg-fill-2, bg-fill-3, bg-fill-4
-    [/^bg-fill-([1-4])$/, ([, d]: RegExpExecArray) => ({ 'background-color': `var(--color-fill-${d})` })],
+    // Arco Design 官方填充色 fill-1 到 fill-4，可带不透明度（bg-fill-1/40）
+    // Arco Design official fill colors: bg-fill-1, bg-fill-2, bg-fill-3, bg-fill-4, with an optional opacity
+    // (bg-fill-1/40). The variables are colours UnoCSS cannot take apart, so the opacity goes through color-mix().
+    [
+      /^bg-fill-([1-4])(?:\/(\d{1,2}|100))?$/,
+      ([, d, opacity]: RegExpExecArray) => ({
+        'background-color': opacity
+          ? `color-mix(in srgb, var(--color-fill-${d}) ${opacity}%, transparent)`
+          : `var(--color-fill-${d})`,
+      }),
+    ],
 
     // Arco Design 官方边框色 border-1 到 border-4 (使用 border-arco-* 避免和项目自定义冲突)
     // Arco Design official border colors: border-arco-1, border-arco-2, border-arco-3, border-arco-4
@@ -206,7 +244,9 @@ export default defineConfig({
       ...textColors,
       ...semanticColors,
       ...backgroundColors,
+      ...backgroundScaleAlias,
       ...borderColors,
+      ...arcoBorderColors,
       ...brandColors,
       ...aouColors,
       ...componentColors,

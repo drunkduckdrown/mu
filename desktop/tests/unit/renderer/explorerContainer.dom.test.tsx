@@ -29,6 +29,7 @@ vi.mock('@/common', () => ({
 }));
 
 import { ExplorerContainer } from '@/renderer/pages/conversation/explorer/ExplorerContainer';
+import { setCurrentConversation } from '@/renderer/pages/conversation/explorer/currentConversationStore';
 import { resetExplorerStoreForTest } from '@/renderer/pages/conversation/explorer/explorerStore';
 
 const entry = (over: Partial<ProjectEntryDto>): ProjectEntryDto => ({
@@ -185,6 +186,36 @@ describe('ExplorerContainer data integration', () => {
   // this key during a rapid switch) must NOT paint that other project's roots.
   // Removing the `data.project_id === projectId` guard makes this render "Ghost
   // Root" (the pre-fix wrong-tree bug).
+  it('names the temporary folder of a conversation without a project, not by its internal folder name', async () => {
+    projectGet.mockResolvedValue(
+      detail([
+        entry({ pe_id: 'peT', display_path: '/data/conversations/acp-temp-6d952732' }),
+        entry({ pe_id: 'peA', role: 'attached', display_name: 'Root Alpha', order_index: 1 }),
+      ])
+    );
+    setCurrentConversation('c1');
+    try {
+      // The conversation page caches its record under this key; the container only reads it.
+      render(
+        <SWRConfig
+          value={{
+            provider: () => new Map(),
+            dedupingInterval: 0,
+            fallback: { 'conversation/c1': { id: 'c1', extra: { is_temporary_workspace: true } } },
+          }}
+        >
+          <ExplorerContainer projectId='p1' />
+        </SWRConfig>
+      );
+      expect(await screen.findByText('conversation.workspace.temporaryWorkspace')).toBeInTheDocument();
+      expect(screen.queryByText('acp-temp-6d952732')).not.toBeInTheDocument();
+      // An attached folder keeps its own name.
+      expect(screen.getByText('Root Alpha')).toBeInTheDocument();
+    } finally {
+      setCurrentConversation(null);
+    }
+  });
+
   it('never paints roots from a detail belonging to a different project (anti-poison guard)', async () => {
     projectGet.mockResolvedValue(detail([entry({ pe_id: 'peX', display_name: 'Ghost Root' })], 'other-project'));
     renderContainer('p1');

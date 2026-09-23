@@ -28,6 +28,11 @@ export type LocalJudgeDeps = {
   arch: string;
   env: NodeJS.ProcessEnv;
   home: string;
+  /**
+   * Where the venv and the weights are: beside the sidecar in a checkout, in mu's home for the npm package, which
+   * npm replaces on every update (the script decides the same way).
+   */
+  stateDir?: string;
 };
 
 const ACTIONS: ReadonlySet<string> = new Set<LocalJudgeAction>(['setup', 'start', 'stop']);
@@ -100,8 +105,8 @@ export class LocalJudge {
   }
 
   private installed(): boolean {
-    const { env, exists } = this.deps;
-    const home = join(this.root, 'kyrn', 'local-judge');
+    const { env, exists, stateDir } = this.deps;
+    const home = stateDir ?? join(this.root, 'kyrn', 'local-judge');
     const models =
       env.MU_LOCAL_JUDGE_MODEL || env.KYRN_LOCAL_JUDGE_MODEL || join(home, 'models', 'laya-multilingual-coreml');
     return exists(join(home, '.venv', 'bin', 'python')) && exists(join(models, 'coreml_config.json'));
@@ -111,7 +116,14 @@ export class LocalJudge {
     const support = this.support();
     const installed = this.installed();
     const running = await this.deps.health(this.url);
-    return { support, installed, running, url: this.url, ...(this.task ? { task: { ...this.task } } : {}) };
+    return {
+      support,
+      runtime: 'coreml',
+      installed,
+      running,
+      url: this.url,
+      ...(this.task ? { task: { ...this.task } } : {}),
+    };
   }
 
   /**

@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "Activité des outils",
-    "calls": "{{count}} appels",
-    "calls_one": "{{count}} appel",
-    "commands": "{{count}} commandes",
-    "commands_one": "{{count}} commande",
     "input": "Entrée",
     "output": "Sortie",
     "loading": "Chargement de la sortie complète…",
     "loadError": "Impossible de charger la sortie complète.",
     "retry": "Réessayer",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "Afficher plus",
+    "showLess": "Afficher moins"
+  },
+  "activity": {
+    "running": "{{steps}} étapes · en cours {{label}}",
+    "summary": "{{steps}} étapes",
+    "summaryFailed": "{{steps}} étapes · {{failed}} en échec"
   },
   "kind": {
     "edit": "Modification de fichier",

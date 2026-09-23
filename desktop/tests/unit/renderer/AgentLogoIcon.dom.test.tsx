@@ -23,12 +23,6 @@ vi.mock('@/renderer/utils/model/agentLogo', () => ({
     opts.backend ? `http://127.0.0.1:1/api/assets/logos/ai-major/${opts.backend}.svg` : null,
 }));
 
-vi.mock('@icon-park/react', () => ({
-  Robot: ({ className, fill }: { className?: string; fill?: string; size?: number }) => (
-    <span data-testid='robot-fallback' className={className} data-fill={fill} />
-  ),
-}));
-
 describe('AgentLogoIcon', () => {
   beforeEach(() => {
     vi.stubGlobal(
@@ -78,19 +72,20 @@ describe('AgentLogoIcon', () => {
     expect(screen.getByText('🤖')).toBeInTheDocument();
   });
 
-  it('renders the Robot fallback when no logo or backend is available', () => {
+  // No stand-in picture (it used to be a robot): the name beside the slot already says which agent it is.
+  it('renders nothing when no logo or backend is available', () => {
     useAgentLogosMock.mockReturnValue({});
 
-    render(<AgentLogoIcon />);
+    const { container } = render(<AgentLogoIcon />);
 
-    expect(screen.getByTestId('robot-fallback')).toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders fallback when agentLogoIsFallback is set', () => {
+  it('renders nothing when the assistant logo is intentionally empty, even with a backend logo', () => {
     useAgentLogosMock.mockReturnValue({});
 
-    render(<AgentLogoIcon agentLogoIsFallback />);
+    const { container } = render(<AgentLogoIcon agentLogoIsFallback backend='openai' />);
 
-    expect(screen.getByTestId('robot-fallback')).toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
   });
 });

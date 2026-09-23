@@ -23,7 +23,9 @@ vi.mock('react-i18next', () => ({
         ? '准备安装...'
         : key === 'settings.updateReadyInstall'
           ? `${params?.version} 已就绪, 立即安装`
-          : key,
+          : key === 'update.currentVersion'
+            ? `当前版本：${params?.version}`
+            : key,
   }),
 }));
 
@@ -58,16 +60,13 @@ vi.mock('@/renderer/components/settings/SettingsModal/settingsViewContext', () =
   useSettingsViewMode: () => 'modal',
 }));
 
-vi.mock('@/renderer/components/settings/SettingsModal/contents/FeedbackReportModal', () => ({
-  default: () => null,
-}));
-
 import AboutModalContent from '@/renderer/components/settings/SettingsModal/contents/AboutModalContent';
 import { setUpdateReadyState } from '@/renderer/components/settings/updateReadyState';
 
 describe('AboutModalContent update ready state', () => {
   beforeEach(() => {
     vi.stubGlobal('__APP_VERSION__', '2.1.13');
+    vi.stubGlobal('__MU_VERSION__', '0.1.0');
     mocks.quitAndInstallMock.mockResolvedValue(undefined);
     mocks.autoUpdateCheckMock.mockResolvedValue({ success: true });
     mocks.updateCheckMock.mockResolvedValue({
@@ -81,6 +80,12 @@ describe('AboutModalContent update ready state', () => {
     cleanup();
     vi.clearAllMocks();
     vi.unstubAllGlobals();
+  });
+
+  it("shows mu's own version, not the fork's, once: on the row that checks for updates", () => {
+    render(<AboutModalContent />);
+    expect(screen.getByTestId('about-version')).toHaveTextContent('当前版本：v0.1.0');
+    expect(screen.queryByText(/2\.1\.13/)).toBeNull();
   });
 
   it('replaces check update with ready-to-install when an update package is ready', async () => {
@@ -171,6 +176,27 @@ describe('AboutModalContent update ready state', () => {
     expect(mocks.messageInfoMock).not.toHaveBeenCalled();
 
     window.removeEventListener('aionui-update-available', availableListener);
+  });
+
+  it('opens the log folder from About, and says so when it cannot', async () => {
+    const openLogFolder = vi.fn(() => Promise.reject(new Error('denied')));
+    Object.assign(window, { electronAPI: { openLogFolder } });
+    try {
+      render(<AboutModalContent />);
+      fireEvent.click(screen.getByRole('button', { name: 'common.backendStartup.openLogs' }));
+      expect(openLogFolder).toHaveBeenCalledTimes(1);
+      await waitFor(() => {
+        expect(mocks.messageErrorMock).toHaveBeenCalledWith('common.backendStartup.openLogsFailed');
+      });
+    } finally {
+      delete (window as { electronAPI?: unknown }).electronAPI;
+    }
+  });
+
+  it('offers no log folder where there is none to open', () => {
+    render(<AboutModalContent />);
+    expect(screen.queryByRole('button', { name: 'common.backendStartup.openLogs' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'settings.updateLog' })).toBeInTheDocument();
   });
 
   it('shows an up-to-date toast and no card when there is no update', async () => {

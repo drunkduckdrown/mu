@@ -10,11 +10,16 @@ import { useTranslation } from 'react-i18next';
 import { systemSettings } from '@/common/adapter/ipcBridge';
 import { configService } from '@/common/config/configService';
 import { isElectronDesktop } from '@/renderer/utils/platform';
-import SettingsPageWrapper from './components/SettingsPageWrapper';
 import PreferenceRow from '@/renderer/components/settings/SettingsModal/contents/SystemModalContent/PreferenceRow';
-import AionScrollArea from '@/renderer/components/base/AionScrollArea';
-import { useSettingsViewMode } from '@/renderer/components/settings/SettingsModal/settingsViewContext';
+import { SettingsPage } from './components/SettingsPageHeader';
 
+/** The panel every row of this page sits on. */
+const PANEL = 'px-16px md:px-24px py-4px bg-base border border-color-b-base rd-8px';
+
+/**
+ * The desktop pet, a page of its own: the switch on top. Its size, its do-not-disturb and its confirmation bubble
+ * only appear once it is on — off, none of them mean anything.
+ */
 const PetSettings: React.FC = () => {
   const [enabled, setEnabled] = useState(false);
   const [enabledResolved, setEnabledResolved] = useState(false);
@@ -22,8 +27,6 @@ const PetSettings: React.FC = () => {
   const [dnd, setDnd] = useState(false);
   const [confirmEnabled, setConfirmEnabled] = useState(true);
   const { t } = useTranslation();
-  const viewMode = useSettingsViewMode();
-  const isPageMode = viewMode === 'page';
   const isDesktop = isElectronDesktop();
 
   useEffect(() => {
@@ -92,24 +95,21 @@ const PetSettings: React.FC = () => {
 
   if (!isDesktop) {
     return (
-      <SettingsPageWrapper>
-        <AionScrollArea className='flex-1 min-h-0 pb-16px' disableOverflow={isPageMode}>
-          <div className='space-y-16px'>
-            <div className='px-[12px] md:px-[32px] py-16px bg-2 rd-16px'>
-              <p className='m-0 text-13px text-t-secondary'>{t('pet.desktopOnly')}</p>
-            </div>
-          </div>
-        </AionScrollArea>
-      </SettingsPageWrapper>
+      <SettingsPage title={t('pet.desktopPet')}>
+        <div className={PANEL}>
+          <p className='my-12px text-13px text-t-secondary'>{t('pet.desktopOnly')}</p>
+        </div>
+      </SettingsPage>
     );
   }
 
-  const preferenceItems = [
+  const preferenceItems: { key: string; label: string; description?: string; component: React.ReactNode }[] = [
     {
       key: 'enabled',
       label: t('pet.enable'),
       component: (
         <Switch
+          size='small'
           checked={enabled}
           loading={!enabledResolved}
           disabled={!enabledResolved}
@@ -117,47 +117,49 @@ const PetSettings: React.FC = () => {
         />
       ),
     },
-    {
-      key: 'size',
-      label: t('pet.size'),
-      component: (
-        <Radio.Group value={size} onChange={handleSizeChange} disabled={!enabled}>
-          <Radio value={200}>{t('pet.sizeSmall', { px: 200 })}</Radio>
-          <Radio value={280}>{t('pet.sizeMedium', { px: 280 })}</Radio>
-          <Radio value={360}>{t('pet.sizeLarge', { px: 360 })}</Radio>
-        </Radio.Group>
-      ),
-    },
-    {
-      key: 'dnd',
-      label: t('pet.dnd'),
-      description: t('pet.dndDescription'),
-      component: <Switch checked={dnd} onChange={handleDndChange} disabled={!enabled} />,
-    },
-    {
-      key: 'confirmBubble',
-      label: t('pet.confirmBubble'),
-      description: t('pet.confirmBubbleDescription'),
-      component: <Switch checked={confirmEnabled} onChange={handleConfirmEnabledChange} disabled={!enabled} />,
-    },
+    ...(enabled
+      ? [
+          {
+            key: 'size',
+            label: t('pet.size'),
+            component: (
+              <Radio.Group value={size} onChange={handleSizeChange} disabled={!enabled}>
+                <Radio value={200}>{t('pet.sizeSmall', { px: 200 })}</Radio>
+                <Radio value={280}>{t('pet.sizeMedium', { px: 280 })}</Radio>
+                <Radio value={360}>{t('pet.sizeLarge', { px: 360 })}</Radio>
+              </Radio.Group>
+            ),
+          },
+          {
+            key: 'dnd',
+            label: t('pet.dnd'),
+            description: t('pet.dndDescription'),
+            component: <Switch size='small' checked={dnd} onChange={handleDndChange} disabled={!enabled} />,
+          },
+          {
+            key: 'confirmBubble',
+            label: t('pet.confirmBubble'),
+            description: t('pet.confirmBubbleDescription'),
+            component: (
+              <Switch size='small' checked={confirmEnabled} onChange={handleConfirmEnabledChange} disabled={!enabled} />
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
-    <SettingsPageWrapper>
-      <AionScrollArea className='flex-1 min-h-0 pb-16px' disableOverflow={isPageMode}>
-        <div className='space-y-16px'>
-          <div className='px-[12px] md:px-[32px] py-16px bg-2 rd-16px space-y-12px'>
-            <div className='w-full flex flex-col divide-y divide-border-2'>
-              {preferenceItems.map((item) => (
-                <PreferenceRow key={item.key} label={item.label} description={item.description}>
-                  {item.component}
-                </PreferenceRow>
-              ))}
-            </div>
-          </div>
+    <SettingsPage title={t('pet.desktopPet')} data-testid='pet-settings'>
+      <div className={PANEL}>
+        <div className='w-full flex flex-col divide-y divide-b-base'>
+          {preferenceItems.map((item) => (
+            <PreferenceRow key={item.key} label={item.label} description={item.description}>
+              {item.component}
+            </PreferenceRow>
+          ))}
         </div>
-      </AionScrollArea>
-    </SettingsPageWrapper>
+      </div>
+    </SettingsPage>
   );
 };
 

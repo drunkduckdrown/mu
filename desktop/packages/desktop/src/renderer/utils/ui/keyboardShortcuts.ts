@@ -12,10 +12,23 @@ const EDITABLE_SELECTOR = [
   '[role="textbox"]',
 ].join(',');
 
-type PrimaryShortcutOptions = {
+export type PrimaryShortcutOptions = {
   key: string;
   shiftKey?: boolean;
   targetGuard?: 'all-editable' | 'embedded-editor';
+};
+
+/**
+ * Cmd+K on macOS, Ctrl+K elsewhere: the command palette. It works from the message input too, but not from inside
+ * an embedded editor or terminal, which keep their own Cmd/Ctrl+K chords.
+ */
+export const COMMAND_PALETTE_SHORTCUT: PrimaryShortcutOptions = { key: 'k', targetGuard: 'embedded-editor' };
+
+/** Cmd/Ctrl+Shift+F: the search through what was said in every conversation. */
+export const MESSAGE_SEARCH_SHORTCUT: PrimaryShortcutOptions = {
+  key: 'f',
+  shiftKey: true,
+  targetGuard: 'embedded-editor',
 };
 
 /** Match the platform-native primary modifier without accepting mixed chords. */
@@ -69,4 +82,13 @@ export const isPrimaryApplicationShortcut = (
   }
 
   return event.key.toLowerCase() === key.toLowerCase() && !isShortcutBlockedByTarget(event, targetGuard);
+};
+
+/** A primary-modifier shortcut as the platform writes it: ⌘K on macOS, Ctrl+K elsewhere. */
+export const formatPrimaryShortcut = ({ key, shiftKey = false }: PrimaryShortcutOptions): string => {
+  const letter = key.toUpperCase();
+  if (isMacOS()) {
+    return `${shiftKey ? '⇧' : ''}⌘${letter}`;
+  }
+  return `Ctrl+${shiftKey ? 'Shift+' : ''}${letter}`;
 };

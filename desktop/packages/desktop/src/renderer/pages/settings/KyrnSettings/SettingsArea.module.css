@@ -1,5 +1,5 @@
-/* The mu settings area: a section list on the left, the chosen section on the right, one save bar below.
-   It sizes itself by its own width, because it lives in a page, in a modal and in narrow windows alike. */
+/* The mu settings area: one section as a settings page, one save bar below it. Alone (outside the settings routes)
+   a section list sits on the left. It sizes itself by its own width, so it works in narrow windows alike. */
 .area {
   display: flex;
   flex-direction: column;
@@ -93,9 +93,9 @@
   align-items: center;
   gap: 8px 12px;
   padding: 10px 14px;
-  border: 1px solid var(--color-border-2);
-  border-radius: 12px;
-  background: var(--bg-1);
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+  background: var(--bg-base);
   box-shadow: 0 -6px 24px rgb(0 0 0 / 6%);
 }
 

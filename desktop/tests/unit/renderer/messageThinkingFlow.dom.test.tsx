@@ -19,6 +19,7 @@ vi.mock('react-i18next', () => ({
       const templates: Record<string, string> = {
         'conversation.thinking.labelWithTime': '{{label}} · {{time}}',
         'conversation.thinking.completeWithTime': 'Thought complete · {{time}}',
+        'conversation.thinking.thoughtFor': 'Thought for {{time}}',
       };
       const template = templates[key] ?? options?.defaultValue ?? key;
       return template.replace(/\{\{(\w+)\}\}/g, (match, name: string) =>
@@ -160,7 +161,9 @@ const renderList = (messages: TMessage[]) =>
   render(tree, { wrapper: ({ children }) => <Wrapper messages={messages}>{children}</Wrapper> });
 
 const liveButton = () => screen.queryByRole('button', { name: /Thinking\.\.\./ });
-const historyButton = () => screen.getByRole('button', { name: 'Thinking history' });
+/** A run of thoughts folds to one line saying how long it took; without a duration it stays "Thinking history". */
+const HISTORY = /Thought for|Thinking history/;
+const historyButton = () => screen.getByRole('button', { name: HISTORY });
 
 describe('thinking rows in a live turn', () => {
   beforeEach(() => {
@@ -179,9 +182,10 @@ describe('thinking rows in a live turn', () => {
 
     expect(screen.getAllByRole('button', { name: /Thinking\.\.\./ })).toHaveLength(1);
     expect(liveButton()).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getAllByRole('button', { name: 'Thinking history' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: HISTORY })).toHaveLength(1);
     expect(screen.queryByText(/Thought complete/)).not.toBeInTheDocument();
-    expect(screen.queryByText('third thought')).not.toBeInTheDocument();
+    // The live thought keeps streaming as a quiet line; its body still waits for a click.
+    expect(screen.getByTestId('thinking-stream')).toHaveTextContent('third thought');
 
     // Public thinking stays available on demand, in order, in one place.
     fireEvent.click(historyButton());
@@ -223,7 +227,7 @@ describe('thinking rows in a live turn', () => {
     fireEvent.click(historyButton());
     expect(screen.queryByText('the plan')).not.toBeInTheDocument();
     // Closed means it is an ordinary completed thought again: one history line for the turn.
-    expect(screen.getAllByRole('button', { name: 'Thinking history' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: HISTORY })).toHaveLength(1);
     expect(historyButton()).toHaveAttribute('aria-expanded', 'false');
     fireEvent.click(historyButton());
     expect(screen.getByText('the plan')).toBeInTheDocument();

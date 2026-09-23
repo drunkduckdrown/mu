@@ -22,7 +22,7 @@ import { describe, expect, it } from 'vitest';
 const repoRoot = resolve(__dirname, '../../..');
 
 function readInstallerErrorDefinitions(): Array<{ defineName: string; code: string }> {
-  const source = readFileSync(resolve(repoRoot, 'resources/windows/installer-errors-sentry.nsh'), 'utf8');
+  const source = readFileSync(resolve(repoRoot, 'resources/windows/installer-errors.nsh'), 'utf8');
   return Array.from(source.matchAll(/!define\s+(AIONUI_E_[A-Z0-9_]+)\s+"(E\d{4})"/g), (match) => ({
     defineName: match[1],
     code: match[2],
@@ -180,7 +180,7 @@ childProcess.execSync = function mockedExecSync(command) {
         if (/^\s*Abort\b/.test(line)) {
           offenders.push(`${file}:${index + 1}: aborts without unified failure UI`);
         }
-        if (line.includes('SetErrorLevel 2') && file !== 'installer-errors-sentry.nsh') {
+        if (line.includes('SetErrorLevel 2') && file !== 'installer-errors.nsh') {
           offenders.push(`${file}:${index + 1}: sets failure exit code outside unified failure UI`);
         }
       });
@@ -189,12 +189,12 @@ childProcess.execSync = function mockedExecSync(command) {
     expect(offenders).toEqual([]);
   });
 
-  it('allows raw Windows installer MessageBox calls only for unified reporting or non-terminal prompts', () => {
+  it('allows raw Windows installer MessageBox calls only for the unified failure dialog or non-terminal prompts', () => {
     const resourcesDir = resolve(repoRoot, 'resources/windows');
     const files = readdirSync(resourcesDir).filter((file) => file.endsWith('.nsh'));
 
     const allowedMessageBoxes = new Map<string, RegExp[]>([
-      ['installer-errors-sentry.nsh', [/MessageBox MB_YESNO\|MB_ICONSTOP/]],
+      ['installer-errors.nsh', [/MessageBox MB_OK\|MB_ICONSTOP/]],
       [
         'installer-process-control.nsh',
         [/AIONUI_MSG_FILE_OR_FOLDER_IN_USE_ZH/, /\$\(appRunning\)/, /AIONUI_MSG_CLOSE_OR_REMOVE_PREVIOUS_ZH/],
@@ -356,9 +356,6 @@ childProcess.execSync = function mockedExecSync(command) {
       });
 
       expect(result.status, result.stderr || result.stdout).toBe(0);
-      expect(readFileSync(resolve(repoRoot, 'resources/windows/support/_sentry-dsn.generated.nsh'), 'utf8')).toBe(
-        '!define AIONUI_SENTRY_DSN ""\n'
-      );
 
       if (args.includes('--win')) {
         const installUtil = readFileSync(resolveAppBuilderInstallUtil(), 'utf8');

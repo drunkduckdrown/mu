@@ -8,6 +8,7 @@ import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import MarkdownView from '@/renderer/components/Markdown';
+import { openExternalUrl } from '@/renderer/utils/platform';
 
 const copyTextMock = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 
@@ -68,6 +69,7 @@ vi.mock('react-i18next', () => ({
 describe('MarkdownView local file links', () => {
   beforeEach(() => {
     copyTextMock.mockClear();
+    vi.mocked(openExternalUrl).mockReset().mockResolvedValue(undefined);
   });
 
   it('renders local file links as app controls instead of browser anchors', () => {
@@ -180,6 +182,47 @@ describe('MarkdownView local file links', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
     expect(copyTextMock).toHaveBeenCalledWith('C:/Users/Administrator/AppData/Roaming/AionUi/report.xlsx');
+  });
+
+  it('opens a link written relative to the workspace as a file, with the path as written', () => {
+    const onLocalFileLink = vi.fn();
+
+    render(<MarkdownView onLocalFileLink={onLocalFileLink}>{'已完成：[打开 HTML](index.html)'}</MarkdownView>);
+
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '打开 HTML' }));
+    expect(onLocalFileLink).toHaveBeenCalledWith(
+      'index.html',
+      expect.objectContaining({ filePath: 'index.html', rawReference: 'index.html' })
+    );
+    expect(openExternalUrl).not.toHaveBeenCalled();
+  });
+
+  it('keeps line references on relative links', () => {
+    const onLocalFileLink = vi.fn();
+
+    render(<MarkdownView onLocalFileLink={onLocalFileLink}>{'[the bug](./src/a.ts:12)'}</MarkdownView>);
+
+    fireEvent.click(screen.getByRole('button', { name: 'the bug L12' }));
+    expect(onLocalFileLink).toHaveBeenCalledWith(
+      './src/a.ts',
+      expect.objectContaining({ filePath: './src/a.ts', line: 12 })
+    );
+  });
+
+  it('sends a fragment link nowhere instead of opening the app itself', () => {
+    render(<MarkdownView>{'[top](#top)'}</MarkdownView>);
+
+    fireEvent.click(screen.getByRole('link', { name: 'top' }));
+    expect(openExternalUrl).not.toHaveBeenCalled();
+  });
+
+  it('opens web links by the address as written', () => {
+    render(<MarkdownView>{'[docs](https://aionui.com/docs)'}</MarkdownView>);
+
+    fireEvent.click(screen.getByRole('link', { name: 'docs' }));
+    expect(openExternalUrl).toHaveBeenCalledWith('https://aionui.com/docs');
   });
 
   it('keeps ordinary http links as browser anchors', () => {

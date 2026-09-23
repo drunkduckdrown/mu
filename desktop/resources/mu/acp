@@ -1,0 +1,22 @@
+#!/bin/sh
+# mu's ACP adapter in the packaged app (macOS, Linux). AionCore runs this file as the command of mu's registration.
+# The adapter is bundled into app.asar.unpacked/out/main/mu-acp.js (scripts/build-mcp-servers.js); it finds mu itself:
+# MU_ROOT / KYRN_ROOT, else mu-agent installed with npm.
+#
+# A Mac app's PATH is short and often starts with an old Node, so this picks one that can run mu (22.19 or newer):
+# MU_NODE, node on PATH, nvm's, Homebrew's, /usr/local's. The adapter starts mu with the same Node (MU_NODE).
+here=$(cd "$(dirname "$0")" && pwd)
+adapter="$here/../app.asar.unpacked/out/main/mu-acp.js"
+can_run_mu() {
+  [ -n "$1" ] && [ -x "$1" ] &&
+    "$1" -e 'const [a, b] = process.versions.node.split(".").map(Number); process.exit(a > 22 || (a === 22 && b >= 19) ? 0 : 1)' 2>/dev/null
+}
+for node in "$MU_NODE" "$(command -v node 2>/dev/null)" "$HOME"/.nvm/versions/node/*/bin/node /opt/homebrew/bin/node /usr/local/bin/node /usr/bin/node; do
+  if can_run_mu "$node"; then
+    MU_NODE=$node
+    export MU_NODE
+    exec "$node" "$adapter" "$@"
+  fi
+done
+echo "mu needs Node.js 22.19 or newer, and none was found. Install it from https://nodejs.org" >&2
+exit 1

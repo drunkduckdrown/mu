@@ -132,6 +132,7 @@
   color: var(--text-secondary);
   font-size: 15px;
   line-height: 25px;
+  text-wrap: balance;
 }
 
 .points {
@@ -170,6 +171,7 @@
   color: var(--text-secondary);
   font-size: 13px;
   line-height: 21px;
+  text-wrap: balance;
 }
 
 .subtitle {
@@ -177,6 +179,7 @@
   color: var(--text-secondary);
   font-size: 14px;
   line-height: 22px;
+  text-wrap: balance;
 }
 
 .fields {
@@ -245,6 +248,7 @@
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 20px;
+  text-wrap: balance;
 }
 
 .footer {

@@ -74,7 +74,7 @@ describe('a fixed board in the app’s language', () => {
     );
     expect(screen.getByTestId('mu-board-progress')).toHaveTextContent('清单上 5 件事，做完了 3 件。');
     // The agent's own question is its words and stays.
-    expect(screen.getAllByTestId('mu-board-confirm').map((item) => item.textContent)).toEqual([
+    expect(screen.getAllByTestId('mu-board-confirm-text').map((item) => item.textContent)).toEqual([
       '它在等你回复。',
       'Keep the old API?',
     ]);

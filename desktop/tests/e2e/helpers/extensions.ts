@@ -17,23 +17,6 @@ export type ExtensionSnapshot = {
   }>;
 };
 
-export type ChannelPluginStatus = {
-  id: string;
-  type: string;
-  name: string;
-  enabled: boolean;
-  connected: boolean;
-  status: string;
-  isExtension?: boolean;
-  extensionMeta?: {
-    extensionName?: string;
-    description?: string;
-    icon?: string;
-    credentialFields?: Array<{ key: string; label: string; type: string; required?: boolean }>;
-    configFields?: Array<{ key: string; label: string; type: string; required?: boolean; default?: unknown }>;
-  };
-};
-
 export async function getExtensionSnapshot(page: Page): Promise<ExtensionSnapshot> {
   const unwrapArray = <T>(value: unknown): T[] => {
     if (Array.isArray(value)) return value as T[];
@@ -78,17 +61,4 @@ export async function getExtensionSnapshot(page: Page): Promise<ExtensionSnapsho
     settingsTabs: unwrapArray(settingsTabs),
     webuiContributions: unwrapArray(webuiContributions),
   } as ExtensionSnapshot;
-}
-
-export async function getChannelPluginStatus(page: Page): Promise<ChannelPluginStatus[]> {
-  const result = (await invokeBridge(page, 'channel.get-plugin-status')) as {
-    success?: boolean;
-    data?: ChannelPluginStatus[];
-  };
-
-  if (!result?.success || !Array.isArray(result.data)) {
-    return [];
-  }
-
-  return result.data;
 }

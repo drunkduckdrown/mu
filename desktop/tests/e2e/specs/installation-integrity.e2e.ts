@@ -7,13 +7,6 @@ import { expect, test } from '@playwright/test';
 import { _electron as electron, type ElectronApplication, type Page } from 'playwright';
 import path from 'path';
 
-declare global {
-  interface Window {
-    __installationIntegrityReportCount?: number;
-    __lastInstallationIntegrityReportMessage?: string;
-  }
-}
-
 async function resolveMainWindow(electronApp: ElectronApplication): Promise<Page> {
   const existingMainWindow = electronApp.windows().find((win) => !win.url().startsWith('devtools://'));
   if (existingMainWindow) {
@@ -27,7 +20,7 @@ async function resolveMainWindow(electronApp: ElectronApplication): Promise<Page
 }
 
 test.describe('Installation integrity failure dialog', () => {
-  test('shows diagnostics actions and records a user report', async () => {
+  test('offers the download action and sends no report', async () => {
     const projectRoot = path.resolve(__dirname, '../../..');
     const electronApp = await electron.launch({
       args: ['.'],
@@ -49,26 +42,8 @@ test.describe('Installation integrity failure dialog', () => {
 
       await expect(page.getByTestId('installation-integrity-dialog')).toBeVisible();
       await expect(page.getByTestId('installation-integrity-description')).toContainText(/AionUi/);
-      await expect(page.getByTestId('installation-integrity-report')).toBeVisible();
       await expect(page.getByTestId('installation-integrity-download')).toBeVisible();
-
-      await page.getByTestId('installation-integrity-report').click();
-
-      const reportButton = page.getByTestId('installation-integrity-report');
-      await expect(reportButton).toBeDisabled();
-      await expect(reportButton).toContainText(/Diagnostics sent|诊断报告已发送/);
-
-      await expect
-        .poll(() =>
-          page.evaluate(() => ({
-            count: window.__installationIntegrityReportCount ?? 0,
-            message: window.__lastInstallationIntegrityReportMessage ?? '',
-          }))
-        )
-        .toEqual({
-          count: 1,
-          message: 'installation-integrity-user-report',
-        });
+      await expect(page.getByTestId('installation-integrity-report')).toHaveCount(0);
     } finally {
       await electronApp.close();
     }

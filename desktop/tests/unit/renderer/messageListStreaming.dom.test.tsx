@@ -91,7 +91,9 @@ vi.mock('@/renderer/pages/conversation/Messages/components/MessagePlan', () => (
 }));
 
 vi.mock('@/renderer/pages/conversation/Messages/components/MessageThinking', () => ({
+  __esModule: true,
   default: () => <div>thinking</div>,
+  ThoughtHistory: () => <div>thinking_history</div>,
 }));
 
 vi.mock('@/renderer/pages/conversation/Messages/components/MessageCronTrigger', () => ({

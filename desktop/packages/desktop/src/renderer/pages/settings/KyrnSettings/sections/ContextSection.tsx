@@ -1,9 +1,8 @@
 import React from 'react';
-import { InputNumber, Switch, Tag } from '@arco-design/web-react';
+import { InputNumber, Switch } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
 import type { KyrnSettings } from '@/common/kyrn/types';
 import { formatNumber } from '@/renderer/services/i18n/format';
-import { setCompaction } from '../draft';
 import Row from '../fields/Row';
 import fieldStyles from '../fields/fields.module.css';
 import SectionShell, { Card } from './SectionShell';
@@ -18,7 +17,10 @@ type ContextSectionProps = {
   onChange: (change: (settings: KyrnSettings) => KyrnSettings) => void;
 };
 
-/** Automatic compaction and the context cap, shared with pi's settings.json; and the beta compaction of the harness. */
+/**
+ * Automatic compaction and the context cap, shared with pi's settings.json. The summary-free compaction is a feature of
+ * the harness, on the more-features page (上下文) with its options.
+ */
 export default function ContextSection({ settings, base, onChange }: ContextSectionProps) {
   const { t, i18n } = useTranslation();
   const threshold = settings.maxContextTokens;
@@ -58,23 +60,6 @@ export default function ContextSection({ settings, base, onChange }: ContextSect
             onChange={(value) =>
               onChange((now) => ({ ...now, maxContextTokens: typeof value === 'number' ? value : 0 }))
             }
-          />
-        </Row>
-        <Row
-          title={t('mu.context.beta')}
-          help={t('mu.context.betaHelp')}
-          modified={settings.betaCompression !== base.betaCompression}
-          badges={
-            <Tag size='small' color='purple'>
-              {t('mu.features.beta')}
-            </Tag>
-          }
-        >
-          <Switch
-            size='small'
-            aria-label={t('mu.context.beta')}
-            checked={settings.betaCompression}
-            onChange={(enabled) => onChange((now) => setCompaction(now, enabled))}
           />
         </Row>
       </Card>

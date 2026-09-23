@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import i18n from 'i18next';
+import i18n, { type TFunction } from 'i18next';
 import { MU_NAME_POST_PROCESSOR, muNamePostProcessor } from '@/common/kyrn/displayName';
 import { httpRequest, isBackendHttpError } from '@/common/adapter/httpBridge';
 import { ProcessConfig } from '@process/utils/initStorage';
@@ -83,6 +83,19 @@ export const i18nReady = (async (): Promise<void> => {
 })().catch((error) => {
   console.error('[Main Process] Failed to initialize i18n:', error);
 });
+
+/**
+ * The texts in `language`, without switching the main process to it: for what shows before the app language is
+ * known, such as the first-start questions asked before the backend (which stores it) runs.
+ */
+export async function translatorFor(language: string): Promise<TFunction> {
+  await i18nReady;
+  const normalized = normalizeLanguageCode(language);
+  if (!i18n.hasResourceBundle(normalized, 'translation')) {
+    i18n.addResourceBundle(normalized, 'translation', getLocaleModules(normalized), true, true);
+  }
+  return i18n.getFixedT(normalized);
+}
 
 /**
  * Change language

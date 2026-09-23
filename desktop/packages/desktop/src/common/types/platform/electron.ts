@@ -1,27 +1,11 @@
-// WebUI 状态接口 / WebUI status interface
-export interface WebUIStatus {
-  running: boolean;
-  port: number;
-  allowRemote: boolean;
-  localUrl: string;
-  networkUrl?: string;
-  lanIP?: string;
-  adminUsername: string;
-  initialPassword?: string;
-}
-
 export interface ElectronBridgeAPI {
   emit: (name: string, data: unknown) => Promise<unknown> | void;
   on: (callback: (event: { value: string }) => void) => void;
   // 获取拖拽文件/目录的绝对路径 / Get absolute path for dragged file/directory
   getPathForFile?: (file: File) => string;
-  // Feedback log collection / 收集反馈日志
-  collectFeedbackLogs?: () => Promise<{ filename: string; data: number[] } | null>;
-  // Feedback screenshot capture / 反馈截图
-  captureFeedbackScreenshot?: () => Promise<{ filename: string; data: number[] } | null>;
-  // Forward feedback diagnostics logs to the main process console / 转发反馈诊断日志到主进程控制台
-  logFeedbackEvent?: (payload: { details?: unknown; level: 'info' | 'warn' | 'error'; message: string }) => void;
   recoverCorruptedDatabase?: () => Promise<void>;
+  /** Opens the folder the logs are written to, in the file manager. Needs no backend: it is what a failed start lacks. */
+  openLogFolder?: () => Promise<void>;
 }
 
 export type BackendStartupFailureReason =
@@ -89,11 +73,11 @@ declare global {
     __aionuiE2ETest?: boolean;
     __backendStartupFailed?: boolean;
     __backendStartupFailure?: BackendStartupFailureInfo | null;
+    /** The person put the Node.js runtime download off at this start: see common/adapter/nodeRuntimeDeferral.ts. */
+    __nodeRuntimeDeferred?: boolean;
     __backendStartupBridge?: {
       getState: () => BackendStartupFailureInfo | null;
       subscribe: (callback: (state: BackendStartupFailureInfo | null) => void) => () => void;
     };
-    __installationIntegrityReportCount?: number;
-    __lastInstallationIntegrityReportMessage?: string;
   }
 }

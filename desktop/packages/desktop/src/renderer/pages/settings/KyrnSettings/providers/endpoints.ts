@@ -1,5 +1,5 @@
-import { isSubscriptionProvider } from '@/common/kyrn/login';
 import {
+  ENDPOINT_TYPES,
   PROVIDER_ID,
   RESERVED_PROVIDER_IDS,
   isSafeEndpoint,
@@ -8,6 +8,7 @@ import {
   type ProviderModel,
   type ProviderSettings,
 } from '@/common/kyrn/models';
+import { providerDisplayName } from '@/renderer/utils/model/providerName';
 
 /** What a base URL of each wire format looks like. Anthropic clients add `/v1` themselves; the others expect it given. */
 export const ENDPOINT_PLACEHOLDER: Record<EndpointType, string> = {
@@ -41,6 +42,19 @@ export const blankProvider = (id: string): ProviderSettings => ({
 });
 
 /**
+ * The API format an add-provider link means by its `platform`: one of the formats by name, else the vendor whose format
+ * it is, else OpenAI compatible, which is what one-api style links (`new-api`, `one-api`, `openai`) point at.
+ */
+export function endpointOfLink(platform = ''): EndpointType {
+  const name = platform.trim().toLowerCase();
+  const known = ENDPOINT_TYPES.find((type) => type === name);
+  if (known) return known;
+  if (/anthropic|claude/.test(name)) return 'anthropic-messages';
+  if (/gemini|google/.test(name)) return 'google-generative-ai';
+  return 'openai-completions';
+}
+
+/**
  * What a custom provider is called on screen: its name, else its id. A new one with no name yet is a "new provider"
  * in the reader's language rather than the placeholder id it was given (`custom`, which is English).
  */
@@ -49,7 +63,7 @@ export const customProviderName = (t: (key: string) => string, provider: Provide
 
 /**
  * A provider by the name it goes by in these settings: a custom provider's own, a hand-written entry's, a
- * subscription's (ChatGPT for `openai-codex`), or else its id: what the running mu reports has no other name.
+ * subscription's (ChatGPT for `openai-codex`), a built-in provider's (Vercel AI Gateway), or else its id.
  */
 export function providerLabel(
   t: (key: string) => string,
@@ -60,8 +74,7 @@ export function providerLabel(
   if (own) return customProviderName(t, own);
   const entry = models.foreign.find((candidate) => candidate.id === id);
   if (entry?.name) return entry.name;
-  // The same words as the sign-in screens (`providerName` of the accounts), without pulling a component in here.
-  return isSubscriptionProvider(id) ? t(`mu.welcome.login.providers.${id}.name`) : id;
+  return providerDisplayName(t, id);
 }
 
 /** A free id of the form `custom`, `custom-2`, …: a new provider needs one before it has a name. */

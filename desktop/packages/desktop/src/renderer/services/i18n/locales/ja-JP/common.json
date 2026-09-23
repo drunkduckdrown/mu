@@ -65,10 +65,10 @@
   "more": "その他",
   "refresh": "更新",
   "readOnly": "読み取り専用",
-  "tray.showWindow": "AionUi を表示",
+  "tray.showWindow": "mu を表示",
   "tray.newChat": "新しいチャット",
   "tray.closeToTray": "トレイに隠す",
-  "tray.about": "AionUi について",
+  "tray.about": "mu について",
   "tray.restart": "アプリを再起動",
   "tray.quit": "終了",
   "tray.pauseAll": "すべてのタスクを一時停止",
@@ -78,61 +78,40 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "このシステムは同梱バックエンドに対応していません",
-      "description": "AionUi は開きましたが、ローカルの AionCore バックエンドはこの Linux バージョンでは実行できません。対応している Linux ディストリビューションにアップグレードしてから AionUi を再起動してください。",
+      "description": "mu は開きましたが、ローカルサービスはこの Linux バージョンでは実行できません。対応している Linux ディストリビューションにアップグレードしてから mu を再起動してください。",
       "requiredVersions": "必要なランタイムシンボル: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "AionUi のインストールが不完全です",
-      "description": "このインストールには必要なローカルリソースが不足しているため、AionCore を起動できません。最新の AionUi をダウンロードして再インストールしてください。再インストール後も問題が再発する場合は、セキュリティソフトまたはウイルス対策ソフトが AionCore を隔離していないか確認してください。",
+      "title": "mu のインストールが不完全です",
+      "description": "このインストールには必要なローカルリソースが不足しているため、mu のローカルサービスを起動できません。最新の mu をダウンロードして再インストールしてください。再インストール後も問題が再発する場合は、セキュリティソフトまたはウイルス対策ソフトが mu のファイルを隔離していないか確認してください。",
       "downloadLatest": "最新版をダウンロード",
-      "sendDiagnostics": "診断レポートを送信",
-      "diagnosticsSent": "診断レポートを送信済み",
-      "diagnosticsReportSuccess": "診断レポートを送信しました",
-      "diagnosticsReportFailed": "診断レポートの送信に失敗しました",
-      "runtimeComponentDescription": "このインストールには必要な組み込み実行コンポーネントが不足しているため、{{resource}} を起動できません。最新版の AionUi パッケージを再インストールしてください。再インストール後も続く場合は、セキュリティソフトまたはウイルス対策ソフトが AionUi コンポーネントを隔離していないか確認してください。"
+      "runtimeComponentDescription": "このインストールには必要な組み込み実行コンポーネントが不足しているため、{{resource}} を起動できません。最新版の mu パッケージを再インストールしてください。再インストール後も続く場合は、セキュリティソフトまたはウイルス対策ソフトが mu コンポーネントを隔離していないか確認してください。"
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi パッケージのアーキテクチャが一致しません",
-      "description": "この AionUi パッケージは {{packageArch}} 用ですが、この Mac は {{deviceArch}} です。誤ったパッケージをダウンロードした可能性があります。{{expectedArch}} 用のパッケージをダウンロードしてインストールしてください。"
+      "title": "mu パッケージのアーキテクチャが一致しません",
+      "description": "この mu パッケージは {{packageArch}} 用ですが、この Mac は {{deviceArch}} です。誤ったパッケージをダウンロードした可能性があります。{{expectedArch}} 用のパッケージをダウンロードしてインストールしてください。"
     },
     "dataMigration": {
       "title": "ローカルデータの移行に失敗しました",
-      "description": "AionUi は開きましたが、AionCore がローカルデータの初期化中に停止しました。AionUi を再インストールしても解決しない可能性があります。ローカルデータベースの移行状態を確認できるよう、診断レポートを送信するかサポートに連絡してください。",
-      "sendDiagnostics": "診断レポートを送信",
-      "diagnosticsSent": "診断レポートを送信済み",
-      "diagnosticsReportSuccess": "診断レポートを送信しました",
-      "diagnosticsReportFailed": "診断レポートの送信に失敗しました"
+      "description": "mu は開きましたが、ローカルサービスがローカルデータの初期化中に停止しました。mu を再インストールしても解決しない可能性があります。ローカルデータベースの移行がどこで止まったかは、アプリのログで確認できます。"
     },
     "databaseNewerThanApp": {
-      "title": "新しいバージョンの AionUi が必要です",
-      "description": "ローカルデータはより新しいバージョンの AionUi で作成されたため、このバージョンでは開けません。AionUi を最新バージョンに更新すれば続行できます。データは保持され、再インストールやリセットは不要です。",
-      "descriptionWithVersion": "ローカルデータは現在のバージョン v{{currentVersion}} より新しい AionUi で作成されたため、このバージョンでは開けません。AionUi を最新バージョンに更新すれば続行できます。データは保持され、再インストールやリセットは不要です。"
+      "title": "新しいバージョンの mu が必要です",
+      "description": "ローカルデータはより新しいバージョンの mu で作成されたため、このバージョンでは開けません。mu を最新バージョンに更新すれば続行できます。データは保持され、再インストールやリセットは不要です。",
+      "descriptionWithVersion": "ローカルデータは現在のバージョン v{{currentVersion}} より新しい mu で作成されたため、このバージョンでは開けません。mu を最新バージョンに更新すれば続行できます。データは保持され、再インストールやリセットは不要です。"
     },
     "localDataRepair": {
       "title": "ローカルデータの修復に失敗しました",
-      "description": "AionUi は開きましたが、AionCore は assistant またはエージェントのレコードなどのローカル起動データを準備中に停止しました。AionUi を再インストールしても解決しない可能性があります。ローカルデータベースを確認できるよう、診断レポートを送信するかサポートに連絡してください。",
-      "sendDiagnostics": "診断レポートを送信",
-      "diagnosticsSent": "診断レポートを送信済み",
-      "diagnosticsReportSuccess": "診断レポートを送信しました",
-      "diagnosticsReportFailed": "診断レポートの送信に失敗しました"
+      "description": "mu は開きましたが、ローカルサービスは assistant またはエージェントのレコードなどのローカル起動データを準備中に停止しました。mu を再インストールしても解決しない可能性があります。どのローカルデータを準備できなかったかは、アプリのログで確認できます。"
     },
     "startupDirectory": {
       "title": "起動ディレクトリを利用できません",
-      "description": "AionUi は開きましたが、設定された作業ディレクトリまたはログディレクトリが存在しない、利用できない、または権限でブロックされているため、AionCore を起動できませんでした。設定したディレクトリが存在し、書き込み可能であることを確認してから、AionUi を再起動してください。",
-      "sendDiagnostics": "診断レポートを送信",
-      "diagnosticsSent": "診断レポートを送信済み",
-      "diagnosticsReportSuccess": "診断レポートを送信しました",
-      "diagnosticsReportFailed": "診断レポートの送信に失敗しました"
+      "description": "mu は開きましたが、設定された作業ディレクトリまたはログディレクトリが存在しない、利用できない、または権限でブロックされているため、ローカルサービスを起動できませんでした。設定したディレクトリが存在し、書き込み可能であることを確認してから、mu を再起動してください。"
     },
     "recoverableDatabaseCorruption": {
       "title": "ローカルデータが破損しています",
-      "description": "ローカルデータベースの破損を検出したため、AionUi は起動を続行できません。確認後、古いデータベースをバックアップし、新しいローカルデータベースを作成して起動を続行します。過去の会話は表示されなくなり、古いデータベースはバックアップファイルとして保持されます。",
+      "description": "ローカルデータベースの破損を検出したため、mu は起動を続行できません。確認後、古いデータベースをバックアップし、新しいローカルデータベースを作成して起動を続行します。過去の会話は表示されなくなり、古いデータベースはバックアップファイルとして保持されます。",
       "confirmRebuild": "古いDBをバックアップして新しいDBを再作成",
-      "sendDiagnostics": "診断レポートを送信",
-      "diagnosticsHint": "診断レポートの送信ではローカルデータベースは変更されません。",
-      "diagnosticsSent": "診断レポートを送信しました",
-      "diagnosticsReportSuccess": "診断レポートを送信しました",
-      "diagnosticsReportFailed": "診断レポートの送信に失敗しました",
       "rebuildFailed": "古いDBのバックアップと新しいDBの再作成に失敗しました",
       "confirmDialog": {
         "title": "データベースを再構築しますか？",
@@ -142,42 +121,27 @@
       }
     },
     "transientConcurrentStartup": {
-      "title": "AionUi を起動しています",
-      "description": "このウィンドウを開いたとき、別の AionUi の起動処理がまだローカルデータを使用していました。これは一時的なもので、データは安全です。再インストールの必要はありません。少し待ってから再試行するか、AionUi を再起動してください。",
-      "sendDiagnostics": "診断レポートを送信",
-      "diagnosticsSent": "診断レポートを送信済み",
-      "diagnosticsReportSuccess": "診断レポートを送信しました",
-      "diagnosticsReportFailed": "診断レポートの送信に失敗しました",
-      "diagnosticsHint": "この現象が繰り返し発生する場合は、診断レポートを送信できます。"
+      "title": "mu を起動しています",
+      "description": "このウィンドウを開いたとき、別の mu の起動処理がまだローカルデータを使用していました。これは一時的なもので、データは安全です。再インストールの必要はありません。少し待ってから再試行するか、mu を再起動してください。"
     },
     "pendingSlow": {
       "title": "起動中",
-      "description": "AionCore を起動しています。しばらくお待ちください。しばらく応答がない場合は、アプリを終了してから再度お試しください。"
+      "description": "ローカルサービスを起動しています。しばらくお待ちください。しばらく応答がない場合は、アプリを終了してから再度お試しください。"
     },
     "exited": {
       "title": "起動が完了しませんでした",
-      "description": "AionCore は起動を完了できずに終了しました。アプリを再起動してください。繰り返し発生する場合は、診断情報を送信してください。",
-      "sendDiagnostics": "診断を送信",
-      "diagnosticsSent": "診断を送信しました",
-      "diagnosticsReportSuccess": "診断情報を送信しました",
-      "diagnosticsReportFailed": "診断の送信に失敗しました。しばらくしてから再試行してください。"
+      "description": "ローカルサービスは起動を完了できずに終了しました。アプリを再起動してください。繰り返し発生する場合は、アプリのログを確認してください。"
     },
     "portReportTimeout": {
       "title": "起動がタイムアウトしました",
-      "description": "AionCore は想定時間内に起動を完了できませんでした。アプリを再起動してください。繰り返し発生する場合は、診断情報を送信してください。",
-      "sendDiagnostics": "診断を送信",
-      "diagnosticsSent": "診断を送信しました",
-      "diagnosticsReportSuccess": "診断情報を送信しました",
-      "diagnosticsReportFailed": "診断の送信に失敗しました。しばらくしてから再試行してください。"
+      "description": "ローカルサービスは想定時間内に起動を完了できませんでした。アプリを再起動してください。繰り返し発生する場合は、アプリのログを確認してください。"
     },
     "startupFailed": {
       "title": "起動に失敗しました",
-      "description": "AionCore を起動できませんでした。アプリを再起動してください。繰り返し発生する場合は、診断情報を送信してください。",
-      "sendDiagnostics": "診断を送信",
-      "diagnosticsSent": "診断を送信しました",
-      "diagnosticsReportSuccess": "診断情報を送信しました",
-      "diagnosticsReportFailed": "診断の送信に失敗しました。しばらくしてから再試行してください。"
-    }
+      "description": "ローカルサービスを起動できませんでした。アプリを再起動してください。繰り返し発生する場合は、アプリのログを確認してください。"
+    },
+    "openLogs": "ログフォルダーを開く",
+    "openLogsFailed": "ログフォルダーを開けませんでした"
   },
   "fileAttach.addFiles": "ファイルを追加",
   "fileAttach.myDevice": "マイデバイス",
@@ -205,14 +169,15 @@
     "starting": "mu を起動しています…",
     "startingHint": "ローカルの mu カーネルに接続し、モデルと判定器の設定を読み込んでいます。",
     "startupError": "mu を起動できませんでした",
-    "activity": "コラボレーション",
-    "files": "ファイル",
-    "hive": "Hive",
     "hiveView": {
       "title": "Hive",
+      "agents": "サブエージェント",
       "open": "Hive を開く",
       "inspect": "{{name}} を確認",
       "summary": "{{active}} 件がアクティブ · {{done}} 件完了 / 全 {{total}} 件",
+      "counts": "実行中 {{running}} · 完了 {{done}} · 失敗 {{failed}}",
+      "none": "この会話にはまだサブエージェントがいません。",
+      "details": "マップと記録",
       "pending": "ビーの状態を待機中",
       "unknown": "状態を取得できません",
       "runs": "Hive の実行",
@@ -295,8 +260,6 @@
       }
     },
     "judgeView": {
-      "title": "判定と影響",
-      "description": "判定器が何を評価し、実際に何が起きたかを確認できます。提案と確認済みの動作は分けて表示されます。",
       "empty": "このセッションにはまだ判定の記録がありません。",
       "question": "質問",
       "result": "判定結果",
@@ -306,12 +269,6 @@
       "answers": "モデルの回答",
       "noResult": "読み取れる結果は記録されていません",
       "unreported": "記録なし",
-      "records": "記録",
-      "returnedCount": "実行レイヤーへ引き渡し",
-      "receiptCount": "確認済みの配信",
-      "runtimeEvents": "その他のランタイムイベント",
-      "filter": "質問で絞り込む",
-      "allQuestions": "すべての質問",
       "scoreValue": "スコア: {{value}}",
       "latency": "{{ms}} ミリ秒",
       "more": "ほか {{count}} 件",
@@ -361,6 +318,10 @@
         "browser": "ブラウザーは次に何をすべきか？",
         "recall": "過去のどの教訓がいま当てはまるか？",
         "capture": "これは長く有効な訂正または好みか？",
+        "outcome": "このターンで残すべき抜け道は見つかったか？",
+        "worth": "この教訓は残す価値があるか？",
+        "merge": "新しい教訓を既存の教訓とまとめるか？",
+        "applied": "教訓は守られたか？",
         "risk": "この操作にはユーザーの確認が必要か？",
         "drift": "作業はまだ軌道に乗っているか？",
         "completion": "この変更にはまだ検証が必要か？",
@@ -376,7 +337,9 @@
         "diagnostics": "これらの診断はいつモデルに届けるべきか？",
         "patch": "サブエージェントのパッチはタスクの範囲内に収まっているか？",
         "review": "各指摘の重大度はどの程度か？",
-        "board": "作業はどこまで進んでいるか？"
+        "board": "作業はどこまで進んでいるか？",
+        "relate": "この発見は以前の発見に対して何を意味するか？",
+        "approval": "これはタスクに必要な手順で、期待どおりのやり方か？"
       },
       "fields": {
         "turnType": "タスクの種類",
@@ -391,6 +354,8 @@
         "hide": "非表示を提案されたスキル",
         "relevant": "関連スキル",
         "apply": "適用を提案された教訓",
+        "applied": "守られた",
+        "notApplied": "守られなかった",
         "publish": "公開を許可",
         "deliver": "配信を許可",
         "path": "候補ファイル",
@@ -409,7 +374,8 @@
         "phase": "フェーズ",
         "focus": "対応中の項目",
         "needsUser": "ユーザー対応が必要",
-        "update": "ボードを書き直す"
+        "update": "ボードを書き直す",
+        "relation": "関係"
       },
       "values": {
         "true": "はい",
@@ -489,7 +455,20 @@
         "bad_request": "判定器がリクエストを拒否しました",
         "server": "判定器のサーバーエラー",
         "invalid_response": "判定器の回答を読み取れません",
-        "verdict": "判定器が回答"
+        "verdict": "判定器が回答",
+        "learn": "抜け道を残す",
+        "reusable": "また役立つ",
+        "one_off": "今回限り",
+        "already_known": "既知",
+        "same": "同じ教訓",
+        "refines": "より正確",
+        "contradicts": "矛盾する",
+        "supersedes": "置き換える",
+        "supports": "裏付ける",
+        "unrelated": "無関係",
+        "preference": "恒久ルール",
+        "approve": "実行を許可",
+        "beyond": "求められた以上"
       },
       "probabilityValue": "「はい」の確率: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -498,11 +477,22 @@
       "errorValue": "エラー · {{kind}}",
       "noAnswerAfter": "{{duration}} 経過しても回答なし",
       "hints": {
+        "answered": "このメッセージはエージェント自身の質問への返答です。これに従って進め、もう一度質問しないでください。",
+        "resolve": "依頼の表現があいまいで、ファイルを変更する可能性があります。プロジェクトを確認して前提を述べ、ここで見つからないことだけを質問してください。",
         "clarify": "リクエストの内容が不十分なようです。まず的を絞った質問を 1 つしてください。",
         "side_question": "脇道の質問です。手短に答えてから、メインのタスクを続けてください。",
-        "plan_first": "規模が大きいか、リスクが高いようです。編集する前に短い計画を書き、確認を取ってください。",
+        "plan_first": "規模が大きいか、リスクが高いようです。短い計画を書いてから実行し、元に戻せない手順の前でだけ確認を待ってください。",
         "try_hive": "難しいタスクのようです。原因がわからない場合や、直接の試みがうまくいかない場合は Hive を使ってください。",
         "try_delegate": "独立した部分に分けられます。サブエージェントに並行して任せることを検討してください。"
+      },
+      "hintChips": {
+        "answered": "エージェントへの返答",
+        "resolve": "まず調べる",
+        "clarify": "まず質問",
+        "side_question": "脇道の質問",
+        "plan_first": "まず計画",
+        "try_hive": "詰まれば Hive",
+        "try_delegate": "分けて委任"
       },
       "answerIds": {
         "turn_type": "タスクの種類",
@@ -515,11 +505,13 @@
         "task_complexity": "作業範囲",
         "reasoning_depth": "推論の深さ",
         "tool_complexity": "ツールの使用量"
+      },
+      "log": {
+        "thisTurn": "このターン",
+        "earlier": "以前の行を表示",
+        "latest": "最新へ移動"
       }
     },
-    "decisions": "Jev",
-    "memory": "経験",
-    "images": "画像",
     "empty": "このセッションにはまだイベントが記録されていません。",
     "quiet": "アクティビティなし（{{duration}}）",
     "passed": "通過",
@@ -556,6 +548,9 @@
       "memory.recalled": "参照した経験",
       "artifact.image": "画像",
       "memory.stored": "経験を保存しました",
+      "memory.applied": "教訓が守られました",
+      "memory.retired": "教訓を廃止しました",
+      "memory.merged": "教訓をまとめました",
       "compaction_start": "コンテキストを圧縮中…",
       "compaction_end": "圧縮が終了しました",
       "context.usage": "コンテキスト使用量",
@@ -567,6 +562,9 @@
       "board": {
         "update": "ボードを更新しました",
         "switched": "ボードのオン/オフを切り替えました"
+      },
+      "permissions": {
+        "mode": "権限モード"
       },
       "checkpoint": {
         "taken": "チェックポイントを保存しました"
@@ -681,7 +679,6 @@
       "failed": "失敗"
     },
     "boardView": {
-      "tab": "ボード",
       "title": "わかりやすいボード",
       "switch": "このプロジェクトのわかりやすいボード",
       "switching": "切り替え中…",
@@ -689,7 +686,6 @@
       "unknown": "この会話にはまだボードがありません。mu の会話で、「機能」でわかりやすいボードがオンのときに表示されます。",
       "off": "オンにすると、作業の進み具合、エージェントが今していること、あなたの確認が必要なことを、やさしい言葉で伝えます。",
       "cost": "このプロジェクトだけに適用されます。更新のたびにモデルを 1 回呼び出します。",
-      "open": "ボードをオンにする",
       "empty": "エージェントが少し作業するまでお待ちください。ここに進み具合をやさしい言葉で表示します。",
       "checks": "チェック {{done}}/{{total}} 完了",
       "ended": "停止済み",
@@ -699,6 +695,7 @@
       "needsYouText": "エージェントが会話であなたの返事を待っています。",
       "quote": "返信に引用",
       "quoteHint": "項目をクリックすると入力欄に引用されます。送信するまで送られません。",
+      "earlier": "以前",
       "phases": {
         "understanding": "タスクを理解中",
         "planning": "進め方を検討中",
@@ -736,6 +733,66 @@
           "focus": "{{now}}（取り組み中: {{focus}}）",
           "planning": "進め方を考えています。まだ何も変更していません。"
         }
+      }
+    },
+    "lessonsView": {
+      "filterLabel": "表示する教訓",
+      "active": "使用中",
+      "all": "すべて",
+      "count": "{{count}} 件",
+      "count_one": "{{count}} 件",
+      "count_other": "{{count}} 件",
+      "search": "教訓を検索",
+      "kinds": {
+        "correction": "訂正",
+        "preference": "ルール",
+        "pitfall": "落とし穴",
+        "workaround": "回避策",
+        "fact": "事実"
+      },
+      "everywhere": "全プロジェクト",
+      "status": {
+        "retired": "廃止",
+        "superseded": "置き換え済み"
+      },
+      "uses": "呼び出し {{recalled}} · 遵守 {{applied}}",
+      "origins": {
+        "user": "あなたの訂正やルールから",
+        "outcome": "エージェント自身が見つけた抜け道から",
+        "model": "モデルが記録",
+        "subagent": "サブエージェントの報告から",
+        "command": "/remember で記録"
+      },
+      "updated": "{{date}} 更新",
+      "editLabel": "教訓の内容",
+      "retire": "廃止",
+      "retireConfirm": "この教訓を廃止しますか？今後どのターンにも持ち込まれません。",
+      "loadFailed": "教訓を読み込めませんでした",
+      "saveFailed": "教訓を変更できませんでした",
+      "empty": "このプロジェクトにはまだ教訓がありません。mu はあなたの訂正、自力で見つけた抜け道、/remember から教訓を学びます。",
+      "noneActive": "使用中の教訓はありません。「すべて」には廃止・置き換え済みのものも表示されます。",
+      "noMatch": "一致する教訓はありません。",
+      "noProject": "この会話にはプロジェクトフォルダーがないため、全プロジェクト共通の教訓だけを表示します。",
+      "notes": {
+        "label": "このセッションでの教訓の動き",
+        "recalled": "このターンで教訓を {{count}} 件使いました",
+        "recalled_one": "このターンで教訓を {{count}} 件使いました",
+        "recalled_other": "このターンで教訓を {{count}} 件使いました",
+        "briefed": "サブエージェントへの指示に教訓を {{count}} 件含めました：{{task}}",
+        "briefed_one": "サブエージェントへの指示に教訓を {{count}} 件含めました：{{task}}",
+        "briefed_other": "サブエージェントへの指示に教訓を {{count}} 件含めました：{{task}}",
+        "applied": "教訓が {{count}} 件守られました",
+        "applied_one": "教訓が {{count}} 件守られました",
+        "applied_other": "教訓が {{count}} 件守られました",
+        "retired": "廃止：{{lesson}}",
+        "retiredUnused": "廃止：{{lesson}}（{{count}} 回呼び出され、一度も守られず）",
+        "retiredUnused_one": "廃止：{{lesson}}（{{count}} 回呼び出され、一度も守られず）",
+        "retiredUnused_other": "廃止：{{lesson}}（{{count}} 回呼び出され、一度も守られず）",
+        "retiredContradicted": "廃止：{{lesson}}（あなたの新しい指示と矛盾）",
+        "retiredForgotten": "廃止：{{lesson}}（あなたの依頼で）",
+        "mergedSame": "既存の教訓にまとめました：{{lesson}}",
+        "mergedRefines": "より正確な言い方に置き換えました：{{lesson}}",
+        "mergedContradicts": "記録しませんでした。矛盾する教訓：{{lesson}}"
       }
     },
     "activityLoadFailed": "コラボレーションのアクティビティを読み込めませんでした。再試行しています…",
@@ -779,6 +836,7 @@
         "lessons": "過去のセッションの教訓を確認しています",
         "skills": "このセッションに必要なスキルを選んでいます",
         "capabilities": "このタスクに必要なケイパビリティを選んでいます",
+        "goal_check": "目標が達成されたか確認しています",
         "permissionReview": "JeV が審査しています: {{summary}}"
       },
       "goal": {
@@ -864,7 +922,21 @@
           "cdpConnectFailed": "ブラウザーに接続できませんでした。",
           "browserSpawnFailed": "{{command}} を起動できませんでした。"
         }
+      },
+      "permissions": {
+        "mode": "権限モード：{{mode}}"
+      },
+      "board": {
+        "on": "ボード：オン",
+        "off": "ボード：オフ"
       }
+    },
+    "gauges": {
+      "context": "コンテキスト",
+      "contextHint": "モデルが次に読む内容は、コンテキストの {{percent}} を占めます",
+      "cache": "キャッシュヒット",
+      "cacheHint": "キャッシュヒット：直近のターン {{turn}}、会話全体 {{session}}",
+      "pending": "mu の次の返信のあとに表示されます"
     }
   },
   "menu": {
@@ -900,11 +972,57 @@
   "noData": "データがありません",
   "labelWithSelectedCount": "{{label}}（{{selected}}/{{total}}）",
   "selectedSkillsWithCount": "選択済みスキル · {{count}}",
+  "commandPalette": {
+    "title": "コマンドパレット",
+    "placeholder": "会話、設定、コマンドを検索",
+    "groups": {
+      "conversations": "会話",
+      "settings": "設定",
+      "commands": "コマンド"
+    },
+    "searchMessages": "メッセージから「{{query}}」を検索",
+    "empty": "一致する項目がありません",
+    "noConversations": "まだ会話はありません。入力すると設定やコマンドを探せます。",
+    "openSettings": "設定を開く",
+    "actions": {
+      "newConversation": "新しいチャットを始める",
+      "scheduledTasks": "スケジュールタスクを開く"
+    },
+    "commandWaits": "この応答が終わってから実行します"
+  },
   "window": {
     "minimize": "最小化",
     "maximize": "最大化",
     "restore": "元のサイズに戻す"
   },
   "collapseSidebar": "サイドバーを折りたたむ",
-  "expandSidebar": "サイドバーを展開"
+  "expandSidebar": "サイドバーを展開",
+  "workPanel": {
+    "label": "作業パネル",
+    "tabsLabel": "作業パネルのタブ",
+    "tabs": {
+      "board": "ボード",
+      "judge": "判定",
+      "hive": "Hive",
+      "lessons": "教訓",
+      "files": "ファイル",
+      "preview": "プレビュー",
+      "source": "ソース"
+    },
+    "close": "作業パネルを閉じる",
+    "resize": "作業パネルの幅を変更",
+    "unread": "{{tab}}、新着あり",
+    "noProject": "この会話にはプロジェクトフォルダーがないため、表示するファイルや変更はありません。",
+    "previewEmpty": "プレビューするものはまだありません。会話から開いたファイルやページがここに表示されます。",
+    "previewHidden": "プレビューは非表示です。"
+  },
+  "nodeRuntime": {
+    "title": "Node.js をダウンロードしますか？",
+    "message": "mu はエージェントとツールを専用の Node.js で実行します。この Node.js はまだダウンロードされていません。",
+    "detail": "Node.js {{version}}（約 {{size}} MB）を nodejs.org からダウンロードし、次の場所に展開します：\n{{folder}}\n\n「後で」を選ぶと何もダウンロードしません。mu は通常どおり開き、Node.js が必要な場所でお知らせし、次回の起動時にもう一度確認します。",
+    "download": "ダウンロード",
+    "later": "後で",
+    "note": "Node.js がダウンロードされていないため、このエージェントは実行できません。次回の起動時にもう一度確認します。",
+    "toolNote": "Node.js がダウンロードされていないため、それを必要とするツールは実行できません。次回の起動時にもう一度確認します。"
+  }
 }

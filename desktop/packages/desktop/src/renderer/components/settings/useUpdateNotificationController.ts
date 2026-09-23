@@ -26,8 +26,6 @@ import {
   type CheckUpdateOutcome,
 } from './checkForUpdatesShared';
 import { setUpdateReadyState } from './updateReadyState';
-import { IS_DISCONTINUED_BUILD } from '@/renderer/utils/discontinuedBuild';
-import { OPEN_MIGRATION_DIALOG_EVENT } from './UpdateMigrationDialog';
 
 type AvailableOutcome = Extract<CheckUpdateOutcome, { kind: 'available' }>;
 
@@ -64,7 +62,7 @@ const reduceNotificationState = (
   event: UpdateNotificationEvent
 ): UpdateNotificationState => updateNotificationReducer(current, event).state;
 
-const RELEASES_PAGE_URL = 'https://github.com/iOfficeAI/AionUi/releases';
+const RELEASES_PAGE_URL = 'https://github.com/qybaihe/mu/releases';
 
 const getVersionLabelFromState = (state: UpdateNotificationState): string =>
   state.updateInfo?.version || state.autoUpdateInfo?.version || '';
@@ -224,13 +222,6 @@ export const useUpdateNotificationController = () => {
 
   const openUpdateNotification = useCallback(
     (source: UpdateNotificationOpenSource, userInitiated: boolean) => {
-      // Discontinued build: every manual entry point (tray / menu / IPC-open)
-      // opens the migration card instead of checking. Flag is compile-time, so
-      // this branch is stripped from normal builds.
-      if (IS_DISCONTINUED_BUILD) {
-        window.dispatchEvent(new CustomEvent(OPEN_MIGRATION_DIALOG_EVENT));
-        return;
-      }
       const current = stateRef.current;
       dispatch({ type: 'openRequested', source, userInitiated });
       if (

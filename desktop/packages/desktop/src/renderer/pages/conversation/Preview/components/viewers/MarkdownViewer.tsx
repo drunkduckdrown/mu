@@ -15,7 +15,10 @@ import {
   MarkdownTd,
   SANITIZED_HTML_REHYPE_PLUGINS,
 } from '@/renderer/components/Markdown/markdownComponents';
-import { resolveLocalFileLinkReference } from '@/renderer/components/Markdown/markdownUtils';
+import {
+  resolveLocalFileLinkReference,
+  resolveRelativeFileLinkReference,
+} from '@/renderer/components/Markdown/markdownUtils';
 import { useTextSelection } from '@/renderer/hooks/ui/useTextSelection';
 import 'katex/dist/katex.min.css';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -282,7 +285,6 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({
 }) => {
   const internalContainerRef = useRef<HTMLDivElement>(null);
   const containerRef = externalContainerRef || internalContainerRef; // 使用外部 ref 或内部 ref / Use external ref or internal ref
-  const handleLocalFileLink = useLocalFilePreview(workspace);
 
   // 使用滚动同步 Hooks / Use scroll sync hooks
   useContainerScroll(containerRef, externalOnScroll);
@@ -308,6 +310,9 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({
     return normalized.slice(0, lastSlash);
   }, [file_path]);
 
+  // A relative link in a document names a file next to the document, not under the workspace.
+  const handleLocalFileLink = useLocalFilePreview(workspace, baseDir ?? workspace);
+
   // Memoize component overrides so React keeps a stable identity across re-renders.
   // Code fences and Mermaid diagrams reuse the shared CodeBlock (chat/preview parity);
   // tables reuse the shared table/cell overrides.
@@ -319,7 +324,8 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({
         <CodeBlock {...(props as Parameters<typeof CodeBlock>[0])} diagramPanZoom />
       ),
       a({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
-        const localFileReference = resolveLocalFileLinkReference(typeof href === 'string' ? href : '');
+        const rawHref = typeof href === 'string' ? href : '';
+        const localFileReference = resolveLocalFileLinkReference(rawHref) ?? resolveRelativeFileLinkReference(rawHref);
         if (localFileReference) {
           return (
             <LocalFileLink reference={localFileReference} onOpen={handleLocalFileLink}>

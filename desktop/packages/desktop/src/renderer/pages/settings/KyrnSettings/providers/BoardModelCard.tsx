@@ -93,7 +93,7 @@ export default function BoardModelCard({
       testId='mu-board-model'
     >
       {supported ? (
-        <div className={sectionStyles.choices} role='radiogroup' aria-label={t('mu.boardModel.title')}>
+        <div className={sectionStyles.choiceRows} role='radiogroup' aria-label={t('mu.boardModel.title')}>
           <ChoiceTile
             testId='mu-board-model-pick'
             title={t('mu.boardModel.pick')}

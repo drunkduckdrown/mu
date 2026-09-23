@@ -8,7 +8,7 @@ import type { IMessageThinking } from '@/common/chat/chatLib';
 import { formatDuration } from '@/renderer/services/i18n/format';
 import { Button, Spin } from '@arco-design/web-react';
 import { Brain, Right } from '@icon-park/react';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './MessageThinking.module.css';
 
@@ -35,11 +35,33 @@ const formatThinkingTime = (ms: number, language: string | undefined): string =>
 
 const elapsedSeconds = (startedAt: number): number => Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
 
+/**
+ * The newest stretch of a thought, for the one quiet line that streams under the header. Only the tail is shown: it
+ * is where the model is now, and a fixed window means the row never grows as the thought does.
+ */
+export const THOUGHT_TAIL_CHARS = 120;
+
+export function thoughtTail(text: string, limit = THOUGHT_TAIL_CHARS): string {
+  const value = text.replace(/\s+/g, ' ').trim();
+  if (value.length <= limit) return value;
+  const tail = value.slice(value.length - limit);
+  const space = tail.indexOf(' ');
+  // Cut on a word where there is one within reach, so the line does not open mid-word.
+  return `…${space > 0 && space < 24 ? tail.slice(space + 1) : tail}`;
+}
+
+/** How long a run of thoughts took altogether; undefined while none of them reported a duration. */
+export function totalThinkingTime(messages: IMessageThinking[]): number | undefined {
+  const total = messages.reduce((sum, message) => sum + (message.content.duration ?? 0), 0);
+  return total > 0 ? total : undefined;
+}
+
 const ThoughtHistory: React.FC<ThoughtHistoryProps> = ({ messages }) => {
   const { t, i18n } = useTranslation();
   const language = i18n?.language;
   const [expanded, setExpanded] = useState(false);
   const bodyId = `thinking-history-${messages[0]?.id ?? 'empty'}`;
+  const total = totalThinkingTime(messages);
 
   if (messages.length === 0) {
     return null;
@@ -59,7 +81,9 @@ const ThoughtHistory: React.FC<ThoughtHistoryProps> = ({ messages }) => {
           <Brain theme='outline' size='14' />
         </span>
         <span className={styles.summary}>
-          {t('conversation.thinking.history', { defaultValue: 'Thinking history' })}
+          {total === undefined
+            ? t('conversation.thinking.history', { defaultValue: 'Thinking history' })
+            : t('conversation.thinking.thoughtFor', { time: formatThinkingTime(total, language) })}
         </span>
         <span className={`${styles.arrow} ${expanded ? styles.arrowExpanded : ''}`}>
           <Right theme='outline' size='12' />
@@ -89,6 +113,11 @@ const ThoughtHistory: React.FC<ThoughtHistoryProps> = ({ messages }) => {
   );
 };
 
+/**
+ * One thought. While it is the live one it reads as a quiet line of muted text that keeps moving — its newest words,
+ * in a window two lines tall, so the row never grows with the thought. Once the reply starts it folds to a single
+ * line ("thought for 12s"), which a click opens to the whole thing.
+ */
 const MessageThinking: React.FC<MessageThinkingProps> = ({ message, active, expanded, onExpandedChange }) => {
   const { t, i18n } = useTranslation();
   const language = i18n?.language;
@@ -104,6 +133,7 @@ const MessageThinking: React.FC<MessageThinkingProps> = ({ message, active, expa
   const [elapsedTime, setElapsedTime] = useState(() => (isActive ? elapsedSeconds(startedAt) : 0));
   const startTimeRef = useRef<number>(startedAt);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const tail = useMemo(() => (isActive && !isExpanded ? thoughtTail(text ?? '') : ''), [isActive, isExpanded, text]);
 
   // Elapsed timer for the live thought only; a leftover `thinking` status must not keep counting.
   useEffect(() => {
@@ -136,7 +166,9 @@ const MessageThinking: React.FC<MessageThinkingProps> = ({ message, active, expa
         label: subject || t('conversation.thinking.label', { defaultValue: 'Thinking...' }),
         time: formatThinkingTime(elapsedTime * 1000, language),
       })
-    : t('conversation.thinking.history', { defaultValue: 'Thinking history' });
+    : duration
+      ? t('conversation.thinking.thoughtFor', { time: formatThinkingTime(duration, language) })
+      : t('conversation.thinking.history', { defaultValue: 'Thinking history' });
   const bodyId = `thinking-${message.id}`;
 
   return (
@@ -155,6 +187,11 @@ const MessageThinking: React.FC<MessageThinkingProps> = ({ message, active, expa
           <Right theme='outline' size='12' />
         </span>
       </Button>
+      {tail && (
+        <div className={styles.stream} data-testid='thinking-stream' aria-hidden='true'>
+          {tail}
+        </div>
+      )}
       {isExpanded && (
         <div ref={bodyRef} id={bodyId} className={styles.body}>
           {isDone && (

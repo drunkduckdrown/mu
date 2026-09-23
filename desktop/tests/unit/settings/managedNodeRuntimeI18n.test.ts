@@ -77,7 +77,7 @@ describe('managed node runtime settings copy', () => {
       const backendStartup = common.backendStartup as Record<string, unknown>;
       const incompleteInstallation = backendStartup.incompleteInstallation as Record<string, string>;
 
-      expect(incompleteInstallation.sendDiagnostics).toBeTruthy();
+      expect(incompleteInstallation.downloadLatest).toBeTruthy();
       expect(incompleteInstallation.runtimeComponentDescription).not.toMatch(/^This installation is missing/);
     }
   });
@@ -90,10 +90,7 @@ describe('managed node runtime settings copy', () => {
 
       expect(localDataRepair.title).toBeTruthy();
       expect(localDataRepair.description).toBeTruthy();
-      expect(localDataRepair.sendDiagnostics).toBeTruthy();
-      expect(localDataRepair.diagnosticsSent).toBeTruthy();
-      expect(localDataRepair.diagnosticsReportSuccess).toBeTruthy();
-      expect(localDataRepair.diagnosticsReportFailed).toBeTruthy();
+      expect(localDataRepair).not.toHaveProperty('sendDiagnostics');
     }
   });
 
@@ -105,10 +102,7 @@ describe('managed node runtime settings copy', () => {
 
       expect(startupDirectory.title).toBeTruthy();
       expect(startupDirectory.description).toBeTruthy();
-      expect(startupDirectory.sendDiagnostics).toBeTruthy();
-      expect(startupDirectory.diagnosticsSent).toBeTruthy();
-      expect(startupDirectory.diagnosticsReportSuccess).toBeTruthy();
-      expect(startupDirectory.diagnosticsReportFailed).toBeTruthy();
+      expect(startupDirectory).not.toHaveProperty('sendDiagnostics');
     }
   });
 });

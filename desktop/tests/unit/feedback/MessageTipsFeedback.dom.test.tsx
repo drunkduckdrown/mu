@@ -3,14 +3,13 @@
  * Copyright 2025 AionUi (aionui.com)
  * SPDX-License-Identifier: Apache-2.0
  *
- * Verifies MessageTips only renders the FeedbackButton on error tips and
- * wires it to module=conversation-session.
+ * Verifies MessageTips shows the Butler diagnose chip on error tips only, and
+ * that no error surface offers to send a report anywhere.
  */
 
 import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 
@@ -50,11 +49,6 @@ vi.mock('react-i18next', () => ({
     },
     i18n: { language: 'en' },
   }),
-}));
-
-const openFeedbackMock = vi.fn(() => Promise.resolve());
-vi.mock('@/renderer/hooks/context/FeedbackContext', () => ({
-  useFeedback: () => ({ openFeedback: openFeedbackMock }),
 }));
 
 // CollapsibleContent uses ResizeObserver and runtime theme context — stub it
@@ -115,157 +109,66 @@ const buildTips = (
     content: { type, content, ...(error ? { error } : {}), ...extra },
   }) as IMessageTips;
 
-describe('MessageTips — FeedbackButton wiring', () => {
-  beforeEach(() => {
-    openFeedbackMock.mockClear();
-  });
+const BUTLER_CHIP = 'settings.talkToButler.solveWithButler';
+const REPORT_CHIP = 'settings.oneClickFeedback';
 
+describe('MessageTips — error chips', () => {
   afterEach(() => {
     cleanup();
   });
 
-  it('does not render FeedbackButton on success tips', () => {
+  it('does not render the Butler chip on success tips', () => {
     render(<MessageTips message={buildTips('success')} />);
-    expect(screen.queryByText('settings.oneClickFeedback')).not.toBeInTheDocument();
+    expect(screen.queryByText(BUTLER_CHIP)).not.toBeInTheDocument();
   });
 
-  it('does not render FeedbackButton on warning tips', () => {
+  it('does not render the Butler chip on warning tips', () => {
     render(<MessageTips message={buildTips('warning')} />);
-    expect(screen.queryByText('settings.oneClickFeedback')).not.toBeInTheDocument();
+    expect(screen.queryByText(BUTLER_CHIP)).not.toBeInTheDocument();
   });
 
-  it('does not render FeedbackButton on info tips', () => {
+  it('does not render the Butler chip on info tips', () => {
     render(<MessageTips message={buildTips('info')} />);
-    expect(screen.queryByText('settings.oneClickFeedback')).not.toBeInTheDocument();
+    expect(screen.queryByText(BUTLER_CHIP)).not.toBeInTheDocument();
   });
 
-  it('renders FeedbackButton when tip type is error', () => {
+  it('renders the Butler chip, and no report chip, when tip type is error', () => {
     render(<MessageTips message={buildTips('error')} />);
-    expect(screen.getByText('settings.oneClickFeedback')).toBeInTheDocument();
+    expect(screen.getByText(BUTLER_CHIP)).toBeInTheDocument();
+    expect(screen.queryByText(REPORT_CHIP)).not.toBeInTheDocument();
   });
 
-  it('click opens feedback with module=conversation-session', async () => {
-    const user = userEvent.setup();
-    render(<MessageTips message={buildTips('error')} />);
-    await user.click(screen.getByText('settings.oneClickFeedback'));
-
-    expect(openFeedbackMock).toHaveBeenCalledTimes(1);
-    expect(openFeedbackMock).toHaveBeenCalledWith({
-      module: 'conversation-session',
-      autoScreenshot: true,
-    });
-  });
-
-  it('renders FeedbackButton on JSON-formatted error content too', async () => {
-    const user = userEvent.setup();
+  it('renders the Butler chip on JSON-formatted error content too', () => {
     render(<MessageTips message={buildTips('error', '{"code":500}')} />);
-    await user.click(screen.getByText('settings.oneClickFeedback'));
-    expect(openFeedbackMock).toHaveBeenCalledWith({
-      module: 'conversation-session',
-      autoScreenshot: true,
-    });
+    expect(screen.getByText(BUTLER_CHIP)).toBeInTheDocument();
+    expect(screen.queryByText(REPORT_CHIP)).not.toBeInTheDocument();
   });
 
-  it('click opens feedback with structured agent error metadata', async () => {
-    const user = userEvent.setup();
-    render(
-      <MessageTips
-        message={buildTips('error', 'raw provider 401', {
-          message: 'raw provider 401',
-          code: 'USER_LLM_PROVIDER_AUTH_FAILED',
-          ownership: 'user_llm_provider',
-          detail: 'Provider returned 401.',
-          retryable: false,
-          feedback_recommended: true,
-          resolution: {
-            kind: 'check_provider_credentials',
-            target: 'provider_settings',
-          },
-        })}
-      />
-    );
+  it.each([true, false])(
+    'renders the Butler chip, and no report chip, on structured errors (feedback_recommended=%s)',
+    (feedbackRecommended) => {
+      render(
+        <MessageTips
+          message={buildTips('error', 'raw provider 401', {
+            message: 'raw provider 401',
+            code: 'USER_LLM_PROVIDER_AUTH_FAILED',
+            ownership: 'user_llm_provider',
+            detail: 'Provider returned 401.',
+            retryable: false,
+            feedback_recommended: feedbackRecommended,
+            resolution: {
+              kind: 'check_provider_credentials',
+              target: 'provider_settings',
+            },
+          })}
+        />
+      );
 
-    await user.click(screen.getByText('settings.oneClickFeedback'));
-
-    expect(openFeedbackMock).toHaveBeenCalledWith({
-      module: 'conversation-session',
-      autoScreenshot: true,
-      tags: {
-        agent_error_code: 'USER_LLM_PROVIDER_AUTH_FAILED',
-        agent_error_ownership: 'user_llm_provider',
-        agent_error_retryable: 'false',
-        agent_error_resolution: 'check_provider_credentials',
-      },
-      extra: {
-        agent_error: {
-          code: 'USER_LLM_PROVIDER_AUTH_FAILED',
-          ownership: 'user_llm_provider',
-          retryable: false,
-          feedback_recommended: true,
-          resolution: {
-            kind: 'check_provider_credentials',
-            target: 'provider_settings',
-          },
-        },
-      },
-    });
-  });
-
-  it('hides FeedbackButton but keeps ButlerDiagnoseButton when structured error opts out of feedback', () => {
-    render(
-      <MessageTips
-        message={buildTips('error', 'raw provider 401', {
-          message: 'raw provider 401',
-          code: 'USER_LLM_PROVIDER_AUTH_FAILED',
-          ownership: 'user_llm_provider',
-          detail: 'Provider returned 401.',
-          retryable: false,
-          feedback_recommended: false,
-          resolution: {
-            kind: 'check_provider_credentials',
-            target: 'provider_settings',
-          },
-        })}
-      />
-    );
-
-    // User-environment errors don't funnel to the report modal…
-    expect(screen.queryByText('settings.oneClickFeedback')).not.toBeInTheDocument();
-    // …but the Butler chip stays: these are exactly what it diagnoses best.
-    expect(screen.getByText('settings.talkToButler.solveWithButler')).toBeInTheDocument();
-  });
-
-  it('carries the rawError diagnostic summary into the feedback extra for internal errors', async () => {
-    const user = userEvent.setup();
-    render(
-      <MessageTips
-        message={buildTips('error', 'Something went wrong, please try again.', {
-          message: 'Something went wrong, please try again.',
-          code: 'AIONUI_INTERNAL_ERROR',
-          ownership: 'aionui',
-          detail: 'Something went wrong, please try again.',
-          retryable: true,
-          feedback_recommended: true,
-          rawError: {
-            name: 'Error',
-            message: 'connect ECONNREFUSED 127.0.0.1:8080',
-            code: 'ECONNREFUSED',
-            stack: 'Error: connect ECONNREFUSED\n    at frame',
-          },
-        })}
-      />
-    );
-
-    await user.click(screen.getByText('settings.oneClickFeedback'));
-
-    const call = openFeedbackMock.mock.calls[0][0] as { extra: { agent_error: { rawError?: unknown } } };
-    expect(call.extra.agent_error.rawError).toEqual({
-      name: 'Error',
-      message: 'connect ECONNREFUSED 127.0.0.1:8080',
-      code: 'ECONNREFUSED',
-      stack: 'Error: connect ECONNREFUSED\n    at frame',
-    });
-  });
+      // Environment problems are exactly what the Butler diagnoses best.
+      expect(screen.getByText(BUTLER_CHIP)).toBeInTheDocument();
+      expect(screen.queryByText(REPORT_CHIP)).not.toBeInTheDocument();
+    }
+  );
 
   it('renders HTML-like error text as literal text', () => {
     const { container } = render(<MessageTips message={buildTips('error', '<strong>boom</strong>')} />);
@@ -274,7 +177,7 @@ describe('MessageTips — FeedbackButton wiring', () => {
     expect(screen.getByText('<strong>boom</strong>')).toBeInTheDocument();
   });
 
-  it('renders localized info tips as plain text without icon or feedback', () => {
+  it('renders localized info tips as plain text without icon or chips', () => {
     const { container } = render(
       <MessageTips
         message={buildTips('info', '', undefined, {
@@ -285,7 +188,7 @@ describe('MessageTips — FeedbackButton wiring', () => {
     );
 
     expect(screen.getByText('This request produced no visible reply.')).toBeInTheDocument();
-    expect(screen.queryByText('settings.oneClickFeedback')).not.toBeInTheDocument();
+    expect(screen.queryByText(REPORT_CHIP)).not.toBeInTheDocument();
     expect(container.querySelector('svg')).not.toBeInTheDocument();
   });
 
@@ -315,7 +218,7 @@ describe('MessageTips — FeedbackButton wiring', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders classified provider errors with friendly copy and feedback', () => {
+  it('renders classified provider errors with friendly copy', () => {
     render(
       <MessageTips
         message={buildTips('error', 'raw provider 401', {
@@ -333,7 +236,7 @@ describe('MessageTips — FeedbackButton wiring', () => {
     expect(screen.getByText(/rejected the API key or account credentials/)).toBeInTheDocument();
     expect(screen.getByText('Model provider')).toBeInTheDocument();
     expect(screen.getByText('Needs configuration')).toBeInTheDocument();
-    expect(screen.queryByText('settings.oneClickFeedback')).not.toBeInTheDocument();
+    expect(screen.queryByText(REPORT_CHIP)).not.toBeInTheDocument();
   });
 
   it('renders AWS SSO provider auth code as localized user guidance', () => {
@@ -358,7 +261,7 @@ describe('MessageTips — FeedbackButton wiring', () => {
         "Your AWS SSO session has expired. Run 'aws sso login' for the matching profile, then send the message again."
       )
     ).toBeInTheDocument();
-    expect(screen.queryByText('settings.oneClickFeedback')).not.toBeInTheDocument();
+    expect(screen.queryByText(REPORT_CHIP)).not.toBeInTheDocument();
   });
 
   it('renders structured error resolution guidance', () => {
@@ -473,7 +376,7 @@ describe('MessageTips — FeedbackButton wiring', () => {
     expect(screen.getByText('Agent reported a protocol parse error')).toBeInTheDocument();
     expect(screen.getByText(/reported that an ACP\/JSON-RPC message could not be parsed/)).toBeInTheDocument();
     expect(screen.queryByText(/Suggestion:/)).not.toBeInTheDocument();
-    expect(screen.queryByText('settings.oneClickFeedback')).not.toBeInTheDocument();
+    expect(screen.queryByText(REPORT_CHIP)).not.toBeInTheDocument();
     expect(screen.getByText(/USER_AGENT_PROTOCOL_PARSE_ERROR/)).toBeInTheDocument();
     expect(screen.queryByText('backend protocol fallback')).not.toBeInTheDocument();
   });
@@ -518,6 +421,27 @@ describe('MessageTips — FeedbackButton wiring', () => {
     expect(screen.getByText('mu.turnErrors.modelFailed')).toBeInTheDocument();
     expect(screen.getByText(/Error code: AIONUI_INTERNAL_ERROR/)).toBeInTheDocument();
     expect(screen.getByText(/429 rate limited/)).toBeInTheDocument();
+  });
+
+  it('shows the upstream product names in a backend tip as mu', () => {
+    render(<MessageTips message={buildTips('warning', 'AionCore restarted the agent')} />);
+
+    expect(screen.getByText('mu restarted the agent')).toBeInTheDocument();
+    expect(screen.queryByText(/AionCore/)).not.toBeInTheDocument();
+  });
+
+  it('shows an unclassified backend error, and its technical details, as mu', () => {
+    render(
+      <MessageTips
+        message={buildTips('error', 'fallback', {
+          message: 'AionUI lost its Agent protocol connection',
+          ownership: 'aionui',
+        })}
+      />
+    );
+
+    expect(screen.getAllByText('mu lost its Agent protocol connection').length).toBeGreaterThan(0);
+    expect(screen.queryByText(/AionUI/)).not.toBeInTheDocument();
   });
 });
 

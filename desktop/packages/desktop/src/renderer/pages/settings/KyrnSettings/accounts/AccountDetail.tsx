@@ -46,7 +46,7 @@ export default function AccountDetail({ provider, flow, byKey, onShow }: Account
         badges={
           <>
             <ExperimentalTag provider={provider} />
-            <Tag size='small' color={(account || byKey) && !busy ? 'green' : undefined} data-testid='mu-account-state'>
+            <Tag size='small' data-testid='mu-account-state'>
               {t(state)}
             </Tag>
           </>

@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Alert, Button } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
 import { useInRouterContext, useNavigate } from 'react-router-dom';
-import type { LoginStatus } from '@/common/kyrn/login';
 import type { AvailableModels } from '@/common/kyrn/models';
 import type { KyrnSettings } from '@/common/kyrn/types';
+import { useSubscriptionLogin } from '../accounts/useSubscriptionLogin';
 import type { Draft } from '../draft';
 import { ErrorDetail } from '../fields/MuErrorMessage';
 import BoardModelCard from '../providers/BoardModelCard';
+import DefaultModelCard from '../providers/DefaultModelCard';
 import ProviderManager from '../providers/ProviderManager';
 import { hiddenIds } from '../providers/removed';
 import SectionShell from './SectionShell';
@@ -19,23 +20,24 @@ type ModelsSectionProps = {
   onDraft: (change: (draft: Draft) => Draft) => void;
 };
 
+/** Removed here, but still in the snapshot of what mu last reported: offered neither as usable nor as a start. */
+const hiddenOf = ({ models }: KyrnSettings) =>
+  hiddenIds([...models.providers.map((provider) => provider.id), ...models.foreign.map((entry) => entry.id)]);
+
 /**
- * Every provider behind the models (subscriptions and endpoints), and the model that writes the plain-language board.
- * A conversation's model and thinking level are picked in its send box, and a new one starts with the last pick.
+ * Every provider behind the models: the subscriptions to sign in to, the endpoints set up here, and what else the
+ * running mu reported. Which model a new session starts with is the next page.
  */
-export default function ModelsSection({ draft, base, available, onDraft }: ModelsSectionProps) {
+export default function ProvidersSection({ draft, base, available, onDraft }: ModelsSectionProps) {
   const { t } = useTranslation();
   const inRouter = useInRouterContext();
-  const [accounts, setAccounts] = useState<LoginStatus['signedIn']>([]);
   const { models } = draft.settings;
   const setModels = (patch: Partial<KyrnSettings['models']>) =>
     onDraft((now) => ({ ...now, settings: { ...now.settings, models: { ...now.settings.models, ...patch } } }));
-  // Removed here, but still in the snapshot of what mu last reported: offered neither as usable nor as a start.
-  const hidden = hiddenIds([...models.providers.map((provider) => provider.id), ...models.foreign.map((e) => e.id)]);
   return (
     <SectionShell
-      id='models'
-      title={t('mu.sections.models')}
+      id='providers'
+      title={t('mu.sections.providers')}
       description={t('mu.providers.lead')}
       actions={inRouter ? <ReopenGuide /> : undefined}
     >
@@ -45,8 +47,7 @@ export default function ModelsSection({ draft, base, available, onDraft }: Model
         available={available}
         onModels={setModels}
         onKeys={(providerKeys) => onDraft((now) => ({ ...now, providerKeys }))}
-        onAccounts={setAccounts}
-        hidden={hidden}
+        hidden={hiddenOf(draft.settings)}
       >
         {models.problem ? (
           <Alert
@@ -61,6 +62,33 @@ export default function ModelsSection({ draft, base, available, onDraft }: Model
         ) : null}
         {models.commented ? <Alert type='warning' content={t('mu.providers.commented')} /> : null}
       </ProviderManager>
+    </SectionShell>
+  );
+}
+
+/**
+ * The model and thinking level a new session starts with, and the model that writes the plain-language board. Both
+ * offer every provider set up on the previous page, and the models of a subscription signed in to a moment ago.
+ */
+export function DefaultModelSection({ draft, base, available, onDraft }: ModelsSectionProps) {
+  const { t } = useTranslation();
+  const { accounts } = useSubscriptionLogin();
+  const hidden = hiddenOf(draft.settings);
+  return (
+    <SectionShell id='defaultModel' title={t('mu.sections.defaultModel')} description={t('mu.defaults.summary')}>
+      <DefaultModelCard
+        settings={draft.settings}
+        base={base}
+        available={available}
+        accounts={accounts}
+        hidden={hidden}
+        onChange={(defaults) =>
+          onDraft((now) => ({
+            ...now,
+            settings: { ...now.settings, models: { ...now.settings.models, defaults } },
+          }))
+        }
+      />
       <BoardModelCard
         settings={draft.settings}
         base={base}

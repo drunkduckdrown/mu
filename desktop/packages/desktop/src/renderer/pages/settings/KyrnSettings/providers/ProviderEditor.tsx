@@ -2,13 +2,7 @@ import React, { useId, useState } from 'react';
 import { Checkbox, Input, Tag } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
 import AionSelect from '@/renderer/components/base/AionSelect';
-import {
-  ENDPOINT_TYPES,
-  providerKeyVariable,
-  suggestProviderId,
-  type EndpointType,
-  type ProviderSettings,
-} from '@/common/kyrn/models';
+import { ENDPOINT_TYPES, suggestProviderId, type EndpointType, type ProviderSettings } from '@/common/kyrn/models';
 import { formatNameList } from '@/renderer/services/i18n/list';
 import { ModifiedMark } from '../fields/Row';
 import ConnectionTest from './ConnectionTest';
@@ -85,6 +79,7 @@ export default function ProviderEditor(props: ProviderEditorProps) {
             <Input
               disabled={!isNew || readOnly}
               aria-label={t('mu.providers.id')}
+              status={problems.id ? 'error' : undefined}
               value={provider.id}
               onChange={(id) => {
                 setIdTouched(true);
@@ -117,6 +112,7 @@ export default function ProviderEditor(props: ProviderEditorProps) {
           <Input
             disabled={readOnly}
             aria-label={t('mu.providers.baseUrl')}
+            status={problems.baseUrl === 'unsafe' ? 'error' : undefined}
             placeholder={ENDPOINT_PLACEHOLDER[provider.api]}
             value={provider.baseUrl}
             onChange={(baseUrl) => onChange({ ...provider, baseUrl })}
@@ -129,11 +125,7 @@ export default function ProviderEditor(props: ProviderEditorProps) {
         <div className={styles.field}>
           <span className={styles.label}>
             {t('mu.apiKey')}
-            <Tag
-              size='small'
-              color={keyState === 'none' || keyState === 'empty' ? undefined : 'green'}
-              data-testid='mu-key-state'
-            >
+            <Tag size='small' data-testid='mu-key-state'>
               {t(`mu.keyState.${keyState}`)}
             </Tag>
           </span>
@@ -151,9 +143,8 @@ export default function ProviderEditor(props: ProviderEditorProps) {
             value={typedKey}
             onChange={onKey}
           />
-          <span className={styles.hint}>
-            {t('mu.providers.keyHelp', { variable: providerKeyVariable(provider.id || 'id') })}
-          </span>
+          {/* Where the key is kept, in plain words: the file and the variable are the app's business. */}
+          <span className={styles.hint}>{t('mu.keyHelp')}</span>
           <Checkbox
             disabled={readOnly}
             checked={provider.authHeader}

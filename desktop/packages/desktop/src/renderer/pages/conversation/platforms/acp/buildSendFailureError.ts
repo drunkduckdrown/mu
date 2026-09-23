@@ -106,8 +106,8 @@ export const buildSendFailureError = (error: unknown, message: string): AgentStr
   }
 
   // Fallback: this is the "catch-all" bucket where the original error was
-  // previously discarded, leaving telemetry unable to locate the failure.
-  // Preserve a redacted summary of the original error so it reaches Sentry.
+  // previously discarded, leaving nothing to locate the failure with.
+  // Preserve a redacted summary of the original error with the message.
   const rawError = buildRawErrorSummary(error);
   return {
     message,

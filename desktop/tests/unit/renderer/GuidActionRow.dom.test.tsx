@@ -154,7 +154,6 @@ const renderActionRow = (overrides: Partial<React.ComponentProps<typeof GuidActi
   render(
     <GuidActionRow
       files={[]}
-      onFilesUploaded={vi.fn()}
       modelSelectorNode={null}
       isGeminiMode={false}
       modelList={[]}
@@ -186,23 +185,13 @@ describe('GuidActionRow skill/MCP submenu search', () => {
     environment.isDesktop = true;
   });
 
-  it('offers both host files and device upload in the mobile WebUI action sheet', () => {
+  it('opens the native picker from the mobile action sheet', async () => {
     environment.isMobile = true;
-    environment.isDesktop = false;
-    renderActionRow({ allSkills: [], mcpServers: [] });
-
-    expect(screen.getByTestId('attach-host-files')).toHaveTextContent('Add files');
-    expect(screen.getByTestId('attach-my-device')).toHaveTextContent('Upload from device');
-  });
-
-  it('adds files selected from the host picker in mobile WebUI', async () => {
-    environment.isMobile = true;
-    environment.isDesktop = false;
     const onFilesPicked = vi.fn();
     vi.mocked(ipcBridge.dialog.showOpen.invoke).mockResolvedValue(['/host/project/a.txt']);
     renderActionRow({ allSkills: [], mcpServers: [], onFilesPicked });
 
-    fireEvent.click(screen.getByTestId('attach-host-files'));
+    fireEvent.click(screen.getByTestId('attach'));
 
     await waitFor(() => expect(onFilesPicked).toHaveBeenCalledWith(['/host/project/a.txt']));
   });

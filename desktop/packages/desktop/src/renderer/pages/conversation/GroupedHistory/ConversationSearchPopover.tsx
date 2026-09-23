@@ -13,8 +13,9 @@ import { usePresetAssistantInfo } from '@/renderer/hooks/agent/usePresetAssistan
 import { useAgentLogos } from '@/renderer/utils/model/agentLogo';
 import ThemedLogo from '@/renderer/components/agent/ThemedLogo';
 import { resolveConversationLeadingMark } from '@/renderer/pages/conversation/utils/conversationAssistantIdentity';
+import { useAddEventListener } from '@/renderer/utils/emitter';
 import { blockMobileInputFocus, blurActiveElement } from '@/renderer/utils/ui/focus';
-import { isPrimaryApplicationShortcut } from '@/renderer/utils/ui/keyboardShortcuts';
+import { isPrimaryApplicationShortcut, MESSAGE_SEARCH_SHORTCUT } from '@/renderer/utils/ui/keyboardShortcuts';
 import { Empty, Spin, Typography } from '@arco-design/web-react';
 import { Close, Search } from '@icon-park/react';
 import classNames from 'classnames';
@@ -302,13 +303,7 @@ const ConversationSearchPopover: React.FC<ConversationSearchPopoverProps> = ({
 
   useEffect(() => {
     const handleGlobalSearchShortcut = (event: KeyboardEvent) => {
-      if (
-        !isPrimaryApplicationShortcut(event, {
-          key: 'f',
-          shiftKey: true,
-          targetGuard: 'embedded-editor',
-        })
-      ) {
+      if (!isPrimaryApplicationShortcut(event, MESSAGE_SEARCH_SHORTCUT)) {
         return;
       }
       // Preserve browser behavior in WebUI; only intercept in the desktop runtime.
@@ -323,6 +318,18 @@ const ConversationSearchPopover: React.FC<ConversationSearchPopoverProps> = ({
       document.removeEventListener('keydown', handleGlobalSearchShortcut, true);
     };
   }, [disabled, handleOpen]);
+
+  // The command palette finds conversations by title; for what was said in them it hands its query on to here.
+  useAddEventListener(
+    'conversationSearch.open',
+    (query) => {
+      if (disabled) return;
+      setKeyword(query);
+      setDebouncedKeyword(query.trim());
+      setVisible(true);
+    },
+    [disabled]
+  );
 
   const triggerAriaLabel = t('conversation.historySearch.tooltip');
 
@@ -397,7 +404,7 @@ const ConversationSearchPopover: React.FC<ConversationSearchPopoverProps> = ({
                     <div className='conversation-search-modal__result-title-row'>
                       <ConversationAgentMark conversation={item.conversation} />
                       <div className='conversation-search-modal__result-title text-15px font-600 text-t-primary truncate'>
-                        {item.conversation.name || t('conversation.historySearch.untitled')}
+                        {item.conversation.name?.trim() || t('conversation.welcome.newConversation')}
                       </div>
                     </div>
                   </div>

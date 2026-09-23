@@ -5,6 +5,7 @@
  */
 
 import type { IMessageTips } from '@/common/chat/chatLib';
+import { showAsMu } from '@/common/kyrn/displayName';
 import { Collapse, Tag } from '@arco-design/web-react';
 import { Attention, CheckOne, Info } from '@icon-park/react';
 import classNames from 'classnames';
@@ -12,7 +13,6 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import MarkdownView from '@renderer/components/Markdown';
 import ButlerDiagnoseButton from '@renderer/components/base/ButlerDiagnoseButton';
-import FeedbackButton from '@renderer/components/base/FeedbackButton';
 import CollapsibleContent from '@renderer/components/chat/CollapsibleContent';
 import { iconColors } from '@/renderer/styles/colors';
 import { findMuTurnError, muTurnErrorKey } from '@/renderer/utils/chat/muTurnErrors';
@@ -55,7 +55,8 @@ const resolveAgentTipBody = (
   params: IMessageTips['content']['params'],
   t: ReturnType<typeof useTranslation>['t']
 ) => {
-  if (!code) return content;
+  // Tip text without a code is the backend's own words; a translated one already passed the i18n post-processor.
+  if (!code) return showAsMu(content);
   return t(`conversation.agentTip.codes.${code}.body`, {
     ...params,
     defaultValue: content,
@@ -74,12 +75,9 @@ const MessageTips: React.FC<{ message: IMessageTips }> = ({ message }) => {
   const muError =
     type === 'error' ? findMuTurnError([structuredError?.detail, structuredError?.message, content]) : undefined;
   const muErrorHeadline = muError ? t(muTurnErrorKey(muError)) : undefined;
-  // The report chip stays hidden for errors that opt out via
-  // feedback_recommended=false (user-environment problems the team can't fix),
-  // but the Butler chip shows on every error — environment issues are exactly
+  // The Butler chip shows on every error — environment issues are exactly
   // what the Butler diagnoses best.
   const shouldShowButler = type === 'error';
-  const shouldShowFeedback = type === 'error' && structuredError?.feedback_recommended !== false;
 
   if (structuredError) {
     const errorCode = structuredError.code;
@@ -101,7 +99,7 @@ const MessageTips: React.FC<{ message: IMessageTips }> = ({ message }) => {
               defaultValue: structuredError.message || content,
             }
           )
-        : structuredError.message || content;
+        : showAsMu(structuredError.message || content);
     const ownershipLabel = ownership
       ? t(`conversation.agentError.ownership.${ownership}`, {
           defaultValue: t('conversation.agentError.ownership.unknown_upstream'),
@@ -120,33 +118,8 @@ const MessageTips: React.FC<{ message: IMessageTips }> = ({ message }) => {
       : null;
     const detailParts = [
       errorCode ? t('conversation.agentError.errorCodeValue', { code: errorCode }) : '',
-      structuredError.detail || structuredError.message,
+      showAsMu(structuredError.detail || structuredError.message || ''),
     ].filter(Boolean);
-    const feedbackTags: Record<string, string> = {};
-    if (errorCode) {
-      feedbackTags.agent_error_code = errorCode;
-    }
-    if (ownership) {
-      feedbackTags.agent_error_ownership = ownership;
-    }
-    if (structuredError.retryable !== undefined) {
-      feedbackTags.agent_error_retryable = String(structuredError.retryable);
-    }
-    if (structuredError.resolution?.kind) {
-      feedbackTags.agent_error_resolution = structuredError.resolution.kind;
-    }
-    const feedbackExtra = {
-      agent_error: {
-        ...(errorCode ? { code: errorCode } : {}),
-        ...(ownership ? { ownership } : {}),
-        ...(structuredError.retryable !== undefined ? { retryable: structuredError.retryable } : {}),
-        ...(structuredError.feedback_recommended !== undefined
-          ? { feedback_recommended: structuredError.feedback_recommended }
-          : {}),
-        ...(structuredError.resolution ? { resolution: structuredError.resolution } : {}),
-        ...(structuredError.rawError ? { rawError: structuredError.rawError } : {}),
-      },
-    };
 
     return (
       <div className='w-full'>
@@ -188,13 +161,6 @@ const MessageTips: React.FC<{ message: IMessageTips }> = ({ message }) => {
           {shouldShowButler && (
             <div className='flex justify-end'>
               <ButlerDiagnoseButton errorText={[title, body, ...detailParts].filter(Boolean).join('\n')} />
-              {shouldShowFeedback && (
-                <FeedbackButton
-                  module='conversation-session'
-                  feedbackTags={feedbackTags}
-                  feedbackExtra={feedbackExtra}
-                />
-              )}
             </div>
           )}
         </div>
@@ -221,13 +187,12 @@ const MessageTips: React.FC<{ message: IMessageTips }> = ({ message }) => {
           <div className='flex items-start gap-4px'>
             {icon[type] || icon.warning}
             <div className='flex-1 min-w-0'>
-              <MarkdownView>{`\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``}</MarkdownView>
+              <MarkdownView>{`\`\`\`json\n${showAsMu(JSON.stringify(data, null, 2))}\n\`\`\``}</MarkdownView>
             </div>
           </div>
           {type === 'error' && (
             <div className='flex justify-end'>
-              <ButlerDiagnoseButton errorText={JSON.stringify(data, null, 2)} />
-              <FeedbackButton module='conversation-session' />
+              <ButlerDiagnoseButton errorText={showAsMu(JSON.stringify(data, null, 2))} />
             </div>
           )}
         </div>
@@ -260,7 +225,6 @@ const MessageTips: React.FC<{ message: IMessageTips }> = ({ message }) => {
             <ButlerDiagnoseButton
               errorText={muErrorHeadline ? `${muErrorHeadline}\n${displayContent}` : displayContent}
             />
-            {shouldShowFeedback && <FeedbackButton module='conversation-session' />}
           </div>
         )}
       </div>

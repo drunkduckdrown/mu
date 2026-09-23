@@ -1,23 +1,28 @@
-import React, { useState } from 'react';
-import { Input, InputNumber, Radio, Tag } from '@arco-design/web-react';
-import { Down, Up } from '@icon-park/react';
+import React from 'react';
+import { Input, Tag } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
 import AionSelect from '@/renderer/components/base/AionSelect';
 import { formatNumber } from '@/renderer/services/i18n/format';
-import type { JudgeSettings, JudgeType, KyrnSettings } from '@/common/kyrn/types';
+import type { KyrnSettings } from '@/common/kyrn/types';
 import type { Draft } from '../draft';
 import ChoiceTile from '../fields/ChoiceTile';
 import Row from '../fields/Row';
 import fieldStyles from '../fields/fields.module.css';
-import { choiceOf, choose, JUDGE_CHOICES, type JudgeChoice, jevKeyVariable, profileFor } from '../judgeChoice';
+import {
+  choiceOf,
+  choose,
+  JEV_ACCESS,
+  JUDGE_CHOICES,
+  type JevAccess,
+  type JudgeChoice,
+  jevKeyVariable,
+  kindOf,
+  profileFor,
+  withJevAccess,
+} from '../judgeChoice';
 import SectionShell, { Card } from './SectionShell';
 import LocalJudgePanel from './LocalJudgePanel';
 import styles from './sections.module.css';
-
-const JUDGE_TYPES: JudgeType[] = ['jev', 'typesafe', 'gateway', 'local', 'http', 'llm', 'mock'];
-/** The judge timeout the store accepts, in milliseconds. */
-const TIMEOUT_MIN = 100;
-const TIMEOUT_MAX = 120000;
 
 type JudgesSectionProps = {
   draft: Draft;
@@ -27,17 +32,38 @@ type JudgesSectionProps = {
 };
 
 /**
- * Which judge answers the small questions mu asks while it works. One choice, and under it the one thing that
- * choice needs; the order of several judges and every field of every profile are the advanced view.
+ * Which judge answers the small questions mu asks while it works: one choice, and under it the one thing that choice
+ * needs (Jev a key, Laya the one-click panel). Nothing else: the order of several judges and the way Jev is reached
+ * are the judge tiers page.
  */
-export default function JudgesSection({ draft, base, onChange, onKey }: JudgesSectionProps) {
+export default function JudgesSection({ draft, onChange, onKey }: JudgesSectionProps) {
   const { t } = useTranslation();
-  const [advanced, setAdvanced] = useState(false);
-  const { settings } = draft;
-  const current = choiceOf(settings);
-
   return (
     <SectionShell id='judges' title={t('mu.sections.judges')} description={t('mu.judges.intro')}>
+      <JudgeChoices draft={draft} onChange={onChange} onKey={onKey} />
+    </SectionShell>
+  );
+}
+
+/** The judge tiers page: the order in which the judges are asked, and under it what each one needs. */
+export function JudgeTiersSection({ draft, base, onChange, onKey }: JudgesSectionProps) {
+  const { t } = useTranslation();
+  return (
+    <SectionShell id='judgeTiers' title={t('mu.sections.judgeTiers')} description={t('mu.judges.tiersHelp')}>
+      <JudgeTiers draft={draft} base={base} onChange={onChange} onKey={onKey} />
+    </SectionShell>
+  );
+}
+
+type JudgeChoicesProps = Pick<JudgesSectionProps, 'draft' | 'onChange' | 'onKey'>;
+
+/** The choice itself: which judge answers the small questions, and the one thing that choice needs. */
+export function JudgeChoices({ draft, onChange, onKey }: JudgeChoicesProps) {
+  const { t } = useTranslation();
+  const { settings } = draft;
+  const current = choiceOf(settings);
+  return (
+    <>
       <div className={styles.choices} role='radiogroup' aria-label={t('mu.judges.choose')}>
         {JUDGE_CHOICES.map((choice) => (
           <JudgeChoiceTile
@@ -51,18 +77,7 @@ export default function JudgesSection({ draft, base, onChange, onKey }: JudgesSe
         ))}
       </div>
       {current === undefined ? <div className={styles.meta}>{t('mu.judges.custom')}</div> : null}
-      <button
-        type='button'
-        className={styles.advancedToggle}
-        aria-expanded={advanced}
-        data-testid='mu-judges-advanced'
-        onClick={() => setAdvanced((open) => !open)}
-      >
-        {t('mu.judges.advanced')}
-        {advanced ? <Up theme='outline' size='14' /> : <Down theme='outline' size='14' />}
-      </button>
-      {advanced ? <AdvancedJudges draft={draft} base={base} onChange={onChange} onKey={onKey} /> : null}
-    </SectionShell>
+    </>
   );
 }
 
@@ -105,9 +120,7 @@ export function ChoiceBody({ choice, draft, onKey }: BodyProps) {
       <div className={styles.choiceField}>
         <label className={styles.choiceLabel}>
           {t('mu.apiKey')}
-          <Tag size='small' color={set ? 'green' : undefined}>
-            {t(set ? 'mu.keyState.set' : 'mu.keyState.none')}
-          </Tag>
+          <Tag size='small'>{t(set ? 'mu.keyState.set' : 'mu.keyState.none')}</Tag>
         </label>
         <Input.Password
           className={styles.choiceInput}
@@ -132,27 +145,32 @@ export function ChoiceBody({ choice, draft, onKey }: BodyProps) {
   );
 }
 
-type AdvancedProps = JudgesSectionProps;
-
-/** The order of the judges, and every field of every profile: what the simple view decides for you. */
-function AdvancedJudges({ draft, base, onChange, onKey }: AdvancedProps) {
+/**
+ * The order, by the judges' names (Jev, Laya), then a card per judge in that order with what it needs. Jev: the way it
+ * is reached and its model. The one thing a judge needs to run (Jev's key, Laya's install) is on the judges page when
+ * it is the judge chosen there, the first; a judge further down the order needs it here, where it is the only place.
+ * A judge of another kind (a model as judge, a self-hosted service) goes by the name it was given.
+ */
+function JudgeTiers({ draft, base, onChange, onKey }: JudgesSectionProps) {
   const { t, i18n } = useTranslation();
   const { settings } = draft;
-  const names = Object.keys(settings.judges);
-  const [picked, setPicked] = useState(settings.tiers[0]);
-  const selected = picked in settings.judges ? picked : names[0];
-  const judge = settings.judges[selected];
-  const update = (patch: Partial<JudgeSettings>) =>
-    onChange((now) => ({ ...now, judges: { ...now.judges, [selected]: { ...now.judges[selected], ...patch } } }));
-  const before = base.judges[selected];
-  const changed = (key: keyof JudgeSettings) => before !== undefined && before[key] !== judge[key];
-
+  const nameOf = (profile: string): string => {
+    const kind = kindOf(settings.judges[profile]);
+    return kind ? t(`mu.judges.choices.${kind}.title`) : profile;
+  };
+  // Every judge in the order, and Jev and Laya when they are not in it yet.
+  const offered = [
+    ...settings.tiers,
+    ...JUDGE_CHOICES.filter((choice) => !settings.tiers.some((name) => kindOf(settings.judges[name]) === choice))
+      .map((choice) => profileFor(settings, choice))
+      .filter((name): name is string => name !== undefined),
+  ];
   return (
-    <div className={styles.advanced} data-testid='mu-judges-advanced-body'>
-      <Card title={t('mu.judges.tiers')} summary={t('mu.judges.tiersHelp')}>
+    <div className={styles.stack} data-testid='mu-judge-tiers'>
+      <Card>
         <Row
           title={t('mu.judges.order')}
-          help={settings.tiers.join(' → ')}
+          help={t('mu.judges.orderHelp')}
           modified={base.tiers.join() !== settings.tiers.join()}
         >
           <AionSelect
@@ -162,104 +180,99 @@ function AdvancedJudges({ draft, base, onChange, onKey }: AdvancedProps) {
             aria-label={t('mu.judges.order')}
             value={settings.tiers}
             onChange={(tiers: string[]) => tiers.length && onChange((now) => ({ ...now, tiers }))}
-            options={names}
+            options={offered.map((name) => ({ value: name, label: nameOf(name) }))}
           />
         </Row>
       </Card>
-      <Card
-        title={t('mu.judges.judge')}
-        extra={
-          <Radio.Group
-            type='button'
-            size='small'
-            aria-label={t('mu.judges.judge')}
-            value={selected}
-            options={names}
-            onChange={setPicked}
-          />
-        }
-      >
-        <Row title={t('mu.judges.type')} help={t(`mu.judges.types.${judge.type}Help`)} modified={changed('type')}>
-          <AionSelect
-            size='small'
-            className={fieldStyles.wide}
-            aria-label={t('mu.judges.type')}
-            value={judge.type}
-            onChange={(type: JudgeType) => update({ type })}
-            options={JUDGE_TYPES.map((value) => ({ value, label: t(`mu.judges.types.${value}`) }))}
-          />
-        </Row>
-        <Row title={t('mu.judges.model')} help={t('mu.judges.modelHelp')} modified={changed('model')}>
-          <Input
-            size='small'
-            className={fieldStyles.wide}
-            aria-label={t('mu.judges.model')}
-            value={judge.model}
-            onChange={(model) => update({ model })}
-          />
-        </Row>
-        <Row title={t('mu.judges.endpoint')} help={t('mu.endpointRule')} modified={changed('baseUrl')}>
-          <Input
-            size='small'
-            className={fieldStyles.wide}
-            aria-label={t('mu.judges.endpoint')}
-            value={judge.baseUrl}
-            placeholder={t('mu.judges.endpointDefault')}
-            onChange={(baseUrl) => update({ baseUrl })}
-          />
-        </Row>
-        <Row
-          title={t('mu.judges.timeout')}
-          help={t('mu.options.range', {
-            min: formatNumber(TIMEOUT_MIN, i18n.language),
-            max: formatNumber(TIMEOUT_MAX, i18n.language),
-          })}
-          modified={changed('timeoutMs')}
-        >
-          <InputNumber
-            size='small'
-            className={fieldStyles.number}
-            aria-label={t('mu.judges.timeout')}
-            value={judge.timeoutMs}
-            min={TIMEOUT_MIN}
-            max={TIMEOUT_MAX}
-            precision={0}
-            suffix={t('mu.units.ms')}
-            onChange={(timeoutMs) => typeof timeoutMs === 'number' && update({ timeoutMs })}
-          />
-        </Row>
-        <Row title={t('mu.judges.keyVariable')} help={t('mu.judges.keyVariableHelp')} modified={changed('apiKeyEnv')}>
-          <Input
-            size='small'
-            className={fieldStyles.wide}
-            aria-label={t('mu.judges.keyVariable')}
-            value={judge.apiKeyEnv}
-            onChange={(apiKeyEnv) => update({ apiKeyEnv })}
-          />
-        </Row>
-        {judge.apiKeyEnv ? (
-          <Row
-            title={t('mu.apiKey')}
-            help={t('mu.keyHelp')}
-            modified={Boolean(draft.judgeKeys[judge.apiKeyEnv])}
-            badges={
-              <Tag size='small' color={settings.keys[judge.apiKeyEnv] ? 'green' : undefined}>
-                {t(settings.keys[judge.apiKeyEnv] ? 'mu.keyState.set' : 'mu.keyState.none')}
-              </Tag>
-            }
+      {settings.tiers.map((name, index) => {
+        const kind = kindOf(settings.judges[name]);
+        const summary =
+          kind === 'local'
+            ? t('mu.judges.types.localHelp')
+            : kind === undefined
+              ? t('mu.judges.customTier')
+              : undefined;
+        return (
+          <Card
+            key={`${index}:${name}`}
+            testId={`mu-judge-tier-${index}`}
+            title={t('mu.judges.tierTitle', { index: formatNumber(index + 1, i18n.language), name: nameOf(name) })}
+            summary={summary}
           >
-            <Input.Password
-              size='small'
-              className={fieldStyles.wide}
-              aria-label={t('mu.apiKey')}
-              autoComplete='new-password'
-              value={draft.judgeKeys[judge.apiKeyEnv] ?? ''}
-              placeholder={t('mu.keyKeep')}
-              onChange={(value) => onKey(judge.apiKeyEnv, value)}
-            />
-          </Row>
-        ) : null}
-      </Card>
+            {kind === 'jev' ? (
+              <JevFields draft={draft} base={base} index={index} onChange={onChange} onKey={onKey} />
+            ) : kind === 'local' && index > 0 ? (
+              // The first judge is the one chosen on the judges page, which installs and starts it.
+              <div className={styles.tierPanel}>
+                <LocalJudgePanel />
+              </div>
+            ) : null}
+          </Card>
+        );
+      })}
     </div>
+  );
+}
+
+/** Jev in the order: how it is reached and its model, and its key when it is not the judge chosen on the judges page. */
+function JevFields({ draft, base, index, onChange, onKey }: JudgesSectionProps & { index: number }) {
+  const { t } = useTranslation();
+  const { settings } = draft;
+  const name = settings.tiers[index];
+  const judge = settings.judges[name];
+  const access = judge.type as JevAccess;
+  const before = base.judges[base.tiers[index] ?? ''];
+  const variable = jevKeyVariable(judge);
+  // The first judge's key is asked for on the judges page.
+  const keyHere = index > 0;
+  return (
+    <>
+      <Row
+        title={t('mu.judges.type')}
+        help={t(`mu.judges.types.${access}Help`)}
+        modified={before !== undefined && before.type !== judge.type}
+      >
+        <AionSelect
+          size='small'
+          className={fieldStyles.wide}
+          aria-label={t('mu.judges.type')}
+          value={access}
+          onChange={(next: JevAccess) => onChange((now) => withJevAccess(now, index, next))}
+          options={JEV_ACCESS.map((value) => ({ value, label: t(`mu.judges.access.${value}`) }))}
+        />
+      </Row>
+      <Row
+        title={t('mu.judges.model')}
+        modified={base.judges[name] !== undefined && base.judges[name].model !== judge.model}
+      >
+        <Input
+          size='small'
+          className={fieldStyles.wide}
+          aria-label={t('mu.judges.model')}
+          value={judge.model}
+          onChange={(model) =>
+            onChange((now) => ({ ...now, judges: { ...now.judges, [name]: { ...now.judges[name], model } } }))
+          }
+        />
+      </Row>
+      {keyHere ? (
+        <Row
+          title={t('mu.apiKey')}
+          help={t('mu.keyHelp')}
+          modified={Boolean(draft.judgeKeys[variable])}
+          badges={<Tag size='small'>{t(settings.keys[variable] ? 'mu.keyState.set' : 'mu.keyState.none')}</Tag>}
+        >
+          <Input.Password
+            size='small'
+            className={fieldStyles.wide}
+            aria-label={t('mu.apiKey')}
+            autoComplete='new-password'
+            value={draft.judgeKeys[variable] ?? ''}
+            placeholder={settings.keys[variable] ? t('mu.keyKeep') : t('mu.judges.keyPlaceholder')}
+            onChange={(value) => onKey(variable, value)}
+          />
+        </Row>
+      ) : null}
+    </>
   );
 }

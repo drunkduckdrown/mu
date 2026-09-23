@@ -27,12 +27,6 @@ vi.mock('@/common', () => ({
     assistants: {
       list: { invoke: vi.fn() },
     },
-    channel: {
-      getPlatformSettings: { invoke: vi.fn() },
-      setAssistantSetting: { invoke: vi.fn() },
-      setDefaultModelSetting: { invoke: vi.fn() },
-      syncChannelSettings: { invoke: vi.fn() },
-    },
   },
 }));
 
@@ -45,10 +39,6 @@ describe('configMigration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (ipcBridge.assistants.list.invoke as ReturnType<typeof vi.fn>).mockResolvedValue([]);
-    (ipcBridge.channel.getPlatformSettings.invoke as ReturnType<typeof vi.fn>).mockResolvedValue(null);
-    (ipcBridge.channel.setAssistantSetting.invoke as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
-    (ipcBridge.channel.setDefaultModelSetting.invoke as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
-    (ipcBridge.channel.syncChannelSettings.invoke as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
   });
 
   describe('migrateConfigStorage', () => {
@@ -196,90 +186,28 @@ describe('configMigration', () => {
       expect(configFile.get).not.toHaveBeenCalledWith('codex.config');
     });
 
-    it('migrates legacy channel settings through dedicated channel APIs', async () => {
-      const legacyChannelAgent = {
-        assistant_id: 'missing_assistant',
-        backend: 'codex',
-        name: 'Telegram Assistant',
-      };
+    it('leaves the legacy chat-channel settings behind and asks the backend nothing about channels', async () => {
+      // mu has no channels; the migration used to ask /api/channel/settings/<platform> on every start, and the
+      // backend answers "Invalid platform: wecom" for one of them.
       const configFile: ConfigFile = {
         get: vi.fn((key: string) => {
-          if (key === 'assistant.telegram.agent') return Promise.resolve(legacyChannelAgent);
-          if (key === 'assistant.telegram.defaultModel') {
+          if (key === 'assistant.wecom.agent') return Promise.resolve({ backend: 'codex' });
+          if (key === 'assistant.telegram.defaultModel')
             return Promise.resolve({ id: 'provider_1', use_model: 'gpt-5' });
-          }
           return Promise.reject(new Error('not found'));
         }),
         set: vi.fn(),
       };
-      (httpRequest as ReturnType<typeof vi.fn>).mockImplementation((method: string) => {
-        if (method === 'GET') return Promise.resolve({});
-        return Promise.resolve(undefined);
-      });
-      (ipcBridge.assistants.list.invoke as ReturnType<typeof vi.fn>).mockResolvedValue([
-        {
-          id: 'bare_codex',
-          source: 'generated',
-          agent_id: 'agent-codex',
-          agent: { type: 'acp', source: 'builtin', acp_backend: 'codex' },
-        },
-      ]);
+      (httpRequest as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
       vi.spyOn(console, 'info').mockImplementation(() => {});
 
       await migrateConfigStorage(configFile);
 
-      expect(httpRequest).not.toHaveBeenCalledWith('PUT', '/api/settings/client', {
-        'assistant.telegram.agent': expect.anything(),
-        'assistant.telegram.defaultModel': expect.anything(),
-      });
-      expect(ipcBridge.channel.setAssistantSetting.invoke).toHaveBeenCalledWith({
-        platform: 'telegram',
-        assistant: { assistant_id: 'bare_codex' },
-      });
-      expect(ipcBridge.channel.setDefaultModelSetting.invoke).toHaveBeenCalledWith({
-        platform: 'telegram',
-        default_model: { id: 'provider_1', use_model: 'gpt-5' },
-      });
-      expect(ipcBridge.channel.syncChannelSettings.invoke).toHaveBeenCalledWith({
-        platform: 'telegram',
-      });
-    });
-
-    it('preserves backend channel settings and skips rewriting existing values', async () => {
-      const configFile: ConfigFile = {
-        get: vi.fn((key: string) => {
-          if (key === 'assistant.telegram.agent') return Promise.resolve({ backend: 'codex' });
-          if (key === 'assistant.telegram.defaultModel') {
-            return Promise.resolve({ id: 'provider_1', use_model: 'gpt-5' });
-          }
-          return Promise.reject(new Error('not found'));
-        }),
-        set: vi.fn(),
-      };
-      (httpRequest as ReturnType<typeof vi.fn>).mockImplementation((method: string) => {
-        if (method === 'GET') return Promise.resolve({});
-        return Promise.resolve(undefined);
-      });
-      (ipcBridge.assistants.list.invoke as ReturnType<typeof vi.fn>).mockResolvedValue([
-        {
-          id: 'bare_codex',
-          source: 'generated',
-          agent_id: 'agent-codex',
-          agent: { type: 'acp', source: 'builtin', acp_backend: 'codex' },
-        },
-      ]);
-      (ipcBridge.channel.getPlatformSettings.invoke as ReturnType<typeof vi.fn>).mockResolvedValue({
-        platform: 'telegram',
-        assistant: { assistant_id: 'existing_assistant' },
-        default_model: { id: 'provider_existing', use_model: 'o3' },
-      });
-      vi.spyOn(console, 'info').mockImplementation(() => {});
-
-      await migrateConfigStorage(configFile);
-
-      expect(ipcBridge.channel.setAssistantSetting.invoke).not.toHaveBeenCalled();
-      expect(ipcBridge.channel.setDefaultModelSetting.invoke).not.toHaveBeenCalled();
-      expect(ipcBridge.channel.syncChannelSettings.invoke).not.toHaveBeenCalled();
+      expect(configFile.get).not.toHaveBeenCalledWith('assistant.wecom.agent');
+      expect(configFile.get).not.toHaveBeenCalledWith('assistant.telegram.defaultModel');
+      expect(ipcBridge.assistants.list.invoke).not.toHaveBeenCalled();
+      const urls = vi.mocked(httpRequest).mock.calls.map(([, url]) => String(url));
+      expect(urls.filter((url) => url.startsWith('/api/channel'))).toEqual([]);
     });
   });
 

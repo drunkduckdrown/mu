@@ -42,7 +42,7 @@ const findButler = (assistants: Assistant[]): Assistant | undefined => {
  * Reuses the home page's `prefillPrompt` navigation contract (added with the
  * scheduled-tasks "create via chat" entry) and extends it with `prefillFiles`.
  * Uses `globalNavigate` rather than `useNavigate` so it is safe to call from
- * components mounted outside the Router (e.g. the global FeedbackReportModal).
+ * components mounted outside the Router.
  */
 export const useTalkToButler = (): ((args: TalkToButlerArgs) => Promise<void>) => {
   const { t } = useTranslation();
@@ -59,9 +59,7 @@ export const useTalkToButler = (): ((args: TalkToButlerArgs) => Promise<void>) =
           if (butler.enabled === false) {
             await ipcBridge.assistants.setState.invoke({ id: butler.id, enabled: true });
             await swrMutate('assistants.list');
-            Message.success(
-              t('settings.talkToButler.enabledToast', { defaultValue: 'Enabled the AionUi Butler for you' })
-            );
+            Message.success(t('settings.talkToButler.enabledToast', { defaultValue: 'Enabled the mu Butler for you' }));
           }
         }
       } catch (error) {

@@ -459,15 +459,15 @@ const ArchivedSettings: React.FC = () => {
     </div>
   );
 
-  return (
-    <SettingsPageWrapper>
+  const body = (
+    <>
       <SettingsPageHeader
         title={t('settings.archived.navLabel')}
         actions={
           total > 0 ? (
             <div className='flex min-w-0 items-center justify-end gap-10px'>
               {selectionMode ? (
-                <div className='flex items-center gap-10px rd-12px border border-solid border-[var(--color-border-2)] bg-fill-1 px-10px py-6px'>
+                <div className='flex items-center gap-10px rd-8px border border-solid border-[var(--color-border-2)] bg-base px-10px py-6px'>
                   <span className='px-4px text-14px text-t-secondary'>
                     {t('settings.archived.selectedCount', { count: selectedRows.length })}
                   </span>
@@ -542,7 +542,7 @@ const ArchivedSettings: React.FC = () => {
                       {t('settings.archived.chatCount', { count: block.rows.length })}
                     </span>
                   </div>
-                  <div className='overflow-hidden rd-12px border border-solid border-[var(--color-border-2)] bg-bg-1'>
+                  <div className='overflow-hidden rd-8px border border-solid border-[var(--color-border-2)] bg-base'>
                     {block.rows.map((row, index) => renderRow(row, index === block.rows.length - 1))}
                   </div>
                   {block.hasMore ? (
@@ -563,8 +563,10 @@ const ArchivedSettings: React.FC = () => {
           </div>
         </div>
       )}
-    </SettingsPageWrapper>
+    </>
   );
+
+  return <SettingsPageWrapper>{body}</SettingsPageWrapper>;
 };
 
 export default ArchivedSettings;

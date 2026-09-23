@@ -1,104 +1,15 @@
 .summary {
-  margin: 6px 0;
-  min-width: 0;
-}
-.header:global(.arco-btn) {
-  display: grid;
-  grid-template-columns: 16px auto auto minmax(0, 1fr) 12px;
-  align-items: center;
-  width: 100%;
-  min-width: 0;
-  height: auto;
-  gap: 6px 8px;
-  padding: 10px 12px;
-  color: var(--text-primary);
-  background: var(--bg-1);
-  border: 1px solid var(--border-base);
-  border-radius: 10px;
-  text-align: start;
-  white-space: normal;
-}
-.header:global(.arco-btn:hover) {
-  background: var(--bg-hover);
-}
-.headerIcon,
-.arrow,
-.arrowOpen {
-  display: inline-flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-}
-.status {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--text-secondary);
-  font-size: 11px;
-  white-space: nowrap;
-}
-.status[data-status='error'] {
-  color: var(--danger);
-}
-.counts {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  justify-self: end;
-  column-gap: 4px;
-  min-width: 0;
-  color: var(--text-secondary);
-  font-size: 11px;
-}
-/* A narrow column breaks between the two counts, never inside one. */
-.counts > span {
-  white-space: nowrap;
-}
-.latest {
-  grid-row: 2;
-  grid-column: 2 / 5;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  min-width: 0;
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-.latest > span {
-  flex-shrink: 0;
-  max-width: 40%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.latest code {
-  min-width: 0;
-  font-family: var(--font-mono);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.arrow,
-.arrowOpen {
-  grid-row: 1;
-  grid-column: 5;
-  transition: transform 160ms ease;
-}
-.arrowOpen {
-  transform: rotate(90deg);
-}
-.body {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 12px;
-  margin-top: 4px;
-  border: 1px solid var(--border-base);
-  border-radius: 10px;
-  background: var(--bg-1);
+  gap: 1px;
+  margin: 4px 0;
+  min-width: 0;
 }
 .call {
   min-width: 0;
+}
+.call > .detailPanel {
+  margin: 2px 0 6px 16px;
 }
 .callButton:global(.arco-btn),
 .callStatic {
@@ -108,12 +19,25 @@
   min-width: 0;
   height: auto;
   gap: 8px;
-  padding: 5px 0;
+  padding: 4px 8px;
+  border-radius: 8px;
   color: var(--text-primary);
+  font-size: 13px;
   text-align: start;
 }
-.callStatic {
-  font-size: 12px;
+.callButton:global(.arco-btn:hover) {
+  background: var(--color-fill-2);
+}
+.callButton > :global(.i-icon) {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+.kindIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  color: var(--text-secondary);
+  opacity: 0.7;
 }
 .callName {
   flex: 0 1 auto;
@@ -131,9 +55,79 @@
   color: var(--text-secondary);
   font: 12px/1.6 var(--font-mono);
 }
+/* A failed step says what went wrong where it stands, with no click and no box. */
+.callError {
+  margin: 0 8px 4px 32px;
+  color: var(--danger);
+  font: 12px/1.6 var(--font-mono);
+  overflow-wrap: anywhere;
+}
 .breathing :global(.arco-badge-status-dot) {
   animation: breathing 1.5s ease-in-out infinite;
 }
+
+/* ── a folded run of calls ───────────────────────────────────────────────── */
+
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.activityHeader:global(.arco-btn) {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: start;
+}
+.activityHeader:global(.arco-btn:hover) {
+  background: var(--color-fill-2);
+  color: var(--text-primary);
+}
+.activityHeader > :global(.i-icon) {
+  flex-shrink: 0;
+}
+.activitySummary {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.activityBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  margin-inline-start: 8px;
+}
+.activityError {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 8px 2px 24px;
+  font-size: 12px;
+}
+.activityErrorLine {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--danger);
+  font: 12px/1.6 var(--font-mono);
+}
+
+/* ── an opened call ──────────────────────────────────────────────────────── */
+
 .detailPanel {
   padding: 6px 0 2px 12px;
   border-inline-start: 2px solid var(--border-base);
@@ -157,6 +151,16 @@
   overflow-wrap: anywhere;
   background: var(--bg-2);
   border-radius: 6px;
+}
+.moreButton:global(.arco-btn) {
+  height: auto;
+  margin-top: 2px;
+  padding: 2px 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.moreButton:global(.arco-btn:hover) {
+  color: var(--text-primary);
 }
 .loadError {
   display: flex;
@@ -202,8 +206,6 @@
   .breathing :global(.arco-badge-status-dot) {
     animation: none;
   }
-  .arrow,
-  .arrowOpen,
   .downloadImage {
     transition: none;
   }

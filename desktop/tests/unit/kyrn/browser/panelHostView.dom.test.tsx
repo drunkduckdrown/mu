@@ -1,10 +1,11 @@
 import React from 'react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, waitFor } from '@testing-library/react';
 import type { BrowserPanelRequest } from '@/common/kyrn/browserBridge';
 import type { BrowserRunEvent } from '@/common/kyrn/browserRun';
 import MuBrowserHost from '@/renderer/pages/conversation/Preview/browser/muBrowser/MuBrowserHost';
 import { registerWebview } from '@/renderer/pages/conversation/Preview/browser/muBrowser/webviews';
+import { onPreviewOpened, type PreviewOpener } from '@/renderer/pages/conversation/Preview/context/previewOpeners';
 
 type Tab = { id: string; content: string; content_type: string; title: string; metadata?: { muRun?: string } };
 
@@ -33,13 +34,15 @@ vi.mock('@/renderer/pages/conversation/Preview/context/PreviewContext', () => ({
 }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 
-function panel(tabs: Tab[], activeTabId: string | null = null) {
+function panel(tabs: Tab[], activeTabId: string | null = null, isOpen = true) {
   const value = {
     tabs,
     activeTabId,
+    isOpen,
     openPreview: vi.fn(),
     updateTab: vi.fn(),
     switchTab: vi.fn(),
+    showPreview: vi.fn(),
   };
   wires.preview = value;
   return value;
@@ -47,7 +50,16 @@ function panel(tabs: Tab[], activeTabId: string | null = null) {
 const ask = (request: BrowserPanelRequest) => act(async () => wires.request?.(request));
 const tell = (event: BrowserRunEvent) => act(async () => wires.events?.(event));
 
+/** What the work panel hears: who put something in the preview. */
+let heard: PreviewOpener[] = [];
+let stopHearing = () => {};
+beforeEach(() => {
+  heard = [];
+  stopHearing = onPreviewOpened((by) => heard.push(by));
+});
+
 afterEach(() => {
+  stopHearing();
   cleanup();
   vi.clearAllMocks();
   wires.preview = null;
@@ -74,7 +86,8 @@ describe('the browser panel, as it answers the main process', () => {
     const first = panel([]);
     const view = render(<MuBrowserHost conversationId='c1' />);
     await ask({ kind: 'open', requestId: 'r1', url: 'about:blank' });
-    expect(first.openPreview).toHaveBeenCalledWith('about:blank', 'browser', { muRun: 'r1' });
+    // The agent's open: the work panel marks its preview and stays as it is.
+    expect(first.openPreview).toHaveBeenCalledWith('about:blank', 'browser', { muRun: 'r1' }, { by: 'agent' });
     expect(wires.answer).not.toHaveBeenCalled();
 
     panel([
@@ -110,6 +123,7 @@ describe('the browser panel, as it answers the main process', () => {
     // Blanking the page is the main process's job alone: a second navigation from here could undo mu's first.
     expect(current.updateTab).not.toHaveBeenCalled();
     expect(current.switchTab).toHaveBeenCalledWith('browser-9');
+    expect(heard).toEqual(['agent']);
     expect(wires.answer).toHaveBeenCalledWith({
       kind: 'open',
       requestId: 'r2',
@@ -143,17 +157,40 @@ describe('the browser panel, as it answers the main process', () => {
     registerWebview('browser-9', view);
     const current = panel(
       [{ id: 'browser-9', content: '', content_type: 'browser', title: '', metadata: { muRun: 'r1' } }],
-      'file-1'
+      'file-1',
+      false
     );
     render(<MuBrowserHost conversationId='c1' />);
 
     await ask({ kind: 'keyboard', requestId: 'k1', tabId: 'browser-9' });
     await waitFor(() => expect(wires.answer).toHaveBeenCalledWith({ kind: 'keyboard', requestId: 'k1', held: true }));
     expect(current.switchTab).toHaveBeenCalledWith('browser-9');
+    // mu types where the person can see it: a hidden preview is shown, and the work panel comes up on it.
+    expect(current.showPreview).toHaveBeenCalled();
+    expect(heard).toEqual(['agent-watched']);
     expect(document.activeElement).toBe(view);
 
     await ask({ kind: 'keyboard', requestId: 'k2', tabId: 'no-such-tab' });
     await waitFor(() => expect(wires.answer).toHaveBeenCalledWith({ kind: 'keyboard', requestId: 'k2', held: false }));
+    (view as unknown as HTMLElement).remove();
+  });
+
+  it('types into a page already in view without moving anything', async () => {
+    const view = document.createElement('div') as unknown as Electron.WebviewTag;
+    (view as unknown as HTMLElement).tabIndex = 0;
+    document.body.append(view as unknown as HTMLElement);
+    registerWebview('browser-9', view);
+    const current = panel(
+      [{ id: 'browser-9', content: '', content_type: 'browser', title: '', metadata: { muRun: 'r1' } }],
+      'browser-9'
+    );
+    render(<MuBrowserHost conversationId='c1' />);
+
+    await ask({ kind: 'keyboard', requestId: 'k1', tabId: 'browser-9' });
+    await waitFor(() => expect(wires.answer).toHaveBeenCalledWith({ kind: 'keyboard', requestId: 'k1', held: true }));
+    expect(current.switchTab).not.toHaveBeenCalled();
+    expect(current.showPreview).not.toHaveBeenCalled();
+    expect(heard).toEqual([]);
     (view as unknown as HTMLElement).remove();
   });
 
@@ -164,6 +201,7 @@ describe('the browser panel, as it answers the main process', () => {
     const view = render(<MuBrowserHost conversationId='c1' />);
     await ask({ kind: 'attention', tabId: 'browser-9', waiting: true });
     expect(current.switchTab).toHaveBeenCalledWith('browser-9');
+    expect(heard).toEqual(['agent-watched']);
 
     await tell({ type: 'started', tabId: 'browser-9', conversationId: 'c1', url: 'about:blank', at: 1 });
     await tell({

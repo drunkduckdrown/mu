@@ -6,8 +6,7 @@
 
 import type { AssistantListItem } from '../types';
 import { resolveAssistantSourceTag } from '../assistantUtils';
-import AssistantAvatar from '../AssistantAvatar';
-import RuntimeBadge from './RuntimeBadge';
+import AssistantAvatar, { hasOwnAvatar } from '../AssistantAvatar';
 import {
   DndContext,
   KeyboardSensor,
@@ -44,6 +43,8 @@ type EnabledAssistantsListProps = {
 type EnabledAssistantRowProps = {
   assistant: AssistantListItem;
   localeKey: string;
+  /** A list of one has no order to change: no drag handle, and no room kept for one. */
+  reorderable: boolean;
   draggable: boolean;
   onOpenDetail: (assistant: AssistantListItem) => void;
   onToggleEnabled: (assistant: AssistantListItem, checked: boolean) => void;
@@ -53,6 +54,7 @@ type EnabledAssistantRowProps = {
 const EnabledAssistantRow: React.FC<EnabledAssistantRowProps> = ({
   assistant,
   localeKey,
+  reorderable,
   draggable,
   onOpenDetail,
   onToggleEnabled,
@@ -65,11 +67,12 @@ const EnabledAssistantRow: React.FC<EnabledAssistantRowProps> = ({
   });
   const name = assistant.name_i18n?.[localeKey] || assistant.name;
   const sourceTag = resolveAssistantSourceTag(assistant.source);
+  // An assistant found on this computer needs no tag: only the official and the user's own are told apart.
   const sourceLabel =
     sourceTag === 'builtin'
       ? t('settings.assistantSourceOfficial', { defaultValue: 'Official' })
       : sourceTag === 'cli'
-        ? t('settings.assistantSourceCli', { defaultValue: 'CLI' })
+        ? undefined
         : t('settings.assistantSourceCustom', { defaultValue: 'Custom' });
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
@@ -87,33 +90,40 @@ const EnabledAssistantRow: React.FC<EnabledAssistantRowProps> = ({
       onClick={() => onOpenDetail(assistant)}
     >
       <div className='flex min-w-0 flex-1 items-center gap-12px'>
-        <Button
-          ref={setActivatorNodeRef}
-          type='text'
-          size='small'
-          disabled={!draggable}
-          aria-label={`${t('settings.assistantReorderHintShort', { defaultValue: 'Drag to reorder' })}: ${name}`}
-          data-testid={`enabled-assistant-reorder-handle-${assistant.id}`}
-          className={`!min-w-0 !rounded-6px !px-4px !py-0 !text-t-tertiary ${
-            draggable ? 'cursor-grab active:cursor-grabbing' : '!opacity-0'
-          }`}
-          style={{ touchAction: 'none' }}
-          onClick={(event) => event.stopPropagation()}
-          {...attributes}
-          {...listeners}
-        >
-          <Drag size={16} fill='currentColor' />
-        </Button>
-        <AssistantAvatar assistant={assistant} imageFit='contain' shape='circle' size={20} />
+        {reorderable ? (
+          <Button
+            ref={setActivatorNodeRef}
+            type='text'
+            size='small'
+            disabled={!draggable}
+            aria-label={`${t('settings.assistantReorderHintShort', { defaultValue: 'Drag to reorder' })}: ${name}`}
+            data-testid={`enabled-assistant-reorder-handle-${assistant.id}`}
+            className={`!min-w-0 !rounded-6px !px-4px !py-0 !text-t-tertiary ${
+              draggable ? 'cursor-grab active:cursor-grabbing' : '!opacity-0'
+            }`}
+            style={{ touchAction: 'none' }}
+            onClick={(event) => event.stopPropagation()}
+            {...attributes}
+            {...listeners}
+          >
+            <Drag size={16} fill='currentColor' />
+          </Button>
+        ) : null}
+        {/* A row names its assistant; a picture only when it has one of its own, never a letter standing in. */}
+        {hasOwnAvatar(assistant) ? (
+          <AssistantAvatar assistant={assistant} imageFit='contain' shape='circle' size={20} />
+        ) : null}
         <div className='flex min-w-0 flex-1 items-center gap-8px'>
           <span className='truncate font-medium text-t-primary'>{name}</span>
-          <Tag
-            size='small'
-            bordered={false}
-            className='!shrink-0 !rounded-10px !bg-fill-2 !px-8px !py-1px !text-10px !font-600 !leading-16px !text-t-secondary'
-          >
-            {sourceLabel}
-          </Tag>
+          {sourceLabel ? (
+            <Tag
+              size='small'
+              bordered={false}
+              className='!shrink-0 !rounded-10px !bg-fill-2 !px-8px !py-1px !text-10px !font-600 !leading-16px !text-t-secondary'
+            >
+              {sourceLabel}
+            </Tag>
+          ) : null}
         </div>
       </div>
       <div className='ms-10px flex flex-shrink-0 items-center gap-8px sm:gap-14px' onClick={(e) => e.stopPropagation()}>
@@ -122,15 +132,12 @@ const EnabledAssistantRow: React.FC<EnabledAssistantRowProps> = ({
             type='text'
             size='small'
             data-testid={`btn-chat-${assistant.id}`}
-            className='!inline-flex !h-28px !items-center !justify-center !rounded-9px !bg-fill-2 !px-12px !leading-none !text-t-secondary !opacity-0 transition-all hover:!bg-primary-6 hover:!text-white group-hover:!opacity-100'
+            className='!inline-flex !h-28px !items-center !justify-center !rounded-9px !bg-fill-2 !px-12px !leading-none !text-t-secondary !opacity-0 transition-all hover:!bg-fill-3 hover:!text-t-primary group-hover:!opacity-100'
             onClick={() => onStartChat(assistant)}
           >
             {t('settings.assistantGoChat', { defaultValue: 'Chat' })}
           </Button>
         ) : null}
-        <span className='hidden min-w-0 shrink-0 sm:inline-flex'>
-          <RuntimeBadge assistant={assistant} />
-        </span>
         <Switch
           size='small'
           data-testid={`switch-enabled-${assistant.id}`}
@@ -206,6 +213,7 @@ const EnabledAssistantsList: React.FC<EnabledAssistantsListProps> = ({
                   key={assistant.id}
                   assistant={assistant}
                   localeKey={localeKey}
+                  reorderable={enabledAssistants.length > 1}
                   draggable={sortingEnabled}
                   onOpenDetail={onOpenDetail}
                   onToggleEnabled={onToggleEnabled}

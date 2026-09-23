@@ -1,4 +1,4 @@
-import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
+import { act, cleanup, render, renderHook, screen, waitFor } from '@testing-library/react';
 import type { NavigateFunction } from 'react-router-dom';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -56,7 +56,13 @@ import { useConversationShortcuts } from '@/renderer/hooks/ui/useConversationSho
 import ConversationSearchPopover from '@/renderer/pages/conversation/GroupedHistory/ConversationSearchPopover';
 import { useMinimapPanel } from '@/renderer/pages/conversation/components/ConversationTitleMinimap/useMinimapPanel';
 import { useWorkspaceCollapse } from '@/renderer/pages/conversation/hooks/useWorkspaceCollapse';
-import { isShortcutBlockedByTarget } from '@/renderer/utils/ui/keyboardShortcuts';
+import { emitter } from '@/renderer/utils/emitter';
+import {
+  COMMAND_PALETTE_SHORTCUT,
+  MESSAGE_SEARCH_SHORTCUT,
+  formatPrimaryShortcut,
+  isShortcutBlockedByTarget,
+} from '@/renderer/utils/ui/keyboardShortcuts';
 import { dispatchWorkspaceToggleEvent } from '@/renderer/utils/workspace/workspaceEvents';
 
 const dispatchShortcut = (target: EventTarget, init: KeyboardEventInit): KeyboardEvent => {
@@ -153,6 +159,64 @@ describe('common desktop UI shortcuts', () => {
 
     expect(navigate).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('toggles the command palette with Cmd+K on macOS and leaves Ctrl+K untouched', () => {
+    const toggled = vi.fn();
+    emitter.on('commandPalette.toggle', toggled);
+    renderConversationShortcuts();
+
+    const commandEvent = dispatchShortcut(window, { key: 'k', metaKey: true });
+    const controlEvent = dispatchShortcut(window, { key: 'k', ctrlKey: true });
+    emitter.off('commandPalette.toggle', toggled);
+
+    expect(toggled).toHaveBeenCalledTimes(1);
+    expect(commandEvent.defaultPrevented).toBe(true);
+    expect(controlEvent.defaultPrevented).toBe(false);
+  });
+
+  it('toggles the command palette with Ctrl+K on other platforms', () => {
+    testState.mac = false;
+    const toggled = vi.fn();
+    emitter.on('commandPalette.toggle', toggled);
+    renderConversationShortcuts();
+
+    const controlEvent = dispatchShortcut(window, { key: 'k', ctrlKey: true });
+    const commandEvent = dispatchShortcut(window, { key: 'k', metaKey: true });
+    emitter.off('commandPalette.toggle', toggled);
+
+    expect(toggled).toHaveBeenCalledTimes(1);
+    expect(controlEvent.defaultPrevented).toBe(true);
+    expect(commandEvent.defaultPrevented).toBe(false);
+  });
+
+  it('leaves Cmd+K to embedded code editors and terminals', () => {
+    const toggled = vi.fn();
+    emitter.on('commandPalette.toggle', toggled);
+    renderConversationShortcuts();
+    const targets = [
+      Object.assign(document.createElement('div'), { className: 'monaco-editor' }),
+      Object.assign(document.createElement('div'), { className: 'xterm' }),
+    ];
+
+    const events = targets.map((target) => {
+      document.body.appendChild(target);
+      return dispatchShortcut(target, { key: 'k', metaKey: true });
+    });
+    emitter.off('commandPalette.toggle', toggled);
+
+    expect(toggled).not.toHaveBeenCalled();
+    expect(events.every((event) => !event.defaultPrevented)).toBe(true);
+  });
+
+  it('writes the palette and message-search shortcuts the way the platform does', () => {
+    expect(formatPrimaryShortcut(COMMAND_PALETTE_SHORTCUT)).toBe('⌘K');
+    expect(formatPrimaryShortcut(MESSAGE_SEARCH_SHORTCUT)).toBe('⇧⌘F');
+
+    testState.mac = false;
+
+    expect(formatPrimaryShortcut(COMMAND_PALETTE_SHORTCUT)).toBe('Ctrl+K');
+    expect(formatPrimaryShortcut(MESSAGE_SEARCH_SHORTCUT)).toBe('Ctrl+Shift+F');
   });
 
   it('keeps Ctrl+Tab as a cross-platform conversation cycling chord', () => {
@@ -520,6 +584,38 @@ describe('existing conversation search shortcuts', () => {
 
     expect(screen.getByTestId('global-search-state')).toHaveTextContent('false');
     expect(event.defaultPrevented).toBe(false);
+  });
+
+  it('opens global search with the query the command palette hands on', async () => {
+    render(
+      <ConversationSearchPopover
+        renderTrigger={({ isActive }) => <div data-testid='global-search-state'>{String(isActive)}</div>}
+      />
+    );
+
+    act(() => {
+      emitter.emit('conversationSearch.open', ' deploy ');
+    });
+
+    expect(screen.getByTestId('global-search-state')).toHaveTextContent('true');
+    await waitFor(() =>
+      expect(serviceMocks.searchMessages).toHaveBeenCalledWith({ keyword: 'deploy', page: 0, page_size: 20 })
+    );
+  });
+
+  it('ignores a hand-off from the command palette while disabled', () => {
+    render(
+      <ConversationSearchPopover
+        disabled
+        renderTrigger={({ isActive }) => <div data-testid='global-search-state'>{String(isActive)}</div>}
+      />
+    );
+
+    act(() => {
+      emitter.emit('conversationSearch.open', 'deploy');
+    });
+
+    expect(screen.getByTestId('global-search-state')).toHaveTextContent('false');
   });
 
   it('leaves current-conversation find to the browser in WebUI', () => {

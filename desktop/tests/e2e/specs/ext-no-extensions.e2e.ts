@@ -2,7 +2,7 @@ import { test, expect, type ElectronApplication, type Page, _electron as electro
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { getChannelPluginStatus, goToSettings, invokeBridge, settingsSiderItemById } from '../helpers';
+import { goToSettings, invokeBridge, settingsSiderItemById } from '../helpers';
 
 const emptyExtensionsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aionui-e2e-no-extensions-'));
 const stateSandboxDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aionui-e2e-no-extensions-state-'));
@@ -104,16 +104,9 @@ test.describe.serial('Extension: Empty Directory / No Extensions', () => {
     expect(webuiContributions).toEqual([]);
   });
 
-  test('keeps builtin settings and channels available without extension tabs or plugins', async () => {
+  test('keeps builtin settings available without extension tabs', async () => {
     await goToSettings(page, 'about');
     await expect(page.locator(settingsSiderItemById('about'))).toBeVisible({ timeout: 8_000 });
     await expect(page.locator('[data-settings-path^="ext/"]')).toHaveCount(0);
-
-    const statuses = await getChannelPluginStatus(page);
-    const channelTypes = statuses.map((item) => item.type);
-
-    expect(channelTypes).toEqual(expect.arrayContaining(['telegram', 'lark', 'dingtalk']));
-    expect(channelTypes).not.toContain('e2e-test-channel');
-    expect(channelTypes).not.toContain('ext-feishu');
   });
 });

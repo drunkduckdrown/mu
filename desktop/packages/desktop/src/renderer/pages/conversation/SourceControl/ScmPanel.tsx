@@ -732,6 +732,7 @@ const ActionReportExtras: React.FC<{
   );
 };
 
+/** One line at the top left, like every other work panel tab's empty state. */
 const PanelNotice: React.FC<{ text: string }> = ({ text }) => (
-  <div className='h-full flex items-center justify-center px-16px text-center text-t-secondary text-13px'>{text}</div>
+  <p className='m-0 px-12px py-10px text-t-secondary text-13px leading-20px'>{text}</p>
 );

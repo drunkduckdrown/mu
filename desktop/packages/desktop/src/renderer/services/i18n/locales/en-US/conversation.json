@@ -12,12 +12,7 @@
     "clearWorkspace": "Remove project",
     "openFolder": "Open Folder",
     "none": "None",
-    "quickActionsTitle": "What can AionUi do?",
-    "quickActionFeedback": "Report Issue",
-    "quickActionStar": "Like us? Give us a star!",
-    "skillsMarket": "AionUi Skills Market",
-    "skillsMarketDesc": "Search and activate community Skills on demand. Configure once, available for all agents.",
-    "skillsMarketDetails": "View More >>"
+    "quickActionsTitle": "What can mu do?"
   },
   "history": {
     "recents": "Recents",
@@ -146,7 +141,7 @@
       "check_provider_base_url": "Check the model provider Base URL, API path, proxy, and API compatibility.",
       "change_model": "Choose a model that is available for the current account and supports this request.",
       "reduce_context": "Reduce the message content, referenced files, or context size, then retry.",
-      "send_feedback": "Send feedback with logs so the team can investigate."
+      "send_feedback": "Retry; if it keeps failing, check the app log."
     },
     "ownership": {
       "aionui": "App",
@@ -157,7 +152,7 @@
     "codes": {
       "AIONUI_STREAM_BROKEN": {
         "title": "Response stream was interrupted",
-        "body": "The app accepted your message but the response stream ended unexpectedly. Please retry; if it happens again, send feedback."
+        "body": "The app accepted your message but the response stream ended unexpectedly. Please retry; if it happens again, check the app log."
       },
       "AIONUI_STATE_INCONSISTENT": {
         "title": "Conversation state is out of sync",
@@ -169,7 +164,7 @@
       },
       "AIONUI_INTERNAL_ERROR": {
         "title": "Request failed in the app",
-        "body": "The request failed while the app was processing it. Please retry once; if it repeats, send feedback."
+        "body": "The request failed while the app was processing it. Please retry once; if it repeats, check the app log."
       },
       "AIONUI_CONVERSATION_BUSY": {
         "title": "Conversation is busy",
@@ -326,7 +321,7 @@
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
         "title": "Failed to read the team helper response",
-        "body": "AionUi could not read the local team helper response. Retry once, and if it keeps happening, restart the app."
+        "body": "mu could not read the local team helper response. Retry once, and if it keeps happening, restart the app."
       },
       "MCP_TOOL_REMOTE_ERROR": {
         "title": "The local team helper rejected the request",
@@ -334,11 +329,11 @@
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
         "title": "The team helper returned an unexpected response",
-        "body": "AionUi received an unexpected response from the local team helper. Retry once, and report it if the problem persists."
+        "body": "mu received an unexpected response from the local team helper. Retry once, and report it if the problem persists."
       },
       "MCP_TCP_READ_FAILED": {
         "title": "Failed to read from the local team helper",
-        "body": "AionUi could not read the local team helper TCP response. Retry once, and restart the app if it keeps failing."
+        "body": "mu could not read the local team helper TCP response. Retry once, and restart the app if it keeps failing."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
         "title": "Team service is not ready yet",
@@ -377,6 +372,7 @@
     "addFile": "Add File",
     "refresh": "Refresh",
     "temporarySpace": "Temporary Space",
+    "temporaryWorkspace": "Temporary workspace",
     "dragOverlayTitle": "Drop to import",
     "dragOverlayDesc": "Drag files or folders here to copy them into this project.",
     "dragOverlayHint": "Tip: drop anywhere to import into the selected folder.",
@@ -440,11 +436,12 @@
       "vscode": "VS Code",
       "terminal": "Terminal",
       "explorer": "File Explorer",
-      "browser": "Browser"
+      "browser": "Browser",
+      "choose": "Choose how to open"
     },
-    "collapsePanel": "Hide project panel",
+    "collapsePanel": "Hide work panel",
     "togglePanel": "Show or hide project panel",
-    "expandPanel": "Show project panel"
+    "expandPanel": "Show work panel"
   },
   "minimap": {
     "searchAria": "Search conversation",
@@ -587,6 +584,7 @@
   "thinking": {
     "label": "Thinking...",
     "history": "Thinking history",
+    "thoughtFor": "Thought for {{time}}",
     "labelWithTime": "{{label}} · {{time}}",
     "completeWithTime": "Thought complete · {{time}}",
     "elapsed": "({{time}})"
@@ -616,6 +614,16 @@
     "mediaPathFallback": "This agent has no native support for this file type; it will be sent as a file path.",
     "hintWithSessions": "Type / for commands, @ for files, @@ for conversations, ↑/↓ for history"
   },
+  "composer": {
+    "goalLine": {
+      "running": "Goal in progress: {{goal}}",
+      "paused": "Goal paused: {{goal}}",
+      "end": "End",
+      "endLabel": "End the goal"
+    },
+    "thinkingNote": "Changing the thinking level drops the prompt cache; keep it steady on the same model",
+    "modelBusy": "Switch the model once this reply is done."
+  },
   "agentTip": {
     "codes": {
       "ACP_EMPTY_TURN": {
@@ -640,13 +648,13 @@
         "body": "{{count}} step(s) failed and did NOT take effect. agy ends such turns as successful, so check the result rather than the reply."
       },
       "CLI_VERSION_OLDER": {
-        "body": "The installed {{cli}} is older than the version AionUi verified; some features may be missing. Consider upgrading {{cli}}. (installed {{reported}} / verified by AionUi: {{verified}})"
+        "body": "The installed {{cli}} is older than the version mu verified; some features may be missing. Consider upgrading {{cli}}. (installed {{reported}} / verified by mu: {{verified}})"
       },
       "CLI_VERSION_NEWER": {
-        "body": "The installed {{cli}} is newer than the version AionUi verified. It should still work; report anything that behaves oddly. (installed {{reported}} / verified by AionUi: {{verified}})"
+        "body": "The installed {{cli}} is newer than the version mu verified. It should still work; report anything that behaves oddly. (installed {{reported}} / verified by mu: {{verified}})"
       },
       "CODEX_RETRYING": {
-        "body": "{{detail}} (attempt {{attempts}}, {{elapsed}} so far — the agent's provider keeps dropping the connection; AionUi is waiting it out.)"
+        "body": "{{detail}} (attempt {{attempts}}, {{elapsed}} so far — the agent's provider keeps dropping the connection; mu is waiting it out.)"
       }
     }
   },
@@ -726,7 +734,7 @@
         "conflicted": "!",
         "unknown": "?"
       },
-      "conflictedHint": "Resolve this conflict outside AionUi first",
+      "conflictedHint": "Resolve this conflict outside mu first",
       "opaqueHint": "This state comes from a newer backend — shown read-only",
       "degraded": "Refresh is running in a slower mode because git's index can't be updated",
       "truncated": "Too many changes to list — showing the first part only",
@@ -745,7 +753,7 @@
         "discard": "Discard changes",
         "stageAll": "Stage all",
         "unstageAll": "Unstage all",
-        "blockedHint": "Resolve the conflict outside AionUi before staging or discarding",
+        "blockedHint": "Resolve the conflict outside mu before staging or discarding",
         "confirmDiscardTitle": "Discard changes?",
         "confirmDiscardTracked": "Edits to {{count}} files will be lost. This can’t be undone.",
         "confirmDiscardUntracked": "{{count}} new files will be moved to the trash.",

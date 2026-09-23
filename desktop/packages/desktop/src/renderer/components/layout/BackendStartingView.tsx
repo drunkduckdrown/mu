@@ -30,7 +30,7 @@ const BackendStartingView: React.FC = () => {
     >
       <Spin size={28} />
       <div className='text-center px-24px max-w-480px'>
-        <Typography.Title heading={5} className='mb-8px text-t-1'>
+        <Typography.Title heading={5} className='mb-8px text-t-primary'>
           {t('common.backendStartup.pendingSlow.title')}
         </Typography.Title>
         <Typography.Paragraph className='mb-0 text-t-secondary' data-testid='backend-starting-description'>

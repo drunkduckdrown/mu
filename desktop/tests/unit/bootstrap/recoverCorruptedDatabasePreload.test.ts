@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('@sentry/electron/preload', () => ({}));
-
 const invoke = vi.fn();
 const send = vi.fn();
 const on = vi.fn();
@@ -47,5 +45,16 @@ describe('recover corrupted database preload bridge', () => {
     await electronApi?.recoverCorruptedDatabase?.();
 
     expect(invoke).toHaveBeenCalledWith('backend:recover-corrupted-database');
+  });
+
+  it('exposes the log folder, opened by the main process', async () => {
+    await import('@/preload/main');
+
+    const electronApiCall = exposeInMainWorld.mock.calls.find(([key]) => key === 'electronAPI');
+    const electronApi = electronApiCall?.[1] as { openLogFolder?: () => Promise<void> } | undefined;
+
+    await electronApi?.openLogFolder?.();
+
+    expect(invoke).toHaveBeenCalledWith('backend:open-log-folder');
   });
 });

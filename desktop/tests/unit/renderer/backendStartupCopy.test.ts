@@ -25,13 +25,14 @@ function getBackendStartup(lang: string): Record<string, Record<string, string>>
 }
 
 const PENDING_SLOW_KEYS = ['title', 'description'];
-const EXITED_KEYS = [
-  'title',
-  'description',
+const EXITED_KEYS = ['title', 'description'];
+// The dialogs send no report anywhere, so none of the old report copy may linger.
+const REPORT_KEYS = [
   'sendDiagnostics',
   'diagnosticsSent',
   'diagnosticsReportSuccess',
   'diagnosticsReportFailed',
+  'diagnosticsHint',
 ];
 
 describe('backend startup copy — completeness (AC-6)', () => {
@@ -53,6 +54,16 @@ describe('backend startup copy — completeness (AC-6)', () => {
       for (const key of EXITED_KEYS) {
         expect(typeof exited[key], `${lang} exited.${key}`).toBe('string');
         expect(exited[key].length, `${lang} exited.${key} empty`).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('no startup dialog in any language keeps report copy', () => {
+    for (const lang of config.supportedLanguages) {
+      for (const [group, entry] of Object.entries(getBackendStartup(lang))) {
+        for (const key of REPORT_KEYS) {
+          expect(entry, `${lang} ${group}.${key}`).not.toHaveProperty(key);
+        }
       }
     }
   });

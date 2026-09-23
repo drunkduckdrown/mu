@@ -153,7 +153,7 @@ function doctor() {
 function launch(scriptName, withExtensions) {
   if (!scriptName) {
     throw new Error(
-      'Missing script name. Usage: node scripts/dev-bootstrap.mjs launch <start|webui|cli> [--extensions]'
+      'Missing script name. Usage: node scripts/dev-bootstrap.mjs launch <start|cli> [--extensions]'
     );
   }
 

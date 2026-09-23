@@ -249,7 +249,7 @@ export const useResizableSplit = (options: UseResizableSplitOptions = {}) => {
           try {
             dragHandle.setPointerCapture(pointerId);
             dragHandle.addEventListener('lostpointercapture', handleLostPointerCapture);
-          } catch (error) {
+          } catch {
             // 忽略 pointer capture 失败，继续使用备用逻辑 / Ignore failures silently
           }
         }
@@ -322,7 +322,7 @@ export const useResizableSplit = (options: UseResizableSplitOptions = {}) => {
     >
       <span
         className={classNames(
-          'pointer-events-none block h-full w-2px bg-bg-3 opacity-90 rd-full transition-all duration-150 group-hover:w-6px group-hover:bg-aou-6 group-active:w-6px group-active:bg-aou-6',
+          'pointer-events-none block h-full w-2px bg-transparent opacity-90 rd-full transition-all duration-150 group-hover:w-6px group-hover:bg-aou-6 group-active:w-6px group-active:bg-aou-6',
           lineClassName
         )}
         style={lineStyle}

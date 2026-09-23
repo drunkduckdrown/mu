@@ -293,7 +293,7 @@ describe('the words a screen shows for a code', () => {
     );
     expect(
       muErrorText(t, 'zh-CN', { code: 'optionValue', params: params.optionValue, message: '' }, manifest).text
-    ).toBe('“最多等待”超出了允许的范围。');
+    ).toBe('「最多等待」超出了允许的范围。');
   });
 
   it('reads any caught value, and a code it does not know is unknown', () => {

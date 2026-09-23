@@ -37,6 +37,15 @@ async function main() {
       entryPoints: [path.join(ROOT, 'packages/desktop/src/process/resources/builtinMcp/browserServer.ts')],
       outfile: path.join(ROOT, 'out/main/builtin-mcp-browser.js'),
     }),
+    // mu's ACP adapter for the packaged app, run by resources/mu/acp(.cmd) with the user's Node: from source it
+    // runs through tsx (scripts/kyrn/acp), which a packaged app does not carry.
+    esbuild.build({
+      ...SHARED_OPTIONS,
+      entryPoints: [path.join(ROOT, 'packages/desktop/src/process/agent/kyrn/index.ts')],
+      outfile: path.join(ROOT, 'out/main/mu-acp.js'),
+      // The adapter reads import.meta.url only to find a desktop checkout, which a packaged app has not.
+      logOverride: { 'empty-import-meta': 'silent' },
+    }),
   ]);
 }
 

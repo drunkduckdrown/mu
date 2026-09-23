@@ -1,14 +1,14 @@
 import React from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import type { Activity, ActivityPage, Result } from '@/common/kyrn/types';
 import common from '@/renderer/services/i18n/locales/en-US/common.json';
-import KyrnPanel from '@/renderer/pages/conversation/KyrnPanel';
+import { KernelBody, useKyrnActivity } from '@/renderer/pages/conversation/KyrnPanel';
 import Board from '@/renderer/pages/conversation/KyrnPanel/Board';
-import { boardView, toBoardUpdate } from '@/renderer/pages/conversation/KyrnPanel/Board/board';
+import { boardHistory, boardView, toBoardUpdate } from '@/renderer/pages/conversation/KyrnPanel/Board/board';
 import { emitter, type SendBoxCommandState } from '@/renderer/utils/emitter';
 
 const { activity } = vi.hoisted(() => ({ activity: vi.fn() }));
@@ -104,9 +104,11 @@ describe('the board panel', () => {
     showBoard([switched(false)]);
     const off = screen.getByTestId('mu-board-off');
     expect(off).toHaveTextContent('Each update costs one model call');
-    fireEvent.click(screen.getByTestId('mu-board-open'));
+    // The switch is the one control: no second button for the same thing.
+    expect(within(off).queryByRole('button')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByTestId('mu-board-switch'));
     expect(sent).toHaveBeenCalledWith('/board on', 'conv', expect.any(Function));
-    expect(screen.getByTestId('mu-board-open')).toBeDisabled();
+    expect(screen.getByTestId('mu-board-switch')).toBeDisabled();
     expect(screen.getByText('Switching…')).toBeInTheDocument();
   });
 
@@ -115,7 +117,7 @@ describe('the board panel', () => {
     emitter.on('sendbox.command', sent);
     showBoard([]);
     expect(screen.getByTestId('mu-board-unknown')).toHaveTextContent('under Features');
-    expect(screen.queryByTestId('mu-board-open')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('mu-board-off')).not.toBeInTheDocument();
     expect(screen.getByTestId('mu-board-switch')).toBeDisabled();
     fireEvent.click(screen.getByTestId('mu-board-switch'));
     expect(sent).not.toHaveBeenCalled();
@@ -236,22 +238,63 @@ describe('the board panel', () => {
   });
 });
 
-describe('the board in the mu panel', () => {
-  it('opens on the board when it is on for the project, next to the experience tab', async () => {
-    activity.mockResolvedValue(page([switched(true), update()]));
-    render(<KyrnPanel conversationId='conv' />, { wrapper: Wrapper });
-    expect(await screen.findByTestId('mu-board-now')).toHaveTextContent('Writing the tests');
-    const tabs = screen.getAllByRole('tab').map((tab) => tab.textContent);
-    expect(tabs.indexOf('Board')).toBe(tabs.indexOf('Experience') + 1);
+describe('what the board said before', () => {
+  it('keeps the earlier boards, newest first, without the replayed, the repeated or the current one', () => {
+    const reading = update({ now: 'Reading the code', progress: 'Nothing is done yet.' });
+    const again = update({ now: 'Reading the code', progress: 'Nothing is done yet.' });
+    const fixing = update({ now: 'Fixing the login test', progress: 'Half the tests pass.' });
+    const replayed = update({ now: 'Fixing the login test', progress: 'Half the tests pass.', restored: true });
+    const current = update();
+    const earlier = boardHistory([switched(true), reading, again, fixing, replayed, current], toBoardUpdate(current));
+    expect(earlier.map((entry) => entry.update.id)).toEqual([fixing.id, reading.id]);
+    expect(earlier[0].at).toBe(fixing.at);
+    // Saying the same as the current board is no history.
+    const same = update();
+    expect(boardHistory([same, current], toBoardUpdate(current))).toEqual([]);
   });
 
-  it('stays where it opens when the board is off', async () => {
+  it('lists them under the current board as quiet lines, while the board is on', () => {
+    showBoard([
+      switched(true),
+      update({ now: 'Reading the code', progress: 'Nothing is done yet.' }),
+      update({ now: 'Fixing the login test', progress: '' }),
+      update(),
+    ]);
+    const earlier = screen.getByTestId('mu-board-earlier');
+    expect(earlier).toHaveTextContent('Earlier');
+    const rows = within(earlier).getAllByRole('listitem');
+    // What was done, or else what it was doing.
+    expect(rows[0]).toHaveTextContent('Fixing the login test');
+    expect(rows[1]).toHaveTextContent('Nothing is done yet.');
+    cleanup();
+
+    showBoard([switched(true), update(), switched(false)]);
+    expect(screen.queryByTestId('mu-board-earlier')).not.toBeInTheDocument();
+  });
+});
+
+/** The work panel's board tab for one conversation. */
+function BoardTab() {
+  const read = useKyrnActivity('conv');
+  return <KernelBody tab='board' conversationId='conv' activity={read} />;
+}
+
+describe('the board in the work panel', () => {
+  it('waits for the conversation’s record, then shows its board', async () => {
+    activity.mockResolvedValue(page([switched(true), update()]));
+    render(<BoardTab />, { wrapper: Wrapper });
+    expect(screen.getByText(common.loading)).toBeInTheDocument();
+    expect(await screen.findByTestId('mu-board-now')).toHaveTextContent('Writing the tests');
+    expect(activity).toHaveBeenCalledWith({ conversationId: 'conv', cursor: 0, sessionId: '' });
+    // The board already there when the tab opened is not news: nothing is read out.
+    expect(screen.getByTestId('mu-board-announce')).toBeEmptyDOMElement();
+  });
+
+  it('offers to turn the board on when it is off for the project', async () => {
     activity.mockResolvedValue(page([switched(false)]));
-    render(<KyrnPanel conversationId='conv' />, { wrapper: Wrapper });
-    // Loaded: the board is there, behind the tab the panel opened on.
-    const board = await screen.findByTestId('mu-board-off');
-    await waitFor(() => expect(activity).toHaveBeenCalled());
-    expect(board.closest('[hidden]')).not.toBeNull();
-    expect(screen.getByRole('tab', { selected: true })).not.toHaveTextContent('Board');
+    render(<BoardTab />, { wrapper: Wrapper });
+    expect(await screen.findByTestId('mu-board-off')).toBeVisible();
+    expect(screen.getByTestId('mu-board-switch')).not.toBeDisabled();
+    await act(async () => undefined);
   });
 });

@@ -24,7 +24,12 @@ import CodeBlock from './CodeBlock';
 import LocalFileLink from './LocalFileLink';
 import ShadowView from './ShadowView';
 import { MARKDOWN_REMARK_PLUGINS, MarkdownTable, MarkdownTd } from './markdownComponents';
-import { resolveLocalFileLinkPath, resolveLocalFileLinkReference } from './markdownUtils';
+import {
+  resolveLocalFileLinkPath,
+  resolveLocalFileLinkReference,
+  resolveRelativeFileLinkReference,
+  resolveWebLinkHref,
+} from './markdownUtils';
 import type { LocalFileLinkReference } from './markdownUtils';
 
 const isLocalFilePath = (src: string): boolean => {
@@ -59,10 +64,13 @@ const MarkdownView: React.FC<MarkdownViewProps> = React.memo(
     }, [childrenProp]);
 
     const handleLinkClick = useCallback(
-      (e: React.MouseEvent<HTMLAnchorElement>) => {
+      (e: React.MouseEvent<HTMLAnchorElement>, rawHref: string) => {
         e.preventDefault();
         e.stopPropagation();
-        const href = (e.currentTarget as HTMLAnchorElement).href;
+        // The address as written, never the anchor's resolved `href`: resolved against the app's own page, a
+        // relative or fragment link IS the app, and the app must not open inside its own browser tab (no desktop
+        // bridge there, so it shows the web sign-in) nor in the system browser.
+        const href = resolveWebLinkHref(rawHref);
         if (!href) return;
         // Prefer the built-in browser tab for http(s) links; fall back to the
         // system browser for other schemes or when no Preview panel is available.
@@ -99,7 +107,9 @@ const MarkdownView: React.FC<MarkdownViewProps> = React.memo(
         a: ({ node: _node, ...rest }: Record<string, unknown>) => {
           const anchorProps = rest as React.AnchorHTMLAttributes<HTMLAnchorElement>;
           const rawHref = typeof anchorProps.href === 'string' ? anchorProps.href : '';
-          const localFileReference = resolveLocalFileLinkReference(rawHref);
+          // A path, absolute or relative to the workspace, opens as a file in the app.
+          const localFileReference =
+            resolveLocalFileLinkReference(rawHref) ?? resolveRelativeFileLinkReference(rawHref);
           if (localFileReference) {
             return (
               <LocalFileLink reference={localFileReference} onOpen={onLocalFileLink}>
@@ -108,7 +118,13 @@ const MarkdownView: React.FC<MarkdownViewProps> = React.memo(
             );
           }
           return (
-            <a {...anchorProps} href={anchorProps.href} target='_blank' rel='noreferrer' onClick={handleLinkClick} />
+            <a
+              {...anchorProps}
+              href={anchorProps.href}
+              target='_blank'
+              rel='noreferrer'
+              onClick={(event) => handleLinkClick(event, rawHref)}
+            />
           );
         },
         table: MarkdownTable,

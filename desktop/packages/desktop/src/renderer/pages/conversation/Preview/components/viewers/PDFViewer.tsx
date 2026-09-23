@@ -79,7 +79,7 @@ const PDFPreview: React.FC<PDFPreviewProps> = ({ tabId, fileRef, file_path, cont
     try {
       await ipcBridge.shell.openFile.invoke(file_path);
       messageApi.success(t('preview.openInSystemSuccess'));
-    } catch (err) {
+    } catch {
       messageApi.error(t('preview.openInSystemFailed'));
     }
   }, [file_path, messageApi, t]);
@@ -148,7 +148,7 @@ const PDFPreview: React.FC<PDFPreviewProps> = ({ tabId, fileRef, file_path, cont
       <div className='flex items-center justify-center h-full'>
         {messageContextHolder}
         <div className='text-center'>
-          <div className='text-16px text-t-error mb-8px'>❌ {error.message}</div>
+          <div className='text-16px text-danger mb-8px'>{error.message}</div>
           {error.detail && <div className='text-12px text-t-tertiary mb-8px break-words'>{error.detail}</div>}
           <div className='text-12px text-t-secondary'>{t('preview.pdf.unableDisplay')}</div>
         </div>

@@ -9,7 +9,7 @@ import type { UpdateInfo } from 'electron-updater';
 import type { AppUpdater } from 'electron-updater/out/AppUpdater';
 import type { ProviderRuntimeOptions } from 'electron-updater/out/providers/Provider';
 import { CdnGenericProvider } from '@/process/services/cdnGenericProvider';
-import { buildCdnFeedOptions, CDN_UPDATE_BASE_URL } from '@/process/services/updateFeed';
+import { buildCdnFeedOptions } from '@/process/services/updateFeed';
 
 const makeRuntimeOptions = (): ProviderRuntimeOptions => ({
   isUseMultipleRangeRequest: true,
@@ -20,12 +20,8 @@ const makeRuntimeOptions = (): ProviderRuntimeOptions => ({
 });
 
 describe('CDN update feed options', () => {
-  it('builds a custom electron-updater provider pointed at the release CDN', () => {
-    const options = buildCdnFeedOptions();
-
-    expect(options.provider).toBe('custom');
-    expect(options.url).toBe(CDN_UPDATE_BASE_URL);
-    expect(options.updateProvider).toBe(CdnGenericProvider);
+  it('refuses to build a feed, because mu has none yet', () => {
+    expect(() => buildCdnFeedOptions()).toThrow(/mu has no update feed yet/);
   });
 });
 
@@ -34,7 +30,7 @@ describe('CdnGenericProvider', () => {
     const provider = new CdnGenericProvider(
       {
         provider: 'custom',
-        url: 'https://static.aionui.com/releases',
+        url: 'https://updates.example.com/releases',
       },
       {} as AppUpdater,
       makeRuntimeOptions()
@@ -53,6 +49,6 @@ describe('CdnGenericProvider', () => {
       releaseDate: '2026-06-08T00:00:00.000Z',
     } satisfies UpdateInfo);
 
-    expect(files[0]?.url.href).toBe('https://static.aionui.com/releases/2.1.14/AionUi-2.1.14-mac-arm64.dmg');
+    expect(files[0]?.url.href).toBe('https://updates.example.com/releases/2.1.14/AionUi-2.1.14-mac-arm64.dmg');
   });
 });

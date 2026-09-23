@@ -7,7 +7,6 @@ import { RouteContent } from '@/renderer/components/layout/Router';
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
 vi.mock('@/renderer/components/layout/AppLoader', () => ({ default: () => <span>Loading</span> }));
 vi.mock('@/renderer/components/layout/DocumentTitle', () => ({ default: () => null }));
-vi.mock('@/renderer/hooks/context/AuthContext', () => ({ useAuth: () => ({ status: 'authenticated' }) }));
 vi.mock('@/renderer/hooks/system/useCrossSessionRateLimitNotice', () => ({ useCrossSessionRateLimitNotice: () => {} }));
 vi.mock('@/renderer/pages/settings/KyrnSettings/StartupGate', () => ({
   default: ({ children }: { children: React.ReactNode }) => children,

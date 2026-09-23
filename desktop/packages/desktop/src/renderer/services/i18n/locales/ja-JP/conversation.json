@@ -12,12 +12,7 @@
     "clearWorkspace": "プロジェクトを解除",
     "openFolder": "フォルダーを開く",
     "none": "なし",
-    "quickActionsTitle": "AionUi で何ができる？",
-    "quickActionFeedback": "問題を報告",
-    "quickActionStar": "気に入った？スターをください！",
-    "skillsMarket": "AionUi Skills Market",
-    "skillsMarketDesc": "コミュニティ Skills をオンデマンドで検索・有効化。一度設定すれば、すべてのAgentで利用可能。",
-    "skillsMarketDetails": "詳細 >>"
+    "quickActionsTitle": "mu で何ができる？"
   },
   "history": {
     "recents": "最近",
@@ -146,7 +141,7 @@
       "check_provider_base_url": "モデルプロバイダーの Base URL、API パス、プロキシ、API 互換性を確認してください。",
       "change_model": "現在のアカウントで利用でき、このリクエストをサポートするモデルを選択してください。",
       "reduce_context": "メッセージ内容、参照ファイル、またはコンテキストサイズを減らしてから再試行してください。",
-      "send_feedback": "チームが調査できるよう、ログを添えてフィードバックを送信してください。"
+      "send_feedback": "再試行してください。失敗が続く場合は、アプリのログを確認してください。"
     },
     "ownership": {
       "aionui": "アプリ",
@@ -157,7 +152,7 @@
     "codes": {
       "AIONUI_STREAM_BROKEN": {
         "title": "応答ストリームが中断されました",
-        "body": "アプリはメッセージを受け付けましたが、応答ストリームが予期せず終了しました。再試行してください。繰り返し発生する場合はフィードバックを送信してください。"
+        "body": "アプリはメッセージを受け付けましたが、応答ストリームが予期せず終了しました。再試行してください。繰り返し発生する場合は、アプリのログを確認してください。"
       },
       "AIONUI_STATE_INCONSISTENT": {
         "title": "会話状態が同期していません",
@@ -169,7 +164,7 @@
       },
       "AIONUI_INTERNAL_ERROR": {
         "title": "アプリ内でリクエストに失敗しました",
-        "body": "アプリが処理している間にリクエストが失敗しました。一度再試行してください。繰り返し発生する場合はフィードバックを送信してください。"
+        "body": "アプリが処理している間にリクエストが失敗しました。一度再試行してください。繰り返し発生する場合は、アプリのログを確認してください。"
       },
       "AIONUI_CONVERSATION_BUSY": {
         "title": "会話は処理中です",
@@ -326,7 +321,7 @@
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
         "title": "チーム補助プロセスの応答を読み取れませんでした",
-        "body": "AionUi はローカルのチーム補助プロセスの応答を読み取れませんでした。一度再試行し、繰り返し発生する場合はアプリを再起動してください。"
+        "body": "mu はローカルのチーム補助プロセスの応答を読み取れませんでした。一度再試行し、繰り返し発生する場合はアプリを再起動してください。"
       },
       "MCP_TOOL_REMOTE_ERROR": {
         "title": "ローカルのチーム補助プロセスがリクエストを拒否しました",
@@ -334,11 +329,11 @@
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
         "title": "チーム補助プロセスが予期しない応答を返しました",
-        "body": "AionUi はローカルのチーム補助プロセスから予期しない応答を受け取りました。一度再試行し、問題が続く場合は報告してください。"
+        "body": "mu はローカルのチーム補助プロセスから予期しない応答を受け取りました。一度再試行し、問題が続く場合は報告してください。"
       },
       "MCP_TCP_READ_FAILED": {
         "title": "ローカルのチーム補助プロセスから読み取れませんでした",
-        "body": "AionUi はローカルのチーム補助プロセスの TCP 応答を読み取れませんでした。一度再試行し、失敗が続く場合はアプリを再起動してください。"
+        "body": "mu はローカルのチーム補助プロセスの TCP 応答を読み取れませんでした。一度再試行し、失敗が続く場合はアプリを再起動してください。"
       },
       "TEAM_SERVICE_UNAVAILABLE": {
         "title": "チームサービスはまだ準備できていません",
@@ -377,6 +372,7 @@
     "addFile": "ファイルを追加",
     "refresh": "更新",
     "temporarySpace": "一時スペース",
+    "temporaryWorkspace": "一時ワークスペース",
     "dragOverlayTitle": "ドラッグして取り込み",
     "dragOverlayDesc": "ここにファイルやフォルダーをドロップすると、このプロジェクトにコピーされます。",
     "dragOverlayHint": "ヒント：フォルダー選択中は、そのフォルダーに直接取り込まれます。",
@@ -440,11 +436,12 @@
       "vscode": "VS Code",
       "terminal": "ターミナル",
       "explorer": "エクスプローラー",
-      "browser": "ブラウザ"
+      "browser": "ブラウザ",
+      "choose": "開く方法を選択"
     },
-    "collapsePanel": "プロジェクトパネルを非表示",
+    "collapsePanel": "作業パネルを非表示",
     "togglePanel": "プロジェクトパネルの表示/非表示を切り替え",
-    "expandPanel": "プロジェクトパネルを表示"
+    "expandPanel": "作業パネルを表示"
   },
   "minimap": {
     "searchAria": "会話を検索",
@@ -587,6 +584,7 @@
   "thinking": {
     "label": "思考中...",
     "history": "思考履歴",
+    "thoughtFor": "{{time}} 考えました",
     "labelWithTime": "{{label}} · {{time}}",
     "completeWithTime": "思考完了 · {{time}}",
     "elapsed": "（{{time}}）"
@@ -616,6 +614,16 @@
     "mediaPathFallback": "このエージェントはこのファイル形式をネイティブに扱えないため、ファイルパスとして送信されます。",
     "hintWithSessions": "/ でコマンド、@ でファイル、@@ で会話を参照、↑/↓ で履歴"
   },
+  "composer": {
+    "goalLine": {
+      "running": "目標を実行中：{{goal}}",
+      "paused": "目標を一時停止中：{{goal}}",
+      "end": "終了",
+      "endLabel": "目標を終了"
+    },
+    "thinkingNote": "思考レベルを変えるとプロンプトキャッシュが失われます。同じモデルではできるだけ変えないでください",
+    "modelBusy": "この応答が終わってからモデルを切り替えてください。"
+  },
   "agentTip": {
     "codes": {
       "ACP_EMPTY_TURN": {
@@ -640,13 +648,13 @@
         "body": "このターンで {{count}} 件のステップが失敗し、実行されませんでした。agy はこうしたターンも成功として終了するため、返答ではなく実際の結果を確認してください。"
       },
       "CLI_VERSION_OLDER": {
-        "body": "インストール済みの {{cli}} は、AionUi が検証したバージョンより古いため、一部の機能が使えない可能性があります。{{cli}} の更新を検討してください。 （インストール済み {{reported}} / AionUi 検証済み {{verified}}）"
+        "body": "インストール済みの {{cli}} は、mu が検証したバージョンより古いため、一部の機能が使えない可能性があります。{{cli}} の更新を検討してください。 （インストール済み {{reported}} / mu 検証済み {{verified}}）"
       },
       "CLI_VERSION_NEWER": {
-        "body": "インストール済みの {{cli}} は、AionUi が検証したバージョンより新しいです。通常は動作しますが、不審な挙動があればご報告ください。 （インストール済み {{reported}} / AionUi 検証済み {{verified}}）"
+        "body": "インストール済みの {{cli}} は、mu が検証したバージョンより新しいです。通常は動作しますが、不審な挙動があればご報告ください。 （インストール済み {{reported}} / mu 検証済み {{verified}}）"
       },
       "CODEX_RETRYING": {
-        "body": "{{detail}}（累計 {{attempts}} 回目の再試行、経過 {{elapsed}} — エージェントの提供元が接続を切断し続けており、AionUi は再接続を待っています。）"
+        "body": "{{detail}}（累計 {{attempts}} 回目の再試行、経過 {{elapsed}} — エージェントの提供元が接続を切断し続けており、mu は再接続を待っています。）"
       }
     }
   },
@@ -726,7 +734,7 @@
         "conflicted": "!",
         "unknown": "?"
       },
-      "conflictedHint": "この競合は AionUi の外で解決してください",
+      "conflictedHint": "この競合は mu の外で解決してください",
       "opaqueHint": "この状態は新しいバックエンドのものです — 読み取り専用で表示",
       "degraded": "git のインデックスを更新できないため、低速モードで更新しています",
       "truncated": "変更が多すぎるため、先頭部分のみ表示しています",
@@ -745,7 +753,7 @@
         "discard": "変更を破棄",
         "stageAll": "すべてステージ",
         "unstageAll": "すべてステージ解除",
-        "blockedHint": "ステージや破棄の前に、AionUi の外で競合を解決してください",
+        "blockedHint": "ステージや破棄の前に、mu の外で競合を解決してください",
         "confirmDiscardTitle": "変更を破棄しますか？",
         "confirmDiscardTracked": "{{count}} 個のファイルの編集は失われ、元に戻せません。",
         "confirmDiscardUntracked": "{{count}} 個の新規ファイルがゴミ箱に移動されます。",

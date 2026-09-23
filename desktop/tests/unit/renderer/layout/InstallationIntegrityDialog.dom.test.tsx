@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Modal } from '@arco-design/web-react';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { Message, Modal } from '@arco-design/web-react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -17,14 +17,14 @@ const COPY: Record<string, string> = {
   [`${RDC}.description`]:
     'AionUi detected that the local database is corrupted and cannot continue startup. After confirmation, AionUi will back up the old database and create a new local database to continue startup. Past conversations will no longer be shown, and the old database will be kept as a backup file.',
   [`${RDC}.confirmRebuild`]: 'Back up old DB and rebuild new DB',
-  [`${RDC}.sendDiagnostics`]: 'Send diagnostics',
-  [`${RDC}.diagnosticsSent`]: 'Diagnostics sent',
   [`${RDC}.rebuildFailed`]: 'Failed to back up old DB and rebuild new DB',
   [`${RDC}.confirmDialog.title`]: 'Rebuild the database?',
   [`${RDC}.confirmDialog.content`]:
     'This will back up the currently corrupted database and create a brand-new empty one. Past conversations will no longer be shown (the old database is kept as a backup file). Continue?',
   [`${RDC}.confirmDialog.okText`]: 'Confirm rebuild',
   [`${RDC}.confirmDialog.cancelText`]: 'Cancel',
+  'common.backendStartup.openLogs': 'Open the log folder',
+  'common.backendStartup.openLogsFailed': "Couldn't open the log folder",
 };
 
 vi.mock('react-i18next', () => ({
@@ -34,22 +34,12 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-// Keep the installation-integrity module importable in jsdom without a real
-// feedback pipeline.
-vi.mock('@/renderer/services/feedback/submitFeedbackReport', () => ({
-  submitFeedbackReport: vi.fn().mockResolvedValue(undefined),
-}));
-
-import {
-  type InstallationIntegrityDiagnostics,
-  InstallationIntegrityFooter,
-} from '@/renderer/components/layout/InstallationIntegrityDialog';
-
-const diagnostics: InstallationIntegrityDiagnostics = { source: 'backend_startup_failure' };
+import { InstallationIntegrityFooter } from '@/renderer/components/layout/InstallationIntegrityDialog';
 
 type ConfirmConfig = Parameters<typeof Modal.confirm>[0];
 
 let recoverMock: ReturnType<typeof vi.fn>;
+let openLogFolderMock: ReturnType<typeof vi.fn>;
 
 function stubModalConfirm() {
   return vi
@@ -58,16 +48,18 @@ function stubModalConfirm() {
 }
 
 function renderFooter() {
-  return render(
-    <InstallationIntegrityFooter diagnostics={diagnostics} diagnosticsKind='recoverable_database_corruption' />
-  );
+  return render(<InstallationIntegrityFooter diagnosticsKind='recoverable_database_corruption' />);
 }
+
+type TestElectronApi = { recoverCorruptedDatabase?: () => Promise<void>; openLogFolder?: () => Promise<void> };
+const setElectronApi = (api: TestElectronApi | undefined) => {
+  (window as unknown as { electronAPI?: TestElectronApi }).electronAPI = api;
+};
 
 beforeEach(() => {
   recoverMock = vi.fn().mockResolvedValue(undefined);
-  (window as unknown as { electronAPI: { recoverCorruptedDatabase: () => Promise<void> } }).electronAPI = {
-    recoverCorruptedDatabase: recoverMock,
-  };
+  openLogFolderMock = vi.fn().mockResolvedValue(undefined);
+  setElectronApi({ recoverCorruptedDatabase: recoverMock, openLogFolder: openLogFolderMock });
 });
 
 afterEach(() => {
@@ -114,15 +106,14 @@ describe('InstallationIntegrityDialog — recoverable_database_corruption recove
     expect(recoverMock).not.toHaveBeenCalled();
   });
 
-  it('AC-6: rebuild button is danger secondary (not a primary CTA); report stays neutral', () => {
+  it('AC-6: rebuild button is danger secondary (not a primary CTA); nothing offers to send a report', () => {
     renderFooter();
 
     const rebuild = screen.getByTestId('recoverable-database-corruption-rebuild');
     expect(rebuild.className).not.toContain('arco-btn-primary');
     expect(rebuild.className).toContain('arco-btn-status-danger');
 
-    const report = screen.getByTestId('installation-integrity-report');
-    expect(report.className).not.toContain('arco-btn-primary');
+    expect(screen.queryByTestId('installation-integrity-report')).toBeNull();
   });
 
   it('AC-7: confirmDialog copy is wired through i18n (present, non-empty, not raw keys)', () => {
@@ -144,5 +135,51 @@ describe('InstallationIntegrityDialog — recoverable_database_corruption recove
     // misleading "for now" wording is gone. 13-language completeness is enforced
     // by scripts/check-i18n.js.
     expect(COPY[`${RDC}.description`].toLowerCase()).not.toContain('for now');
+  });
+});
+
+describe('InstallationIntegrityDialog — the log folder', () => {
+  const KINDS = [
+    'incomplete_installation',
+    'data_migration',
+    'database_newer_than_app',
+    'local_data_repair',
+    'recoverable_database_corruption',
+    'transient_concurrent_startup',
+    'startup_directory',
+    'backend_exited',
+    'port_report_timeout',
+    'startup_failed',
+  ] as const;
+
+  it('every kind offers to open the log folder, so no failure dialog is left without a button', () => {
+    for (const kind of KINDS) {
+      render(<InstallationIntegrityFooter diagnosticsKind={kind} />);
+      const button = screen.getByTestId('installation-integrity-open-logs');
+      expect(button).toHaveTextContent('Open the log folder');
+      // Not the dialog's main action: the download or rebuild keeps that place.
+      expect(button.className).not.toContain('arco-btn-primary');
+      cleanup();
+    }
+  });
+
+  it('opens the folder through the main process', () => {
+    render(<InstallationIntegrityFooter diagnosticsKind='startup_failed' />);
+    fireEvent.click(screen.getByTestId('installation-integrity-open-logs'));
+    expect(openLogFolderMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('says so when the folder cannot be opened', async () => {
+    const error = vi.spyOn(Message, 'error').mockImplementation(() => () => {});
+    openLogFolderMock.mockRejectedValueOnce(new Error('No such folder'));
+    render(<InstallationIntegrityFooter diagnosticsKind='backend_exited' />);
+    fireEvent.click(screen.getByTestId('installation-integrity-open-logs'));
+    await waitFor(() => expect(error).toHaveBeenCalledWith("Couldn't open the log folder"));
+  });
+
+  it('is not offered where no folder can be opened (the WebUI in a browser)', () => {
+    setElectronApi(undefined);
+    render(<InstallationIntegrityFooter diagnosticsKind='startup_failed' />);
+    expect(screen.queryByTestId('installation-integrity-open-logs')).toBeNull();
   });
 });

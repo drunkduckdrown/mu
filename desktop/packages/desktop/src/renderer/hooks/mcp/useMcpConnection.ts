@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { isBackendHttpError } from '@/common/adapter/httpBridge';
 import { mcpService } from '@/common/adapter/ipcBridge';
 import type { IMcpServer } from '@/common/config/storage';
+import { mcpServerLabel } from './mcpServerLabel';
 import { globalMessageQueue } from './messageQueue';
 
 /**
@@ -176,7 +177,7 @@ export const useMcpConnection = (
           if (notify) {
             await globalMessageQueue.add(() => {
               try {
-                message.warning(t('settings.mcpAuthRequiredNamed', { name: server.name }));
+                message.warning(t('settings.mcpAuthRequiredNamed', { name: mcpServerLabel(server, t) }));
               } catch {
                 // ELECTRON-1A1: host component unmounted, Arco message context is gone — drop silently.
               }
@@ -208,7 +209,7 @@ export const useMcpConnection = (
           if (notify) {
             await globalMessageQueue.add(() => {
               try {
-                message.success(t('settings.mcpTestConnectionSuccessNamed', { name: server.name }));
+                message.success(t('settings.mcpTestConnectionSuccessNamed', { name: mcpServerLabel(server, t) }));
               } catch {
                 // ELECTRON-1A1: host component unmounted, Arco message context is gone — drop silently.
               }
@@ -225,7 +226,7 @@ export const useMcpConnection = (
               try {
                 message.error({
                   content: t('settings.mcpTestConnectionFailedWithHint', {
-                    name: server.name,
+                    name: mcpServerLabel(server, t),
                     error: asFailureDetail(errorMsg),
                   }),
                   duration: 5000,
@@ -245,7 +246,7 @@ export const useMcpConnection = (
             try {
               message.error({
                 content: t('settings.mcpTestConnectionFailedWithHint', {
-                  name: server.name,
+                  name: mcpServerLabel(server, t),
                   error: asFailureDetail(errorMsg),
                 }),
                 duration: 5000,

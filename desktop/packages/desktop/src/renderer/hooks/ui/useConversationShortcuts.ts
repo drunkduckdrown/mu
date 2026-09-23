@@ -2,8 +2,13 @@ import { useEffect } from 'react';
 import type { NavigateFunction } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useVisibleConversationIds } from '@/renderer/pages/conversation/GroupedHistory/hooks/useVisibleConversationIds';
+import { emitter } from '@/renderer/utils/emitter';
 import { isElectronDesktop } from '@/renderer/utils/platform';
-import { isPlatformPrimaryModifier, isPrimaryApplicationShortcut } from '@/renderer/utils/ui/keyboardShortcuts';
+import {
+  COMMAND_PALETTE_SHORTCUT,
+  isPlatformPrimaryModifier,
+  isPrimaryApplicationShortcut,
+} from '@/renderer/utils/ui/keyboardShortcuts';
 import { dispatchWorkspaceToggleEvent } from '@/renderer/utils/workspace/workspaceEvents';
 
 type UseConversationShortcutsParams = {
@@ -78,7 +83,18 @@ export const useConversationShortcuts = ({ navigate, toggleSider }: UseConversat
         return;
       }
 
-      if (isPrimaryApplicationShortcut(event, { key: 'l', targetGuard: 'embedded-editor' })) {
+      // The palette is mounted with the sidebar on every page, the settings included.
+      if (isPrimaryApplicationShortcut(event, COMMAND_PALETTE_SHORTCUT)) {
+        event.preventDefault();
+        emitter.emit('commandPalette.toggle');
+        return;
+      }
+
+      // Cmd/Ctrl+J opens and closes the work panel; Cmd/Ctrl+L, the older chord, does the same.
+      if (
+        isPrimaryApplicationShortcut(event, { key: 'j', targetGuard: 'embedded-editor' }) ||
+        isPrimaryApplicationShortcut(event, { key: 'l', targetGuard: 'embedded-editor' })
+      ) {
         const handled = dispatchWorkspaceToggleEvent();
         if (handled) {
           event.preventDefault();

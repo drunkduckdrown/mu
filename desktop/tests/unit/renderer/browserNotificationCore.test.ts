@@ -5,38 +5,10 @@
  */
 import { describe, it, expect, vi } from 'vitest';
 import {
-  shouldShowNotification,
   createBrowserNotificationController,
   truncateConversationName,
   CONVERSATION_NAME_MAX_LENGTH,
-  type NotificationGate,
 } from '@/renderer/hooks/system/notification/browserNotificationCore';
-
-const openGate: NotificationGate = {
-  isElectron: false,
-  hasNotificationApi: true,
-  isSecureContext: true,
-  permission: 'granted',
-  settingEnabled: true,
-  documentHidden: true,
-};
-
-describe('shouldShowNotification', () => {
-  it('returns true when all gates pass', () => {
-    expect(shouldShowNotification(openGate)).toBe(true);
-  });
-
-  it.each([
-    ['isElectron', { isElectron: true }],
-    ['no api', { hasNotificationApi: false }],
-    ['insecure', { isSecureContext: false }],
-    ['not granted', { permission: 'default' as const }],
-    ['setting off', { settingEnabled: false }],
-    ['tab visible', { documentHidden: false }],
-  ])('returns false when %s', (_label, override) => {
-    expect(shouldShowNotification({ ...openGate, ...override })).toBe(false);
-  });
-});
 
 describe('truncateConversationName', () => {
   it('returns a short name unchanged (trimmed)', () => {
@@ -59,11 +31,11 @@ describe('truncateConversationName', () => {
 });
 
 describe('createBrowserNotificationController.onStreamMessage', () => {
-  const makeDeps = (gate: NotificationGate = openGate) => {
+  const makeDeps = (allowed = true) => {
     const show = vi.fn();
     const bodyFor = vi.fn((kind: string) => kind);
     const controller = createBrowserNotificationController({
-      shouldShow: () => shouldShowNotification(gate),
+      shouldShow: () => allowed,
       show,
       bodyFor,
     });
@@ -123,7 +95,7 @@ describe('createBrowserNotificationController.onStreamMessage', () => {
   });
 
   it('does not show when the gate is closed', () => {
-    const { show, controller } = makeDeps({ ...openGate, documentHidden: false });
+    const { show, controller } = makeDeps(false);
     controller.onStreamMessage({ type: 'finish', conversation_id: 'c1', turn_id: 't1' });
     controller.onStreamMessage({ type: 'acp_permission', conversation_id: 'c1' });
     expect(show).not.toHaveBeenCalled();

@@ -16,8 +16,17 @@ type OptionFieldProps = {
   scope: string;
 };
 
-const isFraction = (option: Extract<OptionInfo, { kind: 'number' }>): boolean =>
+type NumberOption = Extract<OptionInfo, { kind: 'number' }>;
+
+const isFraction = (option: NumberOption): boolean =>
   !Number.isInteger(option.default) || (option.max !== undefined && option.max <= 1);
+
+/**
+ * A duration the harness keeps in milliseconds but that is a matter of seconds (its default is a second or more):
+ * shown and typed in seconds, saved in milliseconds. 20000 毫秒 reads as 20 秒, 1500 as 1.5.
+ */
+export const inSeconds = (option: OptionInfo): boolean =>
+  option.kind === 'number' && option.unit?.en === 'ms' && option.default >= 1000;
 
 /**
  * One option of a feature, drawn from its description alone: the screen knows kinds, never option names.
@@ -28,13 +37,15 @@ export default function OptionField({ option, value, onChange, disabled, scope }
   const label = localized(option.label, i18n.language);
   const help = localized(option.help, i18n.language);
   const problem = checkOption(option, value);
+  const seconds = inSeconds(option);
+  const scale = seconds ? 1000 : 1;
   const bound = (limit: number | undefined, infinite: string) =>
-    limit === undefined ? infinite : formatNumber(limit, i18n.language);
+    limit === undefined ? infinite : formatNumber(limit / scale, i18n.language);
   const range =
     option.kind === 'number' && (option.min !== undefined || option.max !== undefined)
       ? t('mu.options.range', { min: bound(option.min, '−∞'), max: bound(option.max, '∞') })
       : '';
-  const unit = option.kind === 'number' ? localized(option.unit, i18n.language) : '';
+  const unit = seconds ? t('mu.units.s') : option.kind === 'number' ? localized(option.unit, i18n.language) : '';
 
   let control: React.ReactNode;
   switch (option.kind) {
@@ -50,13 +61,14 @@ export default function OptionField({ option, value, onChange, disabled, scope }
           size='small'
           aria-label={label}
           disabled={disabled}
-          value={typeof value === 'number' ? value : undefined}
-          min={option.min}
-          max={option.max}
-          step={isFraction(option) ? 0.05 : 1}
-          precision={isFraction(option) ? 2 : 0}
+          value={typeof value === 'number' ? value / scale : undefined}
+          min={option.min === undefined ? undefined : option.min / scale}
+          max={option.max === undefined ? undefined : option.max / scale}
+          step={!seconds && isFraction(option) ? 0.05 : 1}
+          // Seconds take the decimals they need (6, 1.5, 0.5); what is saved is rounded to whole milliseconds.
+          precision={seconds ? undefined : isFraction(option) ? 2 : 0}
           suffix={unit || undefined}
-          onChange={(next) => onChange(typeof next === 'number' ? next : option.default)}
+          onChange={(next) => onChange(typeof next === 'number' ? Math.round(next * scale) : option.default)}
         />
       );
       break;

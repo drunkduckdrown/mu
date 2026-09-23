@@ -7,16 +7,36 @@
   "modified": "변경됨",
   "applyNote": "변경 사항은 새 세션부터 적용됩니다. 실행 중인 세션은 시작할 때의 설정을 유지하므로, 다시 연결해야 반영됩니다.",
   "apiKey": "API 키",
-  "keyHelp": "쓰기 전용: 저장한 뒤에는 다시 표시되지 않습니다. 이 컴퓨터의 하니스 .env에 보관됩니다(소유자만 읽기 가능).",
+  "keyHelp": "저장한 뒤에는 다시 표시되지 않습니다. 이 컴퓨터에만 보관되며 내 계정만 읽을 수 있습니다.",
   "keyKeep": "비워 두면 저장된 키를 유지합니다",
   "endpointRule": "HTTPS를 사용하세요. HTTP는 이 컴퓨터(127.0.0.1, localhost)에만 쓸 수 있습니다. 주소에 사용자 이름, 비밀번호, 쿼리, 프래그먼트를 넣을 수 없습니다.",
   "sections": {
     "judges": "판정기",
+    "judgeTiers": "판정 계층",
     "decisions": "판정 지점",
     "features": "기능",
-    "models": "모델 및 공급자",
+    "moreFeatures": "추가 기능",
+    "providers": "공급자",
+    "defaultModel": "기본 모델",
     "permissions": "권한",
     "context": "컨텍스트"
+  },
+  "pages": {
+    "decisions": {
+      "input": "판정 지점: 입력",
+      "context": "판정 지점: 컨텍스트",
+      "memory": "판정 지점: 교훈",
+      "tools": "판정 지점: 도구 및 안전",
+      "turn": "판정 지점: 턴",
+      "team": "판정 지점: 협업"
+    },
+    "features": {
+      "input": "추가 기능: 입력",
+      "context": "추가 기능: 컨텍스트",
+      "tools": "추가 기능: 도구 및 안전",
+      "turn": "추가 기능: 턴",
+      "other": "추가 기능: 기타"
+    }
   },
   "modes": {
     "active": "적용",
@@ -24,11 +44,11 @@
     "off": "끔",
     "activeHelp": "판정이 실제로 적용됩니다.",
     "shadowHelp": "질문하고 기록하지만, 아무것도 바꾸지 않습니다.",
-    "offHelp": "질문하지 않습니다. 기본 pi처럼 동작합니다."
+    "offHelp": "질문하지 않습니다. 그 단계는 판정 없이 진행됩니다."
   },
   "harness": {
-    "tooOld": "이 하니스는 버전이 오래되어 판정 지점과 기능을 설명할 수 없습니다. 여기에서 보려면 mu 하니스를 업데이트하세요. 기본 설정은 계속 사용할 수 있습니다.",
-    "unsupported": "이 앱이 인식하지 못하는 형식(버전 {{version}})으로 하니스가 자신을 설명합니다. 판정 지점과 기능을 편집하려면 앱을 업데이트하세요."
+    "tooOld": "이 mu 버전은 너무 오래되어 판정 지점과 기능을 보여 줄 수 없습니다. 여기에서 보려면 mu를 업데이트하세요. 기본 설정은 계속 사용할 수 있습니다.",
+    "unsupported": "이 앱이 인식하지 못하는 형식(버전 {{version}})으로 mu가 자신을 설명합니다. 판정 지점과 기능을 편집하려면 앱을 업데이트하세요."
   },
   "load": {
     "failed": "설정을 불러올 수 없습니다"
@@ -43,7 +63,7 @@
     "failed": "저장하지 못했습니다: {{reason}}"
   },
   "units": {
-    "ms": "밀리초",
+    "s": "초",
     "tokens": "토큰"
   },
   "options": {
@@ -62,59 +82,58 @@
     "description": "판정기에 질문하는 각 지점입니다. 별도 모드를 지정하지 않으면 기본 모드를 따릅니다.",
     "defaultMode": "기본 모드",
     "defaultModeHelp": "별도 모드가 지정되지 않은 모든 판정 지점에 적용됩니다.",
-    "follow": "기본값 따름({{mode}})",
-    "feature": "기능: {{name}}",
+    "useDefault": "기본값으로 되돌리기 ({{mode}})",
     "featureOff": "기능 꺼짐: 질문하지 않음",
     "groups": {
       "input": "입력",
       "context": "컨텍스트",
+      "memory": "교훈",
       "tools": "도구 및 안전",
       "turn": "턴",
       "team": "협업"
     },
-    "otherGroup": "기타"
+    "otherGroup": "기타",
+    "pageLead": "별도 모드를 지정하지 않으면 기본 모드를 따릅니다. 기본 모드와 검색은 「{{page}}」에 있습니다.",
+    "none": "아직 여기에는 판정 지점이 없습니다."
   },
   "features": {
-    "description": "하니스가 모델 주변에서 하는 일입니다. 변경하지 않은 값은 계속 하니스 기본값을 따릅니다.",
+    "lead": "mu가 백그라운드에서 대신 해 주는 일입니다. 끄면 mu가 더 이상 그 일을 하지 않습니다.",
+    "moreLead": "mu가 할 수 있는 나머지 일을 작동하는 위치별로 묶었습니다. 각 기능의 옵션은 한 번의 클릭으로 열립니다.",
     "beta": "베타",
     "reset": "기본값 복원",
-    "asks": "판정 지점: {{names}}.",
     "permissionsElsewhere": "새 대화의 모드는 권한에서 선택합니다.",
-    "boardModelElsewhere": "보드를 작성하는 모델은 모델 및 공급자에서 선택합니다."
+    "boardModelElsewhere": "보드를 작성하는 모델은 기본 모델에서 선택합니다.",
+    "options": "옵션",
+    "noOptions": "더 설정할 것은 없습니다. 스위치만 있습니다.",
+    "noSuchFeature": "이 버전의 mu에는 이 기능이 없습니다.",
+    "none": "아직 여기에는 기능이 없습니다.",
+    "part": "옵션, {{parts}}쪽 중 {{part}}쪽",
+    "previousPart": "이전 페이지",
+    "nextPart": "다음 페이지"
   },
   "judges": {
-    "tiers": "판정 계층",
     "tiersHelp": "판정기는 순서대로 시도됩니다. 뒤의 판정기는 앞의 판정기가 확신하지 못한 것만 봅니다.",
     "order": "순서",
-    "judge": "판정기",
+    "orderHelp": "첫 번째는 판정기 페이지에서 고른 판정기입니다.",
+    "tierTitle": "{{index}}단계: {{name}}",
     "type": "연결 방식",
+    "access": {
+      "jev": "자동",
+      "typesafe": "TypeSafe 직접 연결",
+      "gateway": "Vercel AI Gateway 경유"
+    },
     "model": "판정기 모델",
-    "modelHelp": "일반 모델을 판정기로 쓸 때: provider/model-id.",
-    "endpoint": "엔드포인트",
+    "customTier": "직접 추가한 판정기입니다. 바꾸려면 mu 설정 파일을 편집하세요.",
     "endpointDefault": "서비스 기본 주소",
-    "timeout": "시간 제한",
-    "keyVariable": "키 변수",
-    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY 또는 MU_JUDGE_로 시작하는 이름을 쓸 수 있습니다.",
     "types": {
-      "jev": "Jev(자동 경로)",
-      "typesafe": "Jev, 직접 연결(TypeSafe)",
-      "gateway": "Jev(Vercel AI Gateway 경유)",
-      "local": "로컬 판정기(Laya)",
-      "http": "자체 HTTP 판정기 서비스",
-      "llm": "일반 모델을 판정기로 사용",
-      "mock": "모의(중립 답변)",
       "jevHelp": "TypeSafe 키가 설정되어 있으면 TypeSafe에 직접 연결하고, 그렇지 않으면 Vercel AI Gateway를 거칩니다.",
       "typesafeHelp": "항상 TypeSafe에 직접 연결합니다.",
       "gatewayHelp": "항상 Vercel AI Gateway를 거칩니다.",
-      "localHelp": "이 컴퓨터에서 실행되는 Laya 사이드카입니다.",
-      "httpHelp": "{state, questions}를 받아 {answers}를 반환하는 엔드포인트라면 무엇이든 됩니다.",
-      "llmHelp": "등록된 공급자의 생성 모델이 프롬프트에 따라 JSON으로 답합니다.",
-      "mockHelp": "테스트와 오프라인 작업용: 실제로 질문하지 않습니다."
+      "localHelp": "이 컴퓨터에서 실행됩니다."
     },
     "intro": "mu는 작업하는 동안 작은 판정을 많이 내려야 합니다. 이 메시지를 어떻게 처리할지, 이 단계가 사용자가 정한 규칙을 어기는지 등입니다. 판정기가 이 질문에 답합니다. 하나를 선택하세요.",
     "choose": "판정기 선택",
-    "custom": "현재 첫 번째 판정기는 사용자 정의 판정기입니다. 고급에서 확인하고 변경하세요.",
-    "advanced": "고급",
+    "custom": "현재 첫 번째 판정기는 사용자 정의 판정기입니다. 판정 계층 페이지에서 확인하고 변경하세요.",
     "keyPlaceholder": "TypeSafe 또는 Vercel AI Gateway 키를 붙여넣으세요",
     "choices": {
       "jev": {
@@ -133,7 +152,7 @@
       "running": "이 컴퓨터에서 실행 중",
       "stopped": "설치되었지만 실행 중이 아닙니다. 필요할 때 mu가 시작합니다.",
       "missing": "아직 설치되지 않았습니다.",
-      "platform": "이 컴퓨터에서는 Laya를 실행할 수 없습니다. Apple Silicon Mac이 필요합니다. 고급에서 자체 판정기 서비스의 주소를 입력할 수 있습니다.",
+      "platform": "이 컴퓨터에서는 Laya를 실행할 수 없습니다. Windows 또는 Linux(x64 또는 arm64), 또는 Apple Silicon Mac이 필요합니다.",
       "needsUv": "설치하려면 Python 패키지 관리자인 uv가 필요합니다. uv를 설치한 뒤 여기로 돌아오세요.",
       "uvLink": "uv 설치 방법",
       "install": "Laya 설치",
@@ -151,6 +170,26 @@
         "setup": "설치가 완료되지 않았습니다. 다시 시도할 수 있습니다.",
         "start": "Laya를 시작하지 못했습니다.",
         "stop": "Laya를 중지하지 못했습니다."
+      },
+      "onnx": {
+        "missing": "이 컴퓨터에는 아직 Laya 모델이 없습니다(약 {{size}}MB). mu는 대신 다운로드하지 않습니다. Hugging Face에서 파일을 받아 모델 폴더에 넣은 뒤 '확인 후 시작'을 누르세요.",
+        "stopped": "모델은 준비되었고 Laya는 실행 중이 아닙니다. Laya가 판정기로 선택되어 있으면 앱을 열 때 mu가 자동으로 시작합니다.",
+        "starting": "모델을 확인하고 Laya를 시작하는 중… 첫 확인은 모델 전체를 읽으므로 잠시 걸립니다.",
+        "missingFiles": "아직 없는 파일: {{files}}",
+        "wrongFiles": "mu에서 테스트한 버전이 아닙니다. 다시 받아 주세요: {{files}}",
+        "folder": "모델 폴더: {{folder}}",
+        "command": "Hugging Face 명령줄(hf)이 있다면 이 명령 하나로 모두 받을 수 있습니다:",
+        "page": "Hugging Face에서 받기",
+        "openFolder": "모델 폴더 열기",
+        "check": "확인 후 시작",
+        "problem": {
+          "missing": "일부 모델 파일이 없습니다.",
+          "wrong": "일부 모델 파일이 mu에서 테스트한 버전이 아닙니다. 다시 받아 주세요.",
+          "runtime": "이 컴퓨터에서 모델을 실행할 수 없습니다.",
+          "port": "다른 프로그램이 이미 Laya의 포트({{port}})를 사용하고 있습니다.",
+          "stopped": "Laya가 준비되기 전에 멈췄습니다.",
+          "foreign": "mu가 시작하지 않은 Laya가 실행 중입니다. 시작한 곳에서 중지하세요."
+        }
       }
     }
   },
@@ -163,14 +202,12 @@
     "manual": "설정됨(수동)"
   },
   "context": {
-    "description": "대화를 언제, 어떻게 압축할지 정합니다. pi의 settings.json과 공유됩니다.",
+    "description": "대화를 언제, 어떻게 압축할지 정합니다. mu 설정 파일에 저장되며, 명령줄의 mu도 같은 파일을 씁니다.",
     "auto": "자동 압축",
     "autoHelp": "컨텍스트가 거의 가득 차면 기록을 압축합니다.",
     "limit": "컨텍스트 상한",
     "limitHelp": "0이면 모델의 컨텍스트 창에서 예비분을 뺀 값을 따릅니다. 직접 정하려면 {{min}}~{{max}} 사이로 입력하세요. 다음 모델 요청 전에 확인하며, 강제로 잘라내지는 않습니다.",
-    "limitProblem": "0 또는 {{min}}~{{max}} 사이의 정수를 입력하세요.",
-    "beta": "요약 없는 압축",
-    "betaHelp": "요약을 작성하는 대신 판정에 따라 원문 구절을 유지하거나 잘라냅니다. 압축 기능과 같은 스위치입니다."
+    "limitProblem": "0 또는 {{min}}~{{max}} 사이의 정수를 입력하세요."
   },
   "permissions": {
     "description": "mu가 작업하기 전에 사용자에게 물어볼지 정합니다. 모든 새 대화는 이 모드로 시작하며, 각 대화의 입력창에 있는 “권한”에서 따로 바꿀 수 있습니다.",
@@ -229,7 +266,7 @@
     "flagged": "위험: {{flag}}."
   },
   "providers": {
-    "lead": "모델을 어디서 가져올지 정합니다. 구독과 엔드포인트, 그리고 쉬운 말 보드를 작성하는 모델이 여기 있습니다. 대화의 모델과 사고 수준은 각 대화의 입력창에서 선택합니다.",
+    "lead": "모델을 어디서 가져올지 정합니다. 구독과 엔드포인트가 여기 있습니다. 대화의 모델과 사고 수준은 각 대화의 입력창에서 선택합니다.",
     "title": "공급자",
     "custom": "사용자 정의 공급자",
     "manualGroup": "직접 작성",
@@ -242,7 +279,7 @@
     "name": "표시 이름",
     "namePlaceholder": "예: 내 프록시",
     "id": "ID",
-    "idHelp": "영문 소문자, 숫자, 하이픈. 저장 후에는 바꿀 수 없으며 provider/model 형식으로 사용됩니다.",
+    "idHelp": "영문 소문자, 숫자, 하이픈. 저장 후에는 바꿀 수 없습니다.",
     "idProblem": {
       "format": "영문 소문자, 숫자, 하이픈만 사용하고 문자나 숫자로 시작하세요(최대 40자).",
       "reserved": "내장 공급자의 ID입니다. 이 ID로 항목을 만들면 공급자가 추가되지 않고 해당 공급자의 경로가 바뀝니다.",
@@ -251,7 +288,6 @@
     "baseUrl": "기본 URL",
     "keyEnter": "API 키를 붙여넣으세요",
     "keyReplace": "직접 작성한 키가 사용 중입니다. 여기에 입력하면 그 키를 대체합니다.",
-    "keyHelp": "하니스 .env에 {{variable}}(으)로 저장되며, models.json에는 참조만 들어갑니다. 다시 표시되지 않습니다.",
     "authHeader": "Authorization: Bearer도 함께 보내기(일부 프록시에 필요)",
     "headers": "직접 작성한 추가 헤더는 그대로 유지됩니다: {{names}}. 값은 비밀 정보이므로 models.json에서 편집합니다.",
     "pick": "왼쪽에서 공급자를 선택하거나 새로 추가하세요.",
@@ -276,6 +312,18 @@
     "removeUnsaved": "아직 저장되지 않았으므로 여기에 입력한 내용은 버려집니다.",
     "removeEntry": "저장하면 직접 작성한 이 항목이 models.json에서 삭제됩니다. 내장 공급자를 덮어쓰는 항목이었다면 해당 공급자는 기본값으로 돌아갑니다.",
     "removeDefault": "새 세션이 이 공급자의 모델로 시작하므로 기본 모델도 함께 해제됩니다."
+  },
+  "defaults": {
+    "summary": "What a new session starts with. You can still switch inside a conversation.",
+    "provider": "공급자",
+    "model": "모델",
+    "level": "추론 수준",
+    "levelUnset": "지정 안 함",
+    "levelHelp": "Levels this model does not take are disabled.",
+    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
+    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
+    "notSet": "지정 안 됨",
+    "pickProvider": "Choose a provider first."
   },
   "accounts": {
     "signIn": "로그인",
@@ -344,7 +392,7 @@
   },
   "test": {
     "run": "연결 테스트",
-    "hint": "이 앱에서 최소한의 요청을 한 번 보냅니다. 모델 목록을 요청하고, 안 되면 첫 번째 모델로 토큰 하나를 요청합니다.",
+    "hint": "이 앱에서 최소한의 요청을 한 번 보냅니다. 모델 목록을 요청하고, 안 되면 첫 번째 모델에게 한 단어만 답하게 합니다.",
     "okModels": "연결되었습니다({{ms}}밀리초). 엔드포인트 목록에 모델 {{count, number}}개가 있습니다.",
     "okCompletion": "연결되었습니다({{ms}}밀리초). 모델이 응답했습니다.",
     "auth": "키가 거부되었습니다(HTTP {{status}}).",
@@ -418,7 +466,6 @@
       },
       "anthropic": {
         "title": "Anthropic 호환 API",
-        "tag": "Claude",
         "description": "Claude 및 Messages 형식을 쓰는 서비스",
         "modelPlaceholder": "예: claude-sonnet-5"
       },

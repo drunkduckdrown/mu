@@ -25,7 +25,7 @@ import { mapEvent, messageText, messageThinking } from './events.ts';
 import { muHome } from './naming.ts';
 import { Telemetry } from './telemetry.ts';
 import { slashCommands } from './commands.ts';
-import { UNOFFERED_PROVIDER_IDS } from '../../../common/kyrn/models.ts';
+import { supportedThinkingLevels, UNOFFERED_PROVIDER_IDS } from '../../../common/kyrn/models.ts';
 import {
   answerIndex,
   answerKind,
@@ -400,6 +400,24 @@ export class KyrnAgent implements Agent {
     ]);
     const current = asRecord(state.model);
     const currentValue = `${text(current.provider)}/${text(current.id)}`;
+    const offered = array(models.models)
+      .map(asRecord)
+      // A model already in use stays listed, so the picker still shows what the conversation runs on.
+      .filter(
+        (model) =>
+          !UNOFFERED_PROVIDER_IDS.has(text(model.provider)) ||
+          `${text(model.provider)}/${text(model.id)}` === currentValue
+      );
+    // What each model takes, by pi's own rule, beside the options: an ACP select option has no room for it. The send
+    // box offers each model with its levels, so one pick can switch both.
+    session.telemetry.levels(
+      Object.fromEntries(
+        offered.map((model) => [
+          `${text(model.provider)}/${text(model.id)}`,
+          supportedThinkingLevels(model.reasoning === true, asRecord(model.thinkingLevelMap)),
+        ])
+      )
+    );
     return [
       {
         id: 'model',
@@ -407,19 +425,11 @@ export class KyrnAgent implements Agent {
         name: 'Model',
         type: 'select',
         currentValue,
-        options: array(models.models)
-          .map(asRecord)
-          // A model already in use stays listed, so the picker still shows what the conversation runs on.
-          .filter(
-            (model) =>
-              !UNOFFERED_PROVIDER_IDS.has(text(model.provider)) ||
-              `${text(model.provider)}/${text(model.id)}` === currentValue
-          )
-          .map((model) => ({
-            value: `${text(model.provider)}/${text(model.id)}`,
-            name: text(model.name) || text(model.id),
-            description: text(model.provider),
-          })),
+        options: offered.map((model) => ({
+          value: `${text(model.provider)}/${text(model.id)}`,
+          name: text(model.name) || text(model.id),
+          description: text(model.provider),
+        })),
       },
       {
         id: 'thinking',

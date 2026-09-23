@@ -28,13 +28,23 @@ describe('Native Hive event projection', () => {
     expect(normalized?.key).toBe('run-1');
   });
 
-  it('supports a named Hive before its first snapshot but not unrelated tool titles', () => {
+  it('supports a named swarm tool before its first snapshot but not unrelated tool titles', () => {
     expect(parseHiveTool('hive', { bees: [{ name: 'a' }] }, undefined)).toMatchObject({
+      kind: 'hive',
       names: ['a'],
+      snapshot: undefined,
+    });
+    expect(parseHiveTool('delegate', { tasks: [{ title: 'a' }, { title: 'b' }] }, undefined)).toMatchObject({
+      kind: 'delegate',
+      names: ['a', 'b'],
       snapshot: undefined,
     });
     expect(parseHiveTool('archive-hive', {}, {})).toBeUndefined();
     expect(parseHiveTool('other', {}, { details: { snapshot: hiveSnapshot } })?.snapshot?.bees).toHaveLength(2);
+    // A delegate snapshot is read as one too, whatever the tool that carried it was called.
+    expect(parseHiveTool('other', {}, { details: { snapshot: { ...hiveSnapshot, kind: 'delegate' } } })).toMatchObject({
+      kind: 'delegate',
+    });
   });
 
   it('never turns a passed gate into a confirmed delivery', () => {
@@ -189,10 +199,12 @@ describe('Native Hive event projection', () => {
     expect(parseSwarmProgress(undefined)).toBeUndefined();
     const message = hiveMessage();
     message.content.update.title = 'delegate';
+    message.content.update.rawInput = { tasks: [{ title: 'scout' }, { title: 'build' }] };
     message.content.update.rawOutput = choosing;
     const normalized = normalizeAcpToolCall(message);
     expect(normalized?.swarmProgress).toEqual({ code: 'choosing_roles', params: { count: 3 } });
-    expect(normalized?.hive).toBeUndefined();
+    // A delegate call is a sub-agent run from the start: the tasks it asked for name its sub-agents.
+    expect(normalized?.hive).toMatchObject({ kind: 'delegate', names: ['scout', 'build'], snapshot: undefined });
     // The English output stays the raw evidence it was.
     expect(normalized?.output).toBe('\u001b[32mOriginal terminal evidence\u001b[0m');
   });

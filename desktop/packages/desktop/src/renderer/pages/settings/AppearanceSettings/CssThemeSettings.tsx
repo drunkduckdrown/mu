@@ -10,7 +10,7 @@ import { ipcBridge } from '@/common';
 import { uuid } from '@/common/utils';
 import { useThemeContext } from '@renderer/hooks/context/ThemeContext.tsx';
 import { Button, Message, Modal } from '@arco-design/web-react';
-import { EditTwo, CheckOne } from '@icon-park/react';
+import { Check, EditTwo } from '@icon-park/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import CssThemeModal from './CssThemeModal.tsx';
@@ -19,6 +19,7 @@ import { BACKGROUND_BLOCK_START, injectBackgroundCssBlock } from './backgroundUt
 import { resolveExtensionAssetUrl } from '@renderer/utils/platform.ts';
 import { LIGHT_THEME_ID, SYSTEM_THEME_ID } from '@/common/theme/constants';
 import { builtinThemeNameKey } from '@renderer/theme/builtinThemes';
+import { darkThemeCover, lightThemeCover } from './themeCovers.ts';
 
 interface ThemePreviewPalette {
   appBg: string;
@@ -214,13 +215,21 @@ const ThemeLayoutPreview: React.FC<{ palette: ThemePreviewPalette }> = ({ palett
   );
 };
 
-/** Diagonal split preview for the "Follow System" card: light top-left, dark bottom-right. */
+const coverStyle = (cover: string): React.CSSProperties => ({
+  backgroundImage: `url(${cover})`,
+  backgroundSize: 'cover',
+  backgroundPosition: 'top left',
+  backgroundRepeat: 'no-repeat',
+});
+
+/** The "Follow System" card: the light cover top-left, the dark one bottom-right, split on the diagonal. */
 const SystemThemePreview: React.FC = () => (
   <div className='absolute inset-0 pointer-events-none'>
-    <ThemeLayoutPreview palette={fallbackThemePreviewPaletteByMode.light} />
-    <div className='absolute inset-0' style={{ clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}>
-      <ThemeLayoutPreview palette={fallbackThemePreviewPaletteByMode.dark} />
-    </div>
+    <div className='absolute inset-0' style={coverStyle(lightThemeCover)} />
+    <div
+      className='absolute inset-0'
+      style={{ ...coverStyle(darkThemeCover), clipPath: 'polygon(100% 0, 100% 100%, 0 100%)' }}
+    />
   </div>
 );
 
@@ -243,7 +252,7 @@ const ensureBackgroundCss = <T extends { id?: string; cover?: string; css?: stri
  */
 const CssThemeSettings: React.FC = () => {
   const { t } = useTranslation();
-  const { theme: currentTheme, activeTheme, activeId, selectTheme } = useThemeContext();
+  const { activeTheme, activeId, selectTheme } = useThemeContext();
   const [themes, setThemes] = useState<Theme[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
@@ -263,10 +272,10 @@ const CssThemeSettings: React.FC = () => {
   const themePreviewPalettes = useMemo(() => {
     const map = new Map<string, ThemePreviewPalette>();
     themes.forEach((cssTheme) => {
-      map.set(cssTheme.id, extractThemePreviewPalette(cssTheme.css || '', currentTheme === 'dark' ? 'dark' : 'light'));
+      map.set(cssTheme.id, extractThemePreviewPalette(cssTheme.css || '', cssTheme.appearance));
     });
     return map;
-  }, [themes, currentTheme]);
+  }, [themes]);
 
   // Virtual "Follow System" card, third in the gallery (after Light and Dark).
   // Not part of BUILTIN_THEMES — it must never enter resolution/dedup/persistence.
@@ -462,28 +471,38 @@ const CssThemeSettings: React.FC = () => {
           short list (e.g. just Light/Dark/Follow System) stays at its natural
           size and leaves the trailing space empty instead of stretching each
           card across the whole row. */}
-      <div className='flex flex-wrap gap-12px'>
+      <div className='flex flex-wrap gap-12px' role='radiogroup' aria-label={t('settings.theme')}>
         {displayThemes.map((theme) => {
           const previewPalette =
-            themePreviewPalettes.get(theme.id) ||
-            fallbackThemePreviewPaletteByMode[currentTheme === 'dark' ? 'dark' : 'light'];
-          const cardStyle = theme.cover
-            ? {
-                backgroundImage: `url(${theme.cover})`,
-                backgroundSize: '100% 100%',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundColor: previewPalette.appBg,
-              }
+            themePreviewPalettes.get(theme.id) || fallbackThemePreviewPaletteByMode[theme.appearance];
+          const cardStyle: React.CSSProperties = theme.cover
+            ? { ...coverStyle(theme.cover), backgroundColor: previewPalette.appBg }
             : { backgroundColor: previewPalette.appBg };
+          const active = activeThemeId === theme.id;
+          // Every card has a hairline, so a light preview keeps its edge on a white page; the chosen one also gets
+          // the accent ring (drawn inside, over the preview) and a check.
+          if (active) {
+            cardStyle.outline = '2px solid var(--mu-accent-border)';
+            cardStyle.outlineOffset = '-2px';
+          }
           return (
             <div
               key={theme.id}
               data-testid={`theme-card-${theme.id}`}
-              data-active={activeThemeId === theme.id}
-              className={`relative cursor-pointer rounded-12px overflow-hidden border-2 transition-all duration-200 h-112px w-200px flex-shrink-0 ${activeThemeId === theme.id ? 'border-[var(--color-primary)]' : 'border-transparent hover:border-border-2'}`}
+              data-active={active}
+              role='radio'
+              aria-checked={active}
+              aria-label={themeLabel(theme)}
+              tabIndex={0}
+              className={`relative cursor-pointer rounded-12px overflow-hidden border border-solid transition-colors duration-200 h-112px w-200px flex-shrink-0 ${active ? 'border-transparent' : 'border-[var(--border-base)] hover:border-[var(--bg-4)]'}`}
               style={cardStyle}
               onClick={() => handleSelectTheme(theme)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  void handleSelectTheme(theme);
+                }
+              }}
               onMouseEnter={() => setHoveredThemeId(theme.id)}
               onMouseLeave={() => setHoveredThemeId(null)}
             >
@@ -510,11 +529,15 @@ const CssThemeSettings: React.FC = () => {
                 )}
               </div>
 
-              {/* 选中标记 / Selected indicator */}
-              {activeThemeId === theme.id && (
-                <div className='absolute top-8px end-8px'>
-                  <CheckOne theme='filled' size='20' fill='var(--color-primary)' />
-                </div>
+              {/* The chosen card's check: dark on the light accent, readable on either preview. */}
+              {active && (
+                <span
+                  className='absolute top-8px end-8px flex items-center justify-center w-20px h-20px rounded-full bg-[var(--mu-accent-fill)] text-[var(--mu-accent-on)]'
+                  style={{ boxShadow: 'var(--mu-shadow-1)' }}
+                  aria-hidden='true'
+                >
+                  <Check theme='outline' size='12' strokeWidth={5} fill='currentColor' />
+                </span>
               )}
             </div>
           );

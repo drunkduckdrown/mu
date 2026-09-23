@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "Tool-Aktivität",
-    "calls": "{{count}} Aufrufe",
-    "calls_one": "{{count}} Aufruf",
-    "commands": "{{count}} Befehle",
-    "commands_one": "{{count}} Befehl",
     "input": "Eingabe",
     "output": "Ausgabe",
     "loading": "Vollständige Ausgabe wird geladen…",
     "loadError": "Vollständige Ausgabe konnte nicht geladen werden.",
     "retry": "Erneut versuchen",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "Mehr anzeigen",
+    "showLess": "Weniger anzeigen"
+  },
+  "activity": {
+    "running": "{{steps}} Schritte · läuft {{label}}",
+    "summary": "{{steps}} Schritte",
+    "summaryFailed": "{{steps}} Schritte · {{failed}} fehlgeschlagen"
   },
   "kind": {
     "edit": "Datei bearbeiten",

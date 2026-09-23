@@ -3,9 +3,7 @@ export {
   goToGuid,
   goToSettings,
   goToExtensionSettings,
-  goToChannelsTab,
   resetGuidLastSelectedAgent,
-  resetChannelsTabCache,
   waitForSettle,
   waitForClassChange,
   ROUTES,
@@ -34,23 +32,13 @@ export {
   modeMenuItemByValue,
   MODEL_SELECTOR_BTN,
   settingsSiderItemById,
-  CHANNEL_IDS,
-  channelItemById,
-  channelSwitchById,
-  webuiTabByKey,
   assistantOverflowPillById,
   ASSISTANT_PILL,
   ASSISTANT_PILL_SELECTED,
-  type ChannelId,
 } from './selectors';
 export { expectBodyContainsAny, expectUrlContains, createErrorCollector } from './assertions';
 export { takeScreenshot } from './screenshots';
-export {
-  getExtensionSnapshot,
-  getChannelPluginStatus,
-  type ExtensionSnapshot,
-  type ChannelPluginStatus,
-} from './extensions';
+export { getExtensionSnapshot, type ExtensionSnapshot } from './extensions';
 export { invokeBridge } from './bridge';
 export { httpInvoke, httpGet, httpPost, httpDelete } from './httpBridge';
 export {
@@ -108,7 +96,6 @@ export {
   SKILLS_SECTION,
   SKILLS_INDICATOR,
   SKILLS_INDICATOR_COUNT,
-  AGENT_BADGE,
 } from './selectors';
 export {
   resolveAionrsBinary,
@@ -125,7 +112,6 @@ export {
   selectAionrsModel,
   selectAionrsMode,
   attachAionrsFolder,
-  uploadAionrsFiles,
   type TProviderWithModel,
   type AionrsTestModels,
 } from './chatAionrs';

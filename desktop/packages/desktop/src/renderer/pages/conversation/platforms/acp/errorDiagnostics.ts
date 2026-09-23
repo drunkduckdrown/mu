@@ -6,7 +6,7 @@
 
 import { isBackendHttpError } from '@/common/adapter/httpBridge';
 
-/** Redacted summary of an original error, safe to attach to a Sentry report. */
+/** Redacted summary of an original error, safe to keep with the failure message. */
 export type RawErrorSummary = {
   name?: string;
   message?: string;

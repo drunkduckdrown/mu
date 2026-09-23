@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "工具活动",
-    "calls": "{{count}} 次调用",
-    "calls_one": "{{count}} 次调用",
-    "commands": "{{count}} 条命令",
-    "commands_one": "{{count}} 条命令",
     "input": "输入",
     "output": "输出",
     "loading": "正在加载完整输出…",
     "loadError": "无法加载完整输出。",
     "retry": "重试",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "展开全部",
+    "showLess": "收起"
+  },
+  "activity": {
+    "running": "{{steps}} 步 · 正在执行 {{label}}",
+    "summary": "{{steps}} 步",
+    "summaryFailed": "{{steps}} 步 · {{failed}} 步失败"
   },
   "kind": {
     "edit": "编辑文件",

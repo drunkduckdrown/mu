@@ -40,12 +40,12 @@ const ChatLayout: React.FC<{
   headerExtra?: React.ReactNode;
   workspaceEnabled?: boolean;
   /**
-   * When true (project conversations), the preview panel is hoisted to the
-   * Layout-level project host and this ChatLayout renders chat only — the preview
-   * region + its resize live at the Layout level, structurally persistent across
-   * same-project conversation switches (no remount).
+   * When true, the Layout's work panel holds this page's right side — preview,
+   * files, source control and the kernel tabs — on every width, and this
+   * ChatLayout renders the chat only: no inline preview, no workspace sider, no
+   * mobile overlay, and no answer to the workspace toggle (the panel owns it).
    */
-  previewHosted?: boolean;
+  panelHosted?: boolean;
   /** Conversation ID for mode switching */
   conversation_id?: string;
   /** Custom tabs slot; when provided, replaces the default ConversationTabs */
@@ -66,31 +66,24 @@ const ChatLayout: React.FC<{
   headerLeading?: React.ReactNode;
 }> = (props) => {
   const { conversation_id, workspacePath, isTemporaryWorkspace } = props;
-  const { backend, presetAssistant, agent_name, workspaceEnabled = true, workspacePreferenceKey } = props;
+  const { backend, presetAssistant, agent_name, workspacePreferenceKey } = props;
+  const panelHosted = Boolean(props.panelHosted);
+  const workspaceEnabled = (props.workspaceEnabled ?? true) && !panelHosted;
   const layout = useLayoutContext();
   const isDesktop = !layout?.isMobile;
   const isMobile = Boolean(layout?.isMobile);
 
   // Preview panel state
   const { isOpen: isPreviewOpenRaw, isMaximized } = usePreviewContext();
-  // Only hoist to the Layout host on desktop. On mobile (narrow width < 768) the
-  // host is not rendered (`previewRegionActive` in Layout.tsx is gated on
-  // `!isMobile`), so hoisting there would leave the preview with no renderer at
-  // all. Forcing `previewHosted` to false on mobile makes every conversation —
-  // including project conversations — fall back to ChatLayout's own mobile
-  // overlay path, exactly how non-project conversations still render today.
-  const previewHosted = Boolean(props.previewHosted) && !isMobile;
-  // For project conversations the preview lives at the Layout host, so this
-  // ChatLayout must behave as if there is no preview: chat fills, no split, no
-  // preview panel. Everywhere below uses `isPreviewOpen` for that local decision.
-  const isPreviewOpen = isPreviewOpenRaw && !previewHosted;
+  // A hosted page's preview lives in the Layout's work panel (on mobile too, as its
+  // sheet), so this ChatLayout behaves as if there were no preview: chat fills, no
+  // split, no preview panel. Everywhere below uses `isPreviewOpen` for that choice.
+  const isPreviewOpen = isPreviewOpenRaw && !panelHosted;
   // 最大化（仅桌面）：隐藏聊天区、让内联预览铺满；工作区右栏保持不变。
-  // 项目会话的预览被提升到 Layout host（previewHosted），其最大化在 Layout 处理，
-  // 这里的 isPreviewOpen 已排除该情况。
+  // 由工作面板承载预览时（panelHosted），最大化在 Layout 处理，这里的 isPreviewOpen 已排除该情况。
   // Maximized (desktop only): hide the chat area so the inline preview fills it;
-  // the right workspace sider stays unchanged. Project conversations hoist the
-  // preview to the Layout host (previewHosted) and handle maximizing there —
-  // isPreviewOpen already excludes that case here.
+  // the right workspace sider stays unchanged. A hosted page maximizes in the
+  // Layout's work panel — isPreviewOpen already excludes that case here.
   const previewMaximized = isDesktop && isPreviewOpen && isMaximized;
 
   // --- Hook A: workspace collapse ---
@@ -100,6 +93,7 @@ const ChatLayout: React.FC<{
     conversation_id,
     preferenceKey: workspacePreferenceKey ?? conversation_id,
     isTemporaryWorkspace,
+    enabled: !panelHosted,
   });
 
   // --- Hook B: container width ---

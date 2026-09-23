@@ -102,26 +102,6 @@ export const AGENT_PILL_SELECTED = `${AGENT_PILL}[data-agent-selected="true"]`;
 /** Model selector button on the guid page. */
 export const MODEL_SELECTOR_BTN = 'button.sendbox-model-btn.guid-config-btn';
 
-// ── Channel list ─────────────────────────────────────────────────────────────
-
-export const CHANNEL_IDS = ['telegram', 'lark', 'dingtalk', 'slack', 'discord'] as const;
-export type ChannelId = (typeof CHANNEL_IDS)[number];
-
-/** Match a channel row by channel id. */
-export function channelItemById(id: string): string {
-  return `[data-channel-id="${id}"]`;
-}
-
-/** Match a channel switch by channel id. */
-export function channelSwitchById(id: string): string {
-  return `[data-channel-switch-for="${id}"]`;
-}
-
-/** Match WebUI page tabs by key (`webui` / `channels`). */
-export function webuiTabByKey(key: 'webui' | 'channels'): string {
-  return `[data-webui-tab="${key}"]`;
-}
-
 // ── Assistant Settings ──────────────────────────────────────────────────────
 
 /** Assistant card by ID. */
@@ -171,9 +151,6 @@ export const SKILLS_INDICATOR = '[data-testid="skills-indicator"]';
 
 /** Skills indicator count. */
 export const SKILLS_INDICATOR_COUNT = '[data-testid="skills-indicator-count"]';
-
-/** Agent badge on conversation page. */
-export const AGENT_BADGE = '[data-testid="agent-badge"]';
 
 /** Search toggle button. */
 export const BTN_SEARCH_ASSISTANT = '[data-testid="btn-search-toggle"]';

@@ -121,3 +121,29 @@ export const share = (update: BoardUpdate) => (update.total > 0 ? update.done / 
 
 /** Whether the board asks something of the person: said so, or listed what to confirm. */
 export const asksUser = (update: BoardUpdate) => update.needsUser || update.confirm.length > 0;
+
+/** How many earlier boards the panel lists under the current one. */
+const HISTORY_LIMIT = 5;
+
+const sameWords = (a: BoardUpdate | undefined, b: BoardUpdate | undefined): boolean =>
+  a !== undefined && b !== undefined && a.progress === b.progress && a.now === b.now;
+
+/**
+ * The boards before the current one, newest first, each with the time it came: what the board said as the work
+ * went on. The one replayed as the session opens repeats an earlier board and is left out, and so is a board that
+ * says the same as the one before it, or as the current one.
+ */
+export function boardHistory(
+  events: readonly Activity[],
+  current: BoardUpdate | undefined
+): { at: number; update: BoardUpdate }[] {
+  const earlier: { at: number; update: BoardUpdate }[] = [];
+  for (const event of events) {
+    if (event.kind !== 'board.update' || event.id === current?.id) continue;
+    const update = toBoardUpdate(event);
+    if (!update || update.restored || sameWords(earlier.at(-1)?.update, update)) continue;
+    earlier.push({ at: event.at, update });
+  }
+  const shown = sameWords(earlier.at(-1)?.update, current) ? earlier.slice(0, -1) : earlier;
+  return shown.slice(-HISTORY_LIMIT).toReversed();
+}

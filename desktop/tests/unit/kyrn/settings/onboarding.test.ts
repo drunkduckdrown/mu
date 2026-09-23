@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { KyrnSettings } from '@/common/kyrn/types';
 import { newDraft } from '@/renderer/pages/settings/KyrnSettings/draft';
-import { choiceOf, choose, jevKeyVariable, profileFor } from '@/renderer/pages/settings/KyrnSettings/judgeChoice';
+import {
+  choiceOf,
+  choose,
+  jevKeyVariable,
+  kindOf,
+  profileFor,
+  withJevAccess,
+} from '@/renderer/pages/settings/KyrnSettings/judgeChoice';
 import {
   apiModelProblem,
   markOnboardingSeen,
@@ -80,6 +87,29 @@ describe('the judge choice', () => {
       tiers: ['luna'],
     });
     expect(choiceOf(modelFirst)).toBeUndefined();
+  });
+
+  it('stands for the profile of a kind the order already asks, so the key asked for is the one its way in needs', () => {
+    const viaGateway = settings({ tiers: ['jev-gateway'] });
+    expect(profileFor(viaGateway, 'jev')).toBe('jev-gateway');
+    expect(jevKeyVariable(viaGateway.judges[profileFor(viaGateway, 'jev')!])).toBe('AI_GATEWAY_API_KEY');
+    expect(choose(viaGateway, 'jev').tiers).toEqual(['jev-gateway']);
+    expect(kindOf(viaGateway.judges.laya)).toBe('local');
+    expect(kindOf(viaGateway.judges.mock)).toBeUndefined();
+  });
+
+  it('swaps the profile of Jev’s way in into its place in the order, never asking the same one twice', () => {
+    expect(withJevAccess(settings(), 1, 'gateway').tiers).toEqual(['laya', 'jev-gateway']);
+    expect(withJevAccess(settings({ tiers: ['jev-gateway', 'laya'] }), 0, 'jev').tiers).toEqual(['jev', 'laya']);
+    // Already that way: nothing changes.
+    const same = settings();
+    expect(withJevAccess(same, 1, 'jev')).toBe(same);
+    // Two Jevs would be the same profile: the second goes.
+    expect(withJevAccess(settings({ tiers: ['jev', 'jev-gateway'] }), 1, 'jev').tiers).toEqual(['jev']);
+    // No profile for that way: the judge's own profile changes its type.
+    const direct = withJevAccess(settings(), 1, 'typesafe');
+    expect(direct.tiers).toEqual(['laya', 'jev']);
+    expect(direct.judges.jev.type).toBe('typesafe');
   });
 
   it('keeps the key of a Jev profile where the profile says, else in TYPESAFE_API_KEY', () => {

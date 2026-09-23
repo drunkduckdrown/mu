@@ -24,6 +24,11 @@ import ThemedLogo from '@/renderer/components/agent/ThemedLogo';
 import TalkToButlerButton from '@/renderer/components/base/TalkToButlerButton';
 import { AionSearchInput } from '@/renderer/components/base';
 import SettingsPageHeader from '@/renderer/pages/settings/components/SettingsPageHeader';
+import {
+  SETTINGS_PAGE_COLUMN,
+  SETTINGS_PAGE_GUTTER,
+  SETTINGS_PAGE_TOP,
+} from '@/renderer/pages/settings/components/SettingsPageWrapper';
 import { Attention, Robot } from '@icon-park/react';
 
 const ScheduledTasksPage: React.FC = () => {
@@ -125,10 +130,10 @@ const ScheduledTasksPage: React.FC = () => {
       <div
         className={classNames(
           'shrink-0 bg-1',
-          isMobile ? 'px-16px pt-14px pb-14px' : 'px-12px pt-14px pb-14px md:px-40px md:pt-32px md:pb-16px'
+          isMobile ? 'px-16px pt-14px pb-14px' : classNames(SETTINGS_PAGE_GUTTER, SETTINGS_PAGE_TOP, 'pb-16px')
         )}
       >
-        <div className='mx-auto w-full max-w-800px box-border'>
+        <div className={classNames(SETTINGS_PAGE_COLUMN, 'box-border')}>
           <SettingsPageHeader
             sticky={false}
             data-testid='scheduled-tasks-header'
@@ -161,16 +166,13 @@ const ScheduledTasksPage: React.FC = () => {
       <div
         className={classNames(
           'min-h-0 flex-1 overflow-y-auto overscroll-contain',
-          isMobile ? 'px-16px pb-14px' : 'px-12px pb-24px md:px-40px md:pb-32px'
+          isMobile ? 'px-16px pb-14px' : classNames(SETTINGS_PAGE_GUTTER, 'pb-24px md:pb-32px')
         )}
       >
         <div
-          className={classNames(
-            'mx-auto flex w-full max-w-800px box-border flex-col',
-            isMobile ? 'gap-14px' : 'gap-16px'
-          )}
+          className={classNames(SETTINGS_PAGE_COLUMN, 'flex box-border flex-col', isMobile ? 'gap-14px' : 'gap-16px')}
         >
-          <div className='grid w-full box-border grid-cols-[minmax(0,1fr)_auto] items-center gap-x-12px gap-y-10px rounded-12px border border-solid border-[var(--color-border-2)] bg-fill-2 px-14px py-12px sm:rounded-14px sm:px-16px max-[520px]:grid-cols-1'>
+          <div className='grid w-full box-border grid-cols-[minmax(0,1fr)_auto] items-center gap-x-12px gap-y-10px rounded-8px border border-solid border-[var(--border-base)] bg-base px-14px py-12px sm:px-16px max-[520px]:grid-cols-1'>
             <span
               className={classNames(
                 'min-w-0 text-t-primary',
@@ -190,15 +192,15 @@ const ScheduledTasksPage: React.FC = () => {
           </div>
 
           {loading ? (
-            <div className='flex min-h-220px items-center justify-center rounded-16px border border-dashed border-border-2 bg-fill-1'>
+            <div className='flex min-h-220px items-center justify-center rounded-8px border border-solid border-[var(--border-base)] bg-base'>
               <Spin />
             </div>
           ) : jobs.length === 0 ? (
-            <div className='flex min-h-220px items-center justify-center rounded-16px border border-dashed border-border-2 bg-fill-1'>
+            <div className='flex min-h-220px items-center justify-center rounded-8px border border-solid border-[var(--border-base)] bg-base'>
               <Empty description={t('cron.noTasks')} />
             </div>
           ) : filteredJobs.length === 0 ? (
-            <div className='flex min-h-220px items-center justify-center rounded-16px border border-dashed border-border-2 bg-fill-1'>
+            <div className='flex min-h-220px items-center justify-center rounded-8px border border-solid border-[var(--border-base)] bg-base'>
               <Empty description={t('cron.page.noSearchResults')} />
             </div>
           ) : (

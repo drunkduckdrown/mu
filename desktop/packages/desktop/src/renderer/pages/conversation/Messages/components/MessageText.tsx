@@ -23,6 +23,7 @@ import CollapsibleContent from '@renderer/components/chat/CollapsibleContent';
 import FilePreview from '@renderer/components/media/FilePreview';
 import HorizontalFileList from '@renderer/components/media/HorizontalFileList';
 import MarkdownView from '@renderer/components/Markdown';
+import { closeOpenFence } from './streamMarkdown';
 import { stripThinkTags, hasThinkTags } from '@renderer/utils/chat/thinkTagFilter';
 import { buildTurnClipboardText } from '@renderer/utils/chat/turnCopy';
 import { stripSkillSuggest, hasSkillSuggest } from '@renderer/utils/chat/skillSuggestParser';
@@ -161,6 +162,9 @@ const MessageText: React.FC<{
       )
     : visibleText;
   const { data, json } = useFormatContent(renderedText);
+  // Mid-stream an opened code fence has no close yet; without one the block would read as raw backticks until it
+  // arrives, then jump. Only the Markdown path needs it — a user message and a JSON payload are shown as they are.
+  const markdown = useMemo(() => (typeof data === 'string' ? closeOpenFence(data) : data), [data]);
   const shouldRenderPlainText = isUserMessage || Boolean(contextResetNotice);
   const conversationContext = useConversationContextSafe();
   const forkConversation = useForkConversation(conversationContext?.conversation_id);
@@ -340,7 +344,7 @@ const MessageText: React.FC<{
           ) : (
             <div data-testid='message-text-content'>
               <MarkdownView codeStyle={CODE_STYLE} onLocalFileLink={handleLocalFileLink}>
-                {data}
+                {markdown}
               </MarkdownView>
             </div>
           )}

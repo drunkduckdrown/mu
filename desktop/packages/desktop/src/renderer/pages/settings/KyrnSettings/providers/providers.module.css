@@ -1,5 +1,5 @@
-/* Every provider in one place: a heading with the add button, then the list on the left and the chosen one on the
-   right; one column when the section is narrow. Neutral surfaces: the accent is for buttons only. */
+/* Every provider in one place: one line of what can be done with the add button, then the list on the left and the
+   chosen one on the right; one column when the section is narrow. Neutral surfaces: the accent is for buttons only. */
 .providers {
   display: flex;
   flex-direction: column;
@@ -9,18 +9,9 @@
 
 .managerHead {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 10px;
-}
-
-.managerTitle {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 22px;
 }
 
 .manager {
@@ -29,7 +20,7 @@
   min-width: 0;
   min-height: 420px;
   border: 1px solid var(--color-border-2);
-  border-radius: 14px;
+  border-radius: 8px;
   background: var(--bg-1);
   overflow: hidden;
 }
@@ -69,7 +60,7 @@
   min-width: 0;
   padding: 7px 10px;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 8px;
   color: var(--text-primary);
   cursor: pointer;
   transition:
@@ -86,10 +77,14 @@
   outline-offset: 1px;
 }
 
+/* The chosen row: a quiet fill and a heavier name, no border of its own inside the list's frame. */
 .itemActive,
 .itemActive:hover {
-  border-color: var(--color-border-2);
   background: var(--color-fill-2);
+}
+
+.itemActive .itemName {
+  font-weight: 600;
 }
 
 .itemMark,
@@ -121,11 +116,11 @@
 }
 
 /* The state at the end of a row: green usable, amber something to do, a ring when not signed in, the judge's pink
-   breathing while a sign-in runs. */
+   breathing while a sign-in runs. Big enough to tell apart at a glance. */
 .dot {
   flex: none;
-  width: 7px;
-  height: 7px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
 }
 
@@ -138,7 +133,7 @@
 }
 
 .dotOff {
-  box-shadow: inset 0 0 0 1.5px var(--color-border-3);
+  box-shadow: inset 0 0 0 1.5px var(--bg-6);
 }
 
 .dotBusy {
@@ -234,6 +229,7 @@
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 18px;
+  text-wrap: balance;
 }
 
 .problem {
@@ -267,7 +263,7 @@
   flex-direction: column;
   min-width: 0;
   border: 1px solid var(--color-border-2);
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
 }
 

@@ -46,10 +46,6 @@ vi.mock('@/renderer/pages/settings/AssistantSettings/AssistantEditorPage', () =>
   default: () => <div data-testid='assistant-editor-page' />,
 }));
 
-vi.mock('@/renderer/pages/settings/AssistantSettings/AssistantListPanel', () => ({
-  default: () => <div data-testid='assistant-list-panel' />,
-}));
-
 vi.mock('@/renderer/utils/model/agentLogo', async () => {
   const actual = await vi.importActual<typeof import('@/renderer/utils/model/agentLogo')>(
     '@/renderer/utils/model/agentLogo'
@@ -160,7 +156,6 @@ describe('AssistantSettings', () => {
     );
 
     expect(screen.getByTestId('assistant-editor-page')).toBeInTheDocument();
-    expect(screen.queryByTestId('assistant-list-panel')).not.toBeInTheDocument();
   });
 
   it('renders enabled assistants in one preferred cross-source list', () => {
@@ -222,11 +217,9 @@ describe('AssistantSettings', () => {
     expect(screen.queryByTestId('enabled-assistant-row-disabled')).not.toBeInTheDocument();
     expect(screen.getByText('Official')).toBeInTheDocument();
     expect(screen.getByText('Custom')).toBeInTheDocument();
-    expect(screen.getByText('CLI')).toBeInTheDocument();
-    // Runtime engine is shown with a label + logo (same "Agent: {logo}" style as
-    // the My Assistants cards, i18n key `assistantRuntimeLabel`), not a bare
-    // backend name. The label renders once per enabled row.
-    expect(screen.getAllByTestId(/^assistant-runtime-/).length).toBe(3);
+    // An assistant found on this computer carries no tag, and a row names no runtime: the name says what it is.
+    expect(screen.queryByText('CLI')).not.toBeInTheDocument();
+    expect(screen.queryAllByTestId(/^assistant-runtime-/)).toHaveLength(0);
     expect(screen.queryByText('claude')).not.toBeInTheDocument();
     // Each enabled row exposes an enable switch so users can disable in place.
     expect(screen.getByTestId('switch-enabled-official')).toBeInTheDocument();
@@ -257,6 +250,34 @@ describe('AssistantSettings', () => {
     expect(screen.getByTestId('enabled-reorder-search-hint')).toHaveTextContent('Clear search to reorder.');
     expect(screen.getByTestId('enabled-assistant-reorder-handle-cli')).toBeDisabled();
     expect(screen.getByTestId('enabled-assistant-reorder-handle-official')).toBeDisabled();
+  });
+
+  it('keeps no drag handle, and no room for one, when there is nothing to reorder', () => {
+    const assistants = [
+      { id: 'mu', name: 'mu', sort_order: 1, source: 'generated', enabled: true },
+    ] as AssistantListItem[];
+
+    render(
+      <ConfigProvider>
+        <EnabledAssistantsList
+          assistants={assistants}
+          assistantOrder={[]}
+          localeKey='en-US'
+          searchActive={false}
+          onOpenDetail={vi.fn()}
+          onToggleEnabled={vi.fn()}
+          onReorder={vi.fn()}
+          onStartChat={vi.fn()}
+        />
+      </ConfigProvider>
+    );
+
+    const row = screen.getByTestId('enabled-assistant-row-mu');
+    expect(screen.queryByTestId('enabled-assistant-reorder-handle-mu')).toBeNull();
+    // No picture of its own: its name alone, neither a letter standing in nor a robot.
+    expect(row.querySelector('.arco-avatar')).toBeNull();
+    expect(row).toHaveTextContent('mu');
+    expect(row.querySelector('svg')).toBeNull();
   });
 
   it('exposes a quick-chat button on each enabled row and fires onStartChat', () => {

@@ -71,7 +71,7 @@ export const RuntimeSelectorCheckedItem: React.FC<{
 }> = ({ selected, description, children }) => {
   const content = (
     <div className='flex items-center gap-8px w-full min-w-0'>
-      <span aria-hidden='true' className='w-16px shrink-0 text-primary'>
+      <span aria-hidden='true' className='w-16px shrink-0 text-t-primary'>
         {selected ? '\u2713' : ''}
       </span>
       <span className='min-w-0 truncate'>{children}</span>

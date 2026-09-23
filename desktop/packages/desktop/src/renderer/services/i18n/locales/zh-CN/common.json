@@ -65,10 +65,10 @@
   "more": "更多",
   "refresh": "刷新",
   "readOnly": "只读",
-  "tray.showWindow": "显示 AionUi",
+  "tray.showWindow": "显示 mu",
   "tray.newChat": "新建对话",
   "tray.closeToTray": "隐藏到托盘",
-  "tray.about": "关于 AionUi",
+  "tray.about": "关于 mu",
   "tray.restart": "重启应用",
   "tray.quit": "退出",
   "tray.pauseAll": "暂停所有任务",
@@ -78,61 +78,40 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "当前系统不支持内置后端",
-      "description": "AionUi 已打开，但本地 AionCore 后端无法在当前 Linux 版本上运行。请升级到受支持的 Linux 发行版后重启 AionUi。",
+      "description": "mu 已打开，但本地服务无法在当前 Linux 版本上运行。请升级到受支持的 Linux 发行版后重启 mu。",
       "requiredVersions": "需要的运行时符号：{{versions}}"
     },
     "incompleteInstallation": {
-      "title": "AionUi 安装不完整",
-      "description": "当前安装缺少必要的本地资源，AionCore 无法启动。请下载并重新安装最新版 AionUi；如果重新安装后仍然出现，请检查系统安全软件或杀毒软件是否隔离了 AionCore。",
+      "title": "mu 安装不完整",
+      "description": "当前安装缺少必要的本地资源，mu 的本地服务无法启动。请下载并重新安装最新版 mu；如果重新安装后仍然出现，请检查系统安全软件或杀毒软件是否隔离了 mu 的文件。",
       "downloadLatest": "下载最新版",
-      "sendDiagnostics": "发送诊断报告",
-      "diagnosticsSent": "诊断报告已发送",
-      "diagnosticsReportSuccess": "诊断报告已发送",
-      "diagnosticsReportFailed": "诊断报告发送失败",
-      "runtimeComponentDescription": "当前安装缺少必要的内置运行组件，{{resource}} 无法启动。请重新安装最新版 AionUi；如果重新安装后仍然出现，请检查系统安全软件或杀毒软件是否隔离了 AionUi 组件。"
+      "runtimeComponentDescription": "当前安装缺少必要的内置运行组件，{{resource}} 无法启动。请重新安装最新版 mu；如果重新安装后仍然出现，请检查系统安全软件或杀毒软件是否隔离了 mu 组件。"
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi 安装包架构不匹配",
-      "description": "当前 AionUi 安装包是 {{packageArch}}，但这台 Mac 是 {{deviceArch}}。你可能下载了错误的安装包，请重新下载并安装 {{expectedArch}} 版本。"
+      "title": "mu 安装包架构不匹配",
+      "description": "当前 mu 安装包是 {{packageArch}}，但这台 Mac 是 {{deviceArch}}。你可能下载了错误的安装包，请重新下载并安装 {{expectedArch}} 版本。"
     },
     "dataMigration": {
       "title": "本地数据迁移失败",
-      "description": "AionUi 已打开，但 AionCore 在初始化本地数据时停止。重复安装 AionUi 未必能解决此问题。请发送诊断报告或联系支持，以便检查本地数据库迁移状态。",
-      "sendDiagnostics": "发送诊断报告",
-      "diagnosticsSent": "诊断报告已发送",
-      "diagnosticsReportSuccess": "诊断报告已发送",
-      "diagnosticsReportFailed": "诊断报告发送失败"
+      "description": "mu 已打开，但本地服务在初始化本地数据时停止。重复安装 mu 未必能解决此问题。应用日志记录了本地数据库迁移停在哪一步。"
     },
     "databaseNewerThanApp": {
-      "title": "需要更新 AionUi",
-      "description": "本地数据由更高版本的 AionUi 创建，当前版本无法打开。请将 AionUi 更新到最新版本即可继续使用，数据完好无损，无需重装或重置数据。",
-      "descriptionWithVersion": "本地数据由比当前版本 v{{currentVersion}} 更新的 AionUi 创建，当前版本无法打开。请将 AionUi 更新到最新版本即可继续使用，数据完好无损，无需重装或重置数据。"
+      "title": "需要更新 mu",
+      "description": "本地数据由更高版本的 mu 创建，当前版本无法打开。请将 mu 更新到最新版本即可继续使用，数据完好无损，无需重装或重置数据。",
+      "descriptionWithVersion": "本地数据由比当前版本 v{{currentVersion}} 更新的 mu 创建，当前版本无法打开。请将 mu 更新到最新版本即可继续使用，数据完好无损，无需重装或重置数据。"
     },
     "localDataRepair": {
       "title": "本地数据修复失败",
-      "description": "AionUi 已打开，但 AionCore 在准备本地启动数据时停止，例如 assistant 或智能体记录。重新安装 AionUi 可能无法解决此问题。请发送诊断报告或联系支持，以便检查本地数据库。",
-      "sendDiagnostics": "发送诊断",
-      "diagnosticsSent": "诊断已发送",
-      "diagnosticsReportSuccess": "诊断报告已发送",
-      "diagnosticsReportFailed": "诊断报告发送失败"
+      "description": "mu 已打开，但本地服务在准备本地启动数据时停止，例如 assistant 或智能体记录。重新安装 mu 可能无法解决此问题。应用日志记录了哪些本地数据未能准备好。"
     },
     "startupDirectory": {
       "title": "启动目录不可用",
-      "description": "AionUi 已打开，但由于配置的工作目录或日志目录不存在、不可访问或权限受限，AionCore 无法启动。请确认这些目录存在且可写，然后重启 AionUi。",
-      "sendDiagnostics": "发送诊断报告",
-      "diagnosticsSent": "诊断报告已发送",
-      "diagnosticsReportSuccess": "诊断报告已发送",
-      "diagnosticsReportFailed": "诊断报告发送失败"
+      "description": "mu 已打开，但由于配置的工作目录或日志目录不存在、不可访问或权限受限，本地服务无法启动。请确认这些目录存在且可写，然后重启 mu。"
     },
     "recoverableDatabaseCorruption": {
       "title": "本地数据已损坏",
-      "description": "检测到本地数据库损坏，AionUi 无法继续启动。确认后将备份旧数据库，并创建新的本地数据库继续启动。历史会话将不再显示，旧数据库会保留为备份文件。",
+      "description": "检测到本地数据库损坏，mu 无法继续启动。确认后将备份旧数据库，并创建新的本地数据库继续启动。历史会话将不再显示，旧数据库会保留为备份文件。",
       "confirmRebuild": "备份旧库并重建新库",
-      "sendDiagnostics": "发送诊断报告",
-      "diagnosticsHint": "发送诊断报告不会修改本地数据库。",
-      "diagnosticsSent": "诊断报告已发送",
-      "diagnosticsReportSuccess": "诊断报告已发送",
-      "diagnosticsReportFailed": "诊断报告发送失败",
       "rebuildFailed": "备份旧库并重建新库失败",
       "confirmDialog": {
         "title": "确认重建数据库？",
@@ -142,42 +121,27 @@
       }
     },
     "transientConcurrentStartup": {
-      "title": "AionUi 正在启动",
-      "description": "此窗口打开时，另一个 AionUi 启动进程仍在使用本地数据。这是暂时的，您的数据是安全的——无需重新安装。请稍候片刻后重试，或重启 AionUi。",
-      "sendDiagnostics": "发送诊断",
-      "diagnosticsSent": "诊断已发送",
-      "diagnosticsReportSuccess": "诊断报告已发送",
-      "diagnosticsReportFailed": "诊断报告发送失败",
-      "diagnosticsHint": "如果该问题反复出现，您可以发送诊断报告。"
+      "title": "mu 正在启动",
+      "description": "此窗口打开时，另一个 mu 启动进程仍在使用本地数据。这是暂时的，您的数据是安全的——无需重新安装。请稍候片刻后重试，或重启 mu。"
     },
     "pendingSlow": {
       "title": "正在启动",
-      "description": "AionCore 正在启动，请稍候。若长时间无响应，可退出应用后重试。"
+      "description": "本地服务正在启动，请稍候。若长时间无响应，可退出应用后重试。"
     },
     "exited": {
       "title": "启动未完成",
-      "description": "AionCore 未能完成启动并已退出。请重启应用；若反复出现，请上报诊断信息。",
-      "sendDiagnostics": "发送诊断",
-      "diagnosticsSent": "诊断已发送",
-      "diagnosticsReportSuccess": "诊断信息已上报",
-      "diagnosticsReportFailed": "诊断上报失败，请稍后重试"
+      "description": "本地服务未能完成启动并已退出。请重启应用；若反复出现，请查看应用日志。"
     },
     "portReportTimeout": {
       "title": "启动超时",
-      "description": "AionCore 未在预期时间内完成启动。请重启应用；若反复出现，请发送诊断。",
-      "sendDiagnostics": "发送诊断",
-      "diagnosticsSent": "诊断已发送",
-      "diagnosticsReportSuccess": "诊断信息已上报",
-      "diagnosticsReportFailed": "诊断上报失败，请稍后重试"
+      "description": "本地服务未在预期时间内完成启动。请重启应用；若反复出现，请查看应用日志。"
     },
     "startupFailed": {
       "title": "启动失败",
-      "description": "AionCore 启动失败。请重启应用；若反复出现，请发送诊断。",
-      "sendDiagnostics": "发送诊断",
-      "diagnosticsSent": "诊断已发送",
-      "diagnosticsReportSuccess": "诊断信息已上报",
-      "diagnosticsReportFailed": "诊断上报失败，请稍后重试"
-    }
+      "description": "本地服务启动失败。请重启应用；若反复出现，请查看应用日志。"
+    },
+    "openLogs": "打开日志文件夹",
+    "openLogsFailed": "无法打开日志文件夹"
   },
   "fileAttach.addFiles": "添加文件",
   "fileAttach.myDevice": "从设备上传",
@@ -205,14 +169,15 @@
     "starting": "正在启动 mu…",
     "startingHint": "正在连接本机的 mu 内核，读取模型与判定器配置。",
     "startupError": "mu 启动失败",
-    "activity": "协作",
-    "files": "文件",
-    "hive": "蜂群",
     "hiveView": {
       "title": "蜂群",
+      "agents": "子智能体",
       "open": "打开蜂群",
       "inspect": "查看 {{name}}",
       "summary": "{{active}} 个进行中 · 已完成 {{done}} / 共 {{total}}",
+      "counts": "运行中 {{running}} · 已完成 {{done}} · 失败 {{failed}}",
+      "none": "本会话还没有子智能体。",
+      "details": "协作关系图与记录",
       "pending": "等待蜂群成员状态",
       "unknown": "状态不可用",
       "runs": "蜂群运行记录",
@@ -244,7 +209,7 @@
       "noteMissing": "未记录发现。",
       "allFlow": "全部送达",
       "beeFlow": "{{name}} 的送达",
-      "audit": "Jev 判定",
+      "audit": "JeV 判定",
       "waitingRun": "正在等待这次蜂群运行的记录。",
       "recordedAt": "记录时间 {{time}}",
       "beeMissing": "此蜂群成员不在已记录快照中。",
@@ -290,13 +255,11 @@
         "exitedCode": "子代理在完成前退出，退出码 {{exitCode}}",
         "exitedSignal": "子代理在完成前被 {{signal}} 终止",
         "exitedKilled": "子代理在完成前被信号终止",
-        "chainBroken": "未开始：前一步（“{{step}}”）没有完成",
+        "chainBroken": "未开始：前一步（「{{step}}」）没有完成",
         "detail": "{{reason}}：{{detail}}"
       }
     },
     "judgeView": {
-      "title": "判定与影响",
-      "description": "查看判定器评估了什么，以及实际发生了什么。建议与已确认的动作分开显示。",
       "empty": "本会话还没有判定记录。",
       "question": "判定什么",
       "result": "判定结果",
@@ -306,12 +269,6 @@
       "answers": "模型回答",
       "noResult": "没有记录到可读的结果",
       "unreported": "未记录",
-      "records": "记录",
-      "returnedCount": "已交给执行层",
-      "receiptCount": "已确认送达",
-      "runtimeEvents": "其他运行事件",
-      "filter": "按判定内容筛选",
-      "allQuestions": "全部判定",
       "scoreValue": "评分：{{value}}",
       "latency": "{{ms}} 毫秒",
       "more": "另有 {{count}} 项",
@@ -361,6 +318,10 @@
         "browser": "浏览器下一步该做什么？",
         "recall": "哪些过往经验现在适用？",
         "capture": "这是一条长期有效的纠正或偏好吗？",
+        "outcome": "这一轮学到绕过办法了吗？",
+        "worth": "这条经验值不值得记？",
+        "merge": "要和已有经验合并吗？",
+        "applied": "经验有没有照做？",
         "risk": "这个操作需要用户确认吗？",
         "drift": "当前工作还在正轨上吗？",
         "completion": "这次改动还需要验证吗？",
@@ -376,7 +337,9 @@
         "diagnostics": "这些诊断应该何时告诉模型？",
         "patch": "子代理的补丁是否在任务范围内？",
         "review": "每条评审发现有多严重？",
-        "board": "工作进展到哪一步了？"
+        "board": "工作进展到哪一步了？",
+        "relate": "这条发现对之前的发现意味着什么？",
+        "approval": "这一步是任务需要、也是你会预期的做法吗？"
       },
       "fields": {
         "turnType": "任务类型",
@@ -391,6 +354,8 @@
         "hide": "建议隐藏的技能",
         "relevant": "相关技能",
         "apply": "建议采用的经验",
+        "applied": "照做了",
+        "notApplied": "没照做",
         "publish": "允许发布",
         "deliver": "允许投递",
         "path": "候选文件",
@@ -409,7 +374,8 @@
         "phase": "阶段",
         "focus": "正在处理的验收项",
         "needsUser": "需要用户",
-        "update": "重写看板"
+        "update": "重写看板",
+        "relation": "关系"
       },
       "values": {
         "true": "是",
@@ -489,20 +455,44 @@
         "bad_request": "判定器拒绝了请求",
         "server": "判定服务出错",
         "invalid_response": "判定器的回答无法解析",
-        "verdict": "判定器已作答"
+        "verdict": "判定器已作答",
+        "learn": "记下绕过办法",
+        "reusable": "以后还用得上",
+        "one_off": "只关这一次",
+        "already_known": "早就知道",
+        "same": "同一条",
+        "refines": "说得更准",
+        "contradicts": "互相矛盾",
+        "supersedes": "更新了它",
+        "supports": "佐证它",
+        "unrelated": "无关",
+        "preference": "长期规则",
+        "approve": "放行",
+        "beyond": "超出你的要求"
       },
-      "probabilityValue": "判定为“是”的概率：{{percent}}",
+      "probabilityValue": "判定为「是」的概率：{{percent}}",
       "optionProbability": "{{option}} {{percent}}",
       "reasonValue": "原因：{{reason}}",
       "fieldValue": "{{field}}：{{value}}",
       "errorValue": "错误 · {{kind}}",
       "noAnswerAfter": "{{duration}}内未得到回答",
       "hints": {
+        "answered": "这条消息是在回答代理自己的提问：照此去做，不要再问。",
+        "resolve": "说法较宽泛且可能改动文件：先查看项目，说明所作的假设，只问在这里找不到的内容。",
         "clarify": "请求看起来不够明确：先问一个关键问题。",
         "side_question": "这是个题外问题：简短回答，然后继续主任务。",
-        "plan_first": "改动大或有风险：先写一个简短的计划，确认后再动手修改。",
+        "plan_first": "改动大或有风险：先写一个简短的计划再照做，只在无法撤销的步骤前暂停等待确认。",
         "try_hive": "难度较高：如果原因不明或直接尝试不行，就改用蜂群。",
         "try_delegate": "可以拆成相互独立的几部分：考虑交给子代理并行处理。"
+      },
+      "hintChips": {
+        "answered": "回复代理",
+        "resolve": "先自己查",
+        "clarify": "先澄清",
+        "side_question": "题外问题",
+        "plan_first": "先计划",
+        "try_hive": "卡住就用蜂群",
+        "try_delegate": "分头委派"
       },
       "answerIds": {
         "turn_type": "任务类型",
@@ -515,11 +505,13 @@
         "task_complexity": "涉及范围",
         "reasoning_depth": "推理深度",
         "tool_complexity": "工具使用量"
+      },
+      "log": {
+        "thisTurn": "本轮",
+        "earlier": "显示更早的记录",
+        "latest": "跳到最新"
       }
     },
-    "decisions": "Jev",
-    "memory": "经验",
-    "images": "图片",
     "empty": "当前会话还没有这类记录。",
     "quiet": "已 {{duration}} 没有活动",
     "passed": "通过",
@@ -550,12 +542,15 @@
       "auto_compaction_end": "压缩结束",
       "hive.note": "共享发现",
       "hive.delivery": "已确认送达",
-      "hive.gate": "Jev 闸门",
+      "hive.gate": "JeV 闸门",
       "hive.manifest": "蜂群任务分配",
       "bee.event": "执行步骤",
       "memory.recalled": "引用经验",
       "artifact.image": "图片",
       "memory.stored": "经验已保存",
+      "memory.applied": "经验已照做",
+      "memory.retired": "经验已退役",
+      "memory.merged": "经验已合并",
       "compaction_start": "正在压缩上下文…",
       "compaction_end": "压缩结束",
       "context.usage": "上下文占用",
@@ -567,6 +562,9 @@
       "board": {
         "update": "看板已更新",
         "switched": "看板开关已切换"
+      },
+      "permissions": {
+        "mode": "权限模式"
       },
       "checkpoint": {
         "taken": "已保存检查点"
@@ -681,7 +679,6 @@
       "failed": "失败"
     },
     "boardView": {
-      "tab": "人话看板",
       "title": "人话看板",
       "switch": "这个项目的人话看板",
       "switching": "正在切换…",
@@ -689,7 +686,6 @@
       "unknown": "这个对话还没有人话看板。它只在 mu 的对话里、而且「功能」里开着人话看板时出现。",
       "off": "打开后，代理每做一段，这里就用大白话告诉你：进展到哪了、正在做什么、哪些需要你确认。",
       "cost": "只对这个项目生效。每次更新会调用一次模型。",
-      "open": "打开人话看板",
       "empty": "等代理做一会儿，这里会用大白话告诉你进展",
       "checks": "验收 {{done}}/{{total}}",
       "ended": "已停下",
@@ -699,6 +695,7 @@
       "needsYouText": "代理在对话里等你回答。",
       "quote": "引用到回复里",
       "quoteHint": "点一条会引用到输入框，你发出去之前不会发送。",
+      "earlier": "之前",
       "phases": {
         "understanding": "在弄懂任务",
         "planning": "在想怎么做",
@@ -738,6 +735,66 @@
         }
       }
     },
+    "lessonsView": {
+      "filterLabel": "显示哪些经验",
+      "active": "在用",
+      "all": "全部",
+      "count": "{{count}} 条",
+      "count_one": "{{count}} 条",
+      "count_other": "{{count}} 条",
+      "search": "搜索经验",
+      "kinds": {
+        "correction": "纠正",
+        "preference": "规则",
+        "pitfall": "坑",
+        "workaround": "绕过办法",
+        "fact": "事实"
+      },
+      "everywhere": "到处适用",
+      "status": {
+        "retired": "已退役",
+        "superseded": "已被替代"
+      },
+      "uses": "召回 {{recalled}} · 照做 {{applied}}",
+      "origins": {
+        "user": "来自你的纠正或规则",
+        "outcome": "来自代理自己脱困的办法",
+        "model": "模型自己记下的",
+        "subagent": "来自子代理的报告",
+        "command": "用 /remember 记下的"
+      },
+      "updated": "更新于 {{date}}",
+      "editLabel": "经验内容",
+      "retire": "退役",
+      "retireConfirm": "让这条经验退役？以后不会再召回它。",
+      "loadFailed": "读不到经验库",
+      "saveFailed": "这条经验没有改成",
+      "empty": "这个项目还没有经验。mu 会从你的纠正、它自己脱困的办法和 /remember 里学到经验。",
+      "noneActive": "没有在用的经验。「全部」里还有已退役和已被替代的。",
+      "noMatch": "没有匹配的经验。",
+      "noProject": "本会话没有项目文件夹，只列出到处适用的经验。",
+      "notes": {
+        "label": "这次会话里经验的动向",
+        "recalled": "这一轮用上了 {{count}} 条",
+        "recalled_one": "这一轮用上了 {{count}} 条",
+        "recalled_other": "这一轮用上了 {{count}} 条",
+        "briefed": "子代理的简报带上了 {{count}} 条：{{task}}",
+        "briefed_one": "子代理的简报带上了 {{count}} 条：{{task}}",
+        "briefed_other": "子代理的简报带上了 {{count}} 条：{{task}}",
+        "applied": "照做了 {{count}} 条",
+        "applied_one": "照做了 {{count}} 条",
+        "applied_other": "照做了 {{count}} 条",
+        "retired": "退役：{{lesson}}",
+        "retiredUnused": "退役：{{lesson}}（{{count}} 次召回从未照做）",
+        "retiredUnused_one": "退役：{{lesson}}（{{count}} 次召回从未照做）",
+        "retiredUnused_other": "退役：{{lesson}}（{{count}} 次召回从未照做）",
+        "retiredContradicted": "退役：{{lesson}}（和你新的说法矛盾）",
+        "retiredForgotten": "退役：{{lesson}}（按你的要求）",
+        "mergedSame": "已并入：{{lesson}}",
+        "mergedRefines": "换成了说得更准的：{{lesson}}",
+        "mergedContradicts": "没有记下，和这条矛盾：{{lesson}}"
+      }
+    },
     "activityLoadFailed": "无法加载协作记录，正在重试…",
     "beeFailed": "这只蜂报告了一个错误。",
     "beeCounts": {
@@ -765,12 +822,12 @@
     "compactionDropped_one": "移除 {{count}} 次调用",
     "compactionDropped_other": "移除 {{count}} 次调用",
     "jevLine": {
-      "classifying": "Jev 正在归类…",
-      "classified": "Jev 归类为{{type}}",
+      "classifying": "JeV 正在归类…",
+      "classified": "JeV 归类为{{type}}",
       "byRule": "按规则归类为{{type}}",
       "shadow": "{{line}}（仅观察，没有生效）",
       "late": "{{line}}（来晚了，这一轮没用上）",
-      "fallback": "Jev 这次没给出分类，按默认方式继续"
+      "fallback": "JeV 这次没给出分类，按默认方式继续"
     },
     "eventLine": {
       "detail": "详情：{{detail}}",
@@ -779,6 +836,7 @@
         "lessons": "正在查看以往会话中的经验",
         "skills": "正在挑选本次会话需要的技能",
         "capabilities": "正在挑选这个任务需要的能力",
+        "goal_check": "正在检查目标是否达成",
         "permissionReview": "JeV 在审批：{{summary}}"
       },
       "goal": {
@@ -806,10 +864,10 @@
         }
       },
       "frame": {
-        "unclearChange": "这条消息会怎样改变任务：“{{message}}”？"
+        "unclearChange": "这条消息会怎样改变任务：「{{message}}」？"
       },
       "search": {
-        "notConfigured": "“{{source}}”不是可用的搜索来源（features.web.search）",
+        "notConfigured": "「{{source}}」不是可用的搜索来源（features.web.search）",
         "failed": "{{source}} 出错：{{message}}",
         "robotPage": "{{source}} 返回了人机验证页面：它把这个客户端当成了机器人",
         "httpError": "{{source}} 返回了 HTTP {{status}}",
@@ -864,7 +922,21 @@
           "cdpConnectTimeout": "连接浏览器超时。",
           "cdpConnectFailed": "无法连接到浏览器。"
         }
+      },
+      "permissions": {
+        "mode": "权限模式：{{mode}}"
+      },
+      "board": {
+        "on": "看板：打开",
+        "off": "看板：关闭"
       }
+    },
+    "gauges": {
+      "context": "上下文",
+      "contextHint": "模型下一次要读的内容占它上下文的 {{percent}}",
+      "cache": "缓存命中",
+      "cacheHint": "最近一轮缓存命中 {{turn}}，整个对话缓存命中 {{session}}",
+      "pending": "mu 下一次回复后显示"
     }
   },
   "menu": {
@@ -900,11 +972,57 @@
   "noData": "暂无数据",
   "labelWithSelectedCount": "{{label}}（{{selected}}/{{total}}）",
   "selectedSkillsWithCount": "已选技能 · {{count}}",
+  "commandPalette": {
+    "title": "命令面板",
+    "placeholder": "搜索会话、设置和命令",
+    "groups": {
+      "conversations": "会话",
+      "settings": "设置",
+      "commands": "命令"
+    },
+    "searchMessages": "在消息中搜索「{{query}}」",
+    "empty": "没有匹配的结果",
+    "noConversations": "还没有会话。输入文字即可查找设置和命令。",
+    "openSettings": "打开设置",
+    "actions": {
+      "newConversation": "开始新会话",
+      "scheduledTasks": "打开定时任务"
+    },
+    "commandWaits": "等这一轮结束后执行"
+  },
   "window": {
     "minimize": "最小化",
     "maximize": "最大化",
     "restore": "还原"
   },
   "collapseSidebar": "收起侧边栏",
-  "expandSidebar": "展开侧边栏"
+  "expandSidebar": "展开侧边栏",
+  "workPanel": {
+    "label": "工作面板",
+    "tabsLabel": "工作面板标签页",
+    "tabs": {
+      "board": "看板",
+      "judge": "判定",
+      "hive": "蜂群",
+      "lessons": "经验",
+      "files": "文件",
+      "preview": "预览",
+      "source": "源码"
+    },
+    "close": "关闭工作面板",
+    "resize": "调整工作面板宽度",
+    "unread": "{{tab}}，有新内容",
+    "noProject": "本会话没有项目文件夹，没有可显示的文件或变更。",
+    "previewEmpty": "还没有可预览的内容。从会话中打开的文件和网页会显示在这里。",
+    "previewHidden": "预览已隐藏。"
+  },
+  "nodeRuntime": {
+    "title": "下载 Node.js？",
+    "message": "mu 用自带的 Node.js 运行智能体和工具，这份 Node.js 还没有下载。",
+    "detail": "将从 nodejs.org 下载 Node.js {{version}}（约 {{size}} MB），解压到：\n{{folder}}\n\n选「稍后」不会下载任何东西：mu 照常打开，需要 Node.js 的地方会提示，下次启动时再问。",
+    "download": "下载",
+    "later": "稍后",
+    "note": "Node.js 还没有下载，这个智能体暂时无法运行。下次启动 mu 时会再问。",
+    "toolNote": "Node.js 还没有下载，需要它的工具暂时无法运行。下次启动 mu 时会再问。"
+  }
 }

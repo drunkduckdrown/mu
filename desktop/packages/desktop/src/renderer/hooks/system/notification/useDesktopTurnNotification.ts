@@ -13,17 +13,12 @@ import { getSnapshotConversationName } from '@/renderer/pages/conversation/Group
 import { createBrowserNotificationController, truncateConversationName } from './browserNotificationCore';
 
 /**
- * Desktop-only: fire a native system notification when an agent turn finishes.
- * Reuses the same turn-finish detection as the WebUI path
- * (`createBrowserNotificationController`) rather than inventing a second one.
+ * Fire a native system notification when an agent turn finishes.
  *
  * The renderer only reports "a turn finished"; the main-process notification
  * bridge decides whether to actually show it (it skips when the main window is
  * focused and respects `system.notificationEnabled`). Clicks are handled by
  * `useNotificationClick`, which navigates to the originating conversation.
- *
- * No-op outside the Electron desktop runtime (the WebUI uses
- * `useBrowserNotification` instead).
  */
 export const useDesktopTurnNotification = (): void => {
   const { t } = useTranslation();

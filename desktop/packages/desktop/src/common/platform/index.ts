@@ -1,6 +1,7 @@
 import path from 'path';
 import type { IPlatformServices } from './IPlatformServices';
 import { NodePlatformServices } from './NodePlatformServices';
+import { MU_DISPLAY_NAME } from '@/common/kyrn/displayName';
 
 let _services: IPlatformServices | null = null;
 
@@ -38,11 +39,14 @@ export function getPlatformServices(): IPlatformServices {
         const { app, net } = require('electron') as typeof import('electron');
         // Dev isolation: set app name before any getPath('userData') call.
         // Rollup may load this chunk before configureChromium.ts runs, so we
-        // must apply the dev name here as a safety net.
+        // must apply the dev name here as a safety net. The folder name stays
+        // the legacy one so an existing dev profile keeps working; the name the
+        // user sees (dock, menu bar) is restored to the product name right after.
         if (!app.isPackaged) {
           const devAppName = getDevAppName();
           app.setName(devAppName);
           app.setPath('userData', path.join(path.dirname(app.getPath('userData')), devAppName));
+          app.setName(MU_DISPLAY_NAME);
         }
         // Typed as IPlatformPaths so tsc enforces completeness: any new method
         // added to the interface will cause a compile error here if omitted below.

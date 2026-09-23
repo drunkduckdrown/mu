@@ -2,17 +2,14 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Regression guard for the narrow-width (mobile) project-conversation preview.
+// Who renders the preview. A conversation page passes `panelHosted`: the Layout's
+// work panel holds its preview on every width (a docked column on desktop, a
+// sheet on a phone), so ChatLayout must never render a second one. Pages that
+// are not hosted (a team page without a project) keep their own preview.
 //
-// Bug: project conversations pass `previewHosted={true}` so the preview is
-// hoisted to the Layout-level host. But that host only renders on desktop
-// (`previewRegionActive` in Layout.tsx is gated on `!isMobile`). On narrow
-// widths (< 768) neither ChatLayout nor the host rendered the preview, so
-// clicking a file in the tree opened nothing.
-//
-// Fix: ChatLayout forces `previewHosted` to false on mobile so every
-// conversation falls back to its own mobile overlay path — exactly how
-// non-project conversations already render.
+// Earlier regression this still guards: a hosted preview on narrow widths had
+// no renderer at all, because the Layout host was desktop-only. The work panel
+// renders on mobile too, so hosting no longer depends on the width.
 
 let mockIsMobile = false;
 
@@ -79,34 +76,33 @@ vi.mock('@/renderer/pages/conversation/hooks/useWorkspaceCollapse', () => ({
 
 import ChatLayout from '@/renderer/pages/conversation/components/ChatLayout';
 
-function renderChatLayout(previewHosted: boolean) {
+function renderChatLayout(panelHosted: boolean) {
   return render(
-    <ChatLayout previewHosted={previewHosted} sider={<div>sider</div>} workspaceEnabled={false}>
+    <ChatLayout panelHosted={panelHosted} sider={<div>sider</div>} workspaceEnabled={false}>
       <div>chat body</div>
     </ChatLayout>
   );
 }
 
-describe('ChatLayout mobile preview host fallback', () => {
+describe('ChatLayout under the work panel', () => {
   afterEach(() => {
     mockIsMobile = false;
   });
 
-  it('renders the preview overlay on mobile even for hoisted (project) conversations', () => {
+  it('yields the preview to the work panel on mobile (no double render)', () => {
     mockIsMobile = true;
     renderChatLayout(true);
-    // The regression target: preview must render inside ChatLayout on mobile.
-    expect(screen.getByTestId('preview-panel')).toBeInTheDocument();
+    expect(screen.queryByTestId('preview-panel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('mobile-workspace-overlay')).not.toBeInTheDocument();
   });
 
-  it('yields the preview to the Layout host on desktop for hoisted conversations (no double render)', () => {
+  it('yields the preview to the work panel on desktop (no double render)', () => {
     mockIsMobile = false;
     renderChatLayout(true);
-    // Desktop hoisted: ChatLayout must NOT render the preview — the host owns it.
     expect(screen.queryByTestId('preview-panel')).not.toBeInTheDocument();
   });
 
-  it('renders the preview locally on desktop for non-hoisted conversations', () => {
+  it('renders the preview locally for a page the work panel does not host', () => {
     mockIsMobile = false;
     renderChatLayout(false);
     expect(screen.getByTestId('preview-panel')).toBeInTheDocument();

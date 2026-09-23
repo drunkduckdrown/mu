@@ -39,7 +39,7 @@ const PreferenceRow: React.FC<{
   children: React.ReactNode;
 }> = ({ label, children }) => (
   <div className='flex flex-col items-stretch gap-10px py-12px md:flex-row md:items-center md:justify-between md:gap-24px'>
-    <div className='text-14px text-t-primary leading-22px'>{label}</div>
+    <div className='text-14px font-500 text-t-primary leading-22px'>{label}</div>
     <div className='w-full flex md:flex-1 md:justify-end'>{children}</div>
   </div>
 );
@@ -52,7 +52,7 @@ const PreferenceRow: React.FC<{
  * language, theme gallery, fonts (family + size) and scale.
  *
  * @features
- * - 界面语言（与「系统」页同一个切换）/ Interface language (the same switch as on System)
+ * - 界面语言 / Interface language
  * - 统一主题画廊（浅色、深色及装饰主题）/ Unified theme gallery (light, dark, decorative)
  * - 分区字体：全局/聊天/Markdown/代码，每区可选字族与字号，未选字族的区继承全局
  *   Per-region fonts: global/chat/markdown/code, each with a family + size;
@@ -70,9 +70,9 @@ const AppearanceModalContent: React.FC = () => {
       {/* 内容区域 / Content Area */}
       <AionScrollArea className='flex-1 min-h-0 pb-16px' disableOverflow={isPageMode}>
         <div className='space-y-16px'>
-          {/* 语言：也是「系统」页的第一行，两处用同一个控件 / Language: also the first row of System, the same control */}
-          <div className='px-16px md:px-24px lg:px-28px py-14px md:py-16px bg-2 rd-16px'>
-            <div className='w-full flex flex-col divide-y divide-border-2' data-testid='appearance-language'>
+          {/* 语言 / Language */}
+          <div className='px-16px md:px-24px py-14px md:py-16px bg-base border border-color-b-base rd-8px'>
+            <div className='w-full flex flex-col divide-y divide-b-base' data-testid='appearance-language'>
               <PreferenceRow label={t('settings.language')}>
                 <LanguageSwitcher />
               </PreferenceRow>
@@ -80,15 +80,15 @@ const AppearanceModalContent: React.FC = () => {
           </div>
 
           {/* 主题画廊 / Theme Gallery */}
-          <div className='px-16px md:px-24px lg:px-28px py-14px md:py-16px bg-2 rd-16px'>
-            <div className='text-14px text-t-primary leading-22px mb-12px'>{t('settings.theme')}</div>
+          <div className='px-16px md:px-24px py-14px md:py-16px bg-base border border-color-b-base rd-8px'>
+            <div className='text-14px font-500 text-t-primary leading-22px mb-12px'>{t('settings.theme')}</div>
             <CssThemeSettings />
           </div>
 
           {/* 字体（字族 + 字号）/ Fonts (family + size) */}
-          <div className='px-16px md:px-24px lg:px-28px py-14px md:py-16px bg-2 rd-16px'>
-            <div className='text-14px text-t-primary leading-22px mb-12px'>{t('settings.fonts')}</div>
-            <div className='w-full flex flex-col divide-y divide-border-2'>
+          <div className='px-16px md:px-24px py-14px md:py-16px bg-base border border-color-b-base rd-8px'>
+            <div className='text-14px font-500 text-t-primary leading-22px mb-12px'>{t('settings.fonts')}</div>
+            <div className='w-full flex flex-col divide-y divide-b-base'>
               {FONT_SIZE_KEYS.map((key) => (
                 <PreferenceRow key={key} label={t(FONT_REGION_LABEL_KEY[key])}>
                   <div className='flex items-center gap-12px flex-wrap justify-end'>
@@ -113,8 +113,8 @@ const AppearanceModalContent: React.FC = () => {
           </div>
 
           {/* 缩放控制 / Scale Control */}
-          <div className='px-16px md:px-24px lg:px-28px py-14px md:py-16px bg-2 rd-16px'>
-            <div className='w-full flex flex-col divide-y divide-border-2'>
+          <div className='px-16px md:px-24px py-14px md:py-16px bg-base border border-color-b-base rd-8px'>
+            <div className='w-full flex flex-col divide-y divide-b-base'>
               <PreferenceRow label={t('settings.scale')}>
                 <ScaleControl />
               </PreferenceRow>

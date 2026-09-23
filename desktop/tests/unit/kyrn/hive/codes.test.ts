@@ -121,7 +121,7 @@ describe('Sub-agent sentences by code', () => {
           errorParams: { step: 'scan' },
         })
       )
-    ).toBe('未开始：前一步（“scan”）没有完成');
+    ).toBe('未开始：前一步（「scan」）没有完成');
   });
 
   it('says a missed report whole, naming the wrap-up it followed by its own code', () => {

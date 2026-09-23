@@ -1,13 +1,20 @@
 /**
- * The local judge (Laya on Core ML) as the app manages it: installed from the settings with one click after the person
- * agrees to the download, started and stopped there. The main process runs the harness's own script,
- * `kyrn/bin/kyrn-judge-local setup|start|stop`, so the app and `mu judge` in a terminal do the same thing.
+ * The local judge (Laya) as the app manages it. Two runtimes, one contract on the same address:
+ *
+ * - coreml (Apple Silicon Macs): installed from the settings with one click after the person agrees to the download,
+ *   started and stopped there. The main process runs the harness's own script,
+ *   `kyrn/bin/kyrn-judge-local setup|start|stop`, so the app and `mu judge` in a terminal do the same thing.
+ * - onnx (Windows, Linux): the app runs Laya itself (see `common/kyrn/layaOnnx.ts`). It never downloads the model:
+ *   the person gets it from Hugging Face into the model folder, and the app checks it and starts the judge.
  */
 
-export type LocalJudgeAction = 'setup' | 'start' | 'stop';
+/** setup: coreml's install (downloads, needs consent). locate: onnx's "open the model folder". */
+export type LocalJudgeAction = 'setup' | 'start' | 'stop' | 'locate';
 
-/** ok: this machine can run it. platform: not an Apple Silicon Mac. uv: installing needs `uv`, which is missing. */
+/** ok: this machine can run it. platform: no runtime for this machine. uv: installing needs `uv`, which is missing. */
 export type LocalJudgeSupport = 'ok' | 'platform' | 'uv';
+
+export type LocalJudgeRuntime = 'coreml' | 'onnx';
 
 export type LocalJudgeTask = {
   id: number;
@@ -15,16 +22,38 @@ export type LocalJudgeTask = {
   phase: 'running' | 'done' | 'failed';
   /** The script's last lines, for progress and for why it failed. English, as the script writes them. */
   output: string[];
+  /** onnx: why it failed, as a code the screen words (see `LocalJudgeProblem`). */
+  problem?: LocalJudgeProblem;
+};
+
+/**
+ * missing / wrong: model files absent, or not the tested version. runtime: no execution provider could run the model.
+ * port: something else answers on the judge's port. stopped: the judge process ended on its own. foreign: a judge the
+ * app did not start answers there, so the app cannot stop it.
+ */
+export type LocalJudgeProblem = 'missing' | 'wrong' | 'runtime' | 'port' | 'stopped' | 'foreign';
+
+/** onnx: the model folder and what it still lacks. */
+export type LocalJudgeModel = {
+  folder: string;
+  /** Repository paths of files not found (see `LAYA_ONNX_FILES`). */
+  missing: string[];
+  /** Files found but not the tested version (another size or hash). */
+  wrong: string[];
 };
 
 export type LocalJudgeState = {
   support: LocalJudgeSupport;
-  /** The Python environment and the weights are there. */
+  /** Which runtime this machine uses; absent from an older main process, which only had coreml. */
+  runtime?: LocalJudgeRuntime;
+  /** coreml: the Python environment and the weights are there. onnx: every model file is there and checked. */
   installed: boolean;
   /** Its health check answers on this machine. */
   running: boolean;
   /** The address it answers on. */
   url: string;
+  /** onnx only. */
+  model?: LocalJudgeModel;
   /** What the app runs now or ran last; unset before the first action of this app run. */
   task?: LocalJudgeTask;
 };

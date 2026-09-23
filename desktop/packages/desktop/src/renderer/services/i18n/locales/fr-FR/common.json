@@ -65,10 +65,10 @@
   "more": "Plus",
   "refresh": "Actualiser",
   "readOnly": "Lecture seule",
-  "tray.showWindow": "Afficher AionUi",
+  "tray.showWindow": "Afficher mu",
   "tray.newChat": "Nouveau chat",
   "tray.closeToTray": "Réduire dans la barre système",
-  "tray.about": "À propos d'AionUi",
+  "tray.about": "À propos de mu",
   "tray.restart": "Redémarrer l'application",
   "tray.quit": "Quitter",
   "tray.pauseAll": "Tout mettre en pause",
@@ -78,61 +78,40 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Ce système n'est pas pris en charge par le backend fourni",
-      "description": "AionUi s'est ouvert, mais le backend local AionCore ne peut pas fonctionner sur cette version de Linux. Veuillez effectuer une mise à niveau vers une distribution Linux prise en charge et redémarrer AionUi.",
+      "description": "mu s'est ouvert, mais son service local ne peut pas fonctionner sur cette version de Linux. Veuillez effectuer une mise à niveau vers une distribution Linux prise en charge et redémarrer mu.",
       "requiredVersions": "Symboles d'exécution requis : {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "L'installation d'AionUi est incomplète",
-      "description": "Cette installation ne dispose pas des ressources locales requises, AionCore ne peut donc pas démarrer. Veuillez télécharger et réinstaller la dernière version d'AionUi. Si le problème réapparaît après la réinstallation, vérifiez si un logiciel de sécurité ou antivirus a mis AionCore en quarantaine.",
+      "title": "L'installation de mu est incomplète",
+      "description": "Cette installation ne dispose pas des ressources locales requises, le service local de mu ne peut donc pas démarrer. Veuillez télécharger et réinstaller la dernière version de mu. Si le problème réapparaît après la réinstallation, vérifiez si un logiciel de sécurité ou antivirus a mis des fichiers de mu en quarantaine.",
       "downloadLatest": "Télécharger le dernier",
-      "sendDiagnostics": "Envoyer des diagnostics",
-      "diagnosticsSent": "Diagnostics envoyés",
-      "diagnosticsReportSuccess": "Rapport de diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du rapport de diagnostic",
-      "runtimeComponentDescription": "Il manque les composants d'exécution groupés requis dans cette installation, donc {{resource}} ne peut pas démarrer. Réinstallez le dernier package AionUi. Si cela se produit toujours après la réinstallation, vérifiez si un logiciel de sécurité ou un antivirus a mis en quarantaine les composants AionUi."
+      "runtimeComponentDescription": "Il manque les composants d'exécution groupés requis dans cette installation, donc {{resource}} ne peut pas démarrer. Réinstallez le dernier package mu. Si cela se produit toujours après la réinstallation, vérifiez si un logiciel de sécurité ou un antivirus a mis en quarantaine les composants mu."
     },
     "packageArchitectureMismatch": {
-      "title": "Inadéquation de l'architecture du package AionUi",
-      "description": "Ce package AionUi est pour {{packageArch}}, mais ce Mac est {{deviceArch}}. Vous avez peut-être téléchargé le mauvais package. Veuillez télécharger et installer le package {{expectedArch}}."
+      "title": "Inadéquation de l'architecture du package mu",
+      "description": "Ce package mu est pour {{packageArch}}, mais ce Mac est {{deviceArch}}. Vous avez peut-être téléchargé le mauvais package. Veuillez télécharger et installer le package {{expectedArch}}."
     },
     "dataMigration": {
       "title": "Échec de la migration des données locales",
-      "description": "AionUi s'est ouvert, mais AionCore s'est arrêté lors de l'initialisation des données locales. La réinstallation d'AionUi ne résoudra peut-être pas ce problème. Envoyez un rapport de diagnostic ou contactez le support afin que la migration de la base de données locale puisse être inspectée.",
-      "sendDiagnostics": "Envoyer des diagnostics",
-      "diagnosticsSent": "Diagnostics envoyés",
-      "diagnosticsReportSuccess": "Rapport de diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du rapport de diagnostic"
+      "description": "mu s'est ouvert, mais son service local s'est arrêté lors de l'initialisation des données locales. La réinstallation de mu ne résoudra peut-être pas ce problème. Le journal de l'application indique où la migration de la base de données locale s'est arrêtée."
     },
     "databaseNewerThanApp": {
-      "title": "Une version plus récente d'AionUi est requise",
-      "description": "Vos données locales ont été créées par une version plus récente d'AionUi et cette version ne peut pas les ouvrir. Mettez à jour AionUi vers la dernière version pour continuer : vos données sont intactes, aucune réinstallation ni réinitialisation n'est nécessaire.",
-      "descriptionWithVersion": "Vos données locales ont été créées par une version d'AionUi plus récente que celle installée actuellement (v{{currentVersion}}), cette version ne peut donc pas les ouvrir. Mettez à jour AionUi vers la dernière version pour continuer : vos données sont intactes, aucune réinstallation ni réinitialisation n'est nécessaire."
+      "title": "Une version plus récente de mu est requise",
+      "description": "Vos données locales ont été créées par une version plus récente de mu et cette version ne peut pas les ouvrir. Mettez à jour mu vers la dernière version pour continuer : vos données sont intactes, aucune réinstallation ni réinitialisation n'est nécessaire.",
+      "descriptionWithVersion": "Vos données locales ont été créées par une version de mu plus récente que celle installée actuellement (v{{currentVersion}}), cette version ne peut donc pas les ouvrir. Mettez à jour mu vers la dernière version pour continuer : vos données sont intactes, aucune réinstallation ni réinitialisation n'est nécessaire."
     },
     "localDataRepair": {
       "title": "La réparation des données locales a échoué",
-      "description": "AionUi s'est ouvert, mais AionCore s'est arrêté lors de la préparation des données locales de démarrage, comme les enregistrements d'assistants ou d'agents. La réinstallation d'AionUi ne résoudra peut-être pas ce problème. Envoyez un rapport de diagnostic ou contactez l'assistance afin que la base de données locale puisse être inspectée.",
-      "sendDiagnostics": "Envoyer des diagnostics",
-      "diagnosticsSent": "Diagnostics envoyés",
-      "diagnosticsReportSuccess": "Rapport de diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du rapport de diagnostic"
+      "description": "mu s'est ouvert, mais son service local s'est arrêté lors de la préparation des données locales de démarrage, comme les enregistrements d'assistants ou d'agents. La réinstallation de mu ne résoudra peut-être pas ce problème. Le journal de l'application indique quelles données locales n'ont pas pu être préparées."
     },
     "startupDirectory": {
       "title": "Le répertoire de démarrage n'est pas disponible",
-      "description": "AionUi s'est ouvert, mais AionCore n'a pas pu démarrer car le répertoire de travail ou de journal configuré est manquant, indisponible ou bloqué par les autorisations. Vérifiez que les répertoires configurés existent et sont accessibles en écriture, puis redémarrez AionUi.",
-      "sendDiagnostics": "Envoyer des diagnostics",
-      "diagnosticsSent": "Diagnostics envoyés",
-      "diagnosticsReportSuccess": "Rapport de diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du rapport de diagnostic"
+      "description": "mu s'est ouvert, mais son service local n'a pas pu démarrer car le répertoire de travail ou de journal configuré est manquant, indisponible ou bloqué par les autorisations. Vérifiez que les répertoires configurés existent et sont accessibles en écriture, puis redémarrez mu."
     },
     "recoverableDatabaseCorruption": {
       "title": "Les données locales sont corrompues",
-      "description": "AionUi a détecté que la base de données locale est corrompue et ne peut pas continuer le démarrage. Après confirmation, AionUi sauvegardera l'ancienne base de données et créera une nouvelle base de données locale pour continuer le démarrage. Les conversations passées ne seront plus affichées et l'ancienne base de données sera conservée comme fichier de sauvegarde.",
+      "description": "mu a détecté que la base de données locale est corrompue et ne peut pas continuer le démarrage. Après confirmation, mu sauvegardera l'ancienne base de données et créera une nouvelle base de données locale pour continuer le démarrage. Les conversations passées ne seront plus affichées et l'ancienne base de données sera conservée comme fichier de sauvegarde.",
       "confirmRebuild": "Sauvegarder l'ancienne base de données et reconstruire la nouvelle base de données",
-      "sendDiagnostics": "Envoyer des diagnostics",
-      "diagnosticsHint": "L'envoi de diagnostics ne modifiera pas la base de données locale.",
-      "diagnosticsSent": "Diagnostics envoyés",
-      "diagnosticsReportSuccess": "Rapport de diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du rapport de diagnostic",
       "rebuildFailed": "Échec de la sauvegarde de l'ancienne base de données et de la reconstruction de la nouvelle base de données",
       "confirmDialog": {
         "title": "Reconstruire la base de données ?",
@@ -142,42 +121,27 @@
       }
     },
     "transientConcurrentStartup": {
-      "title": "AionUi démarre",
-      "description": "À l'ouverture de cette fenêtre, un autre démarrage d'AionUi utilisait encore les données locales. C'est temporaire et vos données sont en sécurité — aucune réinstallation n'est nécessaire. Veuillez patienter un instant et réessayer, ou redémarrer AionUi.",
-      "sendDiagnostics": "Envoyer des diagnostics",
-      "diagnosticsSent": "Diagnostics envoyés",
-      "diagnosticsReportSuccess": "Rapport de diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du rapport de diagnostic",
-      "diagnosticsHint": "Si cela se reproduit, vous pouvez envoyer un rapport de diagnostic."
+      "title": "mu démarre",
+      "description": "À l'ouverture de cette fenêtre, un autre démarrage de mu utilisait encore les données locales. C'est temporaire et vos données sont en sécurité — aucune réinstallation n'est nécessaire. Veuillez patienter un instant et réessayer, ou redémarrer mu."
     },
     "pendingSlow": {
       "title": "Démarrage",
-      "description": "AionCore est en cours de démarrage, veuillez patienter. S'il ne répond pas au bout d'un moment, vous pouvez quitter l'application et la rouvrir."
+      "description": "Le service local est en cours de démarrage, veuillez patienter. S'il ne répond pas au bout d'un moment, vous pouvez quitter l'application et la rouvrir."
     },
     "exited": {
       "title": "Le démarrage ne s'est pas terminé",
-      "description": "AionCore n'a pas pu terminer son démarrage et s'est fermé. Veuillez redémarrer l'application ; si le problème persiste, envoyez un diagnostic.",
-      "sendDiagnostics": "Envoyer le diagnostic",
-      "diagnosticsSent": "Diagnostic envoyé",
-      "diagnosticsReportSuccess": "Diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du diagnostic, veuillez réessayer"
+      "description": "Le service local n'a pas pu terminer son démarrage et s'est fermé. Veuillez redémarrer l'application ; si le problème persiste, consultez le journal de l'application."
     },
     "portReportTimeout": {
       "title": "Délai de démarrage dépassé",
-      "description": "AionCore n'a pas terminé son démarrage dans le délai prévu. Veuillez redémarrer l'application ; si le problème persiste, envoyez un diagnostic.",
-      "sendDiagnostics": "Envoyer le diagnostic",
-      "diagnosticsSent": "Diagnostic envoyé",
-      "diagnosticsReportSuccess": "Diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du diagnostic, veuillez réessayer"
+      "description": "Le service local n'a pas terminé son démarrage dans le délai prévu. Veuillez redémarrer l'application ; si le problème persiste, consultez le journal de l'application."
     },
     "startupFailed": {
       "title": "Échec du démarrage",
-      "description": "AionCore n'a pas pu démarrer. Veuillez redémarrer l'application ; si le problème persiste, envoyez un diagnostic.",
-      "sendDiagnostics": "Envoyer le diagnostic",
-      "diagnosticsSent": "Diagnostic envoyé",
-      "diagnosticsReportSuccess": "Diagnostic envoyé",
-      "diagnosticsReportFailed": "Échec de l'envoi du diagnostic, veuillez réessayer"
-    }
+      "description": "Le service local n'a pas pu démarrer. Veuillez redémarrer l'application ; si le problème persiste, consultez le journal de l'application."
+    },
+    "openLogs": "Ouvrir le dossier des journaux",
+    "openLogsFailed": "Impossible d'ouvrir le dossier des journaux"
   },
   "fileAttach.addFiles": "Ajouter des fichiers",
   "fileAttach.myDevice": "Mon appareil",
@@ -205,14 +169,15 @@
     "starting": "Démarrage de mu…",
     "startingHint": "Connexion au noyau mu local et lecture de la configuration du modèle et du juge.",
     "startupError": "Échec du démarrage de mu",
-    "activity": "Collaboration",
-    "files": "Fichiers",
-    "hive": "Ruche",
     "hiveView": {
       "title": "Ruche",
+      "agents": "Sous-agents",
       "open": "Ouvrir la ruche",
       "inspect": "Inspecter {{name}}",
       "summary": "{{active}} actifs · {{done}} terminés / {{total}}",
+      "counts": "en cours : {{running}} · terminés : {{done}} · en échec : {{failed}}",
+      "none": "Aucun sous-agent dans cette conversation pour l’instant.",
+      "details": "Carte et enregistrements",
       "pending": "En attente du statut de l’abeille",
       "unknown": "Statut indisponible",
       "runs": "Exécutions de la ruche",
@@ -295,8 +260,6 @@
       }
     },
     "judgeView": {
-      "title": "Jugements et leur effet",
-      "description": "Consultez ce que le juge a évalué et ce qui s’est réellement passé. Les suggestions et les actions confirmées sont présentées séparément.",
       "empty": "Aucun jugement n’a encore été enregistré dans cette session.",
       "question": "Question",
       "result": "Jugement",
@@ -306,12 +269,6 @@
       "answers": "Réponses du modèle",
       "noResult": "Aucun résultat lisible n’a été enregistré",
       "unreported": "Non enregistré",
-      "records": "Enregistrements",
-      "returnedCount": "Transmis à la couche d’exécution",
-      "receiptCount": "Transmissions confirmées",
-      "runtimeEvents": "Autres événements d’exécution",
-      "filter": "Filtrer par question",
-      "allQuestions": "Toutes les questions",
       "scoreValue": "Score : {{value}}",
       "latency": "{{ms}} ms",
       "more": "+{{count}} de plus",
@@ -361,6 +318,10 @@
         "browser": "Que doit faire le navigateur ensuite ?",
         "recall": "Quelles leçons passées s’appliquent maintenant ?",
         "capture": "S’agit-il d’une correction ou d’une préférence durable ?",
+        "outcome": "Ce tour a-t-il trouvé une issue qui mérite d’être gardée ?",
+        "worth": "Cette leçon mérite-t-elle d’être gardée ?",
+        "merge": "La nouvelle leçon doit-elle être fusionnée avec une leçon gardée ?",
+        "applied": "Les leçons ont-elles été suivies ?",
         "risk": "Cette action nécessite-t-elle une confirmation de l’utilisateur ?",
         "drift": "Le travail est-il toujours sur la bonne voie ?",
         "completion": "Cette modification doit-elle encore être vérifiée ?",
@@ -376,7 +337,9 @@
         "diagnostics": "Quand ces diagnostics doivent-ils parvenir au modèle ?",
         "patch": "Le patch du sous-agent reste-t-il dans le périmètre de sa tâche ?",
         "review": "Quelle est la gravité de chaque remarque de revue ?",
-        "board": "Où en est le travail ?"
+        "board": "Où en est le travail ?",
+        "relate": "Que change cette découverte pour une découverte antérieure ?",
+        "approval": "Est-ce une étape dont la tâche a besoin, faite comme vous l’attendriez ?"
       },
       "fields": {
         "turnType": "Type de tâche",
@@ -391,6 +354,8 @@
         "hide": "Compétences suggérées à masquer",
         "relevant": "Compétences pertinentes",
         "apply": "Leçons suggérées",
+        "applied": "Suivies",
+        "notApplied": "Non suivies",
         "publish": "Autoriser la publication",
         "deliver": "Autoriser la transmission",
         "path": "Fichier candidat",
@@ -409,7 +374,8 @@
         "phase": "Phase",
         "focus": "Critère en cours",
         "needsUser": "Nécessite l’utilisateur",
-        "update": "Réécrire le tableau"
+        "update": "Réécrire le tableau",
+        "relation": "Relation"
       },
       "values": {
         "true": "Oui",
@@ -489,7 +455,20 @@
         "bad_request": "Le juge a rejeté la requête",
         "server": "Erreur du serveur du juge",
         "invalid_response": "Réponse du juge illisible",
-        "verdict": "Le juge a répondu"
+        "verdict": "Le juge a répondu",
+        "learn": "Garder l’issue",
+        "reusable": "Utile à nouveau",
+        "one_off": "Pour cette fois seulement",
+        "already_known": "Déjà connue",
+        "same": "Même leçon",
+        "refines": "Plus précise",
+        "contradicts": "La contredit",
+        "supersedes": "La remplace",
+        "supports": "La confirme",
+        "unrelated": "Sans rapport",
+        "preference": "Règle permanente",
+        "approve": "Laisser faire",
+        "beyond": "Plus que ce que vous avez demandé"
       },
       "probabilityValue": "Probabilité de « oui » : {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -498,11 +477,22 @@
       "errorValue": "Erreur · {{kind}}",
       "noAnswerAfter": "Pas de réponse après {{duration}}",
       "hints": {
+        "answered": "Ce message répond à la propre question de l’agent : agissez en conséquence et ne redemandez pas.",
+        "resolve": "La demande est formulée de façon vague et peut modifier des fichiers : examinez l’espace de travail, énoncez l’hypothèse retenue et ne demandez que ce qui est introuvable ici.",
         "clarify": "La demande semble insuffisamment précise : posez d’abord une seule question ciblée.",
         "side_question": "C’est une question annexe : répondez-y brièvement, puis reprenez la tâche principale.",
-        "plan_first": "Cela semble vaste ou risqué : rédigez un plan court et faites-le confirmer avant toute modification.",
+        "plan_first": "Cela semble vaste ou risqué : rédigez un plan court puis exécutez-le ; ne vous arrêtez pour confirmation qu’avant une étape irréversible.",
         "try_hive": "Cela semble difficile : si la cause est inconnue ou si une tentative directe échoue, utilisez la ruche.",
         "try_delegate": "Cela se divise en parties indépendantes : envisagez de les confier à des sous-agents en parallèle."
+      },
+      "hintChips": {
+        "answered": "Réponse à l’agent",
+        "resolve": "Regarder d’abord",
+        "clarify": "Demander d’abord",
+        "side_question": "Question annexe",
+        "plan_first": "Planifier d’abord",
+        "try_hive": "Ruche si bloqué",
+        "try_delegate": "Déléguer des parties"
       },
       "answerIds": {
         "turn_type": "Type de tâche",
@@ -515,11 +505,13 @@
         "task_complexity": "Périmètre",
         "reasoning_depth": "Profondeur de raisonnement",
         "tool_complexity": "Utilisation d’outils"
+      },
+      "log": {
+        "thisTurn": "Ce tour",
+        "earlier": "Afficher les lignes précédentes",
+        "latest": "Aller au plus récent"
       }
     },
-    "decisions": "Jev",
-    "memory": "Expérience",
-    "images": "Images",
     "empty": "Aucun événement enregistré dans cette session pour le moment.",
     "quiet": "Aucune activité depuis {{duration}}",
     "passed": "Accepté",
@@ -556,6 +548,9 @@
       "memory.recalled": "Expérience rappelée",
       "artifact.image": "Image",
       "memory.stored": "Expérience enregistrée",
+      "memory.applied": "Leçons suivies",
+      "memory.retired": "Leçon retirée",
+      "memory.merged": "Leçons fusionnées",
       "compaction_start": "Compactage du contexte…",
       "compaction_end": "Compactage terminé",
       "context.usage": "Utilisation du contexte",
@@ -567,6 +562,9 @@
       "board": {
         "update": "Tableau mis à jour",
         "switched": "Tableau activé ou désactivé"
+      },
+      "permissions": {
+        "mode": "Mode d’autorisation"
       },
       "checkpoint": {
         "taken": "Point de restauration enregistré"
@@ -681,7 +679,6 @@
       "failed": "Échec"
     },
     "boardView": {
-      "tab": "Tableau",
       "title": "Tableau en clair",
       "switch": "Tableau en clair de ce projet",
       "switching": "Changement…",
@@ -689,7 +686,6 @@
       "unknown": "Pas encore de tableau dans cette conversation. Il apparaît dans les conversations mu tant que le tableau en clair est activé dans Fonctions.",
       "off": "Une fois activé, il dit en mots simples où en est le travail, ce que fait l’agent en ce moment et ce qui vous attend.",
       "cost": "Pour ce projet seulement. Chaque mise à jour coûte un appel au modèle.",
-      "open": "Activer le tableau",
       "empty": "Laissez un moment à l’agent ; ici s’affichera en mots simples où il en est.",
       "checks": "{{done}} sur {{total}} vérifications faites",
       "ended": "Arrêté",
@@ -699,6 +695,7 @@
       "needsYouText": "L’agent attend votre réponse dans la conversation.",
       "quote": "Citer dans votre réponse",
       "quoteHint": "Cliquez sur un élément pour le citer dans votre réponse ; rien n’est envoyé avant que vous l’envoyiez.",
+      "earlier": "Plus tôt",
       "phases": {
         "understanding": "Comprend la tâche",
         "planning": "Planifie",
@@ -736,6 +733,66 @@
           "focus": "{{now}} (En cours : {{focus}})",
           "planning": "Cherche comment s’y prendre ; rien n’est encore modifié."
         }
+      }
+    },
+    "lessonsView": {
+      "filterLabel": "Leçons à afficher",
+      "active": "En usage",
+      "all": "Toutes",
+      "count": "{{count}} leçons",
+      "count_one": "{{count}} leçon",
+      "count_other": "{{count}} leçons",
+      "search": "Rechercher des leçons",
+      "kinds": {
+        "correction": "Correction",
+        "preference": "Règle",
+        "pitfall": "Piège",
+        "workaround": "Contournement",
+        "fact": "Fait"
+      },
+      "everywhere": "Tous les projets",
+      "status": {
+        "retired": "Retirée",
+        "superseded": "Remplacée"
+      },
+      "uses": "Rappelée {{recalled}} · Suivie {{applied}}",
+      "origins": {
+        "user": "De votre correction ou règle",
+        "outcome": "D’une issue trouvée par l’agent lui-même",
+        "model": "Gardée par le modèle",
+        "subagent": "Du rapport d’un sous-agent",
+        "command": "Gardée avec /remember"
+      },
+      "updated": "Mise à jour le {{date}}",
+      "editLabel": "Texte de la leçon",
+      "retire": "Retirer",
+      "retireConfirm": "Retirer cette leçon ? Elle ne sera plus apportée dans aucun tour.",
+      "loadFailed": "Impossible de lire les leçons",
+      "saveFailed": "La leçon n’a pas été modifiée",
+      "empty": "Aucune leçon pour ce projet pour l’instant. mu les apprend de vos corrections, de ses propres issues et de /remember.",
+      "noneActive": "Aucune leçon en usage. Toutes affiche aussi les leçons retirées et remplacées.",
+      "noMatch": "Aucune leçon ne correspond.",
+      "noProject": "Cette conversation n’a pas de dossier de projet : seules les leçons pour tous les projets sont listées.",
+      "notes": {
+        "label": "Ce que les leçons ont fait dans cette session",
+        "recalled": "Ce tour a apporté {{count}} leçons",
+        "recalled_one": "Ce tour a apporté {{count}} leçon",
+        "recalled_other": "Ce tour a apporté {{count}} leçons",
+        "briefed": "La consigne d’un sous-agent contenait {{count}} leçons : {{task}}",
+        "briefed_one": "La consigne d’un sous-agent contenait {{count}} leçon : {{task}}",
+        "briefed_other": "La consigne d’un sous-agent contenait {{count}} leçons : {{task}}",
+        "applied": "{{count}} leçons ont été suivies",
+        "applied_one": "{{count}} leçon a été suivie",
+        "applied_other": "{{count}} leçons ont été suivies",
+        "retired": "Retirée : {{lesson}}",
+        "retiredUnused": "Retirée : {{lesson}} (rappelée {{count}} fois, jamais suivie)",
+        "retiredUnused_one": "Retirée : {{lesson}} (rappelée {{count}} fois, jamais suivie)",
+        "retiredUnused_other": "Retirée : {{lesson}} (rappelée {{count}} fois, jamais suivie)",
+        "retiredContradicted": "Retirée : {{lesson}} (contredite par vos propos plus récents)",
+        "retiredForgotten": "Retirée : {{lesson}} (à votre demande)",
+        "mergedSame": "Fusionnée avec : {{lesson}}",
+        "mergedRefines": "Formulation plus précise gardée : {{lesson}}",
+        "mergedContradicts": "Non gardée, elle contredit : {{lesson}}"
       }
     },
     "activityLoadFailed": "Impossible de charger l’activité de collaboration. Nouvelle tentative…",
@@ -779,6 +836,7 @@
         "lessons": "Consultation des leçons des sessions précédentes",
         "skills": "Choix des compétences dont cette session a besoin",
         "capabilities": "Choix des capacités dont cette tâche a besoin",
+        "goal_check": "Vérification de l'atteinte de l'objectif",
         "permissionReview": "JeV examine : {{summary}}"
       },
       "goal": {
@@ -864,7 +922,21 @@
           "cdpConnectFailed": "Impossible de se connecter au navigateur.",
           "browserSpawnFailed": "Impossible de lancer {{command}}."
         }
+      },
+      "permissions": {
+        "mode": "Mode d’autorisation : {{mode}}"
+      },
+      "board": {
+        "on": "Tableau : activé",
+        "off": "Tableau : désactivé"
       }
+    },
+    "gauges": {
+      "context": "Contexte",
+      "contextHint": "Ce que le modèle lira ensuite occupe {{percent}} de son contexte",
+      "cache": "Succès de cache",
+      "cacheHint": "Succès de cache : {{turn}} au dernier tour, {{session}} sur toute la conversation",
+      "pending": "S’affiche après la prochaine réponse de mu"
     }
   },
   "menu": {
@@ -900,11 +972,57 @@
   "noData": "Aucune donnée",
   "labelWithSelectedCount": "{{label}} ({{selected}}/{{total}})",
   "selectedSkillsWithCount": "Compétences sélectionnées · {{count}}",
+  "commandPalette": {
+    "title": "Palette de commandes",
+    "placeholder": "Rechercher des conversations, des paramètres et des commandes",
+    "groups": {
+      "conversations": "Conversations",
+      "settings": "Paramètres",
+      "commands": "Commandes"
+    },
+    "searchMessages": "Rechercher « {{query}} » dans les messages",
+    "empty": "Aucun résultat",
+    "noConversations": "Pas encore de conversation. Tapez pour trouver des paramètres et des commandes.",
+    "openSettings": "Ouvrir les paramètres",
+    "actions": {
+      "newConversation": "Commencer un nouveau chat",
+      "scheduledTasks": "Ouvrir les tâches planifiées"
+    },
+    "commandWaits": "S’exécutera une fois cette réponse terminée"
+  },
   "window": {
     "minimize": "Réduire",
     "maximize": "Agrandir",
     "restore": "Restaurer"
   },
   "collapseSidebar": "Réduire la barre latérale",
-  "expandSidebar": "Développer la barre latérale"
+  "expandSidebar": "Développer la barre latérale",
+  "workPanel": {
+    "label": "Panneau de travail",
+    "tabsLabel": "Onglets du panneau de travail",
+    "tabs": {
+      "board": "Tableau",
+      "judge": "Jugements",
+      "hive": "Ruche",
+      "lessons": "Leçons",
+      "files": "Fichiers",
+      "preview": "Aperçu",
+      "source": "Source"
+    },
+    "close": "Fermer le panneau de travail",
+    "resize": "Redimensionner le panneau de travail",
+    "unread": "{{tab}}, nouveau",
+    "noProject": "Cette conversation n’a pas de dossier de projet : il n’y a ni fichiers ni modifications à afficher.",
+    "previewEmpty": "Rien à prévisualiser pour l’instant. Les fichiers et les pages ouverts depuis la conversation s’affichent ici.",
+    "previewHidden": "L’aperçu est masqué."
+  },
+  "nodeRuntime": {
+    "title": "Télécharger Node.js ?",
+    "message": "mu exécute les agents et les outils avec sa propre copie de Node.js, qui n'est pas encore téléchargée.",
+    "detail": "Node.js {{version}} (environ {{size}} Mo) sera téléchargé depuis nodejs.org et décompressé dans :\n{{folder}}\n\n« Plus tard » ne télécharge rien : mu s'ouvre normalement, le signale là où Node.js est nécessaire et redemande au prochain démarrage.",
+    "download": "Télécharger",
+    "later": "Plus tard",
+    "note": "Node.js n'est pas téléchargé, cet agent ne peut donc pas s'exécuter. mu redemandera au prochain démarrage.",
+    "toolNote": "Node.js n'est pas téléchargé, les outils qui en ont besoin ne peuvent donc pas s'exécuter. mu redemandera au prochain démarrage."
+  }
 }

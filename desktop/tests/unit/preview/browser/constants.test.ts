@@ -9,6 +9,7 @@ import {
   BROWSER_BLANK_URL,
   BROWSER_TAB_FALLBACK_TITLE,
   browserTabLabelFromUrl,
+  isAppAddress,
   resolveAddressBarInput,
 } from '@/renderer/pages/conversation/Preview/browser/constants';
 
@@ -75,5 +76,25 @@ describe('browserTabLabelFromUrl', () => {
 
   it('falls back to the placeholder for unparseable input', () => {
     expect(browserTabLabelFromUrl('not a url')).toBe(BROWSER_TAB_FALLBACK_TITLE);
+  });
+});
+
+describe('isAppAddress', () => {
+  const dev = { protocol: 'http:', origin: 'http://localhost:5173' };
+
+  it('recognizes the app served by the dev server, whatever the path', () => {
+    expect(isAppAddress('http://localhost:5173/index.html#/login', dev)).toBe(true);
+    expect(isAppAddress('http://localhost:5173/', dev)).toBe(true);
+  });
+
+  it('lets other local servers and the web through', () => {
+    expect(isAppAddress('http://localhost:3000/', dev)).toBe(false);
+    expect(isAppAddress('https://example.com/', dev)).toBe(false);
+    expect(isAppAddress('about:blank', dev)).toBe(false);
+    expect(isAppAddress('not a url', dev)).toBe(false);
+  });
+
+  it('never matches when the app is packaged and loaded from disk', () => {
+    expect(isAppAddress('http://localhost:5173/', { protocol: 'file:', origin: 'null' })).toBe(false);
   });
 });

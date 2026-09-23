@@ -131,6 +131,8 @@ export default function Welcome() {
   });
   const fieldProblem = (field: 'baseUrl' | 'key' | 'model') =>
     tried && problem === field ? t(`mu.welcome.model.problems.${field}`) : undefined;
+  const fieldStatus = (field: 'baseUrl' | 'key' | 'model'): 'error' | undefined =>
+    fieldProblem(field) ? 'error' : undefined;
 
   let body: React.ReactNode;
   if (step === 'intro') {
@@ -182,7 +184,8 @@ export default function Welcome() {
                 key={tile}
                 testId={`mu-welcome-way-${tile}`}
                 title={t(`mu.welcome.model.${tile}.title`)}
-                tag={t(`mu.welcome.model.${tile}.tag`)}
+                // The Anthropic tile's description already names Claude: a tag saying it again adds nothing.
+                tag={tile === 'openai' ? t('mu.welcome.model.openai.tag') : undefined}
                 description={t(`mu.welcome.model.${tile}.description`)}
                 active={chosenWay === tile}
                 onPick={() => {
@@ -209,6 +212,7 @@ export default function Welcome() {
                   <Field label={t('mu.welcome.model.baseUrl')} problem={fieldProblem('baseUrl')}>
                     <Input
                       aria-label={t('mu.welcome.model.baseUrl')}
+                      status={fieldStatus('baseUrl')}
                       value={form.baseUrl}
                       placeholder={ENDPOINT_PLACEHOLDER[api]}
                       onChange={(baseUrl) => setForm((now) => ({ ...now, baseUrl }))}
@@ -217,6 +221,7 @@ export default function Welcome() {
                   <Field label={t('mu.welcome.model.key')} problem={fieldProblem('key')}>
                     <Input.Password
                       aria-label={t('mu.welcome.model.key')}
+                      status={fieldStatus('key')}
                       autoComplete='new-password'
                       value={form.key}
                       placeholder={t('mu.welcome.model.keyPlaceholder')}
@@ -226,6 +231,7 @@ export default function Welcome() {
                   <Field label={t('mu.welcome.model.modelId')} problem={fieldProblem('model')}>
                     <AutoComplete
                       aria-label={t('mu.welcome.model.modelId')}
+                      status={fieldStatus('model')}
                       value={form.model}
                       data={listed}
                       placeholder={t(`mu.welcome.model.${tile}.modelPlaceholder`)}
@@ -359,8 +365,14 @@ export default function Welcome() {
             </button>
           )}
           <span className={styles.spacer} />
-          {step === 'judge' ? (
-            <button type='button' className={styles.textButton} onClick={() => setStep('done')}>
+          {/* Skipping is a quiet text button on both steps; the lavender button is always the way on. */}
+          {step === 'model' || step === 'judge' ? (
+            <button
+              type='button'
+              className={styles.textButton}
+              data-testid='mu-welcome-skip'
+              onClick={() => setStep(step === 'model' ? 'judge' : 'done')}
+            >
               {t('mu.welcome.skipStep')}
             </button>
           ) : null}
@@ -370,7 +382,7 @@ export default function Welcome() {
             </Button>
           ) : step === 'model' ? (
             <Button type='primary' shape='round' data-testid='mu-welcome-next' onClick={nextFromModel}>
-              {chosenWay ? t('mu.welcome.next') : t('mu.welcome.skipStep')}
+              {t('mu.welcome.next')}
             </Button>
           ) : step === 'judge' ? (
             <Button type='primary' shape='round' data-testid='mu-welcome-next' onClick={() => setStep('done')}>

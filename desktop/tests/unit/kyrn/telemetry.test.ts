@@ -4,7 +4,12 @@ import { appendFileSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileS
 import { DatabaseSync } from 'node:sqlite';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { activityPage, readPage, Telemetry } from '../../../packages/desktop/src/process/agent/kyrn/telemetry';
+import {
+  activityPage,
+  modelLevels,
+  readPage,
+  Telemetry,
+} from '../../../packages/desktop/src/process/agent/kyrn/telemetry';
 import { mergeActivity } from '../../../packages/desktop/src/renderer/pages/conversation/KyrnPanel/activity';
 import { sessionBinding } from '../../../packages/desktop/src/process/agent/kyrn/sessionBinding';
 
@@ -20,6 +25,20 @@ const presentation = (frame: Record<string, unknown>) => ({
     payload: { state: 'applied' },
     ...frame,
   }),
+});
+
+/** A reply of the model as pi's RPC ends it: its words, and what it read and wrote. */
+const modelReply = (usage: unknown) => ({
+  type: 'message_end',
+  message: { role: 'assistant', content: [{ type: 'text', text: 'private answer' }], usage },
+});
+
+/** The usage of one reply, as the activity keeps it. */
+const turnUsage = (id: string, cacheRead: number) => ({
+  id,
+  at: 1,
+  kind: 'turn.usage',
+  payload: { input: 100, output: 10, cacheRead, cacheWrite: 0 },
 });
 
 describe('KYRN durable activity', () => {
@@ -251,6 +270,150 @@ describe('KYRN durable activity', () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+  it('records the lessons brought into a turn once: from the harness’s own frame, else from the message carrying them', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kyrn-telemetry-'));
+    const older = randomUUID();
+    const newer = randomUUID();
+    const lessons = {
+      type: 'message_end',
+      message: {
+        role: 'custom',
+        customType: 'kyrn.lessons',
+        content: 'Lessons from earlier sessions:\n- Use ./test.sh.',
+      },
+    };
+    try {
+      // A harness that does not present its recalls: the message is the only record of them.
+      new Telemetry(dir, older).capture(lessons);
+      expect(activityPage(dir, older, 0).events.map((event) => event.payload)).toEqual([
+        { content: 'Lessons from earlier sessions:\n- Use ./test.sh.' },
+      ]);
+      // One that does sends its frame before the message, which then adds nothing, this turn and the next.
+      const telemetry = new Telemetry(dir, newer);
+      for (const turn of [1, 2]) {
+        telemetry.capture(
+          presentation({
+            kind: 'memory.recalled',
+            payload: { ids: ['a'], turn },
+            runtimeId: 'r',
+            turnId: turn,
+            sequence: turn,
+          })
+        );
+        telemetry.capture(lessons);
+      }
+      expect(activityPage(dir, newer, 0).events.map((event) => [event.kind, event.payload])).toEqual([
+        ['memory.recalled', { ids: ['a'], turn: 1 }],
+        ['memory.recalled', { ids: ['a'], turn: 2 }],
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  it('records what each reply of the model read and wrote, counts only, for the board’s cache ring', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kyrn-telemetry-'));
+    const session = randomUUID();
+    try {
+      const telemetry = new Telemetry(dir, session);
+      telemetry.capture(
+        modelReply({ input: 200, output: 50, cacheRead: 7800, cacheWrite: 0, totalTokens: 8050, cost: { total: 0.01 } })
+      );
+      // Not replies of the model: the person's message and a tool's result.
+      telemetry.capture({ type: 'message_end', message: { role: 'user', content: 'hi', usage: { input: 5 } } });
+      telemetry.capture({ type: 'message_end', message: { role: 'toolResult', content: [] } });
+      const page = activityPage(dir, session, 0);
+      expect(page.events.map((event) => [event.kind, event.payload])).toEqual([
+        ['turn.usage', { input: 200, output: 50, cacheRead: 7800, cacheWrite: 0 }],
+      ]);
+      expect(JSON.stringify(page)).not.toMatch(/private answer|cost/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  it('records nothing for a reply that failed before the model read anything, or whose counts are not numbers', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kyrn-telemetry-'));
+    const session = randomUUID();
+    try {
+      const telemetry = new Telemetry(dir, session);
+      telemetry.capture({
+        type: 'message_end',
+        message: {
+          role: 'assistant',
+          stopReason: 'error',
+          usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+        },
+      });
+      telemetry.capture({
+        type: 'message_end',
+        message: { role: 'assistant', usage: { input: '200', output: 1, cacheRead: 0, cacheWrite: 0 } },
+      });
+      telemetry.capture({ type: 'message_end', message: { role: 'assistant' } });
+      expect(activityPage(dir, session, 0).events).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  it('pages only the kinds a reader asks for, while the cursor still moves past every row', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kyrn-telemetry-'));
+    const session = randomUUID();
+    try {
+      const telemetry = new Telemetry(dir, session);
+      telemetry.capture(presentation({}));
+      telemetry.capture(presentation({ kind: 'goal.state', payload: { status: 'active', text: 'tests pass' } }));
+      telemetry.capture(presentation({}));
+      const all = activityPage(dir, session, 0);
+      const goals = activityPage(dir, session, 0, ['goal.state']);
+      expect(all.events.map((event) => event.kind)).toEqual(['preflight.verdict', 'goal.state', 'preflight.verdict']);
+      expect(goals.events.map((event) => event.payload)).toEqual([{ status: 'active', text: 'tests pass' }]);
+      expect(goals.cursor).toBe(all.cursor);
+      expect(activityPage(dir, session, goals.cursor, ['goal.state']).events).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  it('keeps the levels each model takes beside the activity, and writes them only when they change', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kyrn-telemetry-'));
+    const session = randomUUID();
+    const levels = { 'anthropic/claude-sonnet-4-5': ['off' as const, 'low' as const, 'high' as const] };
+    try {
+      expect(modelLevels(dir, session)).toEqual({});
+      const telemetry = new Telemetry(dir, session);
+      telemetry.levels(levels);
+      expect(modelLevels(dir, session)).toEqual(levels);
+      // A record of its own, not an event: the activity stays as it was.
+      expect(activityPage(dir, session, 0).events).toEqual([]);
+      // The same levels again write nothing: the record spoiled here stays spoiled, and reads as none.
+      writeFileSync(join(dir, `${session}.models.json`), 'not json');
+      telemetry.levels({ ...levels });
+      expect(modelLevels(dir, session)).toEqual({});
+      telemetry.levels({ 'openai/gpt-4o': ['off'] });
+      expect(modelLevels(dir, session)).toEqual({ 'openai/gpt-4o': ['off'] });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+  it('reads back only levels pi knows, for models named with their provider, and only for a session id', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'kyrn-telemetry-'));
+    const session = randomUUID();
+    try {
+      writeFileSync(
+        join(dir, `${session}.models.json`),
+        JSON.stringify({
+          version: 1,
+          levels: {
+            'openai/gpt-5': ['off', 'turbo', 7, 'high'],
+            'no-provider': ['off'],
+            'openai/unknown-only': ['turbo'],
+            'openai/not-a-list': 'high',
+          },
+        })
+      );
+      expect(modelLevels(dir, session)).toEqual({ 'openai/gpt-5': ['off', 'high'] });
+      expect(() => modelLevels(dir, '../../outside')).toThrow('Invalid');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
   it('updates live snapshots without losing earlier interaction events', () => {
     const base = { at: 1, payload: {}, run: 'r' };
     const events = mergeActivity(
@@ -264,5 +427,9 @@ describe('KYRN durable activity', () => {
       ]
     );
     expect(events.map((e) => e.id)).toEqual(['s2', 'n1']);
+  });
+  it('keeps only the latest reply’s usage: the ring shows that one', () => {
+    const events = mergeActivity([turnUsage('u1', 100)], [turnUsage('u2', 900), turnUsage('u3', 400)]);
+    expect(events.map((e) => e.id)).toEqual(['u3']);
   });
 });

@@ -157,14 +157,11 @@ describe('ClientFactory', () => {
       expect(rotatingOpts.retryDelay).toBe(2000);
     });
 
-    it('adds default HTTP-Referer and X-Title headers for OpenAI', async () => {
+    it('sends no headers that name the app to OpenAI-compatible providers', async () => {
       await ClientFactory.createRotatingClient(mockProvider);
       const calls = (OpenAIRotatingClient as any).mock.calls;
       const config = calls[0][1];
-      expect(config.defaultHeaders).toEqual({
-        'HTTP-Referer': 'https://aionui.com',
-        'X-Title': 'AionUi',
-      });
+      expect(config).not.toHaveProperty('defaultHeaders');
     });
 
     it('handles proxy option for OpenAI', async () => {

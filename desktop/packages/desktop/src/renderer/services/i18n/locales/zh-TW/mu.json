@@ -7,16 +7,36 @@
   "modified": "已修改",
   "applyNote": "修改對新對話生效。正在執行的對話沿用啟動時的設定，重新連線後才會使用新設定。",
   "apiKey": "API 金鑰",
-  "keyHelp": "只寫不讀：儲存後不會再顯示。存放在本機 harness 的 .env 中（僅本人可讀）。",
+  "keyHelp": "儲存後不再顯示。只存在這台電腦上，只有你的帳戶能讀取。",
   "keyKeep": "留空則保留已儲存的金鑰",
   "endpointRule": "請使用 HTTPS；只有本機位址（127.0.0.1、localhost）可以用 HTTP。位址裡不能帶使用者名稱、密碼、查詢參數或片段。",
   "sections": {
     "judges": "判定器",
+    "judgeTiers": "判定層級",
     "decisions": "判定點",
     "features": "功能",
-    "models": "模型與供應商",
+    "moreFeatures": "更多功能",
+    "providers": "供應商",
+    "defaultModel": "預設模型",
     "permissions": "權限",
     "context": "上下文"
+  },
+  "pages": {
+    "decisions": {
+      "input": "輸入判定點",
+      "context": "上下文判定點",
+      "memory": "經驗庫判定點",
+      "tools": "工具與安全判定點",
+      "turn": "回合判定點",
+      "team": "協作判定點"
+    },
+    "features": {
+      "input": "輸入功能",
+      "context": "上下文功能",
+      "tools": "工具與安全功能",
+      "turn": "回合功能",
+      "other": "其他功能"
+    }
   },
   "modes": {
     "active": "生效",
@@ -24,11 +44,11 @@
     "off": "關閉",
     "activeHelp": "判定結果直接生效。",
     "shadowHelp": "照常提問並記錄，但不改變任何行為。",
-    "offHelp": "不提問，行為與原版 pi 相同。"
+    "offHelp": "不提問，這一步不經判定，照常進行。"
   },
   "harness": {
-    "tooOld": "目前的 mu harness 版本較舊，還不能描述自己的判定點和功能。更新 harness 後這裡才會列出；基礎設定仍可正常使用。",
-    "unsupported": "harness 用了本應用程式不認得的格式描述自己（版本 {{version}}）。請更新應用程式，才能編輯判定點和功能。"
+    "tooOld": "目前的 mu 版本較舊，還不能列出自己的判定點和功能。更新 mu 後這裡才會列出；基礎設定仍可正常使用。",
+    "unsupported": "mu 用了本應用程式不認得的格式描述自己（版本 {{version}}）。請更新應用程式，才能編輯判定點和功能。"
   },
   "load": {
     "failed": "無法讀取設定"
@@ -43,7 +63,7 @@
     "failed": "儲存失敗：{{reason}}"
   },
   "units": {
-    "ms": "毫秒",
+    "s": "秒",
     "tokens": "tokens"
   },
   "options": {
@@ -62,63 +82,62 @@
     "description": "判定器被提問的每一個環節。除非你為它單獨指定，否則每個判定點都跟隨預設模式。",
     "defaultMode": "預設模式",
     "defaultModeHelp": "沒有單獨指定模式的判定點都用它。",
-    "follow": "跟隨預設（{{mode}}）",
-    "feature": "功能：{{name}}",
-    "featureOff": "功能已關閉，不會提問",
+    "useDefault": "改回預設（{{mode}}）",
+    "featureOff": "所屬功能已關閉，現在不會問這一項。",
     "groups": {
       "input": "輸入",
       "context": "上下文",
+      "memory": "經驗庫",
       "tools": "工具與安全",
       "turn": "回合",
       "team": "協作"
     },
-    "otherGroup": "其他"
+    "otherGroup": "其他",
+    "pageLead": "沒有單獨指定模式的判定點跟隨預設模式；預設模式和搜尋在「{{page}}」頁。",
+    "none": "這裡還沒有判定點。"
   },
   "features": {
-    "description": "harness 在模型周圍做的各項工作。沒改過的選項會一直跟隨 harness 的預設值。",
+    "lead": "mu 在背景替你做的事。關掉一項，mu 就不再做這件事。",
+    "moreLead": "mu 能做的其他事，按起作用的地方分組。每一項的選項點一下就能打開。",
     "beta": "測試版",
     "reset": "恢復預設",
-    "asks": "相關判定點：{{names}}。",
     "permissionsElsewhere": "新對話的預設模式在「權限」裡設定。",
-    "boardModelElsewhere": "寫看板的模型在「模型與供應商」裡選。"
+    "boardModelElsewhere": "寫看板的模型在「預設模型」裡選。",
+    "options": "選項",
+    "noOptions": "沒有別的可設定：只有這個開關。",
+    "noSuchFeature": "這個版本的 mu 沒有這項功能。",
+    "none": "這裡還沒有功能。",
+    "part": "選項第 {{part}} 頁，共 {{parts}} 頁",
+    "previousPart": "上一頁",
+    "nextPart": "下一頁"
   },
   "judges": {
-    "tiers": "判定層級",
     "tiersHelp": "依序詢問各判定器；後一級只處理前面拿不準的問題。",
     "order": "順序",
-    "judge": "判定器",
+    "orderHelp": "排在第一的就是「判定器」頁選的那個。",
+    "tierTitle": "第 {{index}} 級：{{name}}",
     "type": "連線方式",
+    "access": {
+      "jev": "自動",
+      "typesafe": "直連 TypeSafe",
+      "gateway": "經 Vercel AI Gateway"
+    },
     "model": "判定模型",
-    "modelHelp": "通用大模型充當判定器時填寫 provider/model-id。",
-    "endpoint": "端點位址",
+    "customTier": "你自己加的判定器，要改它請編輯 mu 的設定檔。",
     "endpointDefault": "使用服務的預設位址",
-    "timeout": "逾時",
-    "keyVariable": "金鑰變數名稱",
-    "keyVariableHelp": "可用 TYPESAFE_API_KEY、AI_GATEWAY_API_KEY，或以 MU_JUDGE_ 開頭的名稱。",
     "types": {
-      "jev": "Jev（自動選擇通道）",
-      "typesafe": "Jev 直連（TypeSafe）",
-      "gateway": "Jev（經 Vercel AI Gateway）",
-      "local": "本機判定器（Laya）",
-      "http": "自建 HTTP 判定服務",
-      "llm": "通用大模型充當判定器",
-      "mock": "模擬（只給中性回答）",
       "jevHelp": "設定了 TypeSafe 金鑰就直連，否則走 Vercel AI Gateway。",
       "typesafeHelp": "始終直連 TypeSafe。",
       "gatewayHelp": "始終經由 Vercel AI Gateway。",
-      "localHelp": "在本機執行的 Laya 判定服務。",
-      "httpHelp": "任何接收 {state, questions} 並回傳 {answers} 的端點。",
-      "llmHelp": "從你的供應商中選一個生成式模型，透過提示讓它以 JSON 作答。",
-      "mockHelp": "用於測試和離線：不會真的提問。"
+      "localHelp": "在這台電腦上執行。"
     },
     "intro": "mu 工作時要做很多小判斷：這則訊息該怎麼處理、這一步會不會違反你定的規則……判定器負責回答。選一個就行。",
     "choose": "選擇判定器",
-    "custom": "現在排在第一位的是自訂的判定器，可以在進階設定裡查看和修改。",
-    "advanced": "進階設定",
+    "custom": "現在排在第一位的是自訂的判定器，可以在「判定層級」頁查看和修改。",
     "keyPlaceholder": "貼上 TypeSafe 或 Vercel AI Gateway 的金鑰",
     "choices": {
       "jev": {
-        "title": "Jev",
+        "title": "JeV",
         "tag": "推薦",
         "description": "又快又準，按次計費。需要 TypeSafe 或 Vercel AI Gateway 的金鑰。"
       },
@@ -133,7 +152,7 @@
       "running": "正在本機執行",
       "stopped": "已安裝，沒有執行。mu 用到它時會自己啟動。",
       "missing": "還沒有安裝。",
-      "platform": "這台電腦無法執行 Laya：它需要 Apple Silicon 的 Mac。可以在進階設定裡填一個你自己的判定服務位址。",
+      "platform": "這台電腦無法執行 Laya：它需要 Windows 或 Linux（x64 或 arm64），或 Apple Silicon 的 Mac。",
       "needsUv": "安裝前需要先裝好 uv（Python 的套件管理工具），裝好後回到這裡。",
       "uvLink": "如何安裝 uv",
       "install": "安裝 Laya",
@@ -151,6 +170,26 @@
         "setup": "安裝沒有完成，可以再試一次。",
         "start": "Laya 沒能啟動。",
         "stop": "Laya 沒能停止。"
+      },
+      "onnx": {
+        "missing": "這台電腦上還沒有 Laya 的模型（約 {{size}} MB）。mu 不會替你下載：請從 Hugging Face 下載這些檔案，放進模型資料夾，再按「檢查並啟動」。",
+        "stopped": "模型已就位，Laya 沒有執行。選了 Laya 作為判定器時，mu 會在開啟 App 時自己啟動它。",
+        "starting": "正在檢查模型並啟動 Laya… 第一次檢查要讀完整個模型，需要一點時間。",
+        "missingFiles": "還缺：{{files}}",
+        "wrongFiles": "這些檔案不是 mu 測試過的版本，請重新下載：{{files}}",
+        "folder": "模型資料夾：{{folder}}",
+        "command": "裝了 Hugging Face 命令列（hf）的話，一行指令就能全部下載：",
+        "page": "到 Hugging Face 下載",
+        "openFolder": "開啟模型資料夾",
+        "check": "檢查並啟動",
+        "problem": {
+          "missing": "缺少部分模型檔案。",
+          "wrong": "部分模型檔案不是 mu 測試過的版本，請重新下載。",
+          "runtime": "這台電腦無法執行這個模型。",
+          "port": "Laya 的連接埠（{{port}}）已被其他程式佔用。",
+          "stopped": "Laya 還沒準備好就停止了。",
+          "foreign": "這裡正在執行一個不是 mu 啟動的 Laya，請在啟動它的地方停止它。"
+        }
       }
     }
   },
@@ -163,14 +202,12 @@
     "manual": "已設定（手動）"
   },
   "context": {
-    "description": "對話何時壓縮、如何壓縮。與 pi 的 settings.json 共用。",
+    "description": "對話何時壓縮、如何壓縮。存在 mu 的設定檔裡，命令列裡的 mu 也用同一份。",
     "auto": "自動壓縮",
     "autoHelp": "上下文快滿時自動壓縮歷史。",
     "limit": "上下文上限",
     "limitHelp": "0 表示跟隨模型的上下文視窗減去保留量；否則為 {{min}} 到 {{max}}。在下一次請求模型之前檢查，不是硬性截斷。",
-    "limitProblem": "請填 0，或 {{min}} 到 {{max}} 之間的整數。",
-    "beta": "免摘要壓縮",
-    "betaHelp": "依判斷保留或裁剪原文段落，而不是寫摘要。與「功能」裡的免摘要壓縮是同一個開關。"
+    "limitProblem": "請填 0，或 {{min}} 到 {{max}} 之間的整數。"
   },
   "permissions": {
     "description": "mu 動手之前要不要先問你。這裡定的是新對話預設用的模式；每個對話還能在傳送框的「權限」裡單獨切換。",
@@ -229,7 +266,7 @@
     }
   },
   "providers": {
-    "lead": "模型從哪裡來：訂閱帳號和介面位址；還有寫人話看板的模型。對話用哪個模型、思考等級多少，在傳送框裡選。",
+    "lead": "模型從哪裡來：訂閱帳號和介面位址。對話用哪個模型、思考等級多少，在傳送框裡選。",
     "title": "供應商",
     "custom": "自訂供應商",
     "manualGroup": "手動設定",
@@ -242,7 +279,7 @@
     "name": "顯示名稱",
     "namePlaceholder": "例如：我的中轉服務",
     "id": "ID",
-    "idHelp": "小寫字母、數字和連字號。儲存後不可更改，模型以 provider/model 的形式引用它。",
+    "idHelp": "小寫字母、數字和連字號。儲存後不能再改。",
     "idProblem": {
       "format": "只能用小寫字母、數字和連字號，以字母或數字開頭，最多 40 個字元。",
       "reserved": "這是內建供應商的 ID。用它建立的項目會改寫那個內建供應商，而不是新增一個。",
@@ -251,7 +288,6 @@
     "baseUrl": "端點位址（Base URL）",
     "keyEnter": "貼上 API 金鑰",
     "keyReplace": "目前使用的是手動設定的金鑰，在這裡輸入會取代它。",
-    "keyHelp": "金鑰存入 harness 的 .env（變數 {{variable}}），models.json 裡只寫引用，儲存後不再顯示。",
     "authHeader": "同時傳送 Authorization: Bearer 標頭（部分中轉服務需要）",
     "headers": "手動設定的額外請求標頭會原樣保留：{{names}}。它們的值屬於機密，請在 models.json 中修改。",
     "pick": "在左側選擇一個供應商，或新增一個。",
@@ -276,6 +312,18 @@
     "removeUnsaved": "它還沒儲存，移除後這裡填的內容都會丟掉。",
     "removeEntry": "儲存後這個手動設定的項目會從 models.json 裡刪除。如果它改寫的是內建供應商，那個供應商會恢復預設。",
     "removeDefault": "新對話預設用的就是它，所以預設模型也會清空。"
+  },
+  "defaults": {
+    "summary": "新對話啟動時使用。對話中仍可隨時切換。",
+    "provider": "供應商",
+    "model": "模型",
+    "level": "思考等級",
+    "levelUnset": "不指定",
+    "levelHelp": "該模型不支援的等級已停用。",
+    "levelClamped": "不指定時為「中」。模型不支援的等級會自動改用最接近的可用等級。",
+    "noReasoning": "這個模型不支援思考，用它啟動的對話思考固定為關閉。",
+    "notSet": "未指定",
+    "pickProvider": "請先選擇供應商。"
   },
   "accounts": {
     "signIn": "登入",
@@ -344,7 +392,7 @@
   },
   "test": {
     "run": "測試連線",
-    "hint": "由本應用程式發出一次最小請求：優先取模型清單，取不到就用第一個模型請求 1 個 token。",
+    "hint": "由本應用程式發出一次最小的請求：先取模型清單，取不到就讓第一個模型回一個字。",
     "okModels": "連線成功（{{ms}} 毫秒），端點回傳了 {{count, number}} 個模型。",
     "okCompletion": "連線成功（{{ms}} 毫秒），模型已回應。",
     "auth": "金鑰被拒絕（HTTP {{status}}）。",
@@ -418,7 +466,6 @@
       },
       "anthropic": {
         "title": "Anthropic 相容介面",
-        "tag": "Claude",
         "description": "Claude，以及相容 Messages 格式的服務",
         "modelPlaceholder": "例如 claude-sonnet-5"
       },

@@ -12,7 +12,6 @@ import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conve
 import { resolveConversationBackend } from '@/renderer/pages/conversation/utils/conversationAssistantIdentity';
 import { resolveAgentAvatar, useAgentLogos } from '@renderer/utils/model/agentLogo';
 import { usePresetAssistantInfo } from '@renderer/hooks/agent/usePresetAssistantInfo';
-import { Robot } from '@icon-park/react';
 
 type Props = {
   conversation_id: string;
@@ -68,15 +67,11 @@ const SingleChatEmptyState: React.FC<Props> = ({ conversation_id, assistant_name
   );
   const agentAvatar = resolveAgentAvatar(logos, { icon, backend: assistantBackend });
 
+  // An assistant without a logo of its own shows its name alone: the μ mark belongs to the home, the top-left tile, the
+  // guide and the about page, and a generic picture would say nothing.
   const renderAvatar = () => {
     if (presetInfo) {
-      if (presetInfo.isFallback) {
-        return (
-          <span className='w-48px h-48px rounded-8px flex items-center justify-center bg-fill-2'>
-            <Robot theme='outline' size={24} />
-          </span>
-        );
-      }
+      if (presetInfo.isFallback) return null;
       if (presetInfo.isEmoji) {
         return (
           <span className='w-48px h-48px rounded-8px flex items-center justify-center text-32px leading-none bg-fill-2'>
@@ -108,11 +103,7 @@ const SingleChatEmptyState: React.FC<Props> = ({ conversation_id, assistant_name
         </span>
       );
     }
-    return (
-      <div className='w-48px h-48px rounded-full bg-fill-3 flex items-center justify-center text-20px font-medium text-t-secondary'>
-        <Robot theme='outline' size={24} />
-      </div>
-    );
+    return null;
   };
 
   return (

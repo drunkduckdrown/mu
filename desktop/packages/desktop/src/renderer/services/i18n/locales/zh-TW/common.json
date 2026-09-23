@@ -65,10 +65,10 @@
   "more": "更多",
   "refresh": "重新整理",
   "readOnly": "唯讀",
-  "tray.showWindow": "顯示 AionUi",
+  "tray.showWindow": "顯示 mu",
   "tray.newChat": "新建對話",
   "tray.closeToTray": "隱藏到托盤",
-  "tray.about": "關於 AionUi",
+  "tray.about": "關於 mu",
   "tray.restart": "重啟應用",
   "tray.quit": "結束",
   "tray.pauseAll": "暫停所有任務",
@@ -78,61 +78,40 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "目前系統不支援內建後端",
-      "description": "AionUi 已開啟，但本機 AionCore 後端無法在目前 Linux 版本上執行。請升級到受支援的 Linux 發行版後重新啟動 AionUi。",
+      "description": "mu 已開啟，但本機服務無法在目前 Linux 版本上執行。請升級到受支援的 Linux 發行版後重新啟動 mu。",
       "requiredVersions": "需要的執行階段符號：{{versions}}"
     },
     "incompleteInstallation": {
-      "title": "AionUi 安裝不完整",
-      "description": "目前安裝缺少必要的本機資源，AionCore 無法啟動。請下載並重新安裝最新版 AionUi；如果重新安裝後仍然出現，請檢查系統安全軟體或防毒軟體是否隔離了 AionCore。",
+      "title": "mu 安裝不完整",
+      "description": "目前安裝缺少必要的本機資源，mu 的本機服務無法啟動。請下載並重新安裝最新版 mu；如果重新安裝後仍然出現，請檢查系統安全軟體或防毒軟體是否隔離了 mu 的檔案。",
       "downloadLatest": "下載最新版",
-      "sendDiagnostics": "傳送診斷報告",
-      "diagnosticsSent": "診斷報告已傳送",
-      "diagnosticsReportSuccess": "診斷報告已傳送",
-      "diagnosticsReportFailed": "診斷報告傳送失敗",
-      "runtimeComponentDescription": "目前安裝缺少必要的內建執行元件，{{resource}} 無法啟動。請重新安裝最新版 AionUi；如果重新安裝後仍然出現，請檢查系統安全軟體或防毒軟體是否隔離了 AionUi 元件。"
+      "runtimeComponentDescription": "目前安裝缺少必要的內建執行元件，{{resource}} 無法啟動。請重新安裝最新版 mu；如果重新安裝後仍然出現，請檢查系統安全軟體或防毒軟體是否隔離了 mu 元件。"
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi 安裝包架構不相符",
-      "description": "目前 AionUi 安裝包是 {{packageArch}}，但這台 Mac 是 {{deviceArch}}。你可能下載了錯誤的安裝包，請重新下載並安裝 {{expectedArch}} 版本。"
+      "title": "mu 安裝包架構不相符",
+      "description": "目前 mu 安裝包是 {{packageArch}}，但這台 Mac 是 {{deviceArch}}。你可能下載了錯誤的安裝包，請重新下載並安裝 {{expectedArch}} 版本。"
     },
     "dataMigration": {
       "title": "本地資料遷移失敗",
-      "description": "AionUi 已開啟，但 AionCore 在初始化本地資料時停止。重新安裝 AionUi 未必能解決此問題。請傳送診斷報告或聯絡支援，以便檢查本地資料庫遷移狀態。",
-      "sendDiagnostics": "傳送診斷報告",
-      "diagnosticsSent": "診斷報告已傳送",
-      "diagnosticsReportSuccess": "診斷報告已傳送",
-      "diagnosticsReportFailed": "診斷報告傳送失敗"
+      "description": "mu 已開啟，但本機服務在初始化本地資料時停止。重新安裝 mu 未必能解決此問題。應用程式日誌記錄了本地資料庫遷移停在哪一步。"
     },
     "databaseNewerThanApp": {
-      "title": "需要更新 AionUi",
-      "description": "本機資料由較新版本的 AionUi 建立，目前版本無法開啟。請將 AionUi 更新至最新版本即可繼續使用，資料完好無損，無需重新安裝或重設資料。",
-      "descriptionWithVersion": "本機資料由比目前版本 v{{currentVersion}} 更新的 AionUi 建立，目前版本無法開啟。請將 AionUi 更新至最新版本即可繼續使用，資料完好無損，無需重新安裝或重設資料。"
+      "title": "需要更新 mu",
+      "description": "本機資料由較新版本的 mu 建立，目前版本無法開啟。請將 mu 更新至最新版本即可繼續使用，資料完好無損，無需重新安裝或重設資料。",
+      "descriptionWithVersion": "本機資料由比目前版本 v{{currentVersion}} 更新的 mu 建立，目前版本無法開啟。請將 mu 更新至最新版本即可繼續使用，資料完好無損，無需重新安裝或重設資料。"
     },
     "localDataRepair": {
       "title": "本機資料修復失敗",
-      "description": "AionUi 已開啟，但 AionCore 在準備本機啟動資料時停止，例如 assistant 或代理記錄。重新安裝 AionUi 可能無法解決此問題。請傳送診斷報告或聯絡支援，以便檢查本機資料庫。",
-      "sendDiagnostics": "傳送診斷",
-      "diagnosticsSent": "診斷已傳送",
-      "diagnosticsReportSuccess": "診斷報告已傳送",
-      "diagnosticsReportFailed": "診斷報告傳送失敗"
+      "description": "mu 已開啟，但本機服務在準備本機啟動資料時停止，例如 assistant 或代理記錄。重新安裝 mu 可能無法解決此問題。應用程式日誌記錄了哪些本機資料未能準備好。"
     },
     "startupDirectory": {
       "title": "啟動目錄無法使用",
-      "description": "AionUi 已開啟，但因為設定的工作目錄或日誌目錄不存在、無法存取或權限受限，AionCore 無法啟動。請確認這些目錄存在且可寫入，然後重新啟動 AionUi。",
-      "sendDiagnostics": "傳送診斷報告",
-      "diagnosticsSent": "診斷報告已傳送",
-      "diagnosticsReportSuccess": "診斷報告已傳送",
-      "diagnosticsReportFailed": "診斷報告傳送失敗"
+      "description": "mu 已開啟，但因為設定的工作目錄或日誌目錄不存在、無法存取或權限受限，本機服務無法啟動。請確認這些目錄存在且可寫入，然後重新啟動 mu。"
     },
     "recoverableDatabaseCorruption": {
       "title": "本機資料已損壞",
-      "description": "偵測到本機資料庫損壞，AionUi 無法繼續啟動。確認後將備份舊資料庫，並建立新的本機資料庫繼續啟動。歷史對話將不再顯示，舊資料庫會保留為備份檔案。",
+      "description": "偵測到本機資料庫損壞，mu 無法繼續啟動。確認後將備份舊資料庫，並建立新的本機資料庫繼續啟動。歷史對話將不再顯示，舊資料庫會保留為備份檔案。",
       "confirmRebuild": "備份舊資料庫並重建新資料庫",
-      "sendDiagnostics": "傳送診斷報告",
-      "diagnosticsHint": "傳送診斷報告不會修改本機資料庫。",
-      "diagnosticsSent": "診斷報告已傳送",
-      "diagnosticsReportSuccess": "診斷報告已傳送",
-      "diagnosticsReportFailed": "診斷報告傳送失敗",
       "rebuildFailed": "備份舊資料庫並重建新資料庫失敗",
       "confirmDialog": {
         "title": "確認重建資料庫？",
@@ -142,42 +121,27 @@
       }
     },
     "transientConcurrentStartup": {
-      "title": "AionUi 正在啟動",
-      "description": "此視窗開啟時，另一個 AionUi 啟動程序仍在使用本機資料。這是暫時的，您的資料是安全的——無需重新安裝。請稍候片刻後重試，或重新啟動 AionUi。",
-      "sendDiagnostics": "傳送診斷",
-      "diagnosticsSent": "診斷已傳送",
-      "diagnosticsReportSuccess": "診斷報告已傳送",
-      "diagnosticsReportFailed": "診斷報告傳送失敗",
-      "diagnosticsHint": "如果此問題反覆出現，您可以傳送診斷報告。"
+      "title": "mu 正在啟動",
+      "description": "此視窗開啟時，另一個 mu 啟動程序仍在使用本機資料。這是暫時的，您的資料是安全的——無需重新安裝。請稍候片刻後重試，或重新啟動 mu。"
     },
     "pendingSlow": {
       "title": "正在啟動",
-      "description": "AionCore 正在啟動，請稍候。若長時間無回應，可結束應用程式後再試。"
+      "description": "本機服務正在啟動，請稍候。若長時間無回應，可結束應用程式後再試。"
     },
     "exited": {
       "title": "啟動未完成",
-      "description": "AionCore 未能完成啟動並已結束。請重新啟動應用程式；若反覆出現，請回報診斷資訊。",
-      "sendDiagnostics": "傳送診斷",
-      "diagnosticsSent": "診斷已傳送",
-      "diagnosticsReportSuccess": "診斷資訊已回報",
-      "diagnosticsReportFailed": "診斷回報失敗，請稍後再試"
+      "description": "本機服務未能完成啟動並已結束。請重新啟動應用程式；若反覆出現，請查看應用程式日誌。"
     },
     "portReportTimeout": {
       "title": "啟動逾時",
-      "description": "AionCore 未在預期時間內完成啟動。請重新啟動應用程式；若反覆出現，請傳送診斷。",
-      "sendDiagnostics": "傳送診斷",
-      "diagnosticsSent": "診斷已傳送",
-      "diagnosticsReportSuccess": "診斷資訊已回報",
-      "diagnosticsReportFailed": "診斷回報失敗，請稍後再試"
+      "description": "本機服務未在預期時間內完成啟動。請重新啟動應用程式；若反覆出現，請查看應用程式日誌。"
     },
     "startupFailed": {
       "title": "啟動失敗",
-      "description": "AionCore 啟動失敗。請重新啟動應用程式；若反覆出現，請傳送診斷。",
-      "sendDiagnostics": "傳送診斷",
-      "diagnosticsSent": "診斷已傳送",
-      "diagnosticsReportSuccess": "診斷資訊已回報",
-      "diagnosticsReportFailed": "診斷回報失敗，請稍後再試"
-    }
+      "description": "本機服務啟動失敗。請重新啟動應用程式；若反覆出現，請查看應用程式日誌。"
+    },
+    "openLogs": "開啟日誌資料夾",
+    "openLogsFailed": "無法開啟日誌資料夾"
   },
   "fileAttach.addFiles": "新增檔案",
   "fileAttach.myDevice": "我的裝置",
@@ -205,14 +169,15 @@
     "starting": "正在啟動 mu…",
     "startingHint": "正在連線本機的 mu 核心，讀取模型與判定器設定。",
     "startupError": "mu 啟動失敗",
-    "activity": "協作",
-    "files": "檔案",
-    "hive": "蜂群",
     "hiveView": {
       "title": "蜂群",
+      "agents": "子智慧體",
       "open": "開啟蜂群",
       "inspect": "檢視 {{name}}",
       "summary": "{{active}} 個進行中 · 已完成 {{done}} / 共 {{total}}",
+      "counts": "執行中 {{running}} · 已完成 {{done}} · 失敗 {{failed}}",
+      "none": "這個對話還沒有子智慧體。",
+      "details": "協作關係圖與紀錄",
       "pending": "等待蜂群成員狀態",
       "unknown": "狀態無法取得",
       "runs": "蜂群執行紀錄",
@@ -244,7 +209,7 @@
       "noteMissing": "未記錄發現。",
       "allFlow": "所有送達",
       "beeFlow": "{{name}} 的送達",
-      "audit": "Jev 判定",
+      "audit": "JeV 判定",
       "waitingRun": "正在等待這次蜂群執行的紀錄。",
       "recordedAt": "記錄時間 {{time}}",
       "beeMissing": "此蜂群成員不在已記錄的快照中。",
@@ -295,8 +260,6 @@
       }
     },
     "judgeView": {
-      "title": "判定與影響",
-      "description": "查看判定器評估了什麼，以及實際發生了什麼。建議與已確認的動作分開顯示。",
       "empty": "目前對話還沒有判定記錄。",
       "question": "判定什麼",
       "result": "判定結果",
@@ -306,12 +269,6 @@
       "answers": "模型回答",
       "noResult": "沒有記錄到可讀的結果",
       "unreported": "未記錄",
-      "records": "記錄",
-      "returnedCount": "已交給執行層",
-      "receiptCount": "已確認送達",
-      "runtimeEvents": "其他執行事件",
-      "filter": "依判定內容篩選",
-      "allQuestions": "全部判定",
       "scoreValue": "評分：{{value}}",
       "latency": "{{ms}} 毫秒",
       "more": "另有 {{count}} 項",
@@ -361,6 +318,10 @@
         "browser": "瀏覽器下一步該做什麼？",
         "recall": "哪些過往經驗現在適用？",
         "capture": "這是一則長期有效的糾正或偏好嗎？",
+        "outcome": "這一輪學到繞過辦法了嗎？",
+        "worth": "這則經驗值不值得記？",
+        "merge": "要和已有經驗合併嗎？",
+        "applied": "經驗有沒有照做？",
         "risk": "這個操作需要使用者確認嗎？",
         "drift": "目前工作還在正軌上嗎？",
         "completion": "這次改動還需要驗證嗎？",
@@ -376,7 +337,9 @@
         "diagnostics": "這些診斷應該何時告訴模型？",
         "patch": "子代理的修補程式是否在任務範圍內？",
         "review": "每則審查發現有多嚴重？",
-        "board": "工作進展到哪一步了？"
+        "board": "工作進展到哪一步了？",
+        "relate": "這則發現對之前的發現意味著什麼？",
+        "approval": "這一步是任務需要、也是你會預期的做法嗎？"
       },
       "fields": {
         "turnType": "任務類型",
@@ -391,6 +354,8 @@
         "hide": "建議隱藏的技能",
         "relevant": "相關技能",
         "apply": "建議採用的經驗",
+        "applied": "照做了",
+        "notApplied": "沒照做",
         "publish": "允許發布",
         "deliver": "允許投遞",
         "path": "候選檔案",
@@ -409,7 +374,8 @@
         "phase": "階段",
         "focus": "正在處理的驗收項目",
         "needsUser": "需要使用者",
-        "update": "重寫看板"
+        "update": "重寫看板",
+        "relation": "關係"
       },
       "values": {
         "true": "是",
@@ -489,7 +455,20 @@
         "bad_request": "判定器拒絕了請求",
         "server": "判定服務出錯",
         "invalid_response": "判定器的回答無法解析",
-        "verdict": "判定器已作答"
+        "verdict": "判定器已作答",
+        "learn": "記下繞過辦法",
+        "reusable": "之後還用得上",
+        "one_off": "只關這一次",
+        "already_known": "早就知道",
+        "same": "同一則",
+        "refines": "說得更準",
+        "contradicts": "互相矛盾",
+        "supersedes": "更新了它",
+        "supports": "佐證它",
+        "unrelated": "無關",
+        "preference": "長期規則",
+        "approve": "放行",
+        "beyond": "超出你的要求"
       },
       "probabilityValue": "判定為「是」的機率：{{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -498,11 +477,22 @@
       "errorValue": "錯誤 · {{kind}}",
       "noAnswerAfter": "{{duration}}內未得到回答",
       "hints": {
+        "answered": "這則訊息是在回答代理自己的提問：照此去做，不要再問。",
+        "resolve": "說法較籠統且可能改動檔案：先查看專案，說明所作的假設，只問在這裡找不到的內容。",
         "clarify": "請求看起來不夠明確：先問一個關鍵問題。",
         "side_question": "這是個題外問題：簡短回答，然後繼續主任務。",
-        "plan_first": "改動大或有風險：先寫一個簡短的計畫，確認後再動手修改。",
+        "plan_first": "改動大或有風險：先寫一個簡短的計畫再照做，只在無法復原的步驟前暫停等待確認。",
         "try_hive": "難度較高：如果原因不明或直接嘗試不行，就改用蜂群。",
         "try_delegate": "可以拆成相互獨立的幾部分：考慮交給子代理並行處理。"
+      },
+      "hintChips": {
+        "answered": "回覆代理",
+        "resolve": "先自己查",
+        "clarify": "先釐清",
+        "side_question": "題外問題",
+        "plan_first": "先計畫",
+        "try_hive": "卡住就用蜂群",
+        "try_delegate": "分頭委派"
       },
       "answerIds": {
         "turn_type": "任務類型",
@@ -515,11 +505,13 @@
         "task_complexity": "涉及範圍",
         "reasoning_depth": "推理深度",
         "tool_complexity": "工具使用量"
+      },
+      "log": {
+        "thisTurn": "本輪",
+        "earlier": "顯示更早的紀錄",
+        "latest": "跳到最新"
       }
     },
-    "decisions": "Jev",
-    "memory": "經驗",
-    "images": "圖片",
     "empty": "目前的對話還沒有這類紀錄。",
     "quiet": "已 {{duration}} 沒有活動",
     "passed": "通過",
@@ -550,12 +542,15 @@
       "auto_compaction_end": "壓縮結束",
       "hive.note": "共享發現",
       "hive.delivery": "送達已確認",
-      "hive.gate": "Jev 閘門",
+      "hive.gate": "JeV 閘門",
       "hive.manifest": "蜂群任務分配",
       "bee.event": "執行步驟",
       "memory.recalled": "引用經驗",
       "artifact.image": "圖片",
       "memory.stored": "經驗已儲存",
+      "memory.applied": "經驗已照做",
+      "memory.retired": "經驗已退役",
+      "memory.merged": "經驗已合併",
       "compaction_start": "正在壓縮上下文…",
       "compaction_end": "壓縮結束",
       "context.usage": "上下文用量",
@@ -567,6 +562,9 @@
       "board": {
         "update": "看板已更新",
         "switched": "看板開關已切換"
+      },
+      "permissions": {
+        "mode": "權限模式"
       },
       "checkpoint": {
         "taken": "已儲存檢查點"
@@ -681,7 +679,6 @@
       "failed": "失敗"
     },
     "boardView": {
-      "tab": "人話看板",
       "title": "人話看板",
       "switch": "這個專案的人話看板",
       "switching": "正在切換…",
@@ -689,7 +686,6 @@
       "unknown": "這個對話還沒有人話看板。它只在 mu 的對話裡、而且「功能」裡開著人話看板時出現。",
       "off": "開啟後，代理每做一段，這裡就用白話告訴你：進展到哪了、正在做什麼、哪些需要你確認。",
       "cost": "只對這個專案生效。每次更新會呼叫一次模型。",
-      "open": "開啟人話看板",
       "empty": "等代理做一會兒，這裡會用白話告訴你進展",
       "checks": "驗收 {{done}}/{{total}}",
       "ended": "已停下",
@@ -699,6 +695,7 @@
       "needsYouText": "代理在對話裡等你回答。",
       "quote": "引用到回覆裡",
       "quoteHint": "點一條會引用到輸入框，你送出之前不會傳送。",
+      "earlier": "之前",
       "phases": {
         "understanding": "在弄懂任務",
         "planning": "在想怎麼做",
@@ -738,6 +735,66 @@
         }
       }
     },
+    "lessonsView": {
+      "filterLabel": "顯示哪些經驗",
+      "active": "使用中",
+      "all": "全部",
+      "count": "{{count}} 則",
+      "count_one": "{{count}} 則",
+      "count_other": "{{count}} 則",
+      "search": "搜尋經驗",
+      "kinds": {
+        "correction": "糾正",
+        "preference": "規則",
+        "pitfall": "坑",
+        "workaround": "繞過辦法",
+        "fact": "事實"
+      },
+      "everywhere": "到處適用",
+      "status": {
+        "retired": "已退役",
+        "superseded": "已被取代"
+      },
+      "uses": "召回 {{recalled}} · 照做 {{applied}}",
+      "origins": {
+        "user": "來自你的糾正或規則",
+        "outcome": "來自代理自己脫困的辦法",
+        "model": "模型自己記下的",
+        "subagent": "來自子代理的報告",
+        "command": "用 /remember 記下的"
+      },
+      "updated": "更新於 {{date}}",
+      "editLabel": "經驗內容",
+      "retire": "退役",
+      "retireConfirm": "讓這則經驗退役？之後不會再召回它。",
+      "loadFailed": "讀不到經驗庫",
+      "saveFailed": "這則經驗沒有改成",
+      "empty": "這個專案還沒有經驗。mu 會從你的糾正、它自己脫困的辦法和 /remember 裡學到經驗。",
+      "noneActive": "沒有使用中的經驗。「全部」裡還有已退役和已被取代的。",
+      "noMatch": "沒有符合的經驗。",
+      "noProject": "這個對話沒有專案資料夾，只列出到處適用的經驗。",
+      "notes": {
+        "label": "這個工作階段裡經驗的動向",
+        "recalled": "這一輪用上了 {{count}} 則",
+        "recalled_one": "這一輪用上了 {{count}} 則",
+        "recalled_other": "這一輪用上了 {{count}} 則",
+        "briefed": "子代理的簡報帶上了 {{count}} 則：{{task}}",
+        "briefed_one": "子代理的簡報帶上了 {{count}} 則：{{task}}",
+        "briefed_other": "子代理的簡報帶上了 {{count}} 則：{{task}}",
+        "applied": "照做了 {{count}} 則",
+        "applied_one": "照做了 {{count}} 則",
+        "applied_other": "照做了 {{count}} 則",
+        "retired": "退役：{{lesson}}",
+        "retiredUnused": "退役：{{lesson}}（{{count}} 次召回從未照做）",
+        "retiredUnused_one": "退役：{{lesson}}（{{count}} 次召回從未照做）",
+        "retiredUnused_other": "退役：{{lesson}}（{{count}} 次召回從未照做）",
+        "retiredContradicted": "退役：{{lesson}}（和你新的說法矛盾）",
+        "retiredForgotten": "退役：{{lesson}}（依你的要求）",
+        "mergedSame": "已併入：{{lesson}}",
+        "mergedRefines": "換成了說得更準的：{{lesson}}",
+        "mergedContradicts": "沒有記下，和這則矛盾：{{lesson}}"
+      }
+    },
     "activityLoadFailed": "無法載入協作記錄，正在重試…",
     "beeFailed": "這個蜂群成員回報了錯誤。",
     "beeCounts": {
@@ -765,12 +822,12 @@
     "compactionDropped_one": "移除 {{count}} 次呼叫",
     "compactionDropped_other": "移除 {{count}} 次呼叫",
     "jevLine": {
-      "classifying": "Jev 正在分類這則訊息…",
-      "classified": "Jev 分類為{{type}}",
+      "classifying": "JeV 正在分類這則訊息…",
+      "classified": "JeV 分類為{{type}}",
       "byRule": "依規則分類為{{type}}",
       "shadow": "{{line}}（僅觀察，沒有生效）",
       "late": "{{line}}（來晚了，這一輪沒用上）",
-      "fallback": "Jev 這次沒給出分類，按預設方式繼續"
+      "fallback": "JeV 這次沒給出分類，按預設方式繼續"
     },
     "eventLine": {
       "detail": "詳細資訊：{{detail}}",
@@ -779,6 +836,7 @@
         "lessons": "正在查看先前工作階段的經驗",
         "skills": "正在挑選這個工作階段需要的技能",
         "capabilities": "正在挑選這個任務需要的能力",
+        "goal_check": "正在檢查目標是否達成",
         "permissionReview": "JeV 正在審批：{{summary}}"
       },
       "goal": {
@@ -864,7 +922,21 @@
           "cdpConnectTimeout": "連線到瀏覽器逾時。",
           "cdpConnectFailed": "無法連線到瀏覽器。"
         }
+      },
+      "permissions": {
+        "mode": "權限模式：{{mode}}"
+      },
+      "board": {
+        "on": "看板：開啟",
+        "off": "看板：關閉"
       }
+    },
+    "gauges": {
+      "context": "上下文",
+      "contextHint": "模型下一次要讀的內容占它上下文的 {{percent}}",
+      "cache": "快取命中",
+      "cacheHint": "最近一輪快取命中 {{turn}}，整個對話快取命中 {{session}}",
+      "pending": "mu 下一次回覆後顯示"
     }
   },
   "menu": {
@@ -900,11 +972,57 @@
   "noData": "暫無資料",
   "labelWithSelectedCount": "{{label}}（{{selected}}/{{total}}）",
   "selectedSkillsWithCount": "已選技能 · {{count}}",
+  "commandPalette": {
+    "title": "命令面板",
+    "placeholder": "搜尋對話、設定和命令",
+    "groups": {
+      "conversations": "對話",
+      "settings": "設定",
+      "commands": "命令"
+    },
+    "searchMessages": "在訊息中搜尋「{{query}}」",
+    "empty": "沒有符合的結果",
+    "noConversations": "還沒有對話。輸入文字即可查找設定和命令。",
+    "openSettings": "開啟設定",
+    "actions": {
+      "newConversation": "開始新會話",
+      "scheduledTasks": "開啟定時任務"
+    },
+    "commandWaits": "等這一輪結束後執行"
+  },
   "window": {
     "minimize": "最小化",
     "maximize": "最大化",
     "restore": "還原"
   },
   "collapseSidebar": "收合側邊欄",
-  "expandSidebar": "展開側邊欄"
+  "expandSidebar": "展開側邊欄",
+  "workPanel": {
+    "label": "工作面板",
+    "tabsLabel": "工作面板分頁",
+    "tabs": {
+      "board": "看板",
+      "judge": "判定",
+      "hive": "蜂群",
+      "lessons": "經驗",
+      "files": "檔案",
+      "preview": "預覽",
+      "source": "原始碼"
+    },
+    "close": "關閉工作面板",
+    "resize": "調整工作面板寬度",
+    "unread": "{{tab}}，有新內容",
+    "noProject": "這個對話沒有專案資料夾，沒有可顯示的檔案或變更。",
+    "previewEmpty": "還沒有可預覽的內容。從對話中開啟的檔案和網頁會顯示在這裡。",
+    "previewHidden": "預覽已隱藏。"
+  },
+  "nodeRuntime": {
+    "title": "下載 Node.js？",
+    "message": "mu 使用自帶的 Node.js 執行智慧體和工具，這份 Node.js 尚未下載。",
+    "detail": "將從 nodejs.org 下載 Node.js {{version}}（約 {{size}} MB），解壓縮到：\n{{folder}}\n\n選「稍後」不會下載任何東西：mu 照常開啟，需要 Node.js 的地方會提示，下次啟動時再詢問。",
+    "download": "下載",
+    "later": "稍後",
+    "note": "Node.js 尚未下載，這個智慧體暫時無法執行。下次啟動 mu 時會再詢問。",
+    "toolNote": "Node.js 尚未下載，需要它的工具暫時無法執行。下次啟動 mu 時會再詢問。"
+  }
 }

@@ -8,9 +8,9 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TChatConversation } from '@/common/config/storage';
 import { ipcBridge } from '@/common';
+import { showAsMu } from '@/common/kyrn/displayName';
 import { assistantRuntimeKey, type Assistant } from '@/common/types/agent/assistantTypes';
 import { resolveLocaleKey } from '@/common/utils';
-import type { AgentLogoMap } from '@/renderer/utils/model/agentLogo';
 import { resolveAgentLogo, useAgentLogos } from '@/renderer/utils/model/agentLogo';
 import { isLikelyLocalFilePath, resolveAssistantAvatar } from '@/renderer/utils/model/assistantAvatar';
 import useSWR from 'swr';
@@ -116,16 +116,19 @@ function resolveLegacyRuntimeDisplayName(conversation: TChatConversation): strin
     backend?: unknown;
   };
   const agent_name = typeof extra?.agent_name === 'string' ? extra.agent_name.trim() : '';
-  if (agent_name) return agent_name;
+  // A conversation stored by the backend's built-in agent carries its name, "Aion CLI" (backend `aionrs`).
+  if (agent_name) return showAsMu(agent_name);
 
   const backend = typeof extra?.backend === 'string' ? extra.backend.trim() : '';
   if (!backend) return null;
 
-  return backend
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-    .join(' ');
+  return showAsMu(
+    backend
+      .split(/[-_\s]+/)
+      .filter(Boolean)
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ')
+  );
 }
 
 /**
@@ -145,8 +148,9 @@ function normalizeAvatar(avatar: string | undefined): { logo: string; isEmoji: b
   return { logo: resolved.value, isEmoji: true };
 }
 
+/** The catalog shows backend names as mu (see `assistants.list`); rules stored before that still say AionUi. */
 function normalizeAssistantLabel(value: string | undefined): string {
-  return (value || '')
+  return showAsMu(value || '')
     .normalize('NFKC')
     .replace(/[*_`>#]/g, ' ')
     .replace(/\s+/g, ' ')
@@ -231,7 +235,8 @@ function buildPresetInfoFromConversationAssistant(
 ): PresetAssistantInfo {
   const normalized = normalizeAvatar(assistant.avatar);
   return {
-    name: assistant.name,
+    // The snapshot keeps the name the backend gave the assistant when the conversation started.
+    name: showAsMu(assistant.name),
     logo: normalized.logo,
     isEmoji: normalized.isEmoji,
     isFallback: normalized.isFallback,

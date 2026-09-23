@@ -9,7 +9,7 @@
  * entirely through the electronAPI bridge.
  */
 import { test, expect } from '../fixtures';
-import { invokeBridge, getExtensionSnapshot, getChannelPluginStatus } from '../helpers';
+import { invokeBridge, getExtensionSnapshot } from '../helpers';
 
 // ── ACP Adapters ─────────────────────────────────────────────────────────────
 
@@ -205,33 +205,6 @@ test.describe('Extension IPC: WebUI Contributions', () => {
     const webhookRoute = wecom!.apiRoutes.find((r) => r.path.includes('webhook'));
     expect(webhookRoute).toBeTruthy();
     expect(webhookRoute!.auth).toBe(false);
-  });
-});
-
-// ── Channel Plugins ──────────────────────────────────────────────────────────
-
-test.describe('Extension IPC: Channel Plugins', () => {
-  test('returns extension channel plugins with metadata', async ({ page }) => {
-    const statuses = await getChannelPluginStatus(page);
-    const extPlugins = statuses.filter((s) => s.isExtension);
-    expect(extPlugins.length).toBeGreaterThanOrEqual(2);
-
-    const types = extPlugins.map((p) => p.type);
-    expect(types).toEqual(expect.arrayContaining(['e2e-test-channel', 'ext-feishu']));
-  });
-
-  test('extension channel plugin has credentialFields and configFields', async ({ page }) => {
-    const statuses = await getChannelPluginStatus(page);
-    const e2eChannel = statuses.find((s) => s.type === 'e2e-test-channel');
-    expect(e2eChannel).toBeTruthy();
-    expect(e2eChannel!.isExtension).toBeTruthy();
-
-    const credKeys = e2eChannel!.extensionMeta?.credentialFields?.map((f) => f.key) ?? [];
-    expect(credKeys).toContain('apiToken');
-
-    const configKeys = e2eChannel!.extensionMeta?.configFields?.map((f) => f.key) ?? [];
-    expect(configKeys).toContain('pollingInterval');
-    expect(configKeys).toContain('enableDebug');
   });
 });
 

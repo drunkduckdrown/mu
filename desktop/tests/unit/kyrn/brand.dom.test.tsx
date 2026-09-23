@@ -8,8 +8,9 @@ import common from '@/renderer/services/i18n/locales/zh-CN/common.json';
 import mu from '@/renderer/services/i18n/locales/zh-CN/mu.json';
 import JudgePulse from '@/renderer/components/brand/JudgePulse';
 import MuBackdrop from '@/renderer/components/brand/MuBackdrop';
-import MuMark from '@/renderer/components/brand/MuMark';
 import { MU_GLYPH_PATH } from '@/renderer/components/brand/glyph';
+import MuMark from '@/renderer/components/brand/MuMark';
+
 import MuStarters, { MU_STARTERS } from '@/renderer/components/brand/MuStarters';
 import StartupGate from '@/renderer/pages/settings/KyrnSettings/StartupGate';
 

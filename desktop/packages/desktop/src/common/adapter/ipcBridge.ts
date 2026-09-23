@@ -16,6 +16,7 @@ import type { IConfirmation } from '@/common/chat/chatLib';
 import type { AcpSlashCommandApiItem } from '@/common/chat/slash/types';
 import { bridge } from '@/common/platform/bridge';
 import { buildListTasksPath } from './teamTaskPath';
+import { splitDeferredRuntimeFailures } from './nodeRuntimeDeferral';
 import type { OpenDialogOptions } from 'electron';
 import type {
   ICssTheme,
@@ -100,6 +101,7 @@ import type { Theme } from '@/common/theme/types';
 import type { AttachFolderRequest, ProjectDetailDto, ProjectEntryDto } from '@/common/types/project';
 import type { ChatFileRef, ContentEncoding } from '@/common/types/chatFile';
 import type { ProtocolDetectionRequest, ProtocolDetectionResponse } from '../utils/protocolDetector';
+import { withTextsAsMu } from '../kyrn/displayName';
 import {
   buildCreateConversationBody,
   fromApiConversation,
@@ -167,11 +169,39 @@ export const shell = {
 // Assistants — routed to /api/assistants/*
 // ---------------------------------------------------------------------------
 
+/**
+ * The backend's built-in assistants still name the upstream products in their names, descriptions, suggested prompts
+ * and status texts; those are shown as mu (`withTextsAsMu`). Ids, rules and every other field stay as they came.
+ */
+const ASSISTANT_TEXTS = [
+  'name',
+  'name_i18n',
+  'description',
+  'description_i18n',
+  'prompts',
+  'prompts_i18n',
+  'agent_status_message',
+] as const;
+
+const assistantDetailAsMu = (detail: AssistantDetail): AssistantDetail =>
+  detail?.profile
+    ? {
+        ...withTextsAsMu(detail, ['agent_status_message']),
+        profile: withTextsAsMu(detail.profile, ['name', 'name_i18n', 'description', 'description_i18n']),
+        prompts: detail.prompts ? withTextsAsMu(detail.prompts, ['recommended', 'recommended_i18n']) : detail.prompts,
+      }
+    : detail;
+
 export const assistants = {
-  list: httpGet<Assistant[], void>('/api/assistants'),
-  get: httpGet<AssistantDetail, { id: string; locale?: string }>(
-    ({ id, locale }) =>
-      `/api/assistants/${encodeURIComponent(id)}${locale ? `?locale=${encodeURIComponent(locale)}` : ''}`
+  list: withResponseMap(httpGet<Assistant[], void>('/api/assistants'), (rows) =>
+    Array.isArray(rows) ? rows.map((row) => withTextsAsMu(row, ASSISTANT_TEXTS)) : rows
+  ),
+  get: withResponseMap(
+    httpGet<AssistantDetail, { id: string; locale?: string }>(
+      ({ id, locale }) =>
+        `/api/assistants/${encodeURIComponent(id)}${locale ? `?locale=${encodeURIComponent(locale)}` : ''}`
+    ),
+    assistantDetailAsMu
   ),
   create: httpPost<Assistant, CreateAssistantRequest>('/api/assistants'),
   update: httpPut<Assistant, UpdateAssistantRequest>((p) => `/api/assistants/${p.id}`),
@@ -531,9 +561,9 @@ export const conversation = {
   },
 };
 
-export const runtime = {
-  statusChanged: wsEmitter<IRuntimeStatusEvent>('runtime.statusChanged'),
-};
+// `statusChanged` leaves out what a Node.js download the person put off at this start explains (its listener shows the
+// damaged-installation dialog); `deferredFailure` carries only that, for a one-line note where the runtime was needed.
+export const runtime = splitDeferredRuntimeFailures(wsEmitter<IRuntimeStatusEvent>('runtime.statusChanged'));
 
 // ---------------------------------------------------------------------------
 // Project Explorer control plane — routed to /api/projects/* (HTTP; the data
@@ -767,45 +797,19 @@ export const autoUpdate = {
 };
 
 // ---------------------------------------------------------------------------
-// Dialog — native IPC picker on Electron, server-side picker on WebUI
+// Dialog — the native Electron file picker
 // ---------------------------------------------------------------------------
 
 export type ShowOpenOptions =
   | { defaultPath?: string; properties?: OpenDialogOptions['properties']; filters?: OpenDialogOptions['filters'] }
   | undefined;
 
-export type ShowOpenHandler = (options: ShowOpenOptions) => Promise<string[] | undefined>;
-
-/**
- * `show-open` is an Electron-only IPC channel: on WebUI the bridge speaks over a
- * WebSocket whose server side has no provider for it, so an invoke would hang
- * forever with no rejection — every directory/file picker silently does nothing.
- *
- * The renderer registers a server-side picker here during startup. Electron is
- * unaffected: `window.electronAPI` is present there, so the native dialog wins.
- */
-let webShowOpenHandler: ShowOpenHandler | null = null;
-
-export const registerWebShowOpenHandler = (handler: ShowOpenHandler | null): void => {
-  webShowOpenHandler = handler;
-};
-
-const nativeShowOpen = bridge.buildProvider<string[] | undefined, ShowOpenOptions>('show-open');
-
-/** Detect Electron at call time because this adapter is shared by Electron and WebUI renderers. */
+/** Detect Electron at call time because this adapter is shared by several renderer entry points. */
 const isElectronRenderer = (): boolean =>
   typeof window !== 'undefined' && Boolean((window as { electronAPI?: unknown }).electronAPI);
 
 export const dialog = {
-  showOpen: {
-    provider: nativeShowOpen.provider,
-    invoke: ((options?: ShowOpenOptions) => {
-      if (!isElectronRenderer() && webShowOpenHandler) {
-        return webShowOpenHandler(options);
-      }
-      return nativeShowOpen.invoke(options);
-    }) as typeof nativeShowOpen.invoke,
-  },
+  showOpen: bridge.buildProvider<string[] | undefined, ShowOpenOptions>('show-open'),
 };
 
 // ---------------------------------------------------------------------------
@@ -914,18 +918,22 @@ export const fs = {
   deleteAssistantRule: httpDelete<boolean, { assistant_id: string }>(
     (p) => `/api/skills/assistant-rule/${p.assistant_id}`
   ),
-  listAvailableSkills: httpGet<
-    Array<{
-      name: string;
-      description: string;
-      location: string;
-      relative_location?: string;
-      is_auto_inject: boolean;
-      is_custom: boolean;
-      source: 'builtin' | 'custom' | 'cron' | 'extension';
-    }>,
-    void
-  >('/api/skills'),
+  /** The built-in skills' descriptions name the upstream products; they are shown as mu. Names are ids and stay. */
+  listAvailableSkills: withResponseMap(
+    httpGet<
+      Array<{
+        name: string;
+        description: string;
+        location: string;
+        relative_location?: string;
+        is_auto_inject: boolean;
+        is_custom: boolean;
+        source: 'builtin' | 'custom' | 'cron' | 'extension';
+      }>,
+      void
+    >('/api/skills'),
+    (skills) => (Array.isArray(skills) ? skills.map((skill) => withTextsAsMu(skill, ['description'])) : skills)
+  ),
   materializeSkillsForAgent: httpPost<
     { skills: Array<{ name: string; source_path: string }> },
     { conversation_id: string; skills: string[] }
@@ -1129,8 +1137,23 @@ export const mode = {
 export const acpConversation = {
   sendMessage: conversation.sendMessage,
   responseStream: conversation.responseStream,
-  /** Management view used by Agent settings. */
-  getManagedAgents: httpGet<import('@/renderer/utils/model/agentTypes').ManagedAgent[], void>('/api/agents/management'),
+  /** Management view used by Agent settings. The built-in agent's name and status texts are shown as mu. */
+  getManagedAgents: withResponseMap(
+    httpGet<import('@/renderer/utils/model/agentTypes').ManagedAgent[], void>('/api/agents/management'),
+    (agents) =>
+      Array.isArray(agents)
+        ? agents.map((agent) =>
+            withTextsAsMu(agent, [
+              'name',
+              'name_i18n',
+              'description',
+              'description_i18n',
+              'last_check_error_message',
+              'last_check_guidance',
+            ])
+          )
+        : agents
+  ),
   getAgentOverrides: httpGet<
     { command_override?: string; env_override: { name: string; value: string }[] },
     { id: string }
@@ -1609,54 +1632,6 @@ export const task = {
 };
 
 // ---------------------------------------------------------------------------
-// WebUI — mix: start/stop/getStatus/statusChanged stay IPC (Electron-only
-// lifecycle owned by the main process, can't run in backend); credential
-// operations route to backend /api/webui/* under local-mode.
-// ---------------------------------------------------------------------------
-
-export interface IWebUIStatus {
-  running: boolean;
-  port: number;
-  allowRemote: boolean;
-  localUrl: string;
-  networkUrl?: string;
-  lanIP?: string;
-  adminUsername: string;
-  initialPassword?: string;
-}
-
-export interface IWebUIStartResult {
-  port: number;
-  allowRemote: boolean;
-  localUrl: string;
-  networkUrl?: string;
-  lanIP?: string;
-  initialPassword?: string;
-}
-
-export const webui = {
-  getStatus: bridge.buildProvider<IWebUIStatus, void>('webui.get-status'),
-  start: bridge.buildProvider<IWebUIStartResult, { port?: number; allowRemote?: boolean }>('webui.start'),
-  stop: bridge.buildProvider<void, void>('webui.stop'),
-  statusChanged: bridge.buildEmitter<{
-    running: boolean;
-    port?: number;
-    localUrl?: string;
-    networkUrl?: string;
-    lanIP?: string;
-    initialPassword?: string;
-  }>('webui.status-changed'),
-  changePassword: httpPost<void, { newPassword: string }>('/api/webui/change-password', (p) => ({
-    new_password: p.newPassword,
-  })),
-  changeUsername: httpPost<{ username: string }, { newUsername: string }>('/api/webui/change-username', (p) => ({
-    new_username: p.newUsername,
-  })),
-  resetPassword: httpPost<{ new_password: string }, void>('/api/webui/reset-password'),
-  generateQRToken: httpPost<{ token: string; expires_at_ms: number }, void>('/api/webui/generate-qr-token'),
-};
-
-// ---------------------------------------------------------------------------
 // Cron — routed to /api/cron/*
 // ---------------------------------------------------------------------------
 
@@ -2083,12 +2058,6 @@ export interface IExtensionSettingsTab {
   extensionName: string;
 }
 
-export interface IExtensionWebuiContribution {
-  extensionName: string;
-  apiRoutes: Array<{ path: string; auth: boolean }>;
-  staticAssets: Array<{ urlPrefix: string; directory: string }>;
-}
-
 export type AgentActivityState = 'idle' | 'writing' | 'researching' | 'executing' | 'syncing' | 'error';
 
 export interface IExtensionAgentActivityEvent {
@@ -2128,7 +2097,6 @@ export const extensions = {
   getMcpServers: httpGet<Record<string, unknown>[], void>('/api/extensions/mcp-servers'),
   getSkills: httpGet<Array<{ name: string; description: string; location: string }>, void>('/api/extensions/skills'),
   getSettingsTabs: httpGet<IExtensionSettingsTab[], void>('/api/extensions/settings-tabs'),
-  getWebuiContributions: httpGet<IExtensionWebuiContribution[], void>('/api/extensions/webui'),
   getAgentActivitySnapshot: httpGet<IExtensionAgentActivitySnapshot, void>('/api/extensions/agent-activity'),
   getExtI18nForLocale: httpPost<Record<string, unknown>, { locale: string }>('/api/extensions/i18n'),
   enableExtension: httpPost<void, { name: string }>('/api/extensions/enable'),
@@ -2136,126 +2104,6 @@ export const extensions = {
   getPermissions: httpPost<IExtensionPermissionSummary[], { name: string }>('/api/extensions/permissions'),
   getRiskLevel: httpPost<string, { name: string }>('/api/extensions/risk-level'),
   stateChanged: wsEmitter<{ name: string; enabled: boolean; reason?: string }>('extensions.state-changed'),
-};
-
-// ---------------------------------------------------------------------------
-// Channel API — routed to /api/channel/*
-// ---------------------------------------------------------------------------
-
-import type {
-  IChannelAssistantBindingWrite,
-  IChannelDefaultModelSetting,
-  IChannelPairingRequest,
-  IChannelPlatformSettings,
-  IChannelPluginStatus,
-  IChannelSession,
-  IChannelUser,
-} from '@/common/types/channel/channel';
-
-type RawPluginStatus = Record<string, unknown>;
-type RawPairing = Record<string, unknown>;
-type RawUser = Record<string, unknown>;
-type RawSession = Record<string, unknown>;
-
-function toPluginStatus(raw: RawPluginStatus): IChannelPluginStatus {
-  return {
-    id: (raw.plugin_id ?? raw.id) as string,
-    type: (raw.type ?? raw.plugin_type) as string,
-    name: raw.name as string,
-    enabled: raw.enabled as boolean,
-    connected: (raw.connected ?? false) as boolean,
-    status: raw.status as string | undefined,
-    last_connected: raw.last_connected as number | undefined,
-    activeUsers: (raw.active_users ?? 0) as number,
-    botUsername: raw.bot_username as string | undefined,
-    hasToken: (raw.has_token ?? false) as boolean,
-    isExtension: raw.is_extension as boolean | undefined,
-    extensionMeta: raw.extension_meta as IChannelPluginStatus['extensionMeta'],
-  };
-}
-
-function toPairing(raw: RawPairing): IChannelPairingRequest {
-  return {
-    code: raw.code as string,
-    platformUserId: raw.platform_user_id as string,
-    platformType: raw.platform_type as string,
-    display_name: raw.display_name as string | undefined,
-    requestedAt: raw.requested_at as number,
-    expiresAt: raw.expires_at as number,
-  };
-}
-
-function toChannelUser(raw: RawUser): IChannelUser {
-  return {
-    id: raw.id as string,
-    platformUserId: raw.platform_user_id as string,
-    platformType: raw.platform_type as string,
-    display_name: raw.display_name as string | undefined,
-    authorizedAt: raw.authorized_at as number,
-    lastActive: raw.last_active as number | undefined,
-    session_id: raw.session_id as string | undefined,
-  };
-}
-
-function toChannelSession(raw: RawSession): IChannelSession {
-  return {
-    id: raw.id as string,
-    user_id: raw.user_id as string,
-    agent_type: raw.agent_type as string,
-    conversation_id: raw.conversation_id as string | undefined,
-    workspace: raw.workspace as string | undefined,
-    chatId: raw.chat_id as string | undefined,
-    created_at: raw.created_at as number,
-    lastActivity: raw.last_activity as number,
-  };
-}
-
-export const channel = {
-  getPluginStatus: withResponseMap(httpGet<RawPluginStatus[], void>('/api/channel/plugins'), (raw) =>
-    raw.map(toPluginStatus)
-  ),
-  enablePlugin: httpPost<void, { plugin_id: string; config: Record<string, unknown> }>('/api/channel/plugins/enable'),
-  disablePlugin: httpPost<void, { plugin_id: string }>('/api/channel/plugins/disable'),
-  testPlugin: httpPost<
-    { success: boolean; bot_username?: string; error?: string },
-    { plugin_id: string; token: string; extra_config?: { app_id?: string; app_secret?: string } }
-  >('/api/channel/plugins/test'),
-  getPendingPairings: withResponseMap(httpGet<RawPairing[], void>('/api/channel/pairings'), (raw) =>
-    raw.map(toPairing)
-  ),
-  approvePairing: httpPost<void, { code: string }>('/api/channel/pairings/approve'),
-  rejectPairing: httpPost<void, { code: string }>('/api/channel/pairings/reject'),
-  getAuthorizedUsers: withResponseMap(httpGet<RawUser[], void>('/api/channel/users'), (raw) => raw.map(toChannelUser)),
-  revokeUser: httpPost<void, { user_id: string }>('/api/channel/users/revoke'),
-  getActiveSessions: withResponseMap(httpGet<RawSession[], void>('/api/channel/sessions'), (raw) =>
-    raw.map(toChannelSession)
-  ),
-  getPlatformSettings: httpGet<IChannelPlatformSettings, { platform: string }>(
-    (p) => `/api/channel/settings/${encodeURIComponent(p.platform)}`
-  ),
-  setAssistantSetting: httpPut<void, { platform: string; assistant: IChannelAssistantBindingWrite }>(
-    (p) => `/api/channel/settings/${encodeURIComponent(p.platform)}/assistant`,
-    (p) => p.assistant
-  ),
-  setDefaultModelSetting: httpPut<void, { platform: string; default_model: IChannelDefaultModelSetting }>(
-    (p) => `/api/channel/settings/${encodeURIComponent(p.platform)}/default-model`,
-    (p) => p.default_model
-  ),
-  syncChannelSettings: httpPost<void, { platform: string }>('/api/channel/settings/sync'),
-  pairingRequested: wsMappedEmitter<IChannelPairingRequest>('channel.pairing-requested', (raw) =>
-    toPairing(raw as RawPairing)
-  ),
-  pluginStatusChanged: wsMappedEmitter<{ plugin_id: string; status: IChannelPluginStatus }>(
-    'channel.plugin-status-changed',
-    (raw) => {
-      const r = raw as Record<string, unknown>;
-      return {
-        plugin_id: r.plugin_id as string,
-        status: toPluginStatus(r.status as RawPluginStatus),
-      };
-    }
-  ),
-  userAuthorized: wsMappedEmitter<IChannelUser>('channel.user-authorized', (raw) => toChannelUser(raw as RawUser)),
 };
 
 // ---------------------------------------------------------------------------

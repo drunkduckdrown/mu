@@ -77,6 +77,15 @@ describe('PreviewContext browser tabs', () => {
     expect(browserTabs()[0].content).toBe('https://example.com');
   });
 
+  it('refuses to open the app itself as a page', () => {
+    renderProvider();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    act(() => ctx.openBrowserTab(`${window.location.origin}/index.html#/login`));
+    expect(browserTabs()).toHaveLength(0);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
   it('stacks multiple blank browser tabs instead of merging them', () => {
     // 关键行为：两个新建 tab 内容和标题都相同，普通去重逻辑会把它们合成一个，
     // 用户点两次加号只会看到一个 tab。

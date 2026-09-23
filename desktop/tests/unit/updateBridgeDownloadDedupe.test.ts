@@ -112,8 +112,8 @@ describe('updateBridge manual download dedupe', () => {
   it('reuses the active manual download for the same URL, fallback URL, and file name', async () => {
     const handler = await getDownloadHandler();
     const request = {
-      url: 'https://github.com/qybaihe/MU/releases/download/v2.2.0/mu-2.2.0-mac-arm64.dmg',
-      fallbackUrl: 'https://objects.githubusercontent.com/qybaihe/MU/v2.2.0/mu-2.2.0-mac-arm64.dmg',
+      url: 'https://github.com/qybaihe/mu/releases/download/v2.2.0/mu-2.2.0-mac-arm64.dmg',
+      fallbackUrl: 'https://objects.githubusercontent.com/qybaihe/mu/v2.2.0/mu-2.2.0-mac-arm64.dmg',
       file_name: 'mu-2.2.0-mac-arm64.dmg',
     };
 
@@ -149,8 +149,8 @@ describe('updateBridge manual download dedupe', () => {
 
     const handler = await getDownloadHandler();
     const request = {
-      url: 'https://github.com/qybaihe/MU/releases/download/v2.2.0/mu-2.2.0-mac-arm64.dmg',
-      fallbackUrl: 'https://objects.githubusercontent.com/qybaihe/MU/v2.2.0/mu-2.2.0-mac-arm64.dmg',
+      url: 'https://github.com/qybaihe/mu/releases/download/v2.2.0/mu-2.2.0-mac-arm64.dmg',
+      fallbackUrl: 'https://objects.githubusercontent.com/qybaihe/mu/v2.2.0/mu-2.2.0-mac-arm64.dmg',
       file_name: 'mu-2.2.0-mac-arm64.dmg',
     };
 
@@ -193,8 +193,8 @@ describe('updateBridge manual download dedupe', () => {
 
     const { download, cancel, ipcBridge } = await getDownloadHandlers();
     const request = {
-      url: 'https://github.com/qybaihe/MU/releases/download/v2.2.0/mu-2.2.0-mac-arm64.dmg',
-      fallbackUrl: 'https://objects.githubusercontent.com/qybaihe/MU/v2.2.0/mu-2.2.0-mac-arm64.dmg',
+      url: 'https://github.com/qybaihe/mu/releases/download/v2.2.0/mu-2.2.0-mac-arm64.dmg',
+      fallbackUrl: 'https://objects.githubusercontent.com/qybaihe/mu/v2.2.0/mu-2.2.0-mac-arm64.dmg',
       file_name: 'mu-2.2.0-mac-arm64.dmg',
     };
 

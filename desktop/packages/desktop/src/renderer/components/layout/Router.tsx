@@ -1,26 +1,42 @@
 import React, { Suspense } from 'react';
-import { HashRouter, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter, Navigate, Outlet, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Result, Space } from '@arco-design/web-react';
 import { useTranslation } from 'react-i18next';
 import AppLoader from '@renderer/components/layout/AppLoader';
 import DocumentTitle from '@renderer/components/layout/DocumentTitle';
 import { useCrossSessionRateLimitNotice } from '@/renderer/hooks/system/useCrossSessionRateLimitNotice';
-import { useAuth } from '@renderer/hooks/context/AuthContext';
 import StartupGate from '@/renderer/pages/settings/KyrnSettings/StartupGate';
+import { MuSettingsProvider } from '@/renderer/pages/settings/KyrnSettings/useMuSettings';
+import {
+  FEATURE_LIST_PAGES,
+  MOVED_SETTINGS_TABS,
+  RETIRED_SETTINGS_PATHS,
+  SETTINGS_HOME,
+  SETTINGS_PAGES,
+  movedSettingsTab,
+  retiredSettingsTarget,
+  type SettingsPageId,
+} from '@/renderer/pages/settings/settingsNav';
 const Conversation = React.lazy(() => import('@renderer/pages/conversation'));
 const Guid = React.lazy(() => import('@renderer/pages/guid'));
 const Welcome = React.lazy(() => import('@renderer/pages/welcome'));
-const KyrnSettings = React.lazy(() => import('@renderer/pages/settings/KyrnSettings'));
+const MuSettings = React.lazy(() => import('@renderer/pages/settings/KyrnSettings'));
+const MovedFeatureOptions = React.lazy(() =>
+  import('@renderer/pages/settings/KyrnSettings').then((module) => ({ default: module.MovedFeatureOptions }))
+);
 const SkillsSettings = React.lazy(() => import('@renderer/pages/settings/SkillsSettings/SkillsHubSettings'));
 const SkillDetailPage = React.lazy(() => import('@renderer/pages/settings/SkillsSettings/SkillDetailPage'));
 const ToolsSettings = React.lazy(() => import('@renderer/pages/settings/ToolsSettings'));
+const AssistantSettings = React.lazy(() => import('@renderer/pages/settings/AssistantSettings'));
 const AppearanceSettings = React.lazy(() => import('@renderer/pages/settings/AppearanceSettings'));
-const SystemSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings'));
-const WebuiSettings = React.lazy(() => import('@renderer/pages/settings/WebuiSettings'));
 const PetSettings = React.lazy(() => import('@renderer/pages/settings/PetSettings'));
+const SystemSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings'));
+const ConversationSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings/ConversationSettings'));
+const VoiceSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings/VoiceSettings'));
+const BrowserSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings/BrowserSettings'));
+const AboutSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings/AboutSettings'));
 const ArchivedSettings = React.lazy(() => import('@renderer/pages/settings/ArchivedSettings'));
 const ExtensionSettingsPage = React.lazy(() => import('@renderer/pages/settings/ExtensionSettingsPage'));
-const LoginPage = React.lazy(() => import('@renderer/pages/login'));
 const ComponentsShowcase = React.lazy(() => import('@renderer/pages/TestShowcase'));
 const ScheduledTasksPage = React.lazy(() => import('@renderer/pages/cron/ScheduledTasksPage'));
 const TaskDetailPage = React.lazy(() => import('@renderer/pages/cron/ScheduledTasksPage/TaskDetailPage'));
@@ -78,31 +94,77 @@ const withRouteFallback = (Component: React.LazyExoticComponent<React.ComponentT
   </RouteContent>
 );
 
-/**
- * Legacy `/settings/capabilities?tab=tools` deep links now map to the standalone
- * Tools page; everything else (skills tab or no tab) lands on the Skills page.
- */
-const CapabilitiesRedirect: React.FC = () => {
-  const { search } = useLocation();
-  const tab = new URLSearchParams(search).get('tab');
-  return <Navigate to={tab === 'tools' ? '/settings/tools' : '/settings/skills'} replace />;
+/** The page each entry of the settings rail opens: mu's own sections are one area, routed by the path. */
+const SETTINGS_PAGE_ELEMENTS: Record<SettingsPageId, React.LazyExoticComponent<React.ComponentType>> = {
+  appearance: AppearanceSettings,
+  pet: PetSettings,
+  system: SystemSettings,
+  conversations: ConversationSettings,
+  voice: VoiceSettings,
+  providers: MuSettings,
+  'default-model': MuSettings,
+  judges: MuSettings,
+  'judge-tiers': MuSettings,
+  features: MuSettings,
+  context: MuSettings,
+  permissions: MuSettings,
+  'decisions-input': MuSettings,
+  'decisions-context': MuSettings,
+  'decisions-memory': MuSettings,
+  'decisions-tools': MuSettings,
+  'decisions-turn': MuSettings,
+  'decisions-team': MuSettings,
+  'more-features-input': MuSettings,
+  'more-features-context': MuSettings,
+  'more-features-tools': MuSettings,
+  'more-features-turn': MuSettings,
+  'more-features-other': MuSettings,
+  skills: SkillsSettings,
+  tools: ToolsSettings,
+  assistants: AssistantSettings,
+  browser: BrowserSettings,
+  archived: ArchivedSettings,
+  about: AboutSettings,
 };
 
-const ProtectedLayout: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
-  const { status, user } = useAuth();
+/**
+ * Around every settings page: the one draft of mu's settings they all edit. A route change draws the page afresh, so
+ * the draft lives here, above the pages: a change typed on one page is still there, unsaved, on the next, until the
+ * settings are left.
+ */
+const SettingsScope: React.FC = () => (
+  <MuSettingsProvider>
+    <Outlet />
+  </MuSettingsProvider>
+);
+
+/**
+ * A settings route that no longer exists (a key of `RETIRED_SETTINGS_PATHS`), sent to the page that took it over.
+ * Whatever the old link carried travels with it: its query string (`?highlight=`, `?view=`), so a deep link still
+ * arrives at the thing it named, and its navigation state (an assistant to open).
+ */
+export const RetiredSettingsPath: React.FC<{ from: string }> = ({ from }) => {
+  const { search, state } = useLocation();
+  return <Navigate to={retiredSettingsTarget(from, search)} replace state={state} />;
+};
+
+/**
+ * A page that used to hold other pages as tabs (the skills page held tools and assistants): a link naming one of those
+ * tabs (`?tab=tools`) goes to the page that holds it now, with the rest of its query. Any other link draws the page.
+ */
+export const WithMovedTabs: React.FC<{ path: string; children: React.ReactElement }> = ({ path, children }) => {
+  const { search, state } = useLocation();
+  const moved = movedSettingsTab(path, search);
+  return moved ? <Navigate to={moved} replace state={state} /> : children;
+};
+
+const AppLayout: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
   const location = useLocation();
-  // Mounted once for every authenticated route: the loop warning has to reach
-  // the user even when they are looking at a THIRD conversation, which is the
-  // whole reason it is a broadcast rather than an in-conversation banner.
-  useCrossSessionRateLimitNotice(user?.id);
-
-  if (status === 'checking') {
-    return <AppLoader />;
-  }
-
-  if (status !== 'authenticated') {
-    return <Navigate to='/login' replace />;
-  }
+  // Mounted once for every route: the loop warning has to reach the user even
+  // when they are looking at a THIRD conversation, which is the whole reason it
+  // is a broadcast rather than an in-conversation banner. The hook asks the
+  // backend who this client is on its own.
+  useCrossSessionRateLimitNotice();
 
   // Do not obstruct an existing task while the main process is being upgraded.
   return location.pathname.startsWith('/conversation/') ? (
@@ -113,56 +175,52 @@ const ProtectedLayout: React.FC<{ layout: React.ReactElement }> = ({ layout }) =
 };
 
 const PanelRoute: React.FC<{ layout: React.ReactElement }> = ({ layout }) => {
-  const { status } = useAuth();
-
   return (
     <HashRouter>
       <DocumentTitle />
       <Routes>
-        <Route
-          path='/login'
-          element={status === 'authenticated' ? <Navigate to='/guid' replace /> : withRouteFallback(LoginPage)}
-        />
-        <Route element={<ProtectedLayout layout={layout} />}>
+        <Route element={<AppLayout layout={layout} />}>
           <Route index element={<Navigate to='/guid' replace />} />
           <Route path='/guid' element={withRouteFallback(Guid)} />
           <Route path='/welcome' element={withRouteFallback(Welcome)} />
           <Route path='/conversation/:id' element={withRouteFallback(Conversation)} />
           <Route path='/team/:id' element={<Navigate to='/guid' replace />} />
-          <Route path='/settings/kyrn/:section?' element={withRouteFallback(KyrnSettings)} />
-          <Route path='/settings/model' element={<Navigate to='/settings/kyrn' replace />} />
-          <Route path='/assistants' element={<Navigate to='/settings/kyrn' replace />} />
-          {/* Assistants moved out of Settings to a top-level entry; keep a redirect
-              so old deep links / back-nav still land on the new page. */}
-          <Route path='/settings/assistants' element={<Navigate to='/assistants' replace />} />
-          <Route path='/settings/agent' element={<Navigate to='/settings/kyrn' replace />} />
-          <Route path='/settings/agent/:id/repair' element={<Navigate to='/settings/kyrn' replace />} />
-          {/* Skills and Tools are top-level settings entries. */}
-          <Route path='/settings/skills' element={withRouteFallback(SkillsSettings)} />
-          <Route path='/settings/skills/import-history' element={withRouteFallback(SkillsSettings)} />
-          <Route path='/settings/skills/detail/:skillName' element={withRouteFallback(SkillDetailPage)} />
-          <Route path='/settings/tools' element={withRouteFallback(ToolsSettings)} />
-          {/* Legacy routes — the previous combined "Capabilities" page is now two pages. */}
-          <Route path='/settings/capabilities' element={<CapabilitiesRedirect />} />
-          <Route
-            path='/settings/capabilities/skills/import-history'
-            element={<Navigate to='/settings/skills/import-history' replace />}
-          />
-          <Route path='/settings/skills-hub' element={<Navigate to='/settings/skills' replace />} />
-          <Route path='/settings/appearance' element={withRouteFallback(AppearanceSettings)} />
-          <Route path='/settings/display' element={<Navigate to='/settings/appearance' replace />} />
-          <Route path='/settings/webui' element={withRouteFallback(WebuiSettings)} />
-          <Route path='/settings/pet' element={withRouteFallback(PetSettings)} />
-          <Route path='/settings/archived' element={withRouteFallback(ArchivedSettings)} />
-          <Route path='/settings/system' element={withRouteFallback(SystemSettings)} />
-          <Route path='/settings/about' element={withRouteFallback(SystemSettings)} />
-          <Route path='/settings/ext/:tabId' element={withRouteFallback(ExtensionSettingsPage)} />
-          <Route path='/settings' element={<Navigate to='/settings/agent' replace />} />
+          {/* The settings rail: one route per entry, all under one draft of mu's settings. */}
+          <Route element={<SettingsScope />}>
+            {SETTINGS_PAGES.map(({ id, route }) => (
+              <Route
+                key={id}
+                path={route}
+                element={
+                  route in MOVED_SETTINGS_TABS ? (
+                    <WithMovedTabs path={route}>{withRouteFallback(SETTINGS_PAGE_ELEMENTS[id])}</WithMovedTabs>
+                  ) : (
+                    withRouteFallback(SETTINGS_PAGE_ELEMENTS[id])
+                  )
+                }
+              />
+            ))}
+            {/* One feature's options, opened from its list, and the pages after the first when they fill more. */}
+            {FEATURE_LIST_PAGES.map((id) => (
+              <Route key={id} path={`/settings/${id}/:feature/:part?`} element={withRouteFallback(MuSettings)} />
+            ))}
+            {/* From when every other feature was one page: the page of the feature's group now. */}
+            <Route path='/settings/more-features/:feature/:part?' element={withRouteFallback(MovedFeatureOptions)} />
+            <Route path='/settings/skills/import-history' element={withRouteFallback(SkillsSettings)} />
+            <Route path='/settings/skills/detail/:skillName' element={withRouteFallback(SkillDetailPage)} />
+            <Route path='/settings/ext/:tabId' element={withRouteFallback(ExtensionSettingsPage)} />
+          </Route>
+
+          {/* Retired destinations — old deep links keep working. */}
+          {Object.keys(RETIRED_SETTINGS_PATHS).map((from) => (
+            <Route key={from} path={from} element={<RetiredSettingsPath from={from} />} />
+          ))}
+          <Route path='/settings' element={<Navigate to={SETTINGS_HOME} replace />} />
           <Route path='/test/components' element={withRouteFallback(ComponentsShowcase)} />
           <Route path='/scheduled' element={withRouteFallback(ScheduledTasksPage)} />
           <Route path='/scheduled/:job_id' element={withRouteFallback(TaskDetailPage)} />
         </Route>
-        <Route path='*' element={<Navigate to={status === 'authenticated' ? '/guid' : '/login'} replace />} />
+        <Route path='*' element={<Navigate to='/guid' replace />} />
       </Routes>
     </HashRouter>
   );

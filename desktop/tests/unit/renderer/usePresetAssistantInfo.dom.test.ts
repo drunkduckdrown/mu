@@ -523,6 +523,59 @@ describe('usePresetAssistantInfo', () => {
     });
   });
 
+  it('shows the backend’s built-in agent as mu, by its stored name or by its backend id', () => {
+    useSWRMock.mockImplementation((key: unknown) => {
+      if (key === 'assistants.list') return { data: [], isLoading: false };
+      if (key === 'extensions.acpAdapters') return { data: [], isLoading: false };
+      return { data: undefined, isLoading: false };
+    });
+
+    const named = renderHook(() =>
+      usePresetAssistantInfo(makeConversation({ agent_id: 'runtime-1', agent_name: 'Aion CLI', backend: 'aionrs' }))
+    );
+    expect(named.result.current.info?.name).toBe('mu');
+
+    const unnamed = renderHook(() =>
+      usePresetAssistantInfo(makeConversation({ agent_id: 'runtime-1', backend: 'aionrs' }))
+    );
+    expect(unnamed.result.current.info?.name).toBe('mu');
+  });
+
+  it('still finds a legacy assistant whose stored rules name it AionUi Butler', () => {
+    useSWRMock.mockImplementation((key: unknown) => {
+      if (key === 'assistants.list') {
+        // The catalog shows the backend's names as mu (ipcBridge.assistants.list).
+        return {
+          data: [{ id: 'butler-1', name: 'mu Butler', avatar: '🤵', name_i18n: { 'en-US': 'mu Butler' } }],
+          isLoading: false,
+        };
+      }
+      if (key === 'extensions.acpAdapters') return { data: [], isLoading: false };
+      return { data: undefined, isLoading: false };
+    });
+
+    const conversation = makeConversation({ preset_context: '# AionUi Butler\n\nYou are AionUi’s built-in butler.' });
+    const { result } = renderHook(() => usePresetAssistantInfo(conversation));
+
+    expect(result.current.info).toMatchObject({ name: 'mu Butler', assistantId: 'butler-1' });
+  });
+
+  it('shows the assistant name a conversation stored from the backend as mu', () => {
+    useSWRMock.mockImplementation((key: unknown) => {
+      if (key === 'assistants.list') return { data: [], isLoading: false };
+      if (key === 'extensions.acpAdapters') return { data: [], isLoading: false };
+      return { data: undefined, isLoading: false };
+    });
+
+    const conversation = {
+      ...makeConversation({}),
+      assistant: { id: 'aionui-assistant', name: 'AionUi Butler', avatar: '🤵', backend: 'aionrs' },
+    } as TChatConversation;
+    const { result } = renderHook(() => usePresetAssistantInfo(conversation));
+
+    expect(result.current.info).toMatchObject({ name: 'mu Butler', assistantId: 'aionui-assistant' });
+  });
+
   it('treats legacy custom_agent_id as runtime-only when resolving explicit assistant identity', () => {
     expect(
       resolveAssistantConfigId(

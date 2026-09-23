@@ -1,7 +1,13 @@
+/**
+ * @license
+ * Copyright 2025 AionUi (aionui.com)
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import type { BadgeProps } from '@arco-design/web-react';
-import { Badge, Button, Message, Spin, Tooltip } from '@arco-design/web-react';
-import { Checklist, Down, Download, Right } from '@icon-park/react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Badge, Button, Message, Tooltip } from '@arco-design/web-react';
+import { Down, Download, Right } from '@icon-park/react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ipcBridge } from '@/common';
 import { getAcpImageFileName } from '@/common/chat/acpToolCallOutput';
@@ -10,8 +16,19 @@ import { normalizeToolMessages } from '@/common/chat/normalizeToolCall';
 import LocalImageView from '@/renderer/components/media/LocalImageView';
 import { HiveToolCard } from '@/renderer/pages/conversation/KyrnPanel/Hive';
 import { swarmProgressText } from '@/renderer/pages/conversation/KyrnPanel/Hive/codes';
+import { formatNumber } from '@/renderer/services/i18n/format';
 import { downloadFileFromPath } from '@/renderer/utils/file/download';
 import styles from './MessageToolGroupSummary.module.css';
+import ToolKindIcon from './ToolKindIcon';
+import {
+  clipOutput,
+  shouldFoldActivity,
+  summarizeToolActivity,
+  toolActivityErrors,
+  toolErrorLine,
+  toolLabel,
+  type ToolLabel,
+} from './toolActivity';
 
 const statusToBadge = (status: NormalizedToolStatus): BadgeProps['status'] => {
   switch (status) {
@@ -32,36 +49,22 @@ const statusToBadge = (status: NormalizedToolStatus): BadgeProps['status'] => {
 const statusLabelKey = (status: NormalizedToolStatus): string =>
   status === 'running' ? 'executing' : status === 'completed' ? 'success' : status;
 
-/**
- * One status for the collapsed box. Work in progress wins; a failure must stay visible after the
- * run so a collapsed box never reads as clean, and a stale pending call must not hide it.
- */
-const groupStatus = (items: NormalizedToolCall[]): NormalizedToolStatus =>
-  (['running', 'error', 'pending', 'canceled'] as const).find((status) =>
-    items.some((item) => item.status === status)
-  ) ?? 'completed';
+/** "read src/a.ts", "bash npm test": what the reader sees on a folded line. */
+const labelText = ({ verb, target }: ToolLabel): string => (target ? `${verb} ${target}` : verb);
 
-const inputPreview = (input?: string): string | undefined => {
-  if (!input) return undefined;
-  try {
-    const value: unknown = JSON.parse(input);
-    if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-      const record = value as Record<string, unknown>;
-      for (const key of ['command', 'file_path', 'path', 'query', 'pattern', 'url']) {
-        if (typeof record[key] === 'string') return record[key];
-      }
-    }
-  } catch {
-    return input.split('\n', 1)[0];
-  }
-  return undefined;
-};
-
-const itemPreview = (item: NormalizedToolCall): string | undefined => inputPreview(item.input) || item.description;
-
-const isCommand = (item: NormalizedToolCall): boolean => {
-  if (/\b(shell|command|execute|terminal|bash|powershell|cmd)\b/i.test(item.name)) return true;
-  return Boolean(item.input && /"command"\s*:/i.test(item.input));
+const ClippedOutput: React.FC<{ text: string }> = ({ text }) => {
+  const { t } = useTranslation();
+  const [full, setFull] = useState(false);
+  const clip = useMemo(() => clipOutput(text), [text]);
+  if (!clip.clipped) return <pre className={styles.detailContent}>{text}</pre>;
+  return (
+    <>
+      <pre className={styles.detailContent}>{full ? text : `${clip.text}\n…`}</pre>
+      <Button className={styles.moreButton} type='text' size='mini' onClick={() => setFull((value) => !value)}>
+        {t(full ? 'tools.execution.showLess' : 'tools.execution.showMore')}
+      </Button>
+    </>
+  );
 };
 
 const ToolItemDetail: React.FC<{ item: NormalizedToolCall }> = ({ item }) => {
@@ -71,7 +74,7 @@ const ToolItemDetail: React.FC<{ item: NormalizedToolCall }> = ({ item }) => {
   const [loadingFull, setLoadingFull] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const displayItem = fullItem ?? item;
-  const preview = itemPreview(displayItem);
+  const label = toolLabel(displayItem);
   const statusKey = statusLabelKey(item.status);
   const hasDetail = Boolean(displayItem.input || displayItem.output || item.truncated || item.imagePath);
   const [messageApi, messageContext] = Message.useMessage();
@@ -112,6 +115,15 @@ const ToolItemDetail: React.FC<{ item: NormalizedToolCall }> = ({ item }) => {
     if (nextExpanded) void loadFullItem();
   };
 
+  const line = (
+    <>
+      <Badge status={statusToBadge(item.status)} className={item.status === 'running' ? styles.breathing : undefined} />
+      <ToolKindIcon name={displayItem.name} />
+      <span className={styles.callName}>{label.verb}</span>
+      {label.target && <code className={styles.callPreview}>{label.target}</code>}
+    </>
+  );
+
   return (
     <div className={styles.call}>
       {messageContext}
@@ -138,23 +150,15 @@ const ToolItemDetail: React.FC<{ item: NormalizedToolCall }> = ({ item }) => {
           aria-expanded={expanded}
           onClick={toggleExpanded}
         >
-          <Badge
-            status={statusToBadge(item.status)}
-            className={item.status === 'running' ? styles.breathing : undefined}
-          />
-          <span className={styles.callName}>{displayItem.name}</span>
-          {preview && <code className={styles.callPreview}>{preview}</code>}
+          {line}
           {expanded ? <Down size={12} /> : <Right size={12} />}
         </Button>
       ) : (
-        <div className={styles.callStatic}>
-          <Badge
-            status={statusToBadge(item.status)}
-            className={item.status === 'running' ? styles.breathing : undefined}
-          />
-          <span className={styles.callName}>{displayItem.name}</span>
-          {preview && <code className={styles.callPreview}>{preview}</code>}
-        </div>
+        <div className={styles.callStatic}>{line}</div>
+      )}
+      {/* A failure says what went wrong without asking for a click. */}
+      {item.status === 'error' && !expanded && !displayItem.hive && (
+        <div className={styles.callError}>{toolErrorLine(displayItem)}</div>
       )}
       {expanded && hasDetail && (
         <div className={styles.detailPanel}>
@@ -170,15 +174,13 @@ const ToolItemDetail: React.FC<{ item: NormalizedToolCall }> = ({ item }) => {
           {displayItem.input && (
             <div className={styles.detailSection}>
               <div className={styles.detailLabel}>{t('tools.execution.input')}</div>
-              <pre className={styles.detailContent}>{displayItem.input}</pre>
+              <ClippedOutput text={displayItem.input} />
             </div>
           )}
           {displayItem.output && (
             <div className={styles.detailSection}>
               <div className={styles.detailLabel}>{t('tools.execution.output')}</div>
-              <pre className={styles.detailContent}>
-                {swarmProgressText(t, displayItem.swarmProgress, displayItem.output)}
-              </pre>
+              <ClippedOutput text={swarmProgressText(t, displayItem.swarmProgress, displayItem.output)} />
             </div>
           )}
         </div>
@@ -207,77 +209,80 @@ const ToolItemDetail: React.FC<{ item: NormalizedToolCall }> = ({ item }) => {
   );
 };
 
-const MessageToolGroupSummary: React.FC<{ messages: ToolMessage[] }> = ({ messages }) => {
+const ToolRows: React.FC<{ tools: NormalizedToolCall[] }> = ({ tools }) => (
+  <>
+    {tools.map((item) => (
+      <ToolItemDetail key={item.key} item={item} />
+    ))}
+  </>
+);
+
+/**
+ * A run of tool calls folded into one line: how many steps ran, and what is running right now. It opens in place to
+ * the calls themselves and stays closed when the turn ends, so a finished reply reads as a reply. Failures never fold
+ * away — each failed step keeps its own line under the closed header.
+ */
+const ToolActivityGroup: React.FC<{ tools: NormalizedToolCall[]; language?: string | null }> = ({
+  tools,
+  language,
+}) => {
   const { t } = useTranslation();
-  const tools = useMemo(() => normalizeToolMessages(messages), [messages]);
-  const ordinaryTools = tools.filter((item) => !item.hive);
-  const hasRunning = ordinaryTools.some((item) => item.status === 'running');
-  const [showMore, setShowMore] = useState(false);
-
-  useEffect(() => {
-    if (hasRunning) setShowMore(true);
-  }, [hasRunning]);
-
-  const latestTool = ordinaryTools.findLast((item) => item.status === 'running') ?? ordinaryTools.at(-1);
-  const latestPreview = latestTool ? itemPreview(latestTool) : undefined;
-  const commandCount = ordinaryTools.filter(isCommand).length;
-  const status = groupStatus(ordinaryTools);
+  const [expanded, setExpanded] = useState(false);
+  const summary = useMemo(() => summarizeToolActivity(tools), [tools]);
+  const errors = useMemo(() => toolActivityErrors(tools), [tools]);
+  const steps = formatNumber(summary.steps, language);
+  const headline =
+    summary.status === 'running'
+      ? t('tools.activity.running', { steps, label: summary.running ? labelText(summary.running) : '' })
+      : summary.failed > 0
+        ? t('tools.activity.summaryFailed', { steps, failed: formatNumber(summary.failed, language) })
+        : t('tools.activity.summary', { steps });
 
   return (
-    <div className={styles.summary}>
-      {tools
-        .filter((item) => item.hive)
-        .map((item) => (
-          <ToolItemDetail key={item.key} item={item} />
+    <div className={styles.activity} data-testid='tool-activity-group'>
+      <Button
+        className={styles.activityHeader}
+        type='text'
+        size='mini'
+        aria-expanded={expanded}
+        onClick={() => setExpanded((value) => !value)}
+      >
+        <Badge
+          status={summary.status === 'running' ? 'processing' : summary.failed > 0 ? 'error' : 'default'}
+          className={summary.status === 'running' ? styles.breathing : undefined}
+        />
+        <span className={styles.activitySummary}>{headline}</span>
+        {expanded ? <Down size={12} /> : <Right size={12} />}
+      </Button>
+      {!expanded &&
+        errors.map((error) => (
+          <div key={error.key} className={styles.activityError} data-testid='tool-activity-error'>
+            <span className={styles.callName}>{error.label.verb}</span>
+            <span className={styles.activityErrorLine}>{error.line}</span>
+          </div>
         ))}
-      {ordinaryTools.length > 0 && (
-        <>
-          <Button
-            className={styles.header}
-            type='secondary'
-            size='mini'
-            aria-expanded={showMore}
-            onClick={() => setShowMore((value) => !value)}
-          >
-            <span className={styles.headerIcon}>
-              {hasRunning ? <Spin size={12} /> : <Checklist theme='outline' size='14' />}
-            </span>
-            <span>{t('tools.execution.title')}</span>
-            <span className={styles.status} data-status={status}>
-              <Badge status={statusToBadge(status)} className={status === 'running' ? styles.breathing : undefined} />
-              <span>{t(`tools.status.${statusLabelKey(status)}`)}</span>
-            </span>
-            <span className={styles.counts}>
-              <span>
-                {t('tools.execution.calls', { count: ordinaryTools.length })}
-                {commandCount > 0 && ' ·'}
-              </span>
-              {commandCount > 0 && (
-                <>
-                  {' '}
-                  <span>{t('tools.execution.commands', { count: commandCount })}</span>
-                </>
-              )}
-            </span>
-            {latestTool && (
-              <span className={styles.latest} title={latestPreview}>
-                <span>{latestTool.name}</span>
-                {latestPreview && <code>{latestPreview}</code>}
-              </span>
-            )}
-            <span className={showMore ? styles.arrowOpen : styles.arrow}>
-              <Right theme='outline' size='12' />
-            </span>
-          </Button>
-          {showMore && (
-            <div className={styles.body} role='group' aria-label={t('tools.execution.title')}>
-              {ordinaryTools.map((item) => (
-                <ToolItemDetail key={item.key} item={item} />
-              ))}
-            </div>
-          )}
-        </>
+      {expanded && (
+        <div className={styles.activityBody}>
+          <ToolRows tools={tools} />
+        </div>
       )}
+    </div>
+  );
+};
+
+/**
+ * The tools a stretch of the reply ran. One call is its own quiet line; several fold into one activity line that
+ * opens to them (user, 2026-09-22: a "tool activity" header over a single call was one box too many).
+ */
+const MessageToolGroupSummary: React.FC<{ messages: ToolMessage[] }> = ({ messages }) => {
+  const { t, i18n } = useTranslation();
+  const tools = useMemo(() => normalizeToolMessages(messages), [messages]);
+  if (!tools.length) return null;
+  // A sub-agent run is its own panel, never a step in a fold.
+  const folds = shouldFoldActivity(tools) && !tools.some((item) => item.hive);
+  return (
+    <div className={styles.summary} role='group' aria-label={t('tools.execution.title')}>
+      {folds ? <ToolActivityGroup tools={tools} language={i18n?.language} /> : <ToolRows tools={tools} />}
     </div>
   );
 };

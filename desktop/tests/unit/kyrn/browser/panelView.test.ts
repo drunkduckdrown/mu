@@ -259,7 +259,7 @@ describe('the harness’s end codes on the unfolded bar', () => {
       expect(say('en-US', { code: 'stuck', params: { actions: 3 } })).toBe('3 actions in a row changed nothing.');
       const label = { code: 'not_confirmed', params: { label: '<b>删除</b> {{x}} $t(preview.muBrowser.stop)' } };
       expect(say('zh-CN', label)).toBe(
-        '“<b>删除</b> {{x}} $t(preview.muBrowser.stop)”看起来无法撤销，且没有得到确认。'
+        '「<b>删除</b> {{x}} $t(preview.muBrowser.stop)」看起来无法撤销，且没有得到确认。'
       );
       expect(say('zh-TW', label)).toBe(
         '「<b>删除</b> {{x}} $t(preview.muBrowser.stop)」看起來無法復原，且沒有得到確認。'

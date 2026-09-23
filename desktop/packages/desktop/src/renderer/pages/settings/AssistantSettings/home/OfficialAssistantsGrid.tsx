@@ -72,7 +72,7 @@ const OfficialAssistantsGrid: React.FC<OfficialAssistantsGridProps> = ({
           />
           <span className='truncate'>
             {t('settings.officialAssistantsHintShort', {
-              defaultValue: 'Maintained by AionUi · enable to use, duplicate to customize',
+              defaultValue: 'Maintained by mu · enable to use, duplicate to customize',
             })}
           </span>
         </span>
@@ -162,7 +162,7 @@ const OfficialAssistantsGrid: React.FC<OfficialAssistantsGridProps> = ({
                       type='text'
                       size='small'
                       data-testid={`btn-chat-${assistant.id}`}
-                      className='!inline-flex !h-28px !items-center !justify-center !rounded-9px !bg-fill-2 !px-12px !leading-none !text-t-secondary !opacity-0 transition-all hover:!bg-primary-6 hover:!text-white group-hover:!opacity-100'
+                      className='!inline-flex !h-28px !items-center !justify-center !rounded-9px !bg-fill-2 !px-12px !leading-none !text-t-secondary !opacity-0 transition-all hover:!bg-fill-3 hover:!text-t-primary group-hover:!opacity-100'
                       onClick={() => onStartChat(assistant)}
                     >
                       {t('settings.assistantGoChat', { defaultValue: 'Chat' })}

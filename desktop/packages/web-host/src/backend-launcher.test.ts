@@ -196,6 +196,22 @@ describe('buildSpawnArgs', () => {
     }
   });
 
+  it('passes bundled managed resources mode unpackaged when downloads are put off', () => {
+    const args = buildSpawnArgs({
+      port: 1,
+      dbPath: '/d',
+      local: false,
+      appVersion: '0.0.1',
+      isPackaged: false,
+      bundledManagedResources: true,
+    });
+
+    expect(args.slice(args.indexOf('--managed-resources-mode'), args.indexOf('--managed-resources-mode') + 2)).toEqual([
+      '--managed-resources-mode',
+      'bundled',
+    ]);
+  });
+
   it('passes corrupted database recovery authorization only when requested', () => {
     const args = buildSpawnArgs({
       port: 1,
@@ -1343,6 +1359,37 @@ describe('BackendLifecycleManager crash restart', () => {
     const restartSpawnArgs = vi.mocked(spawn).mock.calls[1]?.[1] as string[];
     expect(firstSpawnArgs).toContain('--recover-corrupted-database');
     expect(restartSpawnArgs).not.toContain('--recover-corrupted-database');
+
+    fetchSpy.mockRestore();
+  }, 5_000);
+
+  // The person put the Node.js download off at start: a crash restart must not bring the download back.
+  it('keeps an unpackaged backend in bundled mode across a crash restart once downloads are put off', async () => {
+    const child1 = makeFakeChild();
+    const child2 = makeFakeChild();
+    vi.mocked(spawn)
+      .mockReturnValueOnce(child1 as unknown as ChildProcess)
+      .mockReturnValueOnce(child2 as unknown as ChildProcess);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response('ok', { status: 200 }) as unknown as Response);
+
+    const mgr = new BackendLifecycleManager(APP_META, () => '/x');
+    mgr.preferBundledManagedResources();
+    const startPromise = mgr.start('/db');
+    await Promise.resolve();
+    emitListening(child1, 65303);
+    await startPromise;
+
+    (child1 as unknown as EventEmitter).emit('exit', 1, 'SIGABRT');
+    await new Promise((r) => setTimeout(r, 1_200));
+
+    for (const call of vi.mocked(spawn).mock.calls.slice(0, 2)) {
+      const args = call[1] as string[];
+      expect(args[args.indexOf('--managed-resources-mode') + 1]).toBe('bundled');
+    }
+    expect(vi.mocked(spawn)).toHaveBeenCalledTimes(2);
 
     fetchSpy.mockRestore();
   }, 5_000);

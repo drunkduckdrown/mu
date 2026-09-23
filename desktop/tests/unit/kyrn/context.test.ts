@@ -8,7 +8,7 @@ import {
   contextView,
   compactionEffect,
   cacheUsage,
-} from '../../../packages/desktop/src/renderer/pages/conversation/KyrnPanel/context';
+} from '../../../packages/desktop/src/renderer/pages/conversation/KyrnPanel/Judge/context';
 import { mergeActivity } from '../../../packages/desktop/src/renderer/pages/conversation/KyrnPanel/activity';
 import type { Activity } from '../../../packages/desktop/src/common/kyrn/types';
 
@@ -28,6 +28,21 @@ describe('context observability', () => {
     expect(cacheUsage({ input: 900, cacheRead: 0, cacheWrite: 100 }).percent).toBe(0);
     expect(cacheUsage({ input: 0, cacheRead: 0, cacheWrite: 0 }).percent).toBeUndefined();
     expect(cacheUsage({ input: 100 }).percent).toBeUndefined();
+  });
+  it('keeps the exact share, so a view that rounds down never shows a whole hit for a partial one', () => {
+    expect(cacheUsage({ input: 3, cacheRead: 99_997, cacheWrite: 0 }).percent).toBeLessThan(100);
+    expect(cacheUsage({ input: 28, cacheRead: 72, cacheWrite: 0 }).percent).toBe(72);
+  });
+  it('reads the cache hits of the model’s latest reply beside the session’s, from their own records', () => {
+    const view = contextView([
+      event('turn.usage', { input: 900, output: 5, cacheRead: 100, cacheWrite: 0 }),
+      event('context.usage', { usage: {}, sessionTokens: { input: 300, cacheRead: 600, cacheWrite: 100 } }),
+      event('turn.usage', { input: 25, output: 5, cacheRead: 75, cacheWrite: 0 }),
+    ]);
+    expect(view.turnCache).toEqual({ read: 75, total: 100, percent: 75 });
+    expect(view.cache.percent).toBe(60);
+    // Before the first reply there is nothing to read.
+    expect(contextView([event('context.usage', { usage: {} })]).turnCache.percent).toBeUndefined();
   });
   it('clears a pending compaction indicator when the runtime exits', () => {
     expect(contextView([event('compaction_start', {}), event('kyrn_rpc_closed', {})]).compacting).toBe(false);

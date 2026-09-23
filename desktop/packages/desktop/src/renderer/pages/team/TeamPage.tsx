@@ -3,7 +3,6 @@ import { FullScreen, Left, MoreOne, OffScreen, Peoples, Right } from '@icon-park
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR, { useSWRConfig } from 'swr';
-import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { ipcBridge } from '@/common';
 import type { ITeamSlotWork, TeamAssistant, TeamContextResetAvailability, TTeam } from '@/common/types/team/teamTypes';
@@ -14,6 +13,7 @@ import {
   useAcpConfigOptions,
 } from '@/renderer/hooks/agent/useAcpConfigOptions';
 import ChatLayout from '@/renderer/pages/conversation/components/ChatLayout';
+import { DESKTOP_USER_ID } from './teamUser';
 import ChatSlider from '@renderer/pages/conversation/components/ChatSlider.tsx';
 import { useTeamPendingPermissions } from './hooks/useTeamPendingPermissions';
 import { buildTeamRetryStartHandler } from './components/teamSendRuntime';
@@ -805,7 +805,7 @@ const TeamPageContent: React.FC<TeamPageContentProps> = ({
           siderTitle={siderTitle}
           sider={sider}
           workspaceEnabled={workspaceEnabled}
-          previewHosted={Boolean(teamProjectId)}
+          panelHosted={Boolean(teamProjectId)}
           tabsSlot={tabsSlot}
           conversation_id={activeAssistant?.conversation_id}
           agent_name={undefined}
@@ -961,7 +961,6 @@ const TeamPage: React.FC<Props> = ({ team }) => {
   const { phase: warmupPhase, runtimeStatus: warmupRuntimeStatus, retry: retryWarmup } = useTeamWarmup(team.id);
   const { statusMap, membershipMutationBusy, addAssistant, renameAssistant, removeAssistant, mutateTeam } =
     useTeamSession(team, warmupPhase);
-  const { user } = useAuth();
   const { mutate: globalMutate } = useSWRConfig();
   const defaultSlotId = team.assistants[0]?.slot_id ?? '';
 
@@ -999,14 +998,14 @@ const TeamPage: React.FC<Props> = ({ team }) => {
       try {
         await ipcBridge.team.renameTeam.invoke({ id: team.id, name: new_name });
         await mutateTeam();
-        await globalMutate(`teams/${user?.id ?? 'system_default_user'}`);
+        await globalMutate(`teams/${DESKTOP_USER_ID}`);
         return true;
       } catch (error) {
         console.error('Failed to rename team:', error);
         return false;
       }
     },
-    [team.id, mutateTeam, globalMutate, user]
+    [team.id, mutateTeam, globalMutate]
   );
 
   return (

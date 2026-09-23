@@ -17,10 +17,16 @@ import {
 import { asRecord, type JsonRecord } from '../piRpc';
 import { readOptional } from './files';
 
-/** `<harness root>/packages/kyrn-judge/manifest.json`. A harness from before the manifest simply has no such file. */
-export function loadManifest(root: string): HarnessState {
+/**
+ * `<harness root>/packages/kyrn-judge/manifest.json`, or the file given (the npm package keeps it elsewhere, see
+ * harness.ts). A harness from before the manifest simply has no such file.
+ */
+export function loadManifest(
+  root: string,
+  file: string = join(root, 'packages', 'kyrn-judge', 'manifest.json')
+): HarnessState {
   try {
-    const raw = readOptional(join(root, 'packages', 'kyrn-judge', 'manifest.json'));
+    const raw = readOptional(file);
     return raw ? parseManifest(JSON.parse(raw)) : { status: 'missing' };
   } catch {
     return { status: 'missing' };

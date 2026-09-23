@@ -1,16 +1,15 @@
 // src/renderer/pages/team/hooks/useTeamList.ts
 import { ipcBridge } from '@/common';
-import { useAuth } from '@renderer/hooks/context/AuthContext';
 import type { TTeam } from '@/common/types/team/teamTypes';
 import { useCallback, useEffect } from 'react';
 import useSWR from 'swr';
 import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conversationCache';
 import { removeTeamWithCronCleanup } from '../utils/removeTeamAssistantWithCronCleanup';
 import { pruneOrphanTeamStorage } from '../utils/teamStorage';
+import { DESKTOP_USER_ID } from '../teamUser';
 
 export function useTeamList() {
-  const { user } = useAuth();
-  const user_id = user?.id ?? 'system_default_user';
+  const user_id = DESKTOP_USER_ID;
 
   const { data, mutate } = useSWR<TTeam[]>(`teams/${user_id}`, () => ipcBridge.team.list.invoke({ user_id }), {
     revalidateOnFocus: false,

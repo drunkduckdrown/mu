@@ -43,6 +43,39 @@ describe('Native Hive interaction', () => {
     }
   });
 
+  it('says who each sub-agent is and what it is doing, or what it said back', () => {
+    const message = hiveMessage();
+    message.content.update.rawOutput = {
+      details: {
+        snapshot: {
+          ...hiveSnapshot,
+          bees: [
+            hiveSnapshot.bees[0],
+            { ...hiveSnapshot.bees[1], said: 'Confirmed stable prefix.' },
+            {
+              name: 'late-one',
+              status: 'failed',
+              role: 'investigator',
+              errorCode: 'stopped_by_user',
+              error: 'stopped by the user',
+            },
+          ],
+        },
+      },
+    };
+    render(view(<MessageToolGroupSummary messages={[message]} />));
+
+    const card = screen.getByTestId('swarm-tool-card');
+    expect(within(card).getByText('1 active · 1 done / 3')).toBeInTheDocument();
+    // Running: the tool it is on. Back: the first of what it reported. Stopped: why, in the app language.
+    expect(within(card).getByText('read src/cache.ts')).toBeInTheDocument();
+    expect(within(card).getByText('Confirmed stable prefix.')).toBeInTheDocument();
+    expect(within(card).getByText('stopped by the user')).toBeInTheDocument();
+    expect(within(card).getAllByText('investigator')).toHaveLength(3);
+    // No raw payload anywhere on the card.
+    expect(within(card).queryByText(/"status":/)).not.toBeInTheDocument();
+  });
+
   it('keeps the original raw input/output available on demand', () => {
     render(view(<MessageToolGroupSummary messages={[hiveMessage()]} />));
     expect(screen.queryByText(/Original terminal evidence/)).not.toBeInTheDocument();

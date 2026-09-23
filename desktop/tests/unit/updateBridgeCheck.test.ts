@@ -87,7 +87,7 @@ afterAll(() => {
 
 const asset = (name: string, size: number) => ({
   name,
-  browser_download_url: `https://github.com/qybaihe/MU/releases/download/v2.1.45/${name}`,
+  browser_download_url: `https://github.com/qybaihe/mu/releases/download/v2.1.45/${name}`,
   size,
 });
 
@@ -95,7 +95,7 @@ const release = (tag: string, extra: Record<string, unknown> = {}) => ({
   tag_name: tag,
   name: tag,
   body: `notes for ${tag}`,
-  html_url: `https://github.com/qybaihe/MU/releases/tag/${tag}`,
+  html_url: `https://github.com/qybaihe/mu/releases/tag/${tag}`,
   published_at: '2026-09-22T00:00:00Z',
   prerelease: true,
   draft: false,
@@ -118,7 +118,7 @@ const getCheckHandler = async () => {
 const stubFetch = (github: () => Promise<Response> | Response) => {
   const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input);
-    if (url === 'https://api.github.com/repos/qybaihe/MU/releases') return github();
+    if (url === 'https://api.github.com/repos/qybaihe/mu/releases') return github();
     throw new Error(`unexpected fetch: ${url}`);
   });
   vi.stubGlobal('fetch', fetchMock);
@@ -148,14 +148,14 @@ describe('update.check against mu’s own releases', () => {
       version: '2.1.45',
       prerelease: true,
       body: 'notes for v2.1.45',
-      htmlUrl: 'https://github.com/qybaihe/MU/releases/tag/v2.1.45',
+      htmlUrl: 'https://github.com/qybaihe/mu/releases/tag/v2.1.45',
     });
     expect(res.data?.latest?.recommendedAsset?.url).toBe(
-      'https://github.com/qybaihe/MU/releases/download/v2.1.45/mu-2.1.45-mac-arm64.dmg'
+      'https://github.com/qybaihe/mu/releases/download/v2.1.45/mu-2.1.45-mac-arm64.dmg'
     );
     // mu asks nobody but its own repository: never AionUi's update server or AionUi's GitHub.
     expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual([
-      'https://api.github.com/repos/qybaihe/MU/releases',
+      'https://api.github.com/repos/qybaihe/mu/releases',
     ]);
   });
 

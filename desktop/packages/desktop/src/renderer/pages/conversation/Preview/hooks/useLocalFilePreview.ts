@@ -9,6 +9,7 @@ import type { LocalFileLinkReference } from '@/renderer/components/Markdown/mark
 import { getContentTypeByExtension } from '@/renderer/pages/conversation/Preview/fileUtils';
 import { usePreviewContext } from '@/renderer/pages/conversation/Preview/context/PreviewContext';
 import { resolvePreviewPayload, upgradeFileRef } from '@/renderer/utils/file/previewPayload';
+import { resolveWorkspacePath } from '@/renderer/utils/file/workspacePath';
 import { getCurrentProject } from '@/renderer/pages/conversation/explorer/currentProjectStore';
 import { useCallback } from 'react';
 
@@ -22,11 +23,18 @@ const getPreviewLanguage = (file_name: string): string => {
   return dotIndex >= 0 ? file_name.slice(dotIndex + 1).toLowerCase() : '';
 };
 
-export const useLocalFilePreview = (workspace?: string) => {
+/**
+ * @param workspace the conversation's workspace, recorded on the tab
+ * @param relativeTo what a relative link is relative to: the workspace, or the directory of the document that carries
+ *   the link
+ */
+export const useLocalFilePreview = (workspace?: string, relativeTo: string | undefined = workspace) => {
   const { openPreview } = usePreviewContext();
 
   return useCallback(
-    async (file_path: string, reference?: LocalFileLinkReference) => {
+    async (linkPath: string, reference?: LocalFileLinkReference) => {
+      // `index.html` in a message means the file under the workspace; nothing else reads it that way.
+      const file_path = resolveWorkspacePath(linkPath, relativeTo);
       const fileName = getFileNameFromPath(file_path);
       const contentType = getContentTypeByExtension(fileName);
       // Local-file links point at a backend-host absolute path (no pe identity) →
@@ -86,6 +94,6 @@ export const useLocalFilePreview = (workspace?: string) => {
         );
       }
     },
-    [openPreview, workspace]
+    [openPreview, workspace, relativeTo]
   );
 };

@@ -64,10 +64,10 @@
   "more": "Mehr",
   "refresh": "Aktualisieren",
   "readOnly": "Schreibgeschützt",
-  "tray.showWindow": "AionUi anzeigen",
+  "tray.showWindow": "mu anzeigen",
   "tray.newChat": "Neuer Chat",
   "tray.closeToTray": "In Taskleiste minimieren",
-  "tray.about": "Über AionUi",
+  "tray.about": "Über mu",
   "tray.restart": "App neu starten",
   "tray.quit": "Beenden",
   "tray.pauseAll": "Alle Aufgaben pausieren",
@@ -77,61 +77,40 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Dieses System wird vom gebündelten Backend nicht unterstützt",
-      "description": "AionUi wurde geöffnet, aber das lokale AionCore-Backend kann auf dieser Linux-Version nicht ausgeführt werden. Bitte upgrade auf eine unterstützte Linux-Distribution und starte AionUi neu.",
+      "description": "mu wurde geöffnet, aber der lokale Dienst kann auf dieser Linux-Version nicht ausgeführt werden. Bitte upgrade auf eine unterstützte Linux-Distribution und starte mu neu.",
       "requiredVersions": "Erforderliche Runtime-Symbole: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "AionUi-Installation ist unvollständig",
-      "description": "Diese Installation fehlen erforderliche lokale Ressourcen, daher kann AionCore nicht starten. Bitte lade die neueste Version von AionUi herunter und installiere sie neu. Wenn das Problem nach der Neuinstallation erneut auftritt, überprüfe, ob Sicherheits- oder Antivirus-Software AionCore unter Quarantäne gestellt hat.",
+      "title": "mu-Installation ist unvollständig",
+      "description": "Dieser Installation fehlen erforderliche lokale Ressourcen, daher kann der lokale Dienst von mu nicht starten. Bitte lade die neueste Version von mu herunter und installiere sie neu. Wenn das Problem nach der Neuinstallation erneut auftritt, überprüfe, ob Sicherheits- oder Antivirus-Software Dateien von mu unter Quarantäne gestellt hat.",
       "downloadLatest": "Neueste Version herunterladen",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnosebericht gesendet",
-      "diagnosticsReportFailed": "Fehler beim Senden des Diagnoseberichts",
-      "runtimeComponentDescription": "Diese Installation fehlen erforderliche gebündelte Runtime-Komponenten, daher kann {{resource}} nicht starten. Installiere das neueste AionUi-Paket neu. Wenn es nach der Neuinstallation immer noch auftritt, überprüfe, ob Sicherheits- oder Antivirus-Software AionUi-Komponenten unter Quarantäne gestellt hat."
+      "runtimeComponentDescription": "Dieser Installation fehlen erforderliche gebündelte Runtime-Komponenten, daher kann {{resource}} nicht starten. Installiere das neueste mu-Paket neu. Wenn es nach der Neuinstallation immer noch auftritt, überprüfe, ob Sicherheits- oder Antivirus-Software mu-Komponenten unter Quarantäne gestellt hat."
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi-Paket-Architektur-Fehlanpassung",
-      "description": "Dieses AionUi-Paket ist für {{packageArch}}, aber dieser Mac ist {{deviceArch}}. Möglicherweise hast du das falsche Paket heruntergeladen. Bitte lade das {{expectedArch}}-Paket herunter und installiere es."
+      "title": "mu-Paket-Architektur-Fehlanpassung",
+      "description": "Dieses mu-Paket ist für {{packageArch}}, aber dieser Mac ist {{deviceArch}}. Möglicherweise hast du das falsche Paket heruntergeladen. Bitte lade das {{expectedArch}}-Paket herunter und installiere es."
     },
     "dataMigration": {
       "title": "Migration der lokalen Daten fehlgeschlagen",
-      "description": "AionUi wurde geöffnet, aber AionCore wurde beim Initialisieren der lokalen Daten beendet. Eine Neuinstallation von AionUi behebt das möglicherweise nicht. Sende einen Diagnosebericht oder wende dich an den Support, damit die Migration der lokalen Datenbank geprüft werden kann.",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnosebericht gesendet",
-      "diagnosticsReportFailed": "Diagnosebericht konnte nicht gesendet werden"
+      "description": "mu wurde geöffnet, aber der lokale Dienst wurde beim Initialisieren der lokalen Daten beendet. Eine Neuinstallation von mu behebt das möglicherweise nicht. Das App-Protokoll zeigt, wo die Migration der lokalen Datenbank angehalten hat."
     },
     "databaseNewerThanApp": {
-      "title": "Neuere AionUi-Version erforderlich",
-      "description": "Ihre lokalen Daten wurden von einer neueren AionUi-Version erstellt und können von dieser Version nicht geöffnet werden. Aktualisieren Sie AionUi auf die neueste Version — Ihre Daten bleiben erhalten, eine Neuinstallation oder ein Zurücksetzen ist nicht nötig.",
-      "descriptionWithVersion": "Ihre lokalen Daten wurden von einer AionUi-Version erstellt, die neuer ist als die aktuell installierte (v{{currentVersion}}), daher kann diese Version sie nicht öffnen. Aktualisieren Sie AionUi auf die neueste Version — Ihre Daten bleiben erhalten, eine Neuinstallation oder ein Zurücksetzen ist nicht nötig."
+      "title": "Neuere mu-Version erforderlich",
+      "description": "Ihre lokalen Daten wurden von einer neueren mu-Version erstellt und können von dieser Version nicht geöffnet werden. Aktualisieren Sie mu auf die neueste Version — Ihre Daten bleiben erhalten, eine Neuinstallation oder ein Zurücksetzen ist nicht nötig.",
+      "descriptionWithVersion": "Ihre lokalen Daten wurden von einer mu-Version erstellt, die neuer ist als die aktuell installierte (v{{currentVersion}}), daher kann diese Version sie nicht öffnen. Aktualisieren Sie mu auf die neueste Version — Ihre Daten bleiben erhalten, eine Neuinstallation oder ein Zurücksetzen ist nicht nötig."
     },
     "localDataRepair": {
       "title": "Reparatur der lokalen Daten fehlgeschlagen",
-      "description": "AionUi wurde geöffnet, aber AionCore wurde beim Vorbereiten lokaler Startdaten wie Assistant- oder Agent-Datensätzen beendet. Eine Neuinstallation von AionUi behebt dies möglicherweise nicht. Senden Sie einen Diagnosebericht oder wenden Sie sich an den Support, damit die lokale Datenbank geprüft werden kann.",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnosebericht gesendet",
-      "diagnosticsReportFailed": "Diagnosebericht konnte nicht gesendet werden"
+      "description": "mu wurde geöffnet, aber der lokale Dienst wurde beim Vorbereiten lokaler Startdaten wie Assistant- oder Agent-Datensätzen beendet. Eine Neuinstallation von mu behebt dies möglicherweise nicht. Das App-Protokoll zeigt, welche lokalen Daten nicht vorbereitet werden konnten."
     },
     "startupDirectory": {
       "title": "Startverzeichnis nicht verfügbar",
-      "description": "AionUi wurde geöffnet, aber AionCore konnte nicht starten, weil das konfigurierte Arbeits- oder Protokollverzeichnis fehlt, nicht verfügbar ist oder durch Berechtigungen blockiert wird. Prüfe, ob die konfigurierten Verzeichnisse existieren und beschreibbar sind, und starte AionUi dann neu.",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnosebericht gesendet",
-      "diagnosticsReportFailed": "Diagnosebericht konnte nicht gesendet werden"
+      "description": "mu wurde geöffnet, aber der lokale Dienst konnte nicht starten, weil das konfigurierte Arbeits- oder Protokollverzeichnis fehlt, nicht verfügbar ist oder durch Berechtigungen blockiert wird. Prüfe, ob die konfigurierten Verzeichnisse existieren und beschreibbar sind, und starte mu dann neu."
     },
     "recoverableDatabaseCorruption": {
       "title": "Lokale Daten sind beschädigt",
-      "description": "AionUi hat erkannt, dass die lokale Datenbank beschädigt ist und den Start nicht fortsetzen kann. Nach der Bestätigung wird die alte Datenbank gesichert und eine neue lokale Datenbank erstellt, um den Start fortzusetzen. Frühere Unterhaltungen werden nicht mehr angezeigt, und die alte Datenbank bleibt als Sicherungsdatei erhalten.",
+      "description": "mu hat erkannt, dass die lokale Datenbank beschädigt ist und den Start nicht fortsetzen kann. Nach der Bestätigung wird die alte Datenbank gesichert und eine neue lokale Datenbank erstellt, um den Start fortzusetzen. Frühere Unterhaltungen werden nicht mehr angezeigt, und die alte Datenbank bleibt als Sicherungsdatei erhalten.",
       "confirmRebuild": "Alte DB sichern und neue DB erstellen",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsHint": "Das Senden der Diagnose ändert die lokale Datenbank nicht.",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnosebericht gesendet",
-      "diagnosticsReportFailed": "Diagnosebericht konnte nicht gesendet werden",
       "rebuildFailed": "Alte DB konnte nicht gesichert und neue DB nicht erstellt werden",
       "confirmDialog": {
         "title": "Datenbank neu aufbauen?",
@@ -141,42 +120,27 @@
       }
     },
     "transientConcurrentStartup": {
-      "title": "AionUi wird gestartet",
-      "description": "Beim Öffnen dieses Fensters verwendete ein anderer AionUi-Startvorgang noch die lokalen Daten. Das ist vorübergehend und Ihre Daten sind sicher – eine Neuinstallation ist nicht erforderlich. Bitte warten Sie einen Moment und versuchen Sie es erneut oder starten Sie AionUi neu.",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnosebericht gesendet",
-      "diagnosticsReportFailed": "Diagnosebericht konnte nicht gesendet werden",
-      "diagnosticsHint": "Wenn dies wiederholt auftritt, können Sie einen Diagnosebericht senden."
+      "title": "mu wird gestartet",
+      "description": "Beim Öffnen dieses Fensters verwendete ein anderer mu-Startvorgang noch die lokalen Daten. Das ist vorübergehend und Ihre Daten sind sicher – eine Neuinstallation ist nicht erforderlich. Bitte warten Sie einen Moment und versuchen Sie es erneut oder starten Sie mu neu."
     },
     "pendingSlow": {
       "title": "Wird gestartet",
-      "description": "AionCore wird gestartet, bitte warten. Wenn es nach einer Weile nicht reagiert, können Sie die App beenden und erneut öffnen."
+      "description": "Der lokale Dienst wird gestartet, bitte warten. Wenn er nach einer Weile nicht reagiert, können Sie die App beenden und erneut öffnen."
     },
     "exited": {
       "title": "Start nicht abgeschlossen",
-      "description": "AionCore konnte den Start nicht abschließen und wurde beendet. Bitte starten Sie die App neu; wenn dies wiederholt auftritt, senden Sie bitte eine Diagnose.",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnose gemeldet",
-      "diagnosticsReportFailed": "Diagnose konnte nicht gesendet werden, bitte erneut versuchen"
+      "description": "Der lokale Dienst konnte den Start nicht abschließen und wurde beendet. Bitte starten Sie die App neu; wenn dies wiederholt auftritt, prüfen Sie bitte das App-Protokoll."
     },
     "portReportTimeout": {
       "title": "Zeitüberschreitung beim Start",
-      "description": "AionCore konnte den Start nicht innerhalb der erwarteten Zeit abschließen. Bitte starten Sie die App neu; wenn dies wiederholt auftritt, senden Sie bitte eine Diagnose.",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnose gemeldet",
-      "diagnosticsReportFailed": "Diagnose konnte nicht gesendet werden, bitte erneut versuchen"
+      "description": "Der lokale Dienst konnte den Start nicht innerhalb der erwarteten Zeit abschließen. Bitte starten Sie die App neu; wenn dies wiederholt auftritt, prüfen Sie bitte das App-Protokoll."
     },
     "startupFailed": {
       "title": "Start fehlgeschlagen",
-      "description": "AionCore konnte nicht gestartet werden. Bitte starten Sie die App neu; wenn dies wiederholt auftritt, senden Sie bitte eine Diagnose.",
-      "sendDiagnostics": "Diagnose senden",
-      "diagnosticsSent": "Diagnose gesendet",
-      "diagnosticsReportSuccess": "Diagnose gemeldet",
-      "diagnosticsReportFailed": "Diagnose konnte nicht gesendet werden, bitte erneut versuchen"
-    }
+      "description": "Der lokale Dienst konnte nicht gestartet werden. Bitte starten Sie die App neu; wenn dies wiederholt auftritt, prüfen Sie bitte das App-Protokoll."
+    },
+    "openLogs": "Protokollordner öffnen",
+    "openLogsFailed": "Der Protokollordner ließ sich nicht öffnen"
   },
   "fileAttach.addFiles": "Dateien hinzufügen",
   "fileAttach.myDevice": "Mein Gerät",
@@ -205,14 +169,15 @@
     "starting": "mu wird gestartet…",
     "startingHint": "Verbindung zum lokalen mu-Kernel wird hergestellt, Modell- und Judge-Konfiguration werden gelesen.",
     "startupError": "mu konnte nicht gestartet werden",
-    "activity": "Zusammenarbeit",
-    "files": "Dateien",
-    "hive": "Hive",
     "hiveView": {
       "title": "Hive",
+      "agents": "Unteragenten",
       "open": "Hive öffnen",
       "inspect": "{{name}} prüfen",
       "summary": "{{active}} aktiv · {{done}} erledigt / {{total}}",
+      "counts": "{{running}} aktiv · {{done}} fertig · {{failed}} fehlgeschlagen",
+      "none": "In dieser Unterhaltung gibt es noch keine Unteragenten.",
+      "details": "Karte und Protokolle",
       "pending": "Warte auf Bienenstatus",
       "unknown": "Status nicht verfügbar",
       "runs": "Hive-Läufe",
@@ -295,8 +260,6 @@
       }
     },
     "judgeView": {
-      "title": "Entscheidungen und Wirkung",
-      "description": "Hier siehst du, was der Judge bewertet hat und was tatsächlich geschehen ist. Empfehlungen und bestätigte Aktionen werden getrennt gezeigt.",
       "empty": "In dieser Sitzung wurden noch keine Urteile aufgezeichnet.",
       "question": "Was beurteilt wurde",
       "result": "Urteil",
@@ -306,12 +269,6 @@
       "answers": "Antworten des Modells",
       "noResult": "Kein lesbares Ergebnis aufgezeichnet",
       "unreported": "Nicht aufgezeichnet",
-      "records": "Aufzeichnungen",
-      "returnedCount": "An die Ausführungsschicht übergeben",
-      "receiptCount": "Bestätigte Übergaben",
-      "runtimeEvents": "Weitere Laufzeitereignisse",
-      "filter": "Nach Frage filtern",
-      "allQuestions": "Alle Fragen",
       "scoreValue": "Wert: {{value}}",
       "latency": "{{ms}} ms",
       "more": "+{{count}} weitere",
@@ -361,6 +318,10 @@
         "browser": "Was soll der Browser als Nächstes tun?",
         "recall": "Welche früheren Erfahrungen gelten jetzt?",
         "capture": "Ist das eine dauerhafte Korrektur oder Vorliebe?",
+        "outcome": "Hat diese Runde einen Ausweg gefunden, den man behalten sollte?",
+        "worth": "Lohnt es sich, diese Lektion zu behalten?",
+        "merge": "Soll die neue Lektion mit einer vorhandenen zusammengeführt werden?",
+        "applied": "Wurden die Lektionen befolgt?",
         "risk": "Braucht diese Aktion eine Bestätigung durch den Nutzer?",
         "drift": "Ist die Arbeit noch auf Kurs?",
         "completion": "Muss diese Änderung noch überprüft werden?",
@@ -376,7 +337,9 @@
         "diagnostics": "Wann sollen diese Diagnosen das Modell erreichen?",
         "patch": "Bleibt der Patch des Unteragenten im Rahmen seiner Aufgabe?",
         "review": "Wie schwerwiegend ist jeder Review-Befund?",
-        "board": "Wo steht die Arbeit?"
+        "board": "Wo steht die Arbeit?",
+        "relate": "Was bedeutet diese Erkenntnis für eine frühere?",
+        "approval": "Ist das ein Schritt, den die Aufgabe braucht, so ausgeführt, wie du es erwarten würdest?"
       },
       "fields": {
         "turnType": "Aufgabentyp",
@@ -391,6 +354,8 @@
         "hide": "Zum Ausblenden vorgeschlagene Skills",
         "relevant": "Relevante Skills",
         "apply": "Vorgeschlagene Erfahrungen",
+        "applied": "Befolgt",
+        "notApplied": "Nicht befolgt",
         "publish": "Veröffentlichung erlauben",
         "deliver": "Übergabe erlauben",
         "path": "Kandidatendatei",
@@ -409,7 +374,8 @@
         "phase": "Phase",
         "focus": "Prüfpunkt in Arbeit",
         "needsUser": "Braucht den Nutzer",
-        "update": "Board neu schreiben"
+        "update": "Board neu schreiben",
+        "relation": "Beziehung"
       },
       "values": {
         "true": "Ja",
@@ -489,7 +455,20 @@
         "bad_request": "Judge hat die Anfrage abgelehnt",
         "server": "Judge-Serverfehler",
         "invalid_response": "Unlesbare Judge-Antwort",
-        "verdict": "Judge hat geantwortet"
+        "verdict": "Judge hat geantwortet",
+        "learn": "Ausweg behalten",
+        "reusable": "Wieder nützlich",
+        "one_off": "Nur dieses Mal",
+        "already_known": "Schon bekannt",
+        "same": "Dieselbe Lektion",
+        "refines": "Genauer",
+        "contradicts": "Widerspricht",
+        "supersedes": "Ersetzt sie",
+        "supports": "Stützt sie",
+        "unrelated": "Kein Bezug",
+        "preference": "Dauerhafte Regel",
+        "approve": "Freigeben",
+        "beyond": "Mehr als verlangt"
       },
       "probabilityValue": "Wahrscheinlichkeit für „Ja“: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -498,11 +477,22 @@
       "errorValue": "Fehler · {{kind}}",
       "noAnswerAfter": "Keine Antwort nach {{duration}}",
       "hints": {
+        "answered": "Diese Nachricht beantwortet die eigene Frage des Agenten: Handle danach und frag nicht noch einmal.",
+        "resolve": "Die Anfrage ist vage formuliert und kann Dateien ändern: Sieh dir den Arbeitsbereich an, nenne die Annahme und frag nur nach dem, was sich hier nicht finden lässt.",
         "clarify": "Die Anfrage wirkt zu ungenau: Stelle zuerst eine gezielte Frage.",
         "side_question": "Das ist eine Nebenfrage: Beantworte sie kurz und mach dann mit der Hauptaufgabe weiter.",
-        "plan_first": "Das wirkt groß oder riskant: Schreibe einen kurzen Plan und lass ihn bestätigen, bevor du etwas änderst.",
+        "plan_first": "Das wirkt groß oder riskant: Schreibe einen kurzen Plan und setze ihn um; warte nur vor einem Schritt, der sich nicht rückgängig machen lässt, auf eine Bestätigung.",
         "try_hive": "Das wirkt schwierig: Wenn die Ursache unklar ist oder ein direkter Versuch scheitert, nutze den Hive.",
         "try_delegate": "Das lässt sich in unabhängige Teile zerlegen: Erwäge, sie parallel an Unteragenten abzugeben."
+      },
+      "hintChips": {
+        "answered": "Antwort an Agent",
+        "resolve": "Erst nachsehen",
+        "clarify": "Erst nachfragen",
+        "side_question": "Nebenfrage",
+        "plan_first": "Erst planen",
+        "try_hive": "Hive bei Stillstand",
+        "try_delegate": "Teile delegieren"
       },
       "answerIds": {
         "turn_type": "Aufgabentyp",
@@ -515,11 +505,13 @@
         "task_complexity": "Umfang",
         "reasoning_depth": "Denktiefe",
         "tool_complexity": "Tool-Nutzung"
+      },
+      "log": {
+        "thisTurn": "Dieser Durchgang",
+        "earlier": "Frühere Zeilen anzeigen",
+        "latest": "Zum Neuesten"
       }
     },
-    "decisions": "Jev",
-    "memory": "Erfahrung",
-    "images": "Bilder",
     "empty": "In dieser Sitzung wurden noch keine Ereignisse aufgezeichnet.",
     "quiet": "Seit {{duration}} keine Aktivität",
     "passed": "Durchgelassen",
@@ -556,6 +548,9 @@
       "memory.recalled": "Abgerufene Erfahrung",
       "artifact.image": "Bild",
       "memory.stored": "Erfahrung gespeichert",
+      "memory.applied": "Lektionen befolgt",
+      "memory.retired": "Lektion ausgemustert",
+      "memory.merged": "Lektionen zusammengeführt",
       "compaction_start": "Kontext wird verdichtet…",
       "compaction_end": "Verdichtung beendet",
       "context.usage": "Kontextnutzung",
@@ -567,6 +562,9 @@
       "board": {
         "update": "Board aktualisiert",
         "switched": "Board ein- oder ausgeschaltet"
+      },
+      "permissions": {
+        "mode": "Berechtigungsmodus"
       },
       "checkpoint": {
         "taken": "Checkpoint gespeichert"
@@ -681,7 +679,6 @@
       "failed": "Fehlgeschlagen"
     },
     "boardView": {
-      "tab": "Klartext",
       "title": "Klartext-Board",
       "switch": "Klartext-Board für dieses Projekt",
       "switching": "Wird umgeschaltet…",
@@ -689,7 +686,6 @@
       "unknown": "In dieser Unterhaltung gibt es noch kein Board. Es erscheint in mu-Unterhaltungen, solange das Klartext-Board unter Funktionen eingeschaltet ist.",
       "off": "Sobald es eingeschaltet ist, steht hier in einfachen Worten, wie die Arbeit vorangeht, was der Agent gerade tut und wo du gebraucht wirst.",
       "cost": "Nur für dieses Projekt. Jede Aktualisierung kostet einen Modellaufruf.",
-      "open": "Board einschalten",
       "empty": "Gib dem Agenten einen Moment; hier steht dann in einfachen Worten, wie es läuft.",
       "checks": "{{done}} von {{total}} Prüfpunkten erledigt",
       "ended": "Angehalten",
@@ -699,6 +695,7 @@
       "needsYouText": "Der Agent wartet in der Unterhaltung auf deine Antwort.",
       "quote": "In deiner Antwort zitieren",
       "quoteHint": "Klicke auf einen Punkt, um ihn in deiner Antwort zu zitieren; gesendet wird erst, wenn du sendest.",
+      "earlier": "Früher",
       "phases": {
         "understanding": "Versteht die Aufgabe",
         "planning": "Plant",
@@ -736,6 +733,66 @@
           "focus": "{{now}} (Aktueller Punkt: {{focus}})",
           "planning": "Überlegt das Vorgehen; geändert ist noch nichts."
         }
+      }
+    },
+    "lessonsView": {
+      "filterLabel": "Welche Lektionen angezeigt werden",
+      "active": "In Gebrauch",
+      "all": "Alle",
+      "count": "{{count}} Lektionen",
+      "count_one": "{{count}} Lektion",
+      "count_other": "{{count}} Lektionen",
+      "search": "Lektionen durchsuchen",
+      "kinds": {
+        "correction": "Korrektur",
+        "preference": "Regel",
+        "pitfall": "Stolperfalle",
+        "workaround": "Workaround",
+        "fact": "Fakt"
+      },
+      "everywhere": "Alle Projekte",
+      "status": {
+        "retired": "Ausgemustert",
+        "superseded": "Ersetzt"
+      },
+      "uses": "Abgerufen {{recalled}} · Befolgt {{applied}}",
+      "origins": {
+        "user": "Aus deiner Korrektur oder Regel",
+        "outcome": "Aus einem Ausweg, den der Agent selbst fand",
+        "model": "Vom Modell festgehalten",
+        "subagent": "Aus dem Bericht eines Unteragenten",
+        "command": "Mit /remember festgehalten"
+      },
+      "updated": "Aktualisiert am {{date}}",
+      "editLabel": "Text der Lektion",
+      "retire": "Ausmustern",
+      "retireConfirm": "Diese Lektion ausmustern? Sie wird in keine Runde mehr eingebracht.",
+      "loadFailed": "Die Lektionen konnten nicht gelesen werden",
+      "saveFailed": "Die Lektion wurde nicht geändert",
+      "empty": "Für dieses Projekt gibt es noch keine Lektionen. mu lernt sie aus deinen Korrekturen, aus eigenen Auswegen und aus /remember.",
+      "noneActive": "Keine Lektion in Gebrauch. Unter „Alle“ stehen auch die ausgemusterten und ersetzten.",
+      "noMatch": "Keine Lektion passt.",
+      "noProject": "Diese Unterhaltung hat keinen Projektordner, daher stehen hier nur die Lektionen für alle Projekte.",
+      "notes": {
+        "label": "Was die Lektionen in dieser Sitzung bewirkt haben",
+        "recalled": "Diese Runde brachte {{count}} Lektionen ein",
+        "recalled_one": "Diese Runde brachte {{count}} Lektion ein",
+        "recalled_other": "Diese Runde brachte {{count}} Lektionen ein",
+        "briefed": "Der Auftrag eines Unteragenten enthielt {{count}} Lektionen: {{task}}",
+        "briefed_one": "Der Auftrag eines Unteragenten enthielt {{count}} Lektion: {{task}}",
+        "briefed_other": "Der Auftrag eines Unteragenten enthielt {{count}} Lektionen: {{task}}",
+        "applied": "{{count}} Lektionen wurden befolgt",
+        "applied_one": "{{count}} Lektion wurde befolgt",
+        "applied_other": "{{count}} Lektionen wurden befolgt",
+        "retired": "Ausgemustert: {{lesson}}",
+        "retiredUnused": "Ausgemustert: {{lesson}} ({{count}}-mal abgerufen, nie befolgt)",
+        "retiredUnused_one": "Ausgemustert: {{lesson}} ({{count}}-mal abgerufen, nie befolgt)",
+        "retiredUnused_other": "Ausgemustert: {{lesson}} ({{count}}-mal abgerufen, nie befolgt)",
+        "retiredContradicted": "Ausgemustert: {{lesson}} (deine neuere Anweisung widerspricht ihr)",
+        "retiredForgotten": "Ausgemustert: {{lesson}} (auf deinen Wunsch)",
+        "mergedSame": "Zusammengeführt mit: {{lesson}}",
+        "mergedRefines": "Genauere Fassung behalten: {{lesson}}",
+        "mergedContradicts": "Nicht behalten, widerspricht: {{lesson}}"
       }
     },
     "activityLoadFailed": "Die Aktivität der Zusammenarbeit konnte nicht geladen werden. Wird erneut versucht…",
@@ -779,6 +836,7 @@
         "lessons": "Erfahrungen aus früheren Sitzungen werden geprüft",
         "skills": "Benötigte Skills für diese Sitzung werden ausgewählt",
         "capabilities": "Benötigte Fähigkeiten für diese Aufgabe werden ausgewählt",
+        "goal_check": "Es wird geprüft, ob das Ziel erreicht ist",
         "permissionReview": "JeV prüft: {{summary}}"
       },
       "goal": {
@@ -864,7 +922,21 @@
           "cdpConnectFailed": "Die Verbindung zum Browser konnte nicht hergestellt werden.",
           "browserSpawnFailed": "{{command}} konnte nicht gestartet werden."
         }
+      },
+      "permissions": {
+        "mode": "Berechtigungsmodus: {{mode}}"
+      },
+      "board": {
+        "on": "Klartext: ein",
+        "off": "Klartext: aus"
       }
+    },
+    "gauges": {
+      "context": "Kontext",
+      "contextHint": "Was das Modell als Nächstes liest, belegt {{percent}} seines Kontexts",
+      "cache": "Cache-Treffer",
+      "cacheHint": "Cache-Treffer: {{turn}} in der letzten Runde, {{session}} im ganzen Gespräch",
+      "pending": "Erscheint nach der nächsten Antwort von mu"
     }
   },
   "menu": {
@@ -900,11 +972,57 @@
   "noData": "Keine Daten",
   "labelWithSelectedCount": "{{label}} ({{selected}}/{{total}})",
   "selectedSkillsWithCount": "Ausgewählte Skills · {{count}}",
+  "commandPalette": {
+    "title": "Befehlspalette",
+    "placeholder": "Gespräche, Einstellungen und Befehle durchsuchen",
+    "groups": {
+      "conversations": "Gespräche",
+      "settings": "Einstellungen",
+      "commands": "Befehle"
+    },
+    "searchMessages": "Nachrichten nach „{{query}}“ durchsuchen",
+    "empty": "Keine Treffer",
+    "noConversations": "Noch keine Gespräche. Tippe, um Einstellungen und Befehle zu finden.",
+    "openSettings": "Einstellungen öffnen",
+    "actions": {
+      "newConversation": "Neuen Chat beginnen",
+      "scheduledTasks": "Geplante Aufgaben öffnen"
+    },
+    "commandWaits": "Wird ausgeführt, wenn diese Antwort fertig ist"
+  },
   "window": {
     "minimize": "Minimieren",
     "maximize": "Maximieren",
     "restore": "Wiederherstellen"
   },
   "collapseSidebar": "Seitenleiste einklappen",
-  "expandSidebar": "Seitenleiste ausklappen"
+  "expandSidebar": "Seitenleiste ausklappen",
+  "workPanel": {
+    "label": "Arbeitspanel",
+    "tabsLabel": "Tabs des Arbeitspanels",
+    "tabs": {
+      "board": "Klartext",
+      "judge": "Urteile",
+      "hive": "Hive",
+      "lessons": "Lektionen",
+      "files": "Dateien",
+      "preview": "Vorschau",
+      "source": "Code"
+    },
+    "close": "Arbeitspanel schließen",
+    "resize": "Breite des Arbeitspanels ändern",
+    "unread": "{{tab}}, neu",
+    "noProject": "Diese Unterhaltung hat keinen Projektordner, daher gibt es keine Dateien oder Änderungen anzuzeigen.",
+    "previewEmpty": "Noch nichts zur Vorschau. Dateien und Seiten, die aus der Unterhaltung geöffnet werden, erscheinen hier.",
+    "previewHidden": "Die Vorschau ist ausgeblendet."
+  },
+  "nodeRuntime": {
+    "title": "Node.js herunterladen?",
+    "message": "mu führt Agenten und Werkzeuge mit einer eigenen Node.js-Kopie aus, die noch nicht heruntergeladen ist.",
+    "detail": "Node.js {{version}} (etwa {{size}} MB) wird von nodejs.org heruntergeladen und entpackt nach:\n{{folder}}\n\n„Später“ lädt nichts herunter: mu öffnet sich wie gewohnt, weist dort darauf hin, wo Node.js gebraucht wird, und fragt beim nächsten Start erneut.",
+    "download": "Herunterladen",
+    "later": "Später",
+    "note": "Node.js ist nicht heruntergeladen, daher kann dieser Agent nicht laufen. mu fragt beim nächsten Start erneut.",
+    "toolNote": "Node.js ist nicht heruntergeladen, daher können Werkzeuge, die es brauchen, nicht laufen. mu fragt beim nächsten Start erneut."
+  }
 }

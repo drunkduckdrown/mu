@@ -62,6 +62,7 @@ describe('the local judge as the app manages it', () => {
     // A Mac app's PATH is short: uv is looked for where its installer puts it.
     expect(await judge({}, [UV, PYTHON, WEIGHTS]).local.state()).toEqual({
       support: 'ok',
+      runtime: 'coreml',
       installed: true,
       running: false,
       url: 'http://127.0.0.1:47823',

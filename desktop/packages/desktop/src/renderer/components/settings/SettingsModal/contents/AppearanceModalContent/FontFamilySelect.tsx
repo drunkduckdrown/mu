@@ -48,7 +48,10 @@ const FontFamilySelect: React.FC<FontFamilySelectProps> = ({ value, onChange }) 
 
   return (
     <AionSelect
-      className='w-200px'
+      className='w-240px'
+      // Two selects side by side in a row: each says what it picks.
+      prefix={<span className='text-t-secondary'>{t('settings.fontFamilyLabel')}</span>}
+      aria-label={t('settings.fontFamilyLabel')}
       value={value}
       onChange={(next) => onChange(typeof next === 'string' ? next : SYSTEM_FONT_FAMILY)}
       options={options}

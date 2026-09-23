@@ -11,19 +11,15 @@ import type { IMcpServer, TProviderWithModel } from '@/common/config/storage';
 import { resolveLocaleKey } from '@/common/utils';
 import type { AssistantDetail } from '@/common/types/agent/assistantTypes';
 
-import { useInputFocusRing } from '@/renderer/hooks/chat/useInputFocusRing';
 import { appendPromptToDraft } from '@/renderer/hooks/chat/useSendBoxDraft';
 import { getFuzzyMatchIndices, useSlashCommandController } from '@/renderer/hooks/chat/useSlashCommandController';
-import { openExternalUrl } from '@/renderer/utils/platform';
 import SlashCommandMenu, { type SlashCommandMenuItem } from '@/renderer/components/chat/SlashCommandMenu';
 import AssistantSelectionArea from './components/AssistantSelectionArea';
 import GuidActionRow from './components/GuidActionRow';
 import GuidInputCard from './components/GuidInputCard';
 import GuidModelSelector from './components/GuidModelSelector';
-import QuickActionButtons from './components/QuickActionButtons';
 import MuBackdrop from '@renderer/components/brand/MuBackdrop';
 import MuStarters from '@renderer/components/brand/MuStarters';
-import FeedbackReportModal from '@/renderer/components/settings/SettingsModal/contents/FeedbackReportModal';
 import { useGuidAssistantSelection } from './hooks/useGuidAssistantSelection';
 import { useGuidInput } from './hooks/useGuidInput';
 import { useGuidModelSelection } from './hooks/useGuidModelSelection';
@@ -66,19 +62,8 @@ const GuidPage: React.FC = () => {
   // Arco's nested ConfigProvider does not inherit: whatever it leaves out falls back to Arco's defaults (zh-CN
   // locale, no RTL), and by default it also pushes those to the static Modal/Message helpers app-wide.
   const arcoConfig = useContext(ConfigProvider.ConfigContext);
-  const { activeBorderColor, inactiveBorderColor, activeShadow } = useInputFocusRing();
 
   const localeKey = resolveLocaleKey(i18n.language);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-
-  // Open external link
-  const openLink = useCallback(async (url: string) => {
-    try {
-      await openExternalUrl(url);
-    } catch (error) {
-      console.error('Failed to open external link:', error);
-    }
-  }, []);
 
   // --- Skills state ---
   // Skill metadata comes from the database-backed catalog. Built-in auto-inject
@@ -638,7 +623,6 @@ const GuidPage: React.FC = () => {
   const actionRowNode = (
     <GuidActionRow
       files={displayFilePaths}
-      onFilesUploaded={guidInput.handleFilesUploaded}
       onFilesPicked={guidInput.handleFilesPicked}
       modelSelectorNode={modelSelectorNode}
       isGeminiMode={isGeminiMode}
@@ -698,9 +682,9 @@ const GuidPage: React.FC = () => {
       <div ref={guidContainerRef} className={styles.guidContainer}>
         <div className={styles.guidLayout}>
           <div className={styles.heroHeader}>
-            {/* The glyph behind the greeting is the home page's alone: a conversation starts without it. */}
+            {/* The mark above the greeting is the home page's alone: a conversation starts without it. */}
             <MuBackdrop className={styles.heroBackdrop} leaving={guidInput.loading} />
-            <p className={`${styles.heroTitle} text-2xl font-semibold mb-0 text-t-primary text-center`}>
+            <p className={`${styles.heroTitle} text-18px font-500 mb-0 text-t-primary text-center`}>
               {t('conversation.welcome.title')}
             </p>
           </div>
@@ -723,9 +707,6 @@ const GuidPage: React.FC = () => {
             placeholder={typewriterPlaceholder || t('conversation.welcome.placeholder')}
             isInputActive={guidInput.isInputFocused}
             isFileDragging={guidInput.isFileDragging}
-            activeBorderColor={activeBorderColor}
-            inactiveBorderColor={inactiveBorderColor}
-            activeShadow={activeShadow}
             dragHandlers={guidInput.dragHandlers}
             files={displayFilePaths}
             onRemoveFile={guidInput.handleRemoveFile}
@@ -771,14 +752,6 @@ const GuidPage: React.FC = () => {
             />
           )}
         </div>
-
-        <QuickActionButtons
-          onOpenLink={openLink}
-          onOpenBugReport={() => setShowFeedbackModal(true)}
-          inactiveBorderColor={inactiveBorderColor}
-          activeShadow={activeShadow}
-        />
-        <FeedbackReportModal visible={showFeedbackModal} onCancel={() => setShowFeedbackModal(false)} />
       </div>
     </ConfigProvider>
   );

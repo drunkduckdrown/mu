@@ -7,16 +7,36 @@
   "modified": "Modificado",
   "applyNote": "Los cambios se aplican a las sesiones nuevas. Una sesión en curso mantiene la configuración con la que empezó; reconéctala para aplicarlos.",
   "apiKey": "Clave de API",
-  "keyHelp": "Solo escritura: una vez guardada, no se vuelve a mostrar. Se guarda en el .env del arnés en este ordenador (solo accesible para el propietario).",
+  "keyHelp": "Una vez guardada, la clave no se vuelve a mostrar. Se queda en este ordenador y solo tu cuenta puede leerla.",
   "keyKeep": "Déjalo vacío para conservar la clave guardada",
   "endpointRule": "Usa HTTPS, o HTTP solo hacia este ordenador (127.0.0.1, localhost). Sin nombre de usuario, contraseña, consulta ni fragmento en la dirección.",
   "sections": {
     "judges": "Jueces",
+    "judgeTiers": "Niveles de jueces",
     "decisions": "Puntos de decisión",
     "features": "Funciones",
-    "models": "Modelos y proveedores",
+    "moreFeatures": "Más funciones",
+    "providers": "Proveedores",
+    "defaultModel": "Modelo predeterminado",
     "permissions": "Permisos",
     "context": "Contexto"
+  },
+  "pages": {
+    "decisions": {
+      "input": "Puntos de decisión: Entrada",
+      "context": "Puntos de decisión: Contexto",
+      "memory": "Puntos de decisión: Lecciones",
+      "tools": "Puntos de decisión: Herramientas y seguridad",
+      "turn": "Puntos de decisión: Turno",
+      "team": "Puntos de decisión: Trabajo en equipo"
+    },
+    "features": {
+      "input": "Más funciones: Entrada",
+      "context": "Más funciones: Contexto",
+      "tools": "Más funciones: Herramientas y seguridad",
+      "turn": "Más funciones: Turno",
+      "other": "Más funciones: Otros"
+    }
   },
   "modes": {
     "active": "Activo",
@@ -24,11 +44,11 @@
     "off": "Desactivado",
     "activeHelp": "El veredicto se aplica.",
     "shadowHelp": "Se consulta y se registra, pero no cambia nada.",
-    "offHelp": "No se consulta. Funciona como pi sin cambios."
+    "offHelp": "No se consulta. Ese paso sigue sin veredicto."
   },
   "harness": {
-    "tooOld": "Este arnés es demasiado antiguo para describir sus puntos de decisión y funciones. Actualiza el arnés de mu para verlos aquí; la configuración básica sigue funcionando.",
-    "unsupported": "El arnés se describe en un formato que esta aplicación no conoce (versión {{version}}). Actualiza la aplicación para editar los puntos de decisión y las funciones."
+    "tooOld": "Esta versión de mu es demasiado antigua para mostrar sus puntos de decisión y funciones. Actualiza mu para verlos aquí; la configuración básica sigue funcionando.",
+    "unsupported": "mu se describe en un formato que esta aplicación no conoce (versión {{version}}). Actualiza la aplicación para editar los puntos de decisión y las funciones."
   },
   "load": {
     "failed": "No se pudo cargar la configuración"
@@ -43,7 +63,7 @@
     "failed": "No se guardó: {{reason}}"
   },
   "units": {
-    "ms": "ms",
+    "s": "s",
     "tokens": "tokens"
   },
   "options": {
@@ -62,59 +82,58 @@
     "description": "Cada punto en el que se consulta al juez. Un punto sigue el modo predeterminado, salvo que le asignes uno propio.",
     "defaultMode": "Modo predeterminado",
     "defaultModeHelp": "Para todos los puntos de decisión sin modo propio.",
-    "follow": "Seguir el predeterminado ({{mode}})",
-    "feature": "Función: {{name}}",
+    "useDefault": "Volver al predeterminado ({{mode}})",
     "featureOff": "La función está desactivada: no se consulta",
     "groups": {
       "input": "Entrada",
       "context": "Contexto",
+      "memory": "Lecciones",
       "tools": "Herramientas y seguridad",
       "turn": "Turno",
       "team": "Trabajo en equipo"
     },
-    "otherGroup": "Otros"
+    "otherGroup": "Otros",
+    "pageLead": "Un punto sigue el modo predeterminado, salvo que le asignes uno propio. El modo predeterminado y la búsqueda están en «{{page}}».",
+    "none": "Aún no hay puntos de decisión aquí."
   },
   "features": {
-    "description": "Lo que hace el arnés alrededor del modelo. Los valores que no hayas cambiado siguen los predeterminados del arnés.",
+    "lead": "Lo que mu hace por ti en segundo plano. Si desactivas una función, mu deja de hacerla.",
+    "moreLead": "Todo lo demás que mu puede hacer, agrupado según dónde actúa. Las opciones de cada función están a un clic.",
     "beta": "Beta",
     "reset": "Restablecer valores",
-    "asks": "Puntos de decisión: {{names}}.",
     "permissionsElsewhere": "El modo de las conversaciones nuevas se elige en «Permisos».",
-    "boardModelElsewhere": "El modelo que escribe el tablero se elige en «Modelos y proveedores»."
+    "boardModelElsewhere": "El modelo que escribe el tablero se elige en «Modelo predeterminado».",
+    "options": "Opciones",
+    "noOptions": "No hay nada más que ajustar: solo está el interruptor.",
+    "noSuchFeature": "Esta versión de mu no tiene esa función.",
+    "none": "Aún no hay funciones aquí.",
+    "part": "Opciones, página {{part}} de {{parts}}",
+    "previousPart": "Página anterior",
+    "nextPart": "Página siguiente"
   },
   "judges": {
-    "tiers": "Niveles",
     "tiersHelp": "Los jueces se consultan en orden. Uno posterior solo ve lo que los anteriores dejaron sin resolver.",
     "order": "Orden",
-    "judge": "Juez",
+    "orderHelp": "El primero es el juez elegido en la página «Jueces».",
+    "tierTitle": "Nivel {{index}}: {{name}}",
     "type": "Forma de acceso",
+    "access": {
+      "jev": "Automático",
+      "typesafe": "TypeSafe directamente",
+      "gateway": "A través de Vercel AI Gateway"
+    },
     "model": "Modelo del juez",
-    "modelHelp": "Para un modelo general como juez: provider/model-id.",
-    "endpoint": "Endpoint",
+    "customTier": "Un juez que añadiste tú. Se cambia en el archivo de ajustes de mu.",
     "endpointDefault": "Dirección predeterminada del servicio",
-    "timeout": "Tiempo límite",
-    "keyVariable": "Variable de la clave",
-    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY o un nombre que empiece por MU_JUDGE_.",
     "types": {
-      "jev": "Jev (ruta automática)",
-      "typesafe": "Jev, directo (TypeSafe)",
-      "gateway": "Jev a través de Vercel AI Gateway",
-      "local": "Juez local (Laya)",
-      "http": "Tu propio servicio de juez HTTP",
-      "llm": "Un modelo general como juez",
-      "mock": "Simulado (respuestas neutras)",
       "jevHelp": "TypeSafe directamente si su clave está definida; si no, Vercel AI Gateway.",
       "typesafeHelp": "Siempre TypeSafe directamente.",
       "gatewayHelp": "Siempre a través de Vercel AI Gateway.",
-      "localHelp": "El servicio Laya que se ejecuta en este ordenador.",
-      "httpHelp": "Cualquier endpoint que reciba {state, questions} y devuelva {answers}.",
-      "llmHelp": "Un modelo generativo de tus proveedores, al que se le pide responder en JSON.",
-      "mockHelp": "Para pruebas y trabajo sin conexión: no se consulta nada."
+      "localHelp": "Se ejecuta en este ordenador."
     },
     "intro": "Mientras trabaja, mu hace muchas pequeñas valoraciones: cómo tratar este mensaje, si este paso rompe una regla que has fijado. El juez las responde. Elige uno.",
     "choose": "Elige un juez",
-    "custom": "Ahora el primer juez es uno personalizado: puedes verlo y cambiarlo en «Avanzado».",
-    "advanced": "Avanzado",
+    "custom": "Ahora el primer juez es uno personalizado: puedes verlo y cambiarlo en la página «Niveles de jueces».",
     "keyPlaceholder": "Pega una clave de TypeSafe o de Vercel AI Gateway",
     "choices": {
       "jev": {
@@ -133,7 +152,7 @@
       "running": "Ejecutándose en este ordenador",
       "stopped": "Instalado, pero no se está ejecutando. mu lo inicia cuando lo necesita.",
       "missing": "Aún no está instalado.",
-      "platform": "Laya no puede ejecutarse en este ordenador: necesita un Mac con Apple Silicon. Puedes introducir la dirección de tu propio servicio de juez en «Avanzado».",
+      "platform": "Laya no puede ejecutarse en este ordenador: necesita Windows o Linux (x64 o arm64), o un Mac con Apple Silicon.",
       "needsUv": "Para instalarlo hace falta uv, un gestor de paquetes de Python. Instálalo y vuelve aquí.",
       "uvLink": "Cómo instalar uv",
       "install": "Instalar Laya",
@@ -151,6 +170,26 @@
         "setup": "No se completó la instalación. Puedes intentarlo de nuevo.",
         "start": "Laya no se inició.",
         "stop": "Laya no se detuvo."
+      },
+      "onnx": {
+        "missing": "El modelo de Laya aún no está en este ordenador (unos {{size}} MB). mu no lo descarga por ti: descarga los archivos de Hugging Face, ponlos en la carpeta del modelo y pulsa «Comprobar e iniciar».",
+        "stopped": "El modelo está listo y Laya no se está ejecutando. Si Laya es tu juez, mu lo inicia solo al abrir la app.",
+        "starting": "Comprobando el modelo e iniciando Laya… La primera comprobación lee el modelo entero y tarda un momento.",
+        "missingFiles": "Faltan todavía: {{files}}",
+        "wrongFiles": "No es la versión probada con mu, vuelve a descargarlos: {{files}}",
+        "folder": "Carpeta del modelo: {{folder}}",
+        "command": "Con la línea de comandos de Hugging Face (hf), este único comando lo descarga todo:",
+        "page": "Obtener en Hugging Face",
+        "openFolder": "Abrir la carpeta del modelo",
+        "check": "Comprobar e iniciar",
+        "problem": {
+          "missing": "Faltan algunos archivos del modelo.",
+          "wrong": "Algunos archivos del modelo no son la versión probada con mu. Vuelve a descargarlos.",
+          "runtime": "Este ordenador no pudo ejecutar el modelo.",
+          "port": "Otro programa ya usa el puerto de Laya ({{port}}).",
+          "stopped": "Laya se detuvo antes de estar listo.",
+          "foreign": "Aquí se está ejecutando un Laya que mu no inició. Detenlo donde se inició."
+        }
       }
     }
   },
@@ -163,14 +202,12 @@
     "manual": "Definida (a mano)"
   },
   "context": {
-    "description": "Cuándo y cómo se compacta la conversación. Compartido con el settings.json de pi.",
+    "description": "Cuándo y cómo se compacta la conversación. Se guarda en el archivo de ajustes de mu, que también usa mu en la línea de comandos.",
     "auto": "Compactación automática",
     "autoHelp": "Compacta el historial cuando el contexto está casi lleno.",
     "limit": "Límite de contexto",
     "limitHelp": "0 usa la ventana del modelo menos la reserva. Si no, entre {{min}} y {{max}}. Se comprueba antes de la siguiente solicitud al modelo; no es un corte estricto.",
-    "limitProblem": "Usa 0 o un número entero de {{min}} a {{max}}.",
-    "beta": "Compactación sin resumen",
-    "betaHelp": "Conserva o poda los pasajes originales según el criterio del juez, en lugar de escribir un resumen. Es el mismo interruptor que la función de compactación."
+    "limitProblem": "Usa 0 o un número entero de {{min}} a {{max}}."
   },
   "permissions": {
     "description": "Decide si mu te pregunta antes de actuar. Es el modo con el que empieza cada conversación nueva; cada conversación puede cambiarlo después desde «Permiso» en su cuadro de mensaje.",
@@ -229,7 +266,7 @@
     "flagged": "Riesgo: {{flag}}."
   },
   "providers": {
-    "lead": "De dónde salen los modelos: suscripciones y endpoints, además del modelo que escribe el tablero en lenguaje claro. El modelo y el nivel de razonamiento de cada conversación se eligen en su cuadro de mensaje.",
+    "lead": "De dónde salen los modelos: suscripciones y endpoints. El modelo y el nivel de razonamiento de cada conversación se eligen en su cuadro de mensaje.",
     "title": "Proveedores",
     "custom": "Proveedores personalizados",
     "manualGroup": "Escritos a mano",
@@ -242,7 +279,7 @@
     "name": "Nombre visible",
     "namePlaceholder": "Ej. Mi proxy",
     "id": "ID",
-    "idHelp": "Letras minúsculas, dígitos y guiones. No se puede cambiar una vez guardado; se usa como provider/model.",
+    "idHelp": "Letras minúsculas, dígitos y guiones. No se puede cambiar una vez guardado.",
     "idProblem": {
       "format": "Usa letras minúsculas, dígitos y guiones, empezando por una letra o un dígito (40 como máximo).",
       "reserved": "Este es el ID de un proveedor integrado. Una entrada con él redirigiría ese proveedor en lugar de añadir uno nuevo.",
@@ -251,7 +288,6 @@
     "baseUrl": "URL base",
     "keyEnter": "Pega la clave de API",
     "keyReplace": "Se está usando una clave escrita a mano. Si escribes una aquí, la sustituye.",
-    "keyHelp": "Se guarda en el .env del arnés como {{variable}}; models.json solo contiene la referencia. No se vuelve a mostrar.",
     "authHeader": "Enviar también Authorization: Bearer (algunos proxies lo necesitan)",
     "headers": "Los encabezados adicionales escritos a mano se conservan tal cual: {{names}}. Sus valores son secretos y se editan en models.json.",
     "pick": "Elige un proveedor a la izquierda o añade uno.",
@@ -276,6 +312,18 @@
     "removeUnsaved": "Aún no está guardado, así que se descartará lo que hayas rellenado aquí.",
     "removeEntry": "Al guardar, esta entrada escrita a mano se elimina de models.json. Si sustituye a un proveedor integrado, ese proveedor vuelve a sus valores predeterminados.",
     "removeDefault": "Las sesiones nuevas empiezan con él, así que también se borra el modelo predeterminado."
+  },
+  "defaults": {
+    "summary": "What a new session starts with. You can still switch inside a conversation.",
+    "provider": "Proveedor",
+    "model": "Modelo",
+    "level": "Nivel de razonamiento",
+    "levelUnset": "No indicar",
+    "levelHelp": "Levels this model does not take are disabled.",
+    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
+    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
+    "notSet": "Sin indicar",
+    "pickProvider": "Choose a provider first."
   },
   "accounts": {
     "signIn": "Iniciar sesión",
@@ -344,7 +392,7 @@
   },
   "test": {
     "run": "Probar conexión",
-    "hint": "Una única solicitud mínima desde esta aplicación: la lista de modelos o, si no, un solo token con el primer modelo.",
+    "hint": "Una única solicitud mínima desde esta aplicación: la lista de modelos o, si no, una respuesta de una palabra del primer modelo.",
     "okModels": "Conectado ({{ms}} ms). El endpoint ofrece {{count, number}} modelos.",
     "okCompletion": "Conectado ({{ms}} ms). El modelo respondió.",
     "auth": "Se rechazó la clave (HTTP {{status}}).",
@@ -418,7 +466,6 @@
       },
       "anthropic": {
         "title": "API compatible con Anthropic",
-        "tag": "Claude",
         "description": "Claude y los servicios que usan el formato Messages",
         "modelPlaceholder": "Ej. claude-sonnet-5"
       },

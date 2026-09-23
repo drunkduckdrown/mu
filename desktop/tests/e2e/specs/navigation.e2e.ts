@@ -41,12 +41,10 @@ test.describe('Guid Page', () => {
 
 test.describe('Settings Pages', () => {
   const tabs: { tab: SettingsTab; name: string }[] = [
-    { tab: 'gemini', name: 'Gemini Settings' },
-    { tab: 'model', name: 'Model Settings' },
-    { tab: 'agent', name: 'Agent/ACP Settings' },
+    { tab: 'providers', name: 'Model Providers' },
+    { tab: 'assistants', name: 'Assistants Settings' },
     { tab: 'tools', name: 'Tools/MCP Settings' },
     { tab: 'display', name: 'Display Settings' },
-    { tab: 'webui', name: 'WebUI Settings' },
     { tab: 'system', name: 'System Settings' },
     { tab: 'about', name: 'About Page' },
   ];
@@ -54,7 +52,8 @@ test.describe('Settings Pages', () => {
   for (const { tab, name } of tabs) {
     test(`${name} loads`, async ({ page }) => {
       await goToSettings(page, tab);
-      await expectUrlContains(page, tab);
+      // The route, not the tab name: 'display' lives at /settings/appearance.
+      await expectUrlContains(page, ROUTES.settings[tab]);
       const body = await page.locator('body').textContent();
       expect(body!.length).toBeGreaterThan(10);
     });

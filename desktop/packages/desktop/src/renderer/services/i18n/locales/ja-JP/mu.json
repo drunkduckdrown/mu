@@ -7,16 +7,36 @@
   "modified": "変更済み",
   "applyNote": "変更は新しいセッションに適用されます。実行中のセッションは開始時の設定のままです。変更を反映するには再接続してください。",
   "apiKey": "API キー",
-  "keyHelp": "書き込み専用: 保存後は二度と表示されません。このマシンのハーネスの .env に保存されます（所有者のみ読み取り可）。",
+  "keyHelp": "保存後は二度と表示されません。このコンピューターにだけ保存され、あなたのアカウントしか読めません。",
   "keyKeep": "空欄のままにすると保存済みのキーを保持します",
   "endpointRule": "HTTPS を使用してください。HTTP はこのマシン（127.0.0.1、localhost）宛てにのみ使えます。アドレスにユーザー名、パスワード、クエリ、フラグメントは含められません。",
   "sections": {
     "judges": "判定器",
+    "judgeTiers": "判定の階層",
     "decisions": "判定ポイント",
     "features": "機能",
-    "models": "モデルとプロバイダー",
+    "moreFeatures": "その他の機能",
+    "providers": "プロバイダー",
+    "defaultModel": "既定のモデル",
     "permissions": "権限",
     "context": "コンテキスト"
+  },
+  "pages": {
+    "decisions": {
+      "input": "判定ポイント：入力",
+      "context": "判定ポイント：コンテキスト",
+      "memory": "判定ポイント：教訓",
+      "tools": "判定ポイント：ツールと安全性",
+      "turn": "判定ポイント：ターン",
+      "team": "判定ポイント：連携"
+    },
+    "features": {
+      "input": "その他の機能：入力",
+      "context": "その他の機能：コンテキスト",
+      "tools": "その他の機能：ツールと安全性",
+      "turn": "その他の機能：ターン",
+      "other": "その他の機能：その他"
+    }
   },
   "modes": {
     "active": "有効",
@@ -24,11 +44,11 @@
     "off": "オフ",
     "activeHelp": "判定が反映されます。",
     "shadowHelp": "問い合わせて記録しますが、何も変わりません。",
-    "offHelp": "問い合わせません。素の pi と同じ動作です。"
+    "offHelp": "問い合わせません。その段階は判定なしで進みます。"
   },
   "harness": {
-    "tooOld": "このハーネスは古いため、判定ポイントと機能の情報を提供できません。ここに表示するには mu のハーネスを更新してください。基本設定は引き続き使用できます。",
-    "unsupported": "ハーネスが、このアプリの対応していない形式（バージョン {{version}}）で自身の情報を提供しています。判定ポイントと機能を編集するには、アプリを更新してください。"
+    "tooOld": "この mu は古いため、判定ポイントと機能の一覧を出せません。ここに表示するには mu を更新してください。基本設定は引き続き使用できます。",
+    "unsupported": "mu が、このアプリの対応していない形式（バージョン {{version}}）で自身の情報を提供しています。判定ポイントと機能を編集するには、アプリを更新してください。"
   },
   "load": {
     "failed": "設定を読み込めませんでした"
@@ -43,7 +63,7 @@
     "failed": "保存できませんでした: {{reason}}"
   },
   "units": {
-    "ms": "ミリ秒",
+    "s": "秒",
     "tokens": "トークン"
   },
   "options": {
@@ -62,59 +82,58 @@
     "description": "判定器に問い合わせる各ポイントです。個別にモードを指定しない限り、既定のモードに従います。",
     "defaultMode": "既定のモード",
     "defaultModeHelp": "個別のモードが指定されていないすべての判定ポイントに適用されます。",
-    "follow": "既定に従う（{{mode}}）",
-    "feature": "機能: {{name}}",
+    "useDefault": "既定に戻す（{{mode}}）",
     "featureOff": "機能がオフのため、問い合わせません",
     "groups": {
       "input": "入力",
       "context": "コンテキスト",
+      "memory": "教訓",
       "tools": "ツールと安全性",
       "turn": "ターン",
       "team": "連携"
     },
-    "otherGroup": "その他"
+    "otherGroup": "その他",
+    "pageLead": "個別にモードを指定しない限り、既定のモードに従います。既定のモードと検索は「{{page}}」にあります。",
+    "none": "ここにはまだ判定ポイントがありません。"
   },
   "features": {
-    "description": "ハーネスがモデルの周りで行う処理です。変更していない値は、ハーネスの既定値に従います。",
+    "lead": "mu がバックグラウンドで代わりに行うことです。オフにすると、mu はそれを行わなくなります。",
+    "moreLead": "mu ができるその他のことを、働く場所ごとにまとめています。各機能のオプションはワンクリックで開けます。",
     "beta": "ベータ",
     "reset": "既定値に戻す",
-    "asks": "判定ポイント: {{names}}。",
     "permissionsElsewhere": "新しい会話のモードは「権限」で選択します。",
-    "boardModelElsewhere": "ボードを書くモデルは「モデルとプロバイダー」で選択します。"
+    "boardModelElsewhere": "ボードを書くモデルは「既定のモデル」で選択します。",
+    "options": "オプション",
+    "noOptions": "ほかに設定する項目はありません。スイッチだけです。",
+    "noSuchFeature": "このバージョンの mu にはこの機能がありません。",
+    "none": "ここにはまだ機能がありません。",
+    "part": "オプション（{{parts}} ページ中 {{part}} ページ目）",
+    "previousPart": "前のページ",
+    "nextPart": "次のページ"
   },
   "judges": {
-    "tiers": "判定の階層",
     "tiersHelp": "判定器は順に試されます。後の判定器は、前の判定器で確定しなかったものだけを扱います。",
     "order": "順序",
-    "judge": "判定器",
+    "orderHelp": "最初のものが「判定器」ページで選んだ判定器です。",
+    "tierTitle": "第 {{index}} 階層：{{name}}",
     "type": "接続方法",
+    "access": {
+      "jev": "自動",
+      "typesafe": "TypeSafe に直接接続",
+      "gateway": "Vercel AI Gateway 経由"
+    },
     "model": "判定モデル",
-    "modelHelp": "汎用モデルを判定器として使う場合: provider/model-id。",
-    "endpoint": "エンドポイント",
+    "customTier": "自分で追加した判定器です。変更するには mu の設定ファイルを編集してください。",
     "endpointDefault": "サービスの既定のアドレス",
-    "timeout": "タイムアウト",
-    "keyVariable": "キー変数",
-    "keyVariableHelp": "TYPESAFE_API_KEY、AI_GATEWAY_API_KEY、または MU_JUDGE_ で始まる名前。",
     "types": {
-      "jev": "Jev（自動ルート）",
-      "typesafe": "Jev 直接接続（TypeSafe）",
-      "gateway": "Vercel AI Gateway 経由の Jev",
-      "local": "ローカル判定器（Laya）",
-      "http": "独自の HTTP 判定サービス",
-      "llm": "汎用モデルを判定器として使用",
-      "mock": "モック（中立的な回答）",
       "jevHelp": "TypeSafe のキーが設定されていれば TypeSafe に直接接続し、それ以外は Vercel AI Gateway を使います。",
       "typesafeHelp": "常に TypeSafe に直接接続します。",
       "gatewayHelp": "常に Vercel AI Gateway を経由します。",
-      "localHelp": "このマシン上の Laya サイドカー。",
-      "httpHelp": "{state, questions} を受け取り {answers} を返す任意のエンドポイント。",
-      "llmHelp": "プロバイダーの生成モデルを使い、JSON で回答するよう指示します。",
-      "mockHelp": "テストやオフライン作業用: 何も問い合わせません。"
+      "localHelp": "このコンピューターで動きます。"
     },
     "intro": "mu は作業中に、このメッセージをどう扱うか、このステップが設定したルールに反していないか、といった小さな判断を何度も迫られます。それに答えるのが判定器です。1 つ選んでください。",
     "choose": "判定器を選択",
-    "custom": "現在、先頭の判定器はカスタム設定です。「詳細設定」で確認・変更できます。",
-    "advanced": "詳細設定",
+    "custom": "現在、先頭の判定器はカスタム設定です。「判定の階層」ページで確認・変更できます。",
     "keyPlaceholder": "TypeSafe または Vercel AI Gateway のキーを貼り付け",
     "choices": {
       "jev": {
@@ -133,7 +152,7 @@
       "running": "このマシンで実行中",
       "stopped": "インストール済みですが、実行されていません。必要なときに mu が起動します。",
       "missing": "まだインストールされていません。",
-      "platform": "このコンピューターでは Laya を実行できません。Apple Silicon 搭載の Mac が必要です。「詳細設定」で独自の判定サービスのアドレスを入力できます。",
+      "platform": "このコンピューターでは Laya を実行できません。Windows または Linux（x64 または arm64）か、Apple Silicon 搭載の Mac が必要です。",
       "needsUv": "インストールには Python のパッケージマネージャー uv が必要です。uv をインストールしてから、ここに戻ってください。",
       "uvLink": "uv のインストール方法",
       "install": "Laya をインストール",
@@ -151,6 +170,26 @@
         "setup": "インストールが完了しませんでした。もう一度お試しください。",
         "start": "Laya を起動できませんでした。",
         "stop": "Laya を停止できませんでした。"
+      },
+      "onnx": {
+        "missing": "このコンピューターにはまだ Laya のモデルがありません（約 {{size}} MB）。mu は自動ではダウンロードしません。Hugging Face からファイルをダウンロードしてモデルフォルダーに入れ、「確認して起動」を押してください。",
+        "stopped": "モデルは揃っていますが、Laya は実行されていません。Laya を判定器に選んでいる場合、アプリを開いたときに mu が自動で起動します。",
+        "starting": "モデルを確認して Laya を起動しています… 初回の確認ではモデル全体を読み込むため、少し時間がかかります。",
+        "missingFiles": "まだ足りないファイル：{{files}}",
+        "wrongFiles": "mu でテストしたバージョンではありません。ダウンロードし直してください：{{files}}",
+        "folder": "モデルフォルダー：{{folder}}",
+        "command": "Hugging Face のコマンドライン（hf）があれば、次のコマンド 1 つですべて取得できます：",
+        "page": "Hugging Face で入手",
+        "openFolder": "モデルフォルダーを開く",
+        "check": "確認して起動",
+        "problem": {
+          "missing": "一部のモデルファイルがありません。",
+          "wrong": "一部のモデルファイルが mu でテストしたバージョンではありません。ダウンロードし直してください。",
+          "runtime": "このコンピューターではモデルを実行できませんでした。",
+          "port": "Laya のポート（{{port}}）はすでに別のプログラムが使用しています。",
+          "stopped": "Laya は準備が整う前に停止しました。",
+          "foreign": "mu が起動したのではない Laya が実行中です。起動した場所で停止してください。"
+        }
       }
     }
   },
@@ -163,14 +202,12 @@
     "manual": "設定済み（手動）"
   },
   "context": {
-    "description": "会話をいつ、どのように圧縮するか。pi の settings.json と共有されます。",
+    "description": "会話をいつ、どのように圧縮するか。mu の設定ファイルに保存され、コマンドラインの mu も同じファイルを使います。",
     "auto": "自動圧縮",
     "autoHelp": "コンテキストがいっぱいに近づくと、履歴を圧縮します。",
     "limit": "コンテキスト上限",
     "limitHelp": "0 の場合は、モデルのコンテキストウィンドウから予約分を引いた値に従います。それ以外は {{min}}〜{{max}} で指定します。次のモデルリクエストの前に確認されるもので、厳密な打ち切りではありません。",
-    "limitProblem": "0、または {{min}}〜{{max}} の整数を入力してください。",
-    "beta": "要約なし圧縮",
-    "betaHelp": "要約を書く代わりに、判定によって元の文章を残すか削るかを決めます。「機能」にある要約なし圧縮と同じスイッチです。"
+    "limitProblem": "0、または {{min}}〜{{max}} の整数を入力してください。"
   },
   "permissions": {
     "description": "mu が操作の前にあなたに確認するかどうかの設定です。ここで選ぶのは、新しい会話が開始時に使うモードです。各会話のモードは、その会話の入力欄の「権限」から個別に切り替えることもできます。",
@@ -229,7 +266,7 @@
     "flagged": "危険な操作：{{flag}}。"
   },
   "providers": {
-    "lead": "モデルの提供元（サブスクリプションとエンドポイント）と、わかりやすいボードを書くモデルを設定します。会話のモデルと思考レベルは、その会話の入力欄で選択します。",
+    "lead": "モデルの提供元（サブスクリプションとエンドポイント）を設定します。会話のモデルと思考レベルは、その会話の入力欄で選択します。",
     "title": "プロバイダー",
     "custom": "カスタムプロバイダー",
     "manualGroup": "手動設定",
@@ -242,7 +279,7 @@
     "name": "表示名",
     "namePlaceholder": "例: 自分のプロキシ",
     "id": "ID",
-    "idHelp": "小文字の英字、数字、ハイフン。保存後は変更できません。provider/model の形で使われます。",
+    "idHelp": "小文字の英字、数字、ハイフン。保存後は変更できません。",
     "idProblem": {
       "format": "小文字の英字、数字、ハイフンを使い、英字か数字で始めてください（最大 40 文字）。",
       "reserved": "組み込みプロバイダーの ID です。この ID でエントリを作ると、新しく追加されるのではなく、そのプロバイダーの接続先が変更されます。",
@@ -251,7 +288,6 @@
     "baseUrl": "ベース URL",
     "keyEnter": "API キーを貼り付け",
     "keyReplace": "手動で設定されたキーが使われています。ここに入力すると置き換えられます。",
-    "keyHelp": "ハーネスの .env に {{variable}} として保存され、models.json には参照のみが記録されます。二度と表示されません。",
     "authHeader": "Authorization: Bearer も送信する（一部のプロキシで必要）",
     "headers": "手動で書かれた追加ヘッダーはそのまま保持されます: {{names}}。値は機密情報のため、models.json で編集してください。",
     "pick": "左側でプロバイダーを選択するか、追加してください。",
@@ -276,6 +312,18 @@
     "removeUnsaved": "まだ保存されていないため、ここで入力した内容は破棄されます。",
     "removeEntry": "保存すると、この手動エントリが models.json から削除されます。組み込みプロバイダーを上書きしている場合、そのプロバイダーは既定の設定に戻ります。",
     "removeDefault": "新しいセッションはこれを使って始まるため、既定のモデルもクリアされます。"
+  },
+  "defaults": {
+    "summary": "What a new session starts with. You can still switch inside a conversation.",
+    "provider": "プロバイダー",
+    "model": "モデル",
+    "level": "思考レベル",
+    "levelUnset": "指定しない",
+    "levelHelp": "Levels this model does not take are disabled.",
+    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
+    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
+    "notSet": "未指定",
+    "pickProvider": "Choose a provider first."
   },
   "accounts": {
     "signIn": "ログイン",
@@ -344,7 +392,7 @@
   },
   "test": {
     "run": "接続をテスト",
-    "hint": "このアプリから最小限のリクエストを 1 回送信します。モデル一覧を取得し、取得できない場合は最初のモデルで 1 トークンだけ生成します。",
+    "hint": "このアプリから最小限のリクエストを 1 回送信します。モデル一覧を取得し、取得できない場合は最初のモデルにひと言だけ答えてもらいます。",
     "okModels": "接続しました（{{ms}} ミリ秒）。エンドポイントには {{count, number}} 個のモデルがあります。",
     "okCompletion": "接続しました（{{ms}} ミリ秒）。モデルが応答しました。",
     "auth": "キーが拒否されました（HTTP {{status}}）。",
@@ -418,7 +466,6 @@
       },
       "anthropic": {
         "title": "Anthropic 互換 API",
-        "tag": "Claude",
         "description": "Claude、および Messages 形式に対応したサービス",
         "modelPlaceholder": "例: claude-sonnet-5"
       },

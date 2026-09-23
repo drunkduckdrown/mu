@@ -16,6 +16,10 @@ export const DECISIONS = {
   'browser.step': 'browser',
   'memory.recall': 'recall',
   'memory.capture': 'capture',
+  'memory.outcome': 'outcome',
+  'memory.worth': 'worth',
+  'memory.merge': 'merge',
+  'memory.applied': 'applied',
   'tool.risk': 'risk',
   'turn.drift': 'drift',
   'turn.completion': 'completion',
@@ -31,6 +35,8 @@ export const DECISIONS = {
   'swarm.patch': 'patch',
   'review.triage': 'review',
   'board.read': 'board',
+  'hive.relate': 'relate',
+  'tool.approval': 'approval',
 } as const;
 
 export type JudgeStage = (typeof DECISIONS)[keyof typeof DECISIONS] | 'other';
@@ -377,6 +383,8 @@ export type JudgeFact = {
   pairs?: { key: string; value: string }[];
   more?: number;
   tally?: true;
+  /** The values are words to show as they are (a lesson's text), never a code to translate. */
+  text?: true;
 };
 
 const FACT_LIMIT = 6;
@@ -393,12 +401,24 @@ const capped = (name: string, values: string[]): JudgeFact =>
     ? { name, values: values.slice(0, FACT_LIMIT), more: values.length - FACT_LIMIT }
     : { name, values };
 
+/** Where the lessons judged followed or not are named: `applied` and `notApplied` hold their ids. */
+const LESSON_FIELDS = ['applied', 'notApplied'] as const;
+
 /**
  * The outcome as labelled fields. Names and values stay raw: the view translates the ones it knows.
- * Nothing here turns a verdict into a claim that the operation was carried out.
+ * Nothing here turns a verdict into a claim that the operation was carried out. `lessonText` names a lesson by its
+ * words, one fact each: whether the lessons of a turn were followed is read by what they say, not by their ids.
  */
-export function resultFacts(card: JudgeCard): JudgeFact[] {
+export function resultFacts(card: JudgeCard, lessonText?: (id: string) => string): JudgeFact[] {
   const outcome = card.outcome;
+  if (card.stage === 'applied' && lessonText) {
+    const named = record(outcome);
+    return LESSON_FIELDS.flatMap((name) =>
+      (Array.isArray(named[name]) ? named[name] : [])
+        .filter((id): id is string => typeof id === 'string' && id !== '')
+        .map((id): JudgeFact => ({ name, values: [lessonText(id)], text: true }))
+    ).slice(0, FACT_LIMIT);
+  }
   if (Array.isArray(outcome)) {
     const rows = list(outcome);
     if (card.stage === 'admission')

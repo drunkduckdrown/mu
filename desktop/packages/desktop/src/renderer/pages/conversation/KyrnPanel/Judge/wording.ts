@@ -25,8 +25,20 @@ export const JUDGE_ERROR_KINDS = [
  */
 export const JUDGE_REASONS = ['shadow', 'abstain', 'off', 'skipped', 'no_answer', 'timeout', 'verdict'] as const;
 
-/** The preflight's hints to the main model, by the id the harness records beside each sentence. */
-export const PREFLIGHT_HINT_IDS = ['clarify', 'side_question', 'plan_first', 'try_hive', 'try_delegate'] as const;
+/**
+ * The preflight's hints to the main model, by the id the harness records beside each sentence (the harness's
+ * kyrn/docs/features/presentation-codes.md, preflight.verdict). `clarify` is an older harness's; the others are
+ * what it sends now.
+ */
+export const PREFLIGHT_HINT_IDS = [
+  'answered',
+  'resolve',
+  'clarify',
+  'side_question',
+  'plan_first',
+  'try_hive',
+  'try_delegate',
+] as const;
 
 /** What the preflight asks the judge, by question id. Other decision points keep their ids as recorded. */
 export const PREFLIGHT_QUESTION_IDS = [
@@ -75,6 +87,16 @@ export function hintLines(t: TFunction, hints: readonly string[], hintIds: reado
     const id = hintIds[index] ?? '';
     return known(PREFLIGHT_HINT_IDS, id) ? t(`${KEY}.hints.${id}`) : (hints[index] ?? '');
   }).filter(Boolean);
+}
+
+/**
+ * The short name of a hint for a chip after the verdict line ("Plan first"); an id this build does not know stays as
+ * recorded, so a hint the harness adds later still shows. Empty ids (older records) have no chip.
+ */
+export function hintChips(t: TFunction, hintIds: readonly string[]): { id: string; label: string }[] {
+  return hintIds
+    .filter(Boolean)
+    .map((id) => ({ id, label: known(PREFLIGHT_HINT_IDS, id) ? t(`${KEY}.hintChips.${id}`) : id }));
 }
 
 /**

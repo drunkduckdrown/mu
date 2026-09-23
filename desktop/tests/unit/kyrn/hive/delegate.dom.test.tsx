@@ -5,13 +5,14 @@ import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import { MemoryRouter } from 'react-router-dom';
 import type { ActivityPage, Result } from '@/common/kyrn/types';
+import type { HiveFocusRequest } from '@/renderer/pages/conversation/KyrnPanel/focus';
 import enCommon from '@/renderer/services/i18n/locales/en-US/common.json';
 import enMu from '@/renderer/services/i18n/locales/en-US/mu.json';
 import enTools from '@/renderer/services/i18n/locales/en-US/tools.json';
 import zhCommon from '@/renderer/services/i18n/locales/zh-CN/common.json';
 import zhMu from '@/renderer/services/i18n/locales/zh-CN/mu.json';
 import zhTools from '@/renderer/services/i18n/locales/zh-CN/tools.json';
-import KyrnPanel from '@/renderer/pages/conversation/KyrnPanel';
+import { KernelBody, useKyrnActivity } from '@/renderer/pages/conversation/KyrnPanel';
 import Hive from '@/renderer/pages/conversation/KyrnPanel/Hive';
 import MessageToolGroupSummary from '@/renderer/pages/conversation/Messages/components/MessageToolGroupSummary';
 import { activity as hiveActivity, hiveMessage, hiveSnapshot } from './hiveFixtures';
@@ -49,6 +50,12 @@ const Wrapper = ({ children }: { children: React.ReactNode }) => (
   </I18nextProvider>
 );
 
+/** The work panel's hive tab for one conversation, as a click in the transcript opens it. */
+function HiveTab({ focus }: { focus: HiveFocusRequest }) {
+  const read = useKyrnActivity(focus.conversationId);
+  return <KernelBody tab='hive' conversationId={focus.conversationId} activity={read} focus={focus} />;
+}
+
 describe('Sub-agent views in the app language', () => {
   it('words a delegate run: its title, what each bee did, and why it stopped', async () => {
     const snapshot = {
@@ -80,10 +87,7 @@ describe('Sub-agent views in the app language', () => {
         events: [{ id: 'run-1', at: 1, kind: 'swarm.snapshot', run: 'run-1', payload: snapshot }],
       },
     });
-    render(
-      <KyrnPanel conversationId='conv' focus={{ conversationId: 'conv', runId: 'run-1', beeName: 'reviewer' }} />,
-      { wrapper: Wrapper }
-    );
+    render(<HiveTab focus={{ conversationId: 'conv', runId: 'run-1', beeName: 'reviewer' }} />, { wrapper: Wrapper });
 
     expect(await screen.findByText('2 个任务')).toBeVisible();
     expect(screen.queryByText('2 tasks')).not.toBeInTheDocument();
@@ -92,6 +96,7 @@ describe('Sub-agent views in the app language', () => {
     expect(within(run).getByText('bash 失败')).toBeVisible();
     expect(within(run).getByText('正在压缩上下文')).toBeVisible();
     expect(within(run).getByText('an older line without a code')).toBeVisible();
+    // Why it stopped is said once, on its row, which shows it whole once opened.
     expect(within(run).getByText(/^bash 调用已 .+ 没有任何动静$/)).toBeVisible();
     expect(within(run).queryByText(/no sign of life/)).not.toBeInTheDocument();
     // The log is read as lines now, not as the raw JSON of the snapshot.
@@ -134,7 +139,13 @@ describe('Sub-agent views in the app language', () => {
       },
     ];
     const { rerender } = render(<MessageToolGroupSummary messages={[message]} />, { wrapper: Wrapper });
-    fireEvent.click(screen.getByRole('button', { name: `delegate · ${zhTools.status.executing}` }));
+    // The call reads as the sub-agents it asked for, never as its payload.
+    const card = screen.getByTestId('swarm-tool-card');
+    expect(card).toHaveAccessibleName(zhCommon.kyrn.hiveView.agents);
+    expect(within(card).getByRole('button', { name: '查看 a' })).toBeInTheDocument();
+    expect(within(card).getByText('c')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: zhCommon.kyrn.hiveView.raw }));
     expect(screen.getByText('正在为 3 个子代理选择角色、模型和思考强度…')).toBeInTheDocument();
     expect(screen.queryByText(/choosing a role/)).not.toBeInTheDocument();
 

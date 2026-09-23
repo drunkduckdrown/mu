@@ -38,6 +38,7 @@ import i18n, {
   applyStartupAppLanguage,
   loadStartupLanguage,
   onAppLanguageApplied,
+  translatorFor,
 } from '@/process/services/i18n';
 import { BackendHttpError } from '@/common/adapter/httpBridge';
 
@@ -129,6 +130,15 @@ describe('main-process app language', () => {
 
     await expect(startup).resolves.toBeUndefined();
     expect(i18n.language).toBe('fr-FR');
+  });
+
+  it('gives texts in another language without switching the app', async () => {
+    await applyAppLanguage('en-US');
+    const t = await translatorFor('zh');
+
+    expect(t('common.nodeRuntime.download')).toBe('下载');
+    expect(i18n.language).toBe('en-US');
+    expect(i18n.t('common.nodeRuntime.download')).toBe('Download');
   });
 
   it('uses the language it applied last time when the backend is unreachable', async () => {

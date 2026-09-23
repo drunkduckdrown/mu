@@ -14,6 +14,7 @@ import {
 } from '@/renderer/components/agent/runtimeSelectorOptions';
 import AionInlineSearchInput from '@/renderer/components/base/AionInlineSearchInput';
 import MobileActionSheet from '@/renderer/components/chat/MobileActionSheet';
+import SendArrowIcon from '@/renderer/components/chat/SendBox/SendArrowIcon';
 import type {
   MobileActionSheetEntry,
   MobileActionSheetOption,
@@ -21,24 +22,13 @@ import type {
 import type { AgentModeOption } from '@/renderer/utils/model/agentTypes';
 import type { AgentRuntimeDerivedOption } from '@/renderer/utils/model/agentRuntimeCatalog';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
-import { getCleanFileNames, FileService } from '@/renderer/services/FileService';
+import { getCleanFileNames } from '@/renderer/services/FileService';
 import { iconColors } from '@/renderer/styles/colors';
-import { isElectronDesktop } from '@/renderer/utils/platform';
 import type { AcpModelInfo } from '../types';
 import { getAvailableModels } from '../utils/modelUtils';
-import { Button, Checkbox, Dropdown, Menu, Message, Tooltip } from '@arco-design/web-react';
-import {
-  ArrowUp,
-  Brain,
-  FolderOpen,
-  FolderUpload,
-  Lightning,
-  Paperclip,
-  Plus,
-  Shield,
-  UploadOne,
-} from '@icon-park/react';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { Button, Checkbox, Dropdown, Menu, Tooltip } from '@arco-design/web-react';
+import { Brain, FolderUpload, Lightning, Plus, Shield, UploadOne } from '@icon-park/react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from '../index.module.css';
 
@@ -79,7 +69,6 @@ type GuidActionRowProps = {
   // File handling
   files: string[];
   /** Device uploads (browser input → managed dir): sent as `upload` refs. */
-  onFilesUploaded: (paths: string[]) => void;
   /** Backend-machine picker (native dialog / server-fs browse): sent as `local` refs. */
   onFilesPicked: (paths: string[]) => void;
 
@@ -124,7 +113,6 @@ type GuidActionRowProps = {
 const GuidActionRow: React.FC<GuidActionRowProps> = ({
   files,
   onFilesPicked,
-  onFilesUploaded,
   modelSelectorNode,
   isGeminiMode,
   modelList,
@@ -170,35 +158,8 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
   const showModeSwitch = dynamicModes.length > 0;
   const configOptionCount = (modelSelectorNode ? 1 : 0) + (showModeSwitch ? 1 : 0);
 
-  // Browser file picker ref (WebUI only)
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
-
-  const handleLocalFileChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const fileList = e.target.files;
-      if (!fileList || fileList.length === 0) return;
-      setUploading(true);
-      try {
-        const processed = await FileService.processDroppedFiles(fileList);
-        if (processed.length > 0) {
-          onFilesUploaded(processed.map((f) => f.path));
-        }
-      } catch {
-        Message.error(t('common.fileAttach.failed'));
-      } finally {
-        setUploading(false);
-      }
-      // Reset so the same file can be re-selected
-      e.target.value = '';
-    },
-    [onFilesUploaded, t]
-  );
-
   const getModeDisplayLabel = (mode: AgentModeOption): string =>
     t(`agentMode.${mode.value}`, { defaultValue: mode.label });
-
-  const isWebUI = !isElectronDesktop();
 
   const isSkillChecked = (skill: { name: string; isAuto: boolean }) =>
     skill.isAuto ? !disabledBuiltinSkills.includes(skill.name) : enabledSkills.includes(skill.name);
@@ -320,36 +281,14 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
       });
     }
 
-    // Match the conversation send box: WebUI offers both the backend-machine
-    // picker and an upload from the phone/current browser device.
-    if (isWebUI) {
-      entries.push(
-        {
-          key: 'attach-host-files',
-          icon: <Paperclip theme='outline' size='16' />,
-          label: t('common.fileAttach.addFiles', { defaultValue: 'Add files' }),
-          variant: 'muted',
-          dividerBefore: true,
-          onClick: openHostFilePicker,
-        },
-        {
-          key: 'attach-my-device',
-          icon: <FolderOpen theme='outline' size='16' />,
-          label: t('common.fileAttach.myDevice', { defaultValue: 'Upload from device' }),
-          variant: 'muted',
-          onClick: () => fileInputRef.current?.click(),
-        }
-      );
-    } else {
-      entries.push({
-        key: 'attach',
-        icon: <FolderUpload theme='outline' size='16' />,
-        label: t('common.fileAttach.addFiles', { defaultValue: 'Add files' }),
-        variant: 'muted',
-        dividerBefore: true,
-        onClick: openHostFilePicker,
-      });
-    }
+    entries.push({
+      key: 'attach',
+      icon: <FolderUpload theme='outline' size='16' />,
+      label: t('common.fileAttach.addFiles', { defaultValue: 'Add files' }),
+      variant: 'muted',
+      dividerBefore: true,
+      onClick: openHostFilePicker,
+    });
 
     // Skills (multi-select).
     if (allSkills.length > 0) {
@@ -428,7 +367,6 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
     onToggleMcpServer,
     activeSkillCount,
     activeMcpCount,
-    isWebUI,
     openHostFilePicker,
     t,
   ]);
@@ -448,34 +386,15 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
             .catch((error) => {
               console.error('Failed to open file dialog:', error);
             });
-        } else if (key === 'device') {
-          fileInputRef.current?.click();
         }
       }}
     >
-      {isWebUI ? (
-        <>
-          <Menu.Item key='file'>
-            <div className='flex items-center gap-8px'>
-              <UploadOne theme='outline' size='16' fill={iconColors.secondary} style={{ lineHeight: 0 }} />
-              <span>{t('common.fileAttach.addFiles')}</span>
-            </div>
-          </Menu.Item>
-          <Menu.Item key='device'>
-            <div className='flex items-center gap-8px'>
-              <UploadOne theme='outline' size='16' fill={iconColors.secondary} style={{ lineHeight: 0 }} />
-              <span>{t('common.fileAttach.myDevice')}</span>
-            </div>
-          </Menu.Item>
-        </>
-      ) : (
-        <Menu.Item key='file'>
-          <div className='flex items-center gap-8px'>
-            <UploadOne theme='outline' size='16' fill={iconColors.secondary} style={{ lineHeight: 0 }} />
-            <span>{t('common.fileAttach.addFiles')}</span>
-          </div>
-        </Menu.Item>
-      )}
+      <Menu.Item key='file'>
+        <div className='flex items-center gap-8px'>
+          <UploadOne theme='outline' size='16' fill={iconColors.secondary} style={{ lineHeight: 0 }} />
+          <span>{t('common.fileAttach.addFiles')}</span>
+        </div>
+      </Menu.Item>
       {allSkills.length > 0 && (
         <Menu.SubMenu
           key='skills'
@@ -586,8 +505,6 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
                 type='secondary'
                 shape='circle'
                 icon={<Plus theme='outline' size='14' strokeWidth={2} fill={iconColors.primary} />}
-                loading={uploading}
-                disabled={uploading}
                 data-testid='file-upload-btn'
                 onClick={() => setIsSheetOpen(true)}
               />
@@ -610,8 +527,6 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
                   shape='circle'
                   className={isPlusDropdownOpen ? styles.plusButtonRotate : ''}
                   icon={<Plus theme='outline' size='14' strokeWidth={2} fill={iconColors.primary} />}
-                  loading={uploading}
-                  disabled={uploading}
                   data-testid='file-upload-btn'
                 />
                 {files.length > 0 && (
@@ -626,15 +541,6 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
                 )}
               </span>
             </Dropdown>
-          )}
-          {isWebUI && (
-            <input
-              ref={fileInputRef}
-              type='file'
-              multiple
-              style={{ display: 'none' }}
-              onChange={handleLocalFileChange}
-            />
           )}
         </div>
       </div>
@@ -661,6 +567,8 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
                 dynamicModes={dynamicModes}
                 compactLeadingIcon={<Shield theme='outline' size='14' fill={iconColors.secondary} />}
                 modeLabelFormatter={getModeDisplayLabel}
+                compactLabelPrefix={t('agentMode.permission')}
+                hideCompactLabelPrefixOnMobile
               />
             )}
           </div>
@@ -672,12 +580,10 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           type='primary'
           loading={loading}
           disabled={isButtonDisabled}
-          className='send-button-custom'
-          style={{
-            backgroundColor: isButtonDisabled ? undefined : '#000000',
-            borderColor: isButtonDisabled ? undefined : '#000000',
-          }}
-          icon={<ArrowUp theme='filled' size='14' fill='white' strokeWidth={5} />}
+          className={`send-button-custom ${
+            isButtonDisabled ? 'send-button-custom--disabled' : 'send-button-custom--enabled'
+          }`}
+          icon={<SendArrowIcon size={16} />}
           onClick={onSend}
           data-testid='guid-send-btn'
         />

@@ -145,11 +145,6 @@ Use the Rust MSVC toolchain and install Microsoft C++ Build Tools. After install
 | `bun start`                 | Start Electron app in development mode (desktop)                                                               |
 | `bun run start:multi`       | Start a second Electron instance alongside an existing one (see [Multi-Instance](#multi-instance-development)) |
 | `bun run cli`               | Alias for `bun start`                                                                                          |
-| `bun run webui`             | Start in WebUI mode (browser-based, no Electron window)                                                        |
-| `bun run webui:remote`      | Start in WebUI mode with remote access enabled                                                                 |
-| `bun run webui:prod`        | Start WebUI in production mode                                                                                 |
-| `bun run webui:prod:remote` | Start WebUI in production mode with remote access                                                              |
-| `bun run resetpass`         | Reset user password via CLI                                                                                    |
 
 ### Build & Distribution
 
@@ -180,8 +175,6 @@ Use the Rust MSVC toolchain and install Microsoft C++ Build Tools. After install
 | `bun run server:start:remote`      | Run standalone server with remote access                    |
 | `bun run server:start:prod`        | Run standalone server in production mode                    |
 | `bun run server:start:prod:remote` | Run standalone server in production mode with remote access |
-| `bun run server:resetpass`         | Reset password via standalone server CLI                    |
-| `bun run server:resetpass:prod`    | Reset password via standalone server CLI (production)       |
 
 ### Code Quality
 
@@ -231,9 +224,7 @@ This sets `AIONUI_MULTI_INSTANCE=1`, which:
 - Skips the Electron single-instance lock
 - Uses a separate userData directory (`AionUi-Dev-2`) to avoid database and config conflicts
 - Isolates data/config symlink paths (`~/.aionui-dev-2`, `~/.aionui-config-dev-2`)
-- Vite renderer, CDP, and WebUI proxy ports auto-increment to avoid collisions
 
-> **Note:** The multi-instance WebUI defaults to port 25810 (instead of 25809). When accessing WebUI in a browser, use an **incognito/private window** for the second instance — both instances share the `localhost` cookie jar, and their JWT secrets differ, causing authentication failures if the same browser session is reused.
 
 ## Code Checks (prek)
 

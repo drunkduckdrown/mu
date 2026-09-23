@@ -6,25 +6,21 @@
 
 import type { IConversationMcpStatus, IConversationMcpStatusKind } from '@/common/config/storage';
 import { ipcBridge } from '@/common';
-import { Button, Message, Trigger } from '@arco-design/web-react';
-import { FolderOpen, Lightning, Paperclip, Plus, Right, Shield } from '@icon-park/react';
+import { Button, Trigger } from '@arco-design/web-react';
+import { Lightning, Paperclip, Plus, Right, Shield } from '@icon-park/react';
 import { useConversationContextSafe } from '@/renderer/hooks/context/ConversationContext';
 import { iconColors } from '@/renderer/styles/colors';
-import { isElectronDesktop } from '@/renderer/utils/platform';
-import { FileService } from '@/renderer/services/FileService';
-import type { FileMetadata } from '@/renderer/services/FileService';
 import { emitter } from '@/renderer/utils/emitter';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 
-interface FileAttachButtonProps {
+type FileAttachButtonProps = {
   openFileSelector: () => void;
-  onLocalFilesAdded?: (files: FileMetadata[]) => void;
   loadedSkills?: string[];
   loadedMcpStatuses?: IConversationMcpStatus[];
-}
+};
 
 const MenuItem: React.FC<{
   icon: React.ReactNode;
@@ -72,17 +68,10 @@ const buildLoadedMcpStatuses = (
   }));
 };
 
-const FileAttachButton: React.FC<FileAttachButtonProps> = ({
-  openFileSelector,
-  onLocalFilesAdded,
-  loadedSkills,
-  loadedMcpStatuses,
-}) => {
+const FileAttachButton: React.FC<FileAttachButtonProps> = ({ openFileSelector, loadedSkills, loadedMcpStatuses }) => {
   const conversationContext = useConversationContextSafe();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
   const [open, setOpen] = useState(false);
   const [skillsOpen, setSkillsOpen] = useState(false);
   const [mcpOpen, setMcpOpen] = useState(false);
@@ -109,30 +98,11 @@ const FileAttachButton: React.FC<FileAttachButtonProps> = ({
     void navigate('/settings/tools');
   }, [navigate]);
 
-  const handleLocalFileChange = useCallback(
-    async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const fileList = e.target.files;
-      if (!fileList || fileList.length === 0 || !onLocalFilesAdded) return;
-      setUploading(true);
-      try {
-        const processed = await FileService.processDroppedFiles(fileList, conversationContext?.conversation_id);
-        if (processed.length > 0) onLocalFilesAdded(processed);
-      } catch {
-        Message.error(t('common.fileAttach.failed'));
-      } finally {
-        setUploading(false);
-      }
-      e.target.value = '';
-    },
-    [conversationContext?.conversation_id, onLocalFilesAdded, t]
-  );
-
-  const isDesktop = isElectronDesktop();
   const hasSkills = skillNames.length > 0;
   const hasMcpServers = mcpStatuses.length > 0;
   const plusIcon = <Plus theme='outline' size='14' strokeWidth={2} fill={iconColors.primary} />;
 
-  if (isDesktop && !hasSkills && !hasMcpServers) {
+  if (!hasSkills && !hasMcpServers) {
     return (
       <Button
         type='secondary'
@@ -278,16 +248,6 @@ const FileAttachButton: React.FC<FileAttachButtonProps> = ({
 
       {/* 文件操作最常用，在最下（离 + 最近） */}
       <div className='px-6px'>
-        {!isDesktop && (
-          <MenuItem
-            icon={<FolderOpen theme='outline' size={15} strokeWidth={2.5} />}
-            label={t('common.fileAttach.myDevice', { defaultValue: 'Upload from device' })}
-            onClick={() => {
-              fileInputRef.current?.click();
-              setOpen(false);
-            }}
-          />
-        )}
         <MenuItem
           icon={<Paperclip theme='outline' size={15} strokeWidth={2.5} />}
           label={t('common.fileAttach.addFiles', { defaultValue: 'Add files' })}
@@ -301,34 +261,17 @@ const FileAttachButton: React.FC<FileAttachButtonProps> = ({
   );
 
   return (
-    <>
-      <Trigger
-        popup={() => menu}
-        trigger='click'
-        position='tl'
-        popupVisible={open}
-        onVisibleChange={setOpen}
-        clickToClose
-        popupAlign={{ bottom: 8 }}
-      >
-        <Button
-          type='secondary'
-          shape='circle'
-          icon={plusIcon}
-          loading={uploading}
-          disabled={uploading}
-          data-testid='aionrs-attach-folder-btn'
-        />
-      </Trigger>
-      <input
-        ref={fileInputRef}
-        type='file'
-        multiple
-        style={{ display: 'none' }}
-        onChange={handleLocalFileChange}
-        data-testid='aionrs-file-upload-input'
-      />
-    </>
+    <Trigger
+      popup={() => menu}
+      trigger='click'
+      position='tl'
+      popupVisible={open}
+      onVisibleChange={setOpen}
+      clickToClose
+      popupAlign={{ bottom: 8 }}
+    >
+      <Button type='secondary' shape='circle' icon={plusIcon} data-testid='aionrs-attach-folder-btn' />
+    </Trigger>
   );
 };
 

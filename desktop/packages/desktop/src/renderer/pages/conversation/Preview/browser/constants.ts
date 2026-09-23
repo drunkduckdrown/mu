@@ -93,6 +93,26 @@ export const resolveAddressBarInput = (raw: string): string | null => {
 };
 
 /**
+ * 应用自己的页面绝不能在内置浏览器里打开：那里没有桌面桥接，渲染出来的是 WebUI 的登录页。开发时那个页面是
+ * Vite 的 http 地址；打包后的渲染层走 file://，任何 http 地址都不会撞上它。
+ *
+ * The app's own page must never open inside the in-app browser: without the desktop bridge it renders as the
+ * WebUI sign-in. In development that page is Vite's http origin; the packaged renderer is file://, so no http
+ * address can collide with it.
+ */
+export const isAppAddress = (
+  url: string,
+  location: { protocol: string; origin: string } = window.location
+): boolean => {
+  if (!/^https?:$/i.test(location.protocol)) return false;
+  try {
+    return new URL(url).origin === location.origin;
+  } catch {
+    return false;
+  }
+};
+
+/**
  * 供 tab 标题使用的紧凑标签，页面还没给出标题时用主机名兜底。
  * Compact label for a tab title, falling back to the hostname before a real
  * page title arrives.

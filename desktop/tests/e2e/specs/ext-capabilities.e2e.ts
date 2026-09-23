@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures';
-import { getChannelPluginStatus, getExtensionSnapshot, goToExtensionSettings, waitForSettle } from '../helpers';
+import { getExtensionSnapshot, goToExtensionSettings, waitForSettle } from '../helpers';
 
 test.describe('Extension: Complete Capabilities', () => {
   test('all extension contribution categories are loaded and queryable', async ({ page }) => {
@@ -70,28 +70,6 @@ test.describe('Extension: Complete Capabilities', () => {
 
     const iframeCount = await page.locator('iframe[title*="Extension settings"]').count();
     expect(iframeCount).toBeGreaterThan(0);
-  });
-
-  test('extension channel plugins expose expected metadata schema', async ({ page }) => {
-    const statuses = await getChannelPluginStatus(page);
-    const extStatuses = statuses.filter((item) => item.isExtension);
-
-    const extTypes = extStatuses.map((item) => item.type);
-    expect(extTypes).toEqual(expect.arrayContaining(['e2e-test-channel', 'ext-feishu']));
-
-    const e2eChannel = extStatuses.find((item) => item.type === 'e2e-test-channel');
-    expect(e2eChannel).toBeTruthy();
-    const e2eCredentialKeys = e2eChannel?.extensionMeta?.credentialFields?.map((field) => field.key) || [];
-    const e2eConfigKeys = e2eChannel?.extensionMeta?.configFields?.map((field) => field.key) || [];
-    expect(e2eCredentialKeys).toEqual(expect.arrayContaining(['apiToken']));
-    expect(e2eConfigKeys).toEqual(expect.arrayContaining(['pollingInterval', 'enableDebug']));
-
-    const feishuChannel = extStatuses.find((item) => item.type === 'ext-feishu');
-    expect(feishuChannel).toBeTruthy();
-    const feishuCredentialKeys = feishuChannel?.extensionMeta?.credentialFields?.map((field) => field.key) || [];
-    const feishuConfigKeys = feishuChannel?.extensionMeta?.configFields?.map((field) => field.key) || [];
-    expect(feishuCredentialKeys).toEqual(expect.arrayContaining(['appId', 'appSecret']));
-    expect(feishuConfigKeys).toEqual(expect.arrayContaining(['enableMetrics']));
   });
 
   test('extension snapshot IPC call completes within budget', async ({ page }) => {

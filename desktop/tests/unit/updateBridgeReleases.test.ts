@@ -71,26 +71,26 @@ const makeGitHubReleaseResponse = () => [
     tag_name: 'v1.9.22',
     name: 'v1.9.22',
     body: 'release notes',
-    html_url: 'https://github.com/qybaihe/MU/releases/tag/v1.9.22',
+    html_url: 'https://github.com/qybaihe/mu/releases/tag/v1.9.22',
     published_at: '2026-04-29T00:00:00Z',
     prerelease: false,
     draft: false,
     assets: [
       {
         name: 'mu-1.9.22-mac-arm64.dmg',
-        browser_download_url: 'https://github.com/qybaihe/MU/releases/download/v1.9.22/mu-1.9.22-mac-arm64.dmg',
+        browser_download_url: 'https://github.com/qybaihe/mu/releases/download/v1.9.22/mu-1.9.22-mac-arm64.dmg',
         size: 123,
         content_type: 'application/x-apple-diskimage',
       },
       {
         name: 'mu-1.9.22-win-x64.exe',
-        browser_download_url: 'https://github.com/qybaihe/MU/releases/download/v1.9.22/mu-1.9.22-win-x64.exe',
+        browser_download_url: 'https://github.com/qybaihe/mu/releases/download/v1.9.22/mu-1.9.22-win-x64.exe',
         size: 456,
         content_type: 'application/vnd.microsoft.portable-executable',
       },
       {
         name: 'mu-1.9.22-linux-amd64.deb',
-        browser_download_url: 'https://github.com/qybaihe/MU/releases/download/v1.9.22/mu-1.9.22-linux-amd64.deb',
+        browser_download_url: 'https://github.com/qybaihe/mu/releases/download/v1.9.22/mu-1.9.22-linux-amd64.deb',
         size: 789,
       },
     ],
@@ -154,15 +154,15 @@ describe('updateBridge release assets', () => {
 
     try {
       const handler = await getCheckHandler();
-      const result = await handler({ repo: 'qybaihe/MU' });
+      const result = await handler({ repo: 'qybaihe/mu' });
 
       expect(result.success).toBe(true);
       expect(result.data?.currentVersion).toBe('1.0.0');
       const assets = result.data?.latest?.assets ?? [];
       expect(assets.map((a: { url: string }) => a.url)).toEqual([
-        'https://github.com/qybaihe/MU/releases/download/v1.9.22/mu-1.9.22-mac-arm64.dmg',
-        'https://github.com/qybaihe/MU/releases/download/v1.9.22/mu-1.9.22-win-x64.exe',
-        'https://github.com/qybaihe/MU/releases/download/v1.9.22/mu-1.9.22-linux-amd64.deb',
+        'https://github.com/qybaihe/mu/releases/download/v1.9.22/mu-1.9.22-mac-arm64.dmg',
+        'https://github.com/qybaihe/mu/releases/download/v1.9.22/mu-1.9.22-win-x64.exe',
+        'https://github.com/qybaihe/mu/releases/download/v1.9.22/mu-1.9.22-linux-amd64.deb',
       ]);
       expect(assets[0]).toMatchObject({ size: 123, contentType: 'application/x-apple-diskimage' });
       expect(fetchMock).toHaveBeenCalled();
@@ -204,7 +204,7 @@ describe('updateBridge download allowlist', () => {
       const handler = await getDownloadHandler();
       const result = await handler({
         downloadId: 'manual-download-1',
-        url: 'https://github.com/qybaihe/MU/releases/download/v1.9.22/mu-1.9.22-mac-arm64.dmg',
+        url: 'https://github.com/qybaihe/mu/releases/download/v1.9.22/mu-1.9.22-mac-arm64.dmg',
         file_name: 'mu-1.9.22-mac-arm64.dmg',
       });
 

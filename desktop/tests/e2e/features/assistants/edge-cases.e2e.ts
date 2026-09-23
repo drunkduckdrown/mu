@@ -16,49 +16,6 @@ import {
 test.describe('Assistant Settings Edge Cases (P2)', () => {
   test.setTimeout(90_000);
 
-  test('P2-1: highlight animation cleanup on unmount', async ({ page }) => {
-    const errors: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.type() === 'error' || msg.type() === 'warning') {
-        errors.push(msg.text());
-      }
-    });
-
-    // Navigate to Assistant settings with highlight parameter
-    const targetId = 'builtin-agent';
-    await page.evaluate((id) => {
-      window.location.hash = `/settings/assistants?highlight=${id}`;
-    });
-
-    await page.waitForTimeout(1000);
-    await takeScreenshot(page, 'assistants/p2-1/01-highlight-started.png');
-
-    const targetCard = page.locator(`[data-testid="assistant-card-${targetId}"]`);
-    if (await targetCard.isVisible().catch(() => false)) {
-      await takeScreenshot(page, 'assistants/p2-1/02-card-visible.png');
-    }
-
-    // Wait 1 second (animation not complete)
-    await page.waitForTimeout(1000);
-
-    // Immediately navigate away
-    await page.evaluate(() => {
-      window.location.hash = '/settings/general';
-    });
-    await page.waitForTimeout(500);
-
-    await takeScreenshot(page, 'assistants/p2-1/03-navigated-away.png');
-
-    // Wait for potential delayed errors
-    await page.waitForTimeout(3000);
-
-    await takeScreenshot(page, 'assistants/p2-1/04-final-state.png');
-
-    // Verify no memory/cleanup warnings
-    const hasMemoryWarning = errors.some((e) => e.includes('memory') || e.includes('timer') || e.includes('cleanup'));
-    expect(hasMemoryWarning).toBe(false);
-  });
-
   test('P2-2: search and tab filter both apply empty state', async ({ page }) => {
     await goToAssistantSettings(page);
 

@@ -43,7 +43,7 @@ async function waitForExtensionSettingsTabs(page: Page, timeout = 10_000): Promi
 
 test.describe('Extension: Settings Tabs Discovery', () => {
   test('extension settings tabs appear in the sidebar', async ({ page }) => {
-    await goToSettings(page, 'gemini');
+    await goToSettings(page, 'providers');
 
     const siderItemIds = await waitForExtensionSettingsTabs(page);
 
@@ -53,7 +53,7 @@ test.describe('Extension: Settings Tabs Discovery', () => {
   });
 
   test('multiple extension tabs from different extensions appear', async ({ page }) => {
-    await goToSettings(page, 'gemini');
+    await goToSettings(page, 'providers');
 
     const siderItemIds = await waitForExtensionSettingsTabs(page);
 
@@ -65,18 +65,19 @@ test.describe('Extension: Settings Tabs Discovery', () => {
 });
 
 test.describe('Extension: Settings Tabs Position Anchoring', () => {
-  test('tab with anchor "capabilities/after" appears after Capabilities in sidebar', async ({ page }) => {
-    await goToSettings(page, 'capabilities');
+  // The capabilities page is gone; the app anchors "capabilities" to the skills page (SETTINGS_ANCHOR_REMAP).
+  test('tab with anchor "capabilities/after" appears after Skills in sidebar', async ({ page }) => {
+    await goToSettings(page, 'skills');
     await waitForExtensionSettingsTabs(page);
 
     const siderItemIds = await getSiderItemIds(page);
 
-    const capabilitiesIdx = siderItemIds.indexOf('capabilities');
+    const skillsIdx = siderItemIds.indexOf('skills');
     const e2eIdx = siderItemIds.indexOf(EXT_E2E_SETTINGS_ID);
 
-    expect(capabilitiesIdx).toBeGreaterThanOrEqual(0);
+    expect(skillsIdx).toBeGreaterThanOrEqual(0);
     expect(e2eIdx).toBeGreaterThanOrEqual(0);
-    expect(e2eIdx).toBeGreaterThan(capabilitiesIdx);
+    expect(e2eIdx).toBeGreaterThan(skillsIdx);
   });
 
   test('tab with anchor "about/before" appears before About in sidebar', async ({ page }) => {
@@ -93,18 +94,19 @@ test.describe('Extension: Settings Tabs Position Anchoring', () => {
     expect(beforeAboutIdx).toBeLessThan(aboutIdx);
   });
 
-  test('tab with anchor "display/after" appears after Display in sidebar', async ({ page }) => {
+  // The display page is called appearance now; the app anchors "display" there.
+  test('tab with anchor "display/after" appears after Appearance in sidebar', async ({ page }) => {
     await goToSettings(page, 'display');
     await waitForExtensionSettingsTabs(page);
 
     const siderItemIds = await getSiderItemIds(page);
 
-    const displayIdx = siderItemIds.indexOf('display');
+    const appearanceIdx = siderItemIds.indexOf('appearance');
     const helloIdx = siderItemIds.indexOf(EXT_HELLO_SETTINGS_ID);
 
-    expect(displayIdx).toBeGreaterThanOrEqual(0);
+    expect(appearanceIdx).toBeGreaterThanOrEqual(0);
     expect(helloIdx).toBeGreaterThanOrEqual(0);
-    expect(helloIdx).toBeGreaterThan(displayIdx);
+    expect(helloIdx).toBeGreaterThan(appearanceIdx);
   });
 });
 
@@ -136,7 +138,7 @@ test.describe('Extension: Settings Tabs Navigation', () => {
     await goToExtensionSettings(page, EXT_E2E_SETTINGS_ID);
     await waitForSettle(page);
 
-    await goToSettings(page, 'capabilities');
+    await goToSettings(page, 'skills');
     await waitForSettle(page);
 
     await goToExtensionSettings(page, EXT_E2E_SETTINGS_ID);
@@ -152,7 +154,7 @@ test.describe('Extension: Settings Tabs Navigation', () => {
 
 test.describe('Extension: Settings Tabs $file: Resolution', () => {
   test('e2e-full-extension with $file: settingsTabs resolves correctly', async ({ page }) => {
-    await goToSettings(page, 'gemini');
+    await goToSettings(page, 'providers');
 
     const siderItemIds = await waitForExtensionSettingsTabs(page);
 
@@ -168,7 +170,7 @@ test.describe('Extension: Settings Tabs Stability', () => {
     await goToExtensionSettings(page, EXT_E2E_SETTINGS_ID);
     await waitForSettle(page);
 
-    await goToSettings(page, 'gemini');
+    await goToSettings(page, 'providers');
     await waitForSettle(page);
 
     const extErrors = errors.filter(

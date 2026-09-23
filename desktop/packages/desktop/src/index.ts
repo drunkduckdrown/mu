@@ -11,12 +11,8 @@ import { installGpuCrashHandler } from './process/utils/gpuRecovery';
 import { describeUncaughtError } from './process/utils/describeUncaughtError';
 import type { UncaughtErrorDiagnostics } from './process/utils/describeUncaughtError';
 import { createRendererRecoveryPolicy } from './process/utils/rendererRecovery';
-import { captureBackendStartupFailure, initSentry, scheduleStartupLogReport, setSentryDeviceId } from './sentry';
-
-initSentry();
-
 import './process/utils/configureConsoleLog';
-import { app, BrowserWindow, ipcMain, nativeImage, powerMonitor, session } from 'electron';
+import { app, BrowserWindow, ipcMain, nativeImage, powerMonitor, session, shell } from 'electron';
 import fixPath from 'fix-path';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -24,6 +20,7 @@ import { initMainAdapterWithWindow } from './common/adapter/main';
 import { ipcBridge } from './common';
 import { initializeProcess } from './process';
 import { startBackendOrExit } from './process/startup/backendStartup';
+import { planStartupNodeRuntime } from './process/startup/nodeRuntimeStartup';
 import { assertStartupArchitectureCompatible } from './process/startup/architectureCompatibility';
 import { classifyBackendStartupFailure } from './process/startup/backendStartupFailure';
 import { installQuitCleanup } from './process/startup/quitCleanup';
@@ -33,11 +30,9 @@ import type { BackendStartupFailureInfo } from './common/types/platform/electron
 import { registerWindowMaximizeListeners } from '@process/bridge';
 import { BackendLifecycleManager } from '@aionui/web-host';
 import { resolveBinaryPath } from '@process/backend';
-import './process/bridge/feedbackBridge';
 import { wasLaunchedAtLogin } from '@process/bridge/applicationBridge';
 import { applyStartupAppLanguage, onAppLanguageApplied } from '@process/services/i18n';
 import { setupApplicationMenu } from './process/utils/appMenu';
-import { startWebHost } from '@aionui/web-host';
 import { initializeZoomFactor, setupZoomForWindow } from './process/utils/zoom';
 import { hydrateWindowsProcessPath } from './process/startup/windowsPath';
 import { registerWindowsAppUserModelId } from './process/startup/windowsAppUserModelId';
@@ -59,12 +54,6 @@ import {
   showAndFocusMainWindow,
   showOrCreateMainWindow,
 } from './process/utils/mainWindowLifecycle';
-import {
-  loadUserWebUIConfig,
-  resolveRemoteAccess,
-  resolveWebUIPort,
-  restoreDesktopWebUIFromPreferences,
-} from './process/utils/webuiConfig';
 import {
   createOrUpdateTray,
   destroyTray,
@@ -98,11 +87,6 @@ if (!gotTheLock) {
     if (deepLinkUrl) {
       handleDeepLinkUrl(deepLinkUrl);
     }
-    // Focus existing window or recreate one if needed.
-    if (isWebUIMode || isResetPasswordMode) {
-      return;
-    }
-
     // Skip window creation if app hasn't finished initializing
     if (!appReadyDone) return;
 
@@ -151,9 +135,8 @@ if (electronSquirrelStartup) {
 }
 
 // Global error handlers for main process
-// Sentry automatically captures these, but we keep the handlers to prevent Electron's default error dialog.
-// Control flow is unchanged — both handlers still swallow the failure and keep the process alive; they only
-// log allow-listed attribution first, because a Sentry event for e.g. `read ECONNRESET` otherwise carries
+// The handlers prevent Electron's default error dialog. Both swallow the failure and keep the process alive;
+// they only log allow-listed attribution first, because an error such as `read ECONNRESET` otherwise carries
 // nothing but Node-internal frames (TCP.onStreamRead) and cannot be traced back to a subsystem (AIONUI-128).
 process.on('uncaughtException', (error, origin) => {
   logUncaught(describeUncaughtError(error, origin));
@@ -173,34 +156,9 @@ function logUncaught(diagnostics: UncaughtErrorDiagnostics): void {
   }
 }
 
-const hasSwitch = (flag: string) => process.argv.includes(`--${flag}`) || app.commandLine.hasSwitch(flag);
-const getSwitchValue = (flag: string): string | undefined => {
-  const withEqualsPrefix = `--${flag}=`;
-  const equalsArg = process.argv.find((arg) => arg.startsWith(withEqualsPrefix));
-  if (equalsArg) {
-    return equalsArg.slice(withEqualsPrefix.length);
-  }
-
-  const argIndex = process.argv.indexOf(`--${flag}`);
-  if (argIndex !== -1) {
-    const nextArg = process.argv[argIndex + 1];
-    if (nextArg && !nextArg.startsWith('--')) {
-      return nextArg;
-    }
-  }
-
-  const cliValue = app.commandLine.getSwitchValue(flag);
-  return cliValue || undefined;
-};
 const hasCommand = (cmd: string) => process.argv.includes(cmd);
 
-const isWebUIMode = hasSwitch('webui');
-const isRemoteMode = hasSwitch('remote');
-const isResetPasswordMode = hasCommand('--resetpass');
 const isVersionMode = hasCommand('--version') || hasCommand('-v');
-
-// Flag to distinguish intentional quit from unexpected exit in WebUI mode
-let isExplicitQuit = false;
 
 // Guard against premature window creation (e.g. macOS 'activate' firing during init).
 // The activate event fires on first launch before handleAppReady finishes initializeProcess(),
@@ -227,7 +185,9 @@ let backendStartupFailed = false;
 let backendStartupFailureInfo: BackendStartupFailureInfo | null = null;
 let rendererInitialLanguage: string | null = null;
 let backendMigrationsScheduled = false;
-let ensureAdminUserPromise: Promise<void> | null = null;
+// The person put the Node.js runtime download off at this start: the backend runs without it (see
+// process/startup/nodeRuntimeConsent.ts), and the renderer says so where it is needed.
+let nodeRuntimeDeferred = false;
 
 ipcMain.on('get-backend-port', (event) => {
   event.returnValue = backendManager.port;
@@ -243,6 +203,10 @@ ipcMain.on('get-backend-startup-failed', (event) => {
 
 ipcMain.on('get-backend-startup-failure', (event) => {
   event.returnValue = backendStartupFailureInfo;
+});
+
+ipcMain.on('get-node-runtime-deferred', (event) => {
+  event.returnValue = nodeRuntimeDeferred;
 });
 
 ipcMain.handle('backend:recover-corrupted-database', async () => {
@@ -266,13 +230,11 @@ ipcMain.handle('backend:recover-corrupted-database', async () => {
           },
           {
             allowPendingOnHealthTimeout: false,
-            onHealthTimeout: async (error) => {
+            onHealthTimeout: (error) => {
               markBackendStartupFailed(error);
-              await captureBackendStartupFailure(error);
             },
-            onPendingExit: async (error) => {
+            onPendingExit: (error) => {
               markBackendStartupFailed(error);
-              await captureBackendStartupFailure(error);
             },
             onReady: (backendPort) => {
               markBackendReady(backendPort, 'backendManager.recoverCorruptedDatabase.lateReady');
@@ -283,7 +245,6 @@ ipcMain.handle('backend:recover-corrupted-database', async () => {
         );
       } catch (error) {
         markBackendStartupFailed(error);
-        await captureBackendStartupFailure(error);
         throw error;
       }
     },
@@ -296,6 +257,14 @@ ipcMain.handle('backend:recover-corrupted-database', async () => {
     logInfo: console.info,
     logWarn: console.warn,
   });
+});
+
+// The startup-failure dialogs' "open the log folder". Through the main process: the backend, and with it the
+// shell bridge the rest of the app uses, may be what failed to start.
+ipcMain.handle('backend:open-log-folder', async () => {
+  const { getSystemDir } = await import('./process/utils/initStorage');
+  const failure = await shell.openPath(getSystemDir().logDir);
+  if (failure) throw new Error(failure);
 });
 
 // Push the latest backend startup state to the renderer so it can either show
@@ -366,20 +335,6 @@ function exposeBackendPort(backendPort: number): void {
   (globalThis as typeof globalThis & { __backendPort?: number }).__backendPort = backendPort;
 }
 
-function ensureAdminUserOnce(backendPort: number): Promise<void> {
-  if (!ensureAdminUserPromise) {
-    ensureAdminUserPromise = (async () => {
-      try {
-        const { ensureAdminUser } = await import('./process/utils/ensureAdminUser');
-        await ensureAdminUser(backendPort);
-      } catch (err) {
-        console.error('[WebUI] ensureAdminUser failed:', err);
-      }
-    })();
-  }
-  return ensureAdminUserPromise;
-}
-
 function markBackendReady(backendPort: number, source: string): void {
   if (backendStartedOk) return;
   console.log(`[AionUi] ${source} ready (port=${backendPort})`);
@@ -391,7 +346,6 @@ function markBackendReady(backendPort: number, source: string): void {
   (globalThis as typeof globalThis & { __backendStartupFailed?: boolean }).__backendStartupFailed = false;
   // Backend is ready: tell the renderer to drop any "starting" view and show the App.
   broadcastBackendStartupState(null);
-  void ensureAdminUserOnce(backendPort);
   scheduleBackendMigrations();
 }
 
@@ -400,7 +354,7 @@ function resolveDebugBackendStartupFailure(): BackendStartupFailureInfo | null {
   if (!reason) {
     return null;
   }
-  if ((app.isPackaged && !isE2ETestMode) || isWebUIMode || isResetPasswordMode) {
+  if (app.isPackaged && !isE2ETestMode) {
     console.warn('[AionUi] Ignoring AIONUI_DEBUG_BACKEND_STARTUP_FAILURE outside desktop dev/e2e mode.');
     return null;
   }
@@ -503,8 +457,6 @@ const createWindow = ({ showOnReady = true }: { showOnReady?: boolean } = {}): v
   });
   console.log(`[AionUi] Main window created (id=${mainWindow.id})`);
 
-  scheduleStartupLogReport(mainWindow);
-
   // Show window after content is ready to prevent FOUC (Flash of Unstyled Content)
   // Use 'ready-to-show' which fires when renderer has painted first frame,
   // combined with 'did-finish-load' as belt-and-suspenders approach.
@@ -543,9 +495,9 @@ const createWindow = ({ showOnReady = true }: { showOnReady?: boolean } = {}): v
 
   // Initialize auto-updater service (skip when disabled via env, e.g. E2E / CI)
   // 初始化自动更新服务（通过环境变量禁用时跳过，例如 E2E / CI 场景）
-  // mu does not update itself yet: its builds are unsigned GitHub pre-releases without an update feed, and the
-  // updater's feed (updateFeed.ts) is still AionUi's server, which would install AionUi over mu. Checking by hand
-  // (About) looks at mu's own releases (updateBridge.ts). Turn this on only together with a feed of mu's own.
+  // mu does not update itself yet: its builds are unsigned GitHub pre-releases without an update feed, and
+  // updateFeed.ts refuses to build one until mu hosts its own. Checking by hand (About) looks at mu's own releases
+  // (updateBridge.ts). Turn this on only together with a feed of mu's own.
   const MU_SELF_UPDATE = false;
   const isCiRuntime = process.env.CI === 'true' || process.env.CI === '1' || process.env.GITHUB_ACTIONS === 'true';
   const disableAutoUpdater =
@@ -562,16 +514,11 @@ const createWindow = ({ showOnReady = true }: { showOnReady?: boolean } = {}): v
         autoUpdaterService.setBeforeQuitAndInstall(async () => {
           await backendManager.stop();
         });
-        // Check for updates after 3 seconds delay. Skipped in the discontinued
-        // build: AionUi's final version guides users to the website instead of
-        // auto-checking, so startup stays silent. The flag is a compile-time
-        // literal, so this branch is tree-shaken out of non-discontinued builds.
-        // 3秒后检查更新。停更版启动静默，不做应用内检测。
-        if (!process.env.IS_DISCONTINUED_BUILD) {
-          setTimeout(() => {
-            void autoUpdaterService.checkForUpdatesAndNotify();
-          }, 3000);
-        }
+        // Check for updates after 3 seconds delay
+        // 3秒后检查更新
+        setTimeout(() => {
+          void autoUpdaterService.checkForUpdatesAndNotify();
+        }, 3000);
       })
       .catch((error) => {
         console.error('[App] Failed to initialize autoUpdaterService:', error);
@@ -688,7 +635,9 @@ const handleAppReady = async (): Promise<void> => {
   const mark = (label: string) => console.log(`[AionUi:ready] ${label} +${Math.round(performance.now() - t0)}ms`);
   mark('start');
 
-  if (!app.isPackaged) {
+  // React DevTools comes from the Chrome Web Store (about 670 KB): only when asked for with MU_DEVTOOLS=1, since
+  // nothing is downloaded without the person's consent.
+  if (!app.isPackaged && process.env.MU_DEVTOOLS === '1') {
     try {
       const { default: installExtension, REACT_DEVELOPER_TOOLS } = await import('electron-devtools-installer');
       await installExtension(REACT_DEVELOPER_TOOLS);
@@ -720,8 +669,6 @@ const handleAppReady = async (): Promise<void> => {
       // Ignore dock icon errors in development
     }
   }
-
-  setSentryDeviceId();
 
   // Allow the renderer's Local Font Access queries (window.queryLocalFonts),
   // used by the appearance font picker to enumerate installed fonts. Electron 37
@@ -818,6 +765,24 @@ const handleAppReady = async (): Promise<void> => {
     applyDebugBackendStartupFailure(debugBackendStartupFailure);
     mark(`debugBackendStartupFailure:${debugBackendStartupFailure.reason}`);
   } else {
+    // Nothing is downloaded without the person's consent: an unpackaged build asks before its backend fetches the
+    // Node.js runtime (a packaged one ships it). "Later", or a question that could not be asked, keeps every start
+    // of this session, crash restarts included, from downloading it.
+    try {
+      const { getDataPath } = await import('./process/utils/utils');
+      const nodeRuntimePlan = await planStartupNodeRuntime({
+        dataDir: getDataPath(),
+        isPackaged: app.isPackaged,
+        systemLocale: app.getLocale(),
+      });
+      if (nodeRuntimePlan === 'later') nodeRuntimeDeferred = true;
+      mark(`nodeRuntime:${nodeRuntimePlan}`);
+    } catch (error) {
+      console.error('[AionUi] Could not ask about the Node.js runtime; starting without downloading it:', error);
+      nodeRuntimeDeferred = true;
+    }
+    if (nodeRuntimeDeferred) backendManager.preferBundledManagedResources();
+
     // Start aioncore only after initializeProcess(). initStorage may open
     // the legacy Electron SQLite catalog for a one-shot v26 migration and must
     // close it before the backend touches the same file.
@@ -840,21 +805,12 @@ const handleAppReady = async (): Promise<void> => {
             logDir: sysDir.logDir,
           },
           {
-            allowPendingOnHealthTimeout: !(isWebUIMode || isResetPasswordMode),
-            onHealthTimeout: async (error) => {
+            allowPendingOnHealthTimeout: true,
+            onHealthTimeout: (error) => {
               markBackendStartupFailed(error);
-              // Hard rule: while the process is still alive, a health timeout is a
-              // recoverable "still starting" state — never auto-report to Sentry
-              // or escalate to a fatal dialog. Only genuinely abnormal shapes that
-              // fall through to a non-pending reason are captured.
-              if (backendStartupFailureInfo?.reason === 'backend_startup_pending_slow') {
-                return;
-              }
-              await captureBackendStartupFailure(error);
             },
-            onPendingExit: async (error) => {
+            onPendingExit: (error) => {
               markBackendStartupFailed(error);
-              await captureBackendStartupFailure(error);
             },
             onReady: (backendPort) => {
               markBackendReady(backendPort, 'backendManager.lateReady');
@@ -870,27 +826,14 @@ const handleAppReady = async (): Promise<void> => {
         }
         mark(`backendManager.start pending health (port=${backendPort})`);
       },
-      captureFailure: async (error) => {
+      captureFailure: (error) => {
         markBackendStartupFailed(error);
-        await captureBackendStartupFailure(error);
       },
       exitApp: (code) => app.exit(code),
-      exitOnFailure: isWebUIMode || isResetPasswordMode,
+      exitOnFailure: false,
       logError: console.error,
     });
-    if (!backendStartup.ok) {
-      if (isWebUIMode || isResetPasswordMode) {
-        return;
-      }
-    }
-
-    // One-shot WebUI admin credential migration. Must run after the backend is
-    // up (__backendPort set) and before any mode branch below that might log the
-    // user in. Swallows its own errors; the next boot retries.
-    const bootBackendPort = (globalThis as typeof globalThis & { __backendPort?: number }).__backendPort;
-    if (backendStartedOk && bootBackendPort) {
-      await ensureAdminUserOnce(bootBackendPort);
-    }
+    void backendStartup;
   }
 
   // One-shot backend migrations are deferred until after the renderer finishes
@@ -914,93 +857,7 @@ const handleAppReady = async (): Promise<void> => {
     loadSavedWindowBounds(undefined);
   }
 
-  if (isResetPasswordMode) {
-    // Handle password reset without creating window
-    try {
-      const { resetPasswordCLI, resolveResetPasswordUsername } = await import('./process/utils/resetPasswordCLI');
-      const username = resolveResetPasswordUsername(process.argv);
-
-      await resetPasswordCLI(username);
-
-      app.quit();
-    } catch {
-      app.exit(1);
-    }
-  } else if (isWebUIMode) {
-    const userConfigInfo = loadUserWebUIConfig();
-    if (userConfigInfo.exists && userConfigInfo.path) {
-      // Config file loaded from user directory
-    }
-    const resolvedPort = resolveWebUIPort(userConfigInfo.config, getSwitchValue);
-    const allowRemote = resolveRemoteAccess(userConfigInfo.config, isRemoteMode);
-    try {
-      // Inside Electron (`AionUi --webui` or packaged `aionui-web` mode that
-      // launches via the Electron shell), reuse the desktop app's data-dir so
-      // that conversations / cron jobs created in any path show up everywhere.
-      // Matches the desktop IPC path at line 493 above.
-      const { getDataPath } = await import('./process/utils/utils');
-      const { getSystemDir } = await import('./process/utils/initStorage');
-      const sysDirWebUI = getSystemDir();
-      // M6: Switch to @aionui/web-host
-      const handle = await startWebHost({
-        app: {
-          version: app.getVersion(),
-          isPackaged: app.isPackaged,
-          resourcesPath: app.getAppPath(),
-          // Same reason as dataDir below: webui.config.json must live next to
-          // the DB under the CLI-safe symlink path, so every password-change
-          // entry point (CLI --resetpass, settings-toggle IPC, browser login)
-          // reads the same file.
-          userDataPath: getDataPath(),
-        },
-        staticDir: path.join(__dirname, '../renderer'),
-        port: resolvedPort,
-        allowRemote,
-        dataDir: getDataPath(),
-        logDir: sysDirWebUI.logDir,
-        // Expose the same AIONUI_{CACHE,WORK,LOG}_DIR env the desktop IPC path
-        // passes at line 493, so /api/system/info reports the symlink workDir
-        // instead of the path-with-spaces userData root.
-        dirs: {
-          cacheDir: sysDirWebUI.cacheDir,
-          workDir: sysDirWebUI.workDir,
-          logDir: sysDirWebUI.logDir,
-        },
-        backend: {
-          kind: 'useExistingBackend',
-          port: (() => {
-            // Reuse the backend already spawned by backendManager.start() above.
-            // Spawning a second backend here would race the first on SQLite.
-            const port = (globalThis as typeof globalThis & { __backendPort?: number }).__backendPort;
-            if (!port) {
-              throw new Error('[WebUI] Cannot start: aioncore is not running (globalThis.__backendPort unset)');
-            }
-            return port;
-          })(),
-        },
-      });
-      console.log(`[WebUI] Headless server started (port=${handle.port}, backendPort=${handle.backendPort})`);
-      // No menus to rebuild here, but the harness still learns the app language (~/.mu/app-language).
-      void applyStartupAppLanguage(app.getLocale()).catch((error) =>
-        console.error('[WebUI] Failed to initialize i18n language:', error)
-      );
-    } catch (err) {
-      console.error(`[WebUI] Failed to start server on port ${resolvedPort}:`, err);
-      app.exit(1);
-      return;
-    }
-
-    // Keep the process alive in WebUI mode by preventing default quit behavior.
-    // On Linux headless (systemd), Electron may attempt to quit when no windows exist.
-    app.on('will-quit', (event) => {
-      // Only prevent quit if this is an unexpected exit (server still running).
-      // Explicit app.exit() calls bypass will-quit, so they are unaffected.
-      if (!isExplicitQuit) {
-        event.preventDefault();
-        console.warn('[WebUI] Prevented unexpected quit — server is still running');
-      }
-    });
-  } else {
+  {
     // 初始化关闭到托盘设置 / Initialize close-to-tray setting
     if (isE2ETestMode) {
       setCloseToTrayEnabled(false);
@@ -1058,13 +915,6 @@ const handleAppReady = async (): Promise<void> => {
       console.error('[index] Failed to initialize i18n language:', error)
     );
 
-    if (!isE2ETestMode) {
-      // 窗口创建后异步恢复 WebUI，不阻塞 UI / Restore WebUI async after window creation, non-blocking
-      restoreDesktopWebUIFromPreferences().catch((error) => {
-        console.error('[WebUI] Failed to auto-restore:', error);
-      });
-    }
-
     // Flush pending deep-link URL (received before window was ready)
     const pendingUrl = getPendingDeepLinkUrl();
     if (pendingUrl) {
@@ -1089,7 +939,7 @@ if (process.defaultApp) {
 app.on('open-url', (event, url) => {
   event.preventDefault();
   handleDeepLinkUrl(url);
-  if (isWebUIMode || isResetPasswordMode || !app.isReady()) {
+  if (!app.isReady()) {
     return;
   }
   // Focus existing window so user sees the result
@@ -1124,8 +974,7 @@ app.on('window-all-closed', () => {
   if (getCloseToTrayEnabled()) {
     return;
   }
-  // In WebUI mode, don't quit when windows are closed since we're running a web server
-  if (!isWebUIMode && process.platform !== 'darwin') {
+  if (process.platform !== 'darwin') {
     app.quit();
   }
 });
@@ -1135,7 +984,7 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   // Skip if handleAppReady hasn't finished — it will create the window itself.
   if (!appReadyDone) return;
-  if (!isWebUIMode && app.isReady()) {
+  if (app.isReady()) {
     if (mainWindow && !mainWindow.isDestroyed()) {
       // 从托盘恢复隐藏的窗口 / Restore hidden window from tray
       showAndFocusMainWindow(mainWindow);
@@ -1152,9 +1001,8 @@ installQuitCleanup({
   onBeforeQuit: (handler) => app.on('before-quit', (event) => handler(event)),
   quitApp: () => app.quit(),
   setIsQuitting,
-  markExplicitQuit: () => {
-    isExplicitQuit = true;
-  },
+  // The desktop shell has no server to keep alive past a quit.
+  markExplicitQuit: () => {},
   destroyTray,
   disposeCronResumeListener: () => {
     disposeCronResumeListener?.();

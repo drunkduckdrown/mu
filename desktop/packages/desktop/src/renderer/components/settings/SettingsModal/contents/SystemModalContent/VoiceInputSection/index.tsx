@@ -190,13 +190,14 @@ const VoiceInputSection: React.FC = () => {
   );
 
   return (
-    <div className='px-[12px] md:px-[32px] py-[24px] bg-2 rd-12px md:rd-16px border border-border-2'>
+    <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px'>
       <div className='flex items-center justify-between gap-12px mb-8px'>
         <div className='flex flex-col gap-4px'>
-          <span className='text-14px text-t-primary'>{t('settings.speechToText')}</span>
+          <span className='text-14px font-500 text-t-primary'>{t('settings.speechToText')}</span>
           <span className='text-13px text-t-secondary'>{t('settings.speechToTextDescription')}</span>
         </div>
         <Switch
+          size='small'
           checked={config.enabled}
           onChange={(checked) => updateConfig((current) => ({ ...current, enabled: checked }))}
         />

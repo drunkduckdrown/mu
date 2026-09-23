@@ -6,28 +6,24 @@
 
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { MU_DISPLAY_NAME } from '@/common/kyrn/displayName';
 
 /**
  * Single owner of `document.title`.
  *
- * The title used to be set once by the login page and never again, so after
- * logging in the window/tab kept saying "AionUi - Login" — in whatever language
- * the login page happened to render in — for the rest of the session. Deriving
- * it here from the route and the app language keeps it correct across both
- * navigation and language switches.
+ * The window title is the product name on every route. Kept as a component so
+ * nothing else writes `document.title` behind the app's back.
  */
-export function titleForPath(pathname: string, t: (key: string) => string): string {
-  return pathname.startsWith('/login') ? t('login.pageTitle') : 'mu';
+export function titleForPath(_pathname: string): string {
+  return MU_DISPLAY_NAME;
 }
 
 const DocumentTitle: React.FC = () => {
   const { pathname } = useLocation();
-  const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    document.title = titleForPath(pathname, t);
-  }, [pathname, t, i18n.language]);
+    document.title = titleForPath(pathname);
+  }, [pathname]);
 
   return null;
 };

@@ -2,15 +2,16 @@ import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import { execSync } from 'child_process';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { sentryVitePlugin } from '@sentry/vite-plugin';
 import UnoCSS from 'unocss/vite';
 import unoConfig from '../../uno.config.ts';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
-// Read the real AionUi version from the repo-root package.json.
-// `packages/desktop/package.json` is a workspace-internal placeholder pinned
-// at "0.0.0" — never use it for user-visible version strings.
+// The fork's version, from the repo-root package.json: what the updater compares against.
 const rootPackageJson = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8')) as {
+  version: string;
+};
+// mu's own version, from packages/desktop/package.json: what the app says it is (关于).
+const desktopPackageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
   version: string;
 };
 
@@ -67,32 +68,6 @@ const mainAliases = {
 
 export default defineConfig(({ mode }) => {
   const isDevelopment = mode === 'development';
-  const enableSentrySourceMaps =
-    !isDevelopment &&
-    !!process.env.SENTRY_AUTH_TOKEN &&
-    (process.env.CI !== 'true' || process.env.SENTRY_UPLOAD_SOURCE_MAPS === 'true');
-  const sentryReleaseName = process.env.SENTRY_RELEASE ?? `v${rootPackageJson.version}`;
-
-  const sentryPluginOptions = {
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
-    release: {
-      name: sentryReleaseName,
-    },
-    errorHandler: (error: Error) => {
-      throw error;
-    },
-    sourcemaps: {
-      filesToDeleteAfterUpload: ['./out/**/*.map'],
-      rewriteSources: (source: string) => {
-        // Normalize Windows backslashes and strip leading relative prefixes
-        // so Sentry paths match the GitHub repo structure (e.g.
-        // packages/desktop/src/process/...)
-        return source.replace(/\\/g, '/').replace(/^(\.\.\/)+(packages\/desktop\/src\/)/, '$2');
-      },
-    },
-  };
 
   return {
     main: {
@@ -130,16 +105,18 @@ export default defineConfig(({ mode }) => {
               }),
             ]
           : []),
-        ...(enableSentrySourceMaps ? [sentryVitePlugin(sentryPluginOptions)] : []),
         ...(isDevelopment ? [buildMcpServersPlugin()] : []),
       ],
       resolve: { alias: mainAliases, extensions: ['.ts', '.tsx', '.js', '.json'] },
       build: {
-        sourcemap: enableSentrySourceMaps ? 'hidden' : isDevelopment,
+        sourcemap: isDevelopment,
         reportCompressedSize: false,
         rollupOptions: {
           input: {
             index: resolve('packages/desktop/src/index.ts'),
+            // The local judge where Core ML does not run, started as a utility process (onnxruntime-node stays
+            // external and loads from node_modules, which a utility process reads inside app.asar).
+            localJudgeOnnx: resolve('packages/desktop/src/process/services/localJudgeOnnx/entry.ts'),
             // Built-in MCP server entry points (compiled by scripts/build-mcp-servers.js via esbuild,
             // not vite — esbuild bundles all deps for self-contained execution by external node processes)
           },
@@ -152,20 +129,11 @@ export default defineConfig(({ mode }) => {
       define: {
         'process.env.NODE_ENV': JSON.stringify(mode),
         'process.env.env': JSON.stringify(process.env.env),
-        'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN ?? ''),
-        // Discontinued-build fork flag (see discontinuedBuild.ts). Only AionUi's
-        // final `-final` tag build sets IS_DISCONTINUED_BUILD=true in CI.
-        'process.env.IS_DISCONTINUED_BUILD': JSON.stringify(process.env.IS_DISCONTINUED_BUILD === 'true'),
       },
     },
 
     preload: {
-      // Bundle @sentry/electron/preload so its hookupIpc() runs in the preload
-      // context. Externalized dependencies leave a runtime require('...') in
-      // the output, which Electron's sandbox-mode preload cannot resolve from
-      // node_modules (→ "module not found"). Bundling inlines the few hundred
-      // bytes of IPC wiring we actually need.
-      plugins: [externalizeDepsPlugin({ exclude: ['@sentry/electron'] })],
+      plugins: [externalizeDepsPlugin()],
       resolve: {
         alias: {
           '@': resolve('packages/desktop/src'),
@@ -237,14 +205,10 @@ export default defineConfig(({ mode }) => {
           '@lezer/highlight',
         ],
       },
-      plugins: [
-        UnoCSS(unoConfig),
-        iconParkPlugin(),
-        ...(enableSentrySourceMaps ? [sentryVitePlugin(sentryPluginOptions)] : []),
-      ],
+      plugins: [UnoCSS(unoConfig), iconParkPlugin()],
       build: {
         target: 'es2022',
-        sourcemap: enableSentrySourceMaps ? 'hidden' : isDevelopment,
+        sourcemap: isDevelopment,
         minify: !isDevelopment,
         reportCompressedSize: false,
         chunkSizeWarningLimit: 1500,
@@ -315,13 +279,10 @@ export default defineConfig(({ mode }) => {
         'process.env.NODE_ENV': JSON.stringify(mode),
         'process.env.env': JSON.stringify(process.env.env),
         'process.env.AIONUI_MULTI_INSTANCE': JSON.stringify(process.env.AIONUI_MULTI_INSTANCE ?? ''),
-        'process.env.SENTRY_DSN': JSON.stringify(process.env.SENTRY_DSN ?? ''),
-        // Inject the real AionUi version (root package.json) so renderer code
-        // can show it without importing packages/desktop/package.json, which is
-        // a workspace-internal placeholder frozen at "0.0.0".
+        // The fork's version (root package.json), for the update check's fallback.
         __APP_VERSION__: JSON.stringify(rootPackageJson.version),
-        // Renderer-side discontinued-build flag; consumed via discontinuedBuild.ts.
-        __IS_DISCONTINUED_BUILD__: JSON.stringify(process.env.IS_DISCONTINUED_BUILD === 'true'),
+        // mu's own version (packages/desktop/package.json), shown on 关于.
+        __MU_VERSION__: JSON.stringify(desktopPackageJson.version),
         global: 'globalThis',
       },
       optimizeDeps: {

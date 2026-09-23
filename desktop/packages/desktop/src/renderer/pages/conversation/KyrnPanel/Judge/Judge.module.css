@@ -1,40 +1,206 @@
-.judge {
+/* The judge log: a quiet list of lines in the page's own colours, hairlines only. */
+
+.log {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+
+.toolbar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px 6px 12px;
+  border-bottom: 1px solid var(--border-base);
+}
+
+.contextButton:global(.arco-btn),
+.toolButton:global(.arco-btn) {
+  min-width: 0;
+  padding: 0 6px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.contextButton:global(.arco-btn) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contextButton:global(.arco-btn[aria-expanded='true']) {
+  color: var(--text-primary);
+}
+
+.context {
+  flex: none;
+  max-height: 50%;
+  overflow-y: auto;
+  padding-top: 8px;
+  border-bottom: 1px solid var(--border-base);
+}
+
+/* The verdict on the message being worked on, kept above the log while its turn runs. */
+.pinned {
+  flex: none;
+  min-width: 0;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border-base);
+}
+
+.pinnedLabel {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 4px 0 12px;
+}
+
+.empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.earlier:global(.arco-btn) {
+  margin: 2px 8px;
+  color: var(--text-secondary);
+}
+
+.lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.line + .line {
+  border-top: 1px solid var(--border-light, var(--border-base));
+}
+
+/*
+ * A line is its time, then its sentence, which wraps in its own column so the sentences start in one line down the
+ * log. The code of what it records waits in the opened line. The pinned verdict's label leads its time.
+ */
+.lineButton:global(.arco-btn),
+.pinned {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 8px;
+  row-gap: 2px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.pinned {
+  grid-template-columns: max-content max-content minmax(0, 1fr);
+}
+
+.lineButton:global(.arco-btn) {
+  height: auto;
+  min-height: 30px;
+  padding: 6px 12px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: start;
+}
+
+.lineButton:global(.arco-btn:not(:disabled):hover) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.lineButton:global(.arco-btn[aria-expanded='true']) {
+  background: transparent;
+}
+
+.lineButton:global(.arco-btn:focus-visible) {
+  outline: 1px solid var(--text-primary);
+  outline-offset: -1px;
+}
+
+.time {
+  flex: none;
+  color: var(--bg-6);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The sentence wraps rather than hiding behind the chips; the chips follow it and wrap with it. */
+.body {
   min-width: 0;
   color: var(--text-primary);
-  font-size: 13px;
-}
-
-.header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-block: 10px;
-  min-width: 0;
-}
-
-.brandIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  flex-shrink: 0;
-  border: 1px solid var(--mu-judge-border, transparent);
-  border-radius: 11px;
-  background: var(--mu-judge-bg, transparent);
-  /* The judge's own colour: pink, never the primary violet of action buttons. */
-  color: var(--mu-judge, var(--brand));
-}
-
-.title {
-  margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
-  font-weight: 600;
+  white-space: normal;
   overflow-wrap: anywhere;
 }
 
-.hint,
+.chip {
+  display: inline-block;
+  box-sizing: border-box;
+  max-width: calc(100% - 6px);
+  margin-inline-start: 6px;
+  padding: 0 5px;
+  overflow: hidden;
+  border: 1px solid var(--border-base);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.detail {
+  padding: 2px 12px 12px;
+}
+
+/* The decision point or event kind of an opened line: quiet, like the time. */
+.detailCode {
+  margin: 0 0 6px;
+  color: var(--bg-6);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 16px;
+  overflow-wrap: anywhere;
+}
+
+.detailLine {
+  margin: 0 0 4px;
+  font-size: 12px;
+  line-height: 18px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.image {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.latest:global(.arco-btn) {
+  position: absolute;
+  inset-inline-end: 12px;
+  bottom: 12px;
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+  background: var(--bg-1);
+  color: var(--text-primary);
+}
+
 .muted {
   font-size: 11px;
   font-weight: 400;
@@ -43,39 +209,10 @@
   overflow-wrap: anywhere;
 }
 
-.hint {
-  margin-block: 4px;
-}
-
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  margin-block: 8px;
-  color: var(--text-secondary);
-  font-size: 11px;
-}
-
-.stat {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-}
-
-.stat dt,
-.statValue {
-  margin: 0;
-}
-
-.statValue {
-  color: var(--text-primary);
+/* An opened line's judgment: the same content as a card, without the frame. */
+.plainCard {
+  min-width: 0;
   font-size: 13px;
-  font-weight: 600;
-}
-
-.filter:global(.arco-select) {
-  width: 100%;
-  margin-block: 2px 8px;
 }
 
 .card {

@@ -104,10 +104,6 @@ vi.mock('@renderer/utils/model/agentLogo', () => ({
   resolveAgentLogo: () => null,
 }));
 
-vi.mock('@renderer/utils/model/agentTypeSupportPolicy', () => ({
-  resolveSupportedConversationType: () => 'acp',
-}));
-
 vi.mock('@renderer/pages/cron/ScheduledTasksPage/resolveCronAgentConfig', () => ({
   resolveCronAgentConfig: vi.fn(() => ({
     agent_config: {

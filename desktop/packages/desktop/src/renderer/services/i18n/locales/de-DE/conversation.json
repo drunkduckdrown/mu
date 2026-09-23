@@ -12,12 +12,7 @@
     "clearWorkspace": "Ordner entfernen",
     "openFolder": "Ordner öffnen",
     "none": "Keiner",
-    "quickActionsTitle": "Was kann AionUi?",
-    "quickActionFeedback": "Feedback oder Vorschläge?",
-    "quickActionStar": "Gefällt dir AionUi? Gib uns einen Stern!",
-    "skillsMarket": "AionUi Skills-Markt",
-    "skillsMarketDesc": "Community-Skills auf Abruf suchen und aktivieren. Einmal konfigurieren, für alle Agenten verfügbar.",
-    "skillsMarketDetails": "Mehr anzeigen >>"
+    "quickActionsTitle": "Was kann mu?"
   },
   "history": {
     "recents": "Zuletzt",
@@ -146,7 +141,7 @@
       "check_provider_base_url": "Überprüfe die Basis-URL des Modellanbieters, den API-Pfad, den Proxy und die API-Kompatibilität.",
       "change_model": "Wähle ein Modell, das für das aktuelle Konto verfügbar ist und diese Anfrage unterstützt.",
       "reduce_context": "Reduziere den Nachrichteninhalt, referenzierte Dateien oder die Kontextgröße und versuche es nochmal.",
-      "send_feedback": "Sende Feedback mit Protokollen, damit das Team das Problem untersuchen kann."
+      "send_feedback": "Versuche es erneut; wenn es weiterhin fehlschlägt, prüfe das App-Protokoll."
     },
     "ownership": {
       "aionui": "App",
@@ -157,7 +152,7 @@
     "codes": {
       "AIONUI_STREAM_BROKEN": {
         "title": "Antwortstrom wurde unterbrochen",
-        "body": "Die App hat deine Nachricht akzeptiert, aber der Antwortstrom endete unerwartet. Bitte versuche es erneut; wenn es wieder passiert, sende Feedback."
+        "body": "Die App hat deine Nachricht akzeptiert, aber der Antwortstrom endete unerwartet. Bitte versuche es erneut; wenn es wieder passiert, prüfe das App-Protokoll."
       },
       "AIONUI_STATE_INCONSISTENT": {
         "title": "Unterhaltungszustand ist nicht synchronisiert",
@@ -169,7 +164,7 @@
       },
       "AIONUI_INTERNAL_ERROR": {
         "title": "Anfrage in der App fehlgeschlagen",
-        "body": "Die Anfrage ist fehlgeschlagen, während die App sie verarbeitete. Bitte versuche es einmal erneut; wenn es wiederholt passiert, sende Feedback."
+        "body": "Die Anfrage ist fehlgeschlagen, während die App sie verarbeitete. Bitte versuche es einmal erneut; wenn es wiederholt passiert, prüfe das App-Protokoll."
       },
       "AIONUI_CONVERSATION_BUSY": {
         "title": "Unterhaltung ist beschäftigt",
@@ -326,7 +321,7 @@
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
         "title": "Antwort des Team-Hilfsprozesses konnte nicht gelesen werden",
-        "body": "AionUi konnte die Antwort des lokalen Team-Hilfsprozesses nicht lesen. Versuche es einmal erneut; wenn es weiter passiert, starte die App neu."
+        "body": "mu konnte die Antwort des lokalen Team-Hilfsprozesses nicht lesen. Versuche es einmal erneut; wenn es weiter passiert, starte die App neu."
       },
       "MCP_TOOL_REMOTE_ERROR": {
         "title": "Der lokale Team-Hilfsprozess hat die Anfrage abgelehnt",
@@ -334,11 +329,11 @@
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
         "title": "Der Team-Hilfsprozess hat eine unerwartete Antwort zurückgegeben",
-        "body": "AionUi hat eine unerwartete Antwort vom lokalen Team-Hilfsprozess erhalten. Versuche es einmal erneut und melde das Problem, wenn es bestehen bleibt."
+        "body": "mu hat eine unerwartete Antwort vom lokalen Team-Hilfsprozess erhalten. Versuche es einmal erneut und melde das Problem, wenn es bestehen bleibt."
       },
       "MCP_TCP_READ_FAILED": {
         "title": "Lesen vom lokalen Team-Hilfsprozess fehlgeschlagen",
-        "body": "AionUi konnte die TCP-Antwort des lokalen Team-Hilfsprozesses nicht lesen. Versuche es einmal erneut und starte die App neu, wenn es weiter fehlschlägt."
+        "body": "mu konnte die TCP-Antwort des lokalen Team-Hilfsprozesses nicht lesen. Versuche es einmal erneut und starte die App neu, wenn es weiter fehlschlägt."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
         "title": "Team-Dienst ist noch nicht bereit",
@@ -377,6 +372,7 @@
     "addFile": "Datei hinzufügen",
     "refresh": "Aktualisieren",
     "temporarySpace": "Temporärer Bereich",
+    "temporaryWorkspace": "Temporärer Arbeitsbereich",
     "dragOverlayTitle": "Zum Importieren ablegen",
     "dragOverlayDesc": "Dateien oder Ordner hierher ziehen, um sie in diesen Arbeitsbereich zu kopieren.",
     "dragOverlayHint": "Tipp: Überall ablegen, um in den ausgewählten Ordner zu importieren.",
@@ -440,11 +436,12 @@
       "vscode": "VS Code",
       "terminal": "Terminal",
       "explorer": "Datei-Explorer",
-      "browser": "Browser"
+      "browser": "Browser",
+      "choose": "Öffnen mit auswählen"
     },
-    "collapsePanel": "Projektbereich ausblenden",
+    "collapsePanel": "Arbeitspanel ausblenden",
     "togglePanel": "Projektbereich ein- oder ausblenden",
-    "expandPanel": "Projektbereich einblenden"
+    "expandPanel": "Arbeitspanel einblenden"
   },
   "minimap": {
     "searchAria": "Gespräch durchsuchen",
@@ -588,6 +585,7 @@
   "thinking": {
     "label": "Denkt nach…",
     "history": "Denkverlauf",
+    "thoughtFor": "{{time}} nachgedacht",
     "labelWithTime": "{{label}} · {{time}}",
     "completeWithTime": "Denken abgeschlossen · {{time}}",
     "elapsed": "({{time}})"
@@ -617,6 +615,16 @@
     "mediaPathFallback": "Dieser Agent unterstützt diesen Dateityp nicht nativ; die Datei wird als Dateipfad gesendet.",
     "hintWithSessions": "/ für Befehle, @ für Dateien, @@ für Unterhaltungen, ↑/↓ für Verlauf"
   },
+  "composer": {
+    "goalLine": {
+      "running": "Ziel läuft: {{goal}}",
+      "paused": "Ziel pausiert: {{goal}}",
+      "end": "Beenden",
+      "endLabel": "Ziel beenden"
+    },
+    "thinkingNote": "Ein Wechsel der Denkstufe verwirft den Prompt-Cache; beim selben Modell besser nicht wechseln",
+    "modelBusy": "Das Modell lässt sich wechseln, wenn diese Antwort fertig ist."
+  },
   "agentTip": {
     "codes": {
       "ACP_EMPTY_TURN": {
@@ -641,13 +649,13 @@
         "body": "{{count}} Schritt(e) sind fehlgeschlagen und wurden NICHT ausgeführt. agy schließt solche Durchläufe trotzdem als erfolgreich ab – prüfe daher das tatsächliche Ergebnis statt der Antwort."
       },
       "CLI_VERSION_OLDER": {
-        "body": "Das installierte {{cli}} ist älter als die von AionUi verifizierte Version; einige Funktionen fehlen möglicherweise. Ein Upgrade von {{cli}} wird empfohlen. (installiert: {{reported}} / von AionUi verifiziert: {{verified}})"
+        "body": "Das installierte {{cli}} ist älter als die von mu verifizierte Version; einige Funktionen fehlen möglicherweise. Ein Upgrade von {{cli}} wird empfohlen. (installiert: {{reported}} / von mu verifiziert: {{verified}})"
       },
       "CLI_VERSION_NEWER": {
-        "body": "Das installierte {{cli}} ist neuer als die von AionUi verifizierte Version. Es sollte weiterhin funktionieren; melden Sie ungewöhnliches Verhalten. (installiert: {{reported}} / von AionUi verifiziert: {{verified}})"
+        "body": "Das installierte {{cli}} ist neuer als die von mu verifizierte Version. Es sollte weiterhin funktionieren; melden Sie ungewöhnliches Verhalten. (installiert: {{reported}} / von mu verifiziert: {{verified}})"
       },
       "CODEX_RETRYING": {
-        "body": "{{detail}} (Versuch {{attempts}}, bisher {{elapsed}} – der Anbieter des Agents bricht die Verbindung wiederholt ab; AionUi wartet ab.)"
+        "body": "{{detail}} (Versuch {{attempts}}, bisher {{elapsed}} – der Anbieter des Agents bricht die Verbindung wiederholt ab; mu wartet ab.)"
       }
     }
   },
@@ -727,7 +735,7 @@
         "conflicted": "!",
         "unknown": "?"
       },
-      "conflictedHint": "Lösen Sie diesen Konflikt zuerst außerhalb von AionUi",
+      "conflictedHint": "Lösen Sie diesen Konflikt zuerst außerhalb von mu",
       "opaqueHint": "Dieser Status kommt von einem neueren Backend — nur lesend angezeigt",
       "degraded": "Die Aktualisierung läuft langsamer, weil der git-Index nicht geschrieben werden kann",
       "truncated": "Zu viele Änderungen — nur der erste Teil wird angezeigt",
@@ -746,7 +754,7 @@
         "discard": "Änderungen verwerfen",
         "stageAll": "Alle vormerken",
         "unstageAll": "Alle Vormerkungen aufheben",
-        "blockedHint": "Lösen Sie den Konflikt außerhalb von AionUi, bevor Sie vormerken oder verwerfen",
+        "blockedHint": "Lösen Sie den Konflikt außerhalb von mu, bevor Sie vormerken oder verwerfen",
         "confirmDiscardTitle": "Änderungen verwerfen?",
         "confirmDiscardTracked": "Die Änderungen an {{count}} Dateien gehen verloren. Das kann nicht rückgängig gemacht werden.",
         "confirmDiscardUntracked": "{{count}} neue Dateien werden in den Papierkorb verschoben.",

@@ -126,7 +126,7 @@ vi.mock('@/renderer/components/agent/AgentModeSelector', () => ({ default: () =>
 vi.mock('@/renderer/components/chat/CommandQueuePanel', () => ({ default: () => null }));
 vi.mock('@/renderer/components/chat/MobileActionSheet', () => ({
   default: () => null,
-  useAttachEntry: () => ({ entries: [], hiddenFileInput: null }),
+  useAttachEntry: () => ({ entries: [] }),
 }));
 vi.mock('@/renderer/components/chat/ThoughtDisplay', () => ({ default: () => null }));
 vi.mock('@/renderer/components/media/FileAttachButton', () => ({ default: () => null }));

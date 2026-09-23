@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { kyrnBridge, unwrap } from '@/common/kyrn/bridge';
 import type { AvailableModels } from '@/common/kyrn/models';
 import type { KyrnSettings } from '@/common/kyrn/types';
@@ -105,3 +114,16 @@ export function useMuSettings(): MuSettings {
     save,
   };
 }
+
+const MuSettingsContext = createContext<MuSettings | undefined>(undefined);
+
+/**
+ * One draft for every settings page. It sits around the settings routes, above the pages, so a page left for another
+ * one (a route change draws the page afresh) keeps what was typed and not saved, until the settings are left.
+ */
+export function MuSettingsProvider({ children }: { children?: ReactNode }) {
+  return createElement(MuSettingsContext.Provider, { value: useMuSettings() }, children);
+}
+
+/** The draft the settings pages share; undefined outside {@link MuSettingsProvider}. */
+export const useSharedMuSettings = (): MuSettings | undefined => useContext(MuSettingsContext);

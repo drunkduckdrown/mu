@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Button, Collapse, Pagination, Tag } from '@arco-design/web-react';
+import { Button, Collapse, Pagination, Tag } from '@arco-design/web-react';
 import { Terminal } from '@icon-park/react';
 import { useTranslation } from 'react-i18next';
 import type { HiveBee } from '@/common/kyrn/hive';
@@ -52,7 +52,7 @@ export default function BeeInspector({ bee, focus, events }: { bee: HiveBee; foc
         </span>
       </div>
       <p className={styles.hint}>{beeCounters(t, bee)}</p>
-      {bee.quietMs > 0 && <Alert type='warning' content={quietLabel(t, bee.quietMs, i18n.language)} />}
+      {bee.quietMs > 0 && <p className={styles.hint}>{quietLabel(t, bee.quietMs, i18n.language)}</p>}
       {bee.error && <ErrorNotice title={t('common.kyrn.beeFailed')} detail={beeErrorText(t, bee, i18n.language)} />}
       <div className={styles.current}>
         <div className={styles.sectionLabel}>{t('common.kyrn.hiveView.current')}</div>

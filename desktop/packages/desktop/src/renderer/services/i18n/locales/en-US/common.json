@@ -65,10 +65,10 @@
   "more": "More",
   "refresh": "Refresh",
   "readOnly": "Read only",
-  "tray.showWindow": "Show AionUi",
+  "tray.showWindow": "Show mu",
   "tray.newChat": "New Chat",
   "tray.closeToTray": "Hide to Tray",
-  "tray.about": "About AionUi",
+  "tray.about": "About mu",
   "tray.restart": "Restart App",
   "tray.quit": "Quit",
   "tray.pauseAll": "Pause All Tasks",
@@ -78,61 +78,40 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "This system is not supported by the bundled backend",
-      "description": "AionUi opened, but the local AionCore backend cannot run on this Linux version. Please upgrade to a supported Linux distribution and restart AionUi.",
+      "description": "mu opened, but its local service cannot run on this Linux version. Please upgrade to a supported Linux distribution and restart mu.",
       "requiredVersions": "Required runtime symbols: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "AionUi installation is incomplete",
-      "description": "This installation is missing required local resources, so AionCore cannot start. Please download and reinstall the latest AionUi. If the issue returns after reinstalling, check whether security or antivirus software quarantined AionCore.",
+      "title": "mu installation is incomplete",
+      "description": "This installation is missing required local resources, so mu's local service cannot start. Please download and reinstall the latest mu. If the issue returns after reinstalling, check whether security or antivirus software quarantined mu's files.",
       "downloadLatest": "Download latest",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report",
-      "runtimeComponentDescription": "This installation is missing required bundled runtime components, so {{resource}} cannot start. Reinstall the latest AionUi package. If it still happens after reinstalling, check whether security or antivirus software quarantined AionUi components."
+      "runtimeComponentDescription": "This installation is missing required bundled runtime components, so {{resource}} cannot start. Reinstall the latest mu package. If it still happens after reinstalling, check whether security or antivirus software quarantined mu components."
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi package architecture mismatch",
-      "description": "This AionUi package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
+      "title": "mu package architecture mismatch",
+      "description": "This mu package is for {{packageArch}}, but this Mac is {{deviceArch}}. You may have downloaded the wrong package. Please download and install the {{expectedArch}} package."
     },
     "dataMigration": {
       "title": "Local data migration failed",
-      "description": "AionUi opened, but AionCore stopped while initializing local data. Reinstalling AionUi may not fix this. Send a diagnostics report or contact support so the local database migration can be inspected.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "description": "mu opened, but its local service stopped while initializing local data. Reinstalling mu may not fix this. The app log shows where the local database migration stopped."
     },
     "databaseNewerThanApp": {
-      "title": "A newer version of AionUi is required",
-      "description": "Your local data was created by a newer version of AionUi, and this version can't open it. Update AionUi to the latest version to continue — your data is intact, and no reinstall or data reset is needed.",
-      "descriptionWithVersion": "Your local data was created by a version of AionUi newer than the one installed now (v{{currentVersion}}), so this version can't open it. Update AionUi to the latest version to continue — your data is intact, and no reinstall or data reset is needed."
+      "title": "A newer version of mu is required",
+      "description": "Your local data was created by a newer version of mu, and this version can't open it. Update mu to the latest version to continue — your data is intact, and no reinstall or data reset is needed.",
+      "descriptionWithVersion": "Your local data was created by a version of mu newer than the one installed now (v{{currentVersion}}), so this version can't open it. Update mu to the latest version to continue — your data is intact, and no reinstall or data reset is needed."
     },
     "localDataRepair": {
       "title": "Local data repair failed",
-      "description": "AionUi opened, but AionCore stopped while preparing local startup data such as assistant or agent records. Reinstalling AionUi may not fix this. Send a diagnostics report or contact support so the local database can be inspected.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "description": "mu opened, but its local service stopped while preparing local startup data such as assistant or agent records. Reinstalling mu may not fix this. The app log shows which local data could not be prepared."
     },
     "startupDirectory": {
       "title": "Startup directory is unavailable",
-      "description": "AionUi opened, but AionCore could not start because the configured work or log directory is missing, unavailable, or blocked by permissions. Check that the configured directories exist and are writable, then restart AionUi.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report"
+      "description": "mu opened, but its local service could not start because the configured work or log directory is missing, unavailable, or blocked by permissions. Check that the configured directories exist and are writable, then restart mu."
     },
     "recoverableDatabaseCorruption": {
       "title": "Local data is corrupted",
-      "description": "AionUi detected that the local database is corrupted and cannot continue startup. After confirmation, AionUi will back up the old database and create a new local database to continue startup. Past conversations will no longer be shown, and the old database will be kept as a backup file.",
+      "description": "mu detected that the local database is corrupted and cannot continue startup. After confirmation, mu will back up the old database and create a new local database to continue startup. Past conversations will no longer be shown, and the old database will be kept as a backup file.",
       "confirmRebuild": "Back up old DB and rebuild new DB",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsHint": "Sending diagnostics will not modify the local database.",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report",
       "rebuildFailed": "Failed to back up old DB and rebuild new DB",
       "confirmDialog": {
         "title": "Rebuild the database?",
@@ -142,42 +121,27 @@
       }
     },
     "transientConcurrentStartup": {
-      "title": "AionUi is starting up",
-      "description": "Another AionUi startup was still using the local data when this window opened. This is temporary and your data is safe — no reinstall is needed. Please wait a moment and try again, or restart AionUi.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics report sent",
-      "diagnosticsReportFailed": "Failed to send diagnostics report",
-      "diagnosticsHint": "If this keeps happening, you can send a diagnostics report."
+      "title": "mu is starting up",
+      "description": "Another mu startup was still using the local data when this window opened. This is temporary and your data is safe — no reinstall is needed. Please wait a moment and try again, or restart mu."
     },
     "pendingSlow": {
       "title": "Starting up",
-      "description": "AionCore is starting up, please wait. If it doesn't respond after a while, you can quit and reopen the app."
+      "description": "The local service is starting up, please wait. If it doesn't respond after a while, you can quit and reopen the app."
     },
     "exited": {
       "title": "Startup didn't complete",
-      "description": "AionCore couldn't finish starting and has exited. Please restart the app; if this keeps happening, please send diagnostics.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics reported",
-      "diagnosticsReportFailed": "Failed to send diagnostics, please retry"
+      "description": "The local service couldn't finish starting and has exited. Please restart the app; if this keeps happening, check the app log."
     },
     "portReportTimeout": {
       "title": "Startup timed out",
-      "description": "AionCore didn't finish starting within the expected time. Please restart the app; if this keeps happening, please send diagnostics.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics reported",
-      "diagnosticsReportFailed": "Failed to send diagnostics, please retry"
+      "description": "The local service didn't finish starting within the expected time. Please restart the app; if this keeps happening, check the app log."
     },
     "startupFailed": {
       "title": "Startup failed",
-      "description": "AionCore failed to start. Please restart the app; if this keeps happening, please send diagnostics.",
-      "sendDiagnostics": "Send diagnostics",
-      "diagnosticsSent": "Diagnostics sent",
-      "diagnosticsReportSuccess": "Diagnostics reported",
-      "diagnosticsReportFailed": "Failed to send diagnostics, please retry"
-    }
+      "description": "The local service failed to start. Please restart the app; if this keeps happening, check the app log."
+    },
+    "openLogs": "Open the log folder",
+    "openLogsFailed": "Couldn't open the log folder"
   },
   "fileAttach.addFiles": "Add files",
   "fileAttach.myDevice": "Upload from device",
@@ -205,14 +169,15 @@
     "starting": "Starting mu…",
     "startingHint": "Connecting to the local mu kernel and reading the model and judge configuration.",
     "startupError": "mu startup failed",
-    "activity": "Collaboration",
-    "files": "Files",
-    "hive": "Hive",
     "hiveView": {
       "title": "Hive",
+      "agents": "Sub-agents",
       "open": "Open Hive",
       "inspect": "Inspect {{name}}",
       "summary": "{{active}} active · {{done}} done / {{total}}",
+      "counts": "{{running}} running · {{done}} done · {{failed}} failed",
+      "none": "No sub-agents in this conversation yet.",
+      "details": "Map and records",
       "pending": "Waiting for bee status",
       "unknown": "Status unavailable",
       "runs": "Hive runs",
@@ -295,8 +260,6 @@
       }
     },
     "judgeView": {
-      "title": "Judgments and their effect",
-      "description": "See what the judge evaluated and what actually happened. Suggestions and confirmed actions are kept separate.",
       "empty": "No judgments recorded in this session yet.",
       "question": "Question",
       "result": "Judgment",
@@ -306,12 +269,6 @@
       "answers": "Model answers",
       "noResult": "No readable result recorded",
       "unreported": "Not recorded",
-      "records": "Records",
-      "returnedCount": "To runtime",
-      "receiptCount": "Confirmed deliveries",
-      "runtimeEvents": "Other runtime events",
-      "filter": "Filter by question",
-      "allQuestions": "All questions",
       "scoreValue": "Score: {{value}}",
       "latency": "{{ms}} ms",
       "more": "+{{count}} more",
@@ -361,6 +318,10 @@
         "browser": "What should the browser do next?",
         "recall": "Which past lessons apply now?",
         "capture": "Is this a lasting correction or preference?",
+        "outcome": "Did this turn find a way out worth keeping?",
+        "worth": "Is this lesson worth keeping?",
+        "merge": "Should the new lesson merge with a kept one?",
+        "applied": "Were the lessons followed?",
         "risk": "Does this action require user confirmation?",
         "drift": "Is the work still on track?",
         "completion": "Does this change still need verification?",
@@ -376,7 +337,9 @@
         "diagnostics": "When should these diagnostics reach the model?",
         "patch": "Does the sub-agent's patch stay within its task?",
         "review": "How serious is each review finding?",
-        "board": "Where does the work stand?"
+        "board": "Where does the work stand?",
+        "relate": "What does this finding do to an earlier one?",
+        "approval": "Is this a step the task needs, done the way you would expect?"
       },
       "fields": {
         "turnType": "Task type",
@@ -391,6 +354,8 @@
         "hide": "Suggested hidden skills",
         "relevant": "Relevant skills",
         "apply": "Suggested lessons",
+        "applied": "Followed",
+        "notApplied": "Not followed",
         "publish": "Allow publication",
         "deliver": "Allow delivery",
         "path": "Candidate file",
@@ -409,7 +374,8 @@
         "phase": "Phase",
         "focus": "Item in progress",
         "needsUser": "Needs the user",
-        "update": "Rewrite the board"
+        "update": "Rewrite the board",
+        "relation": "Relation"
       },
       "values": {
         "true": "Yes",
@@ -489,7 +455,20 @@
         "bad_request": "Judge rejected the request",
         "server": "Judge server error",
         "invalid_response": "Unreadable judge answer",
-        "verdict": "The judge answered"
+        "verdict": "The judge answered",
+        "learn": "Keep the way out",
+        "reusable": "Useful again",
+        "one_off": "Only this once",
+        "already_known": "Known already",
+        "same": "Same lesson",
+        "refines": "More precise",
+        "contradicts": "Contradicts it",
+        "supersedes": "Replaces it",
+        "supports": "Supports it",
+        "unrelated": "Unrelated",
+        "preference": "Standing rule",
+        "approve": "Let it run",
+        "beyond": "More than you asked for"
       },
       "probabilityValue": "Probability of yes: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -498,11 +477,22 @@
       "errorValue": "Error · {{kind}}",
       "noAnswerAfter": "No answer after {{duration}}",
       "hints": {
+        "answered": "This message answers the agent’s own question: act on it and do not ask again.",
+        "resolve": "The request is loosely worded and may change files: look at the project, state the assumption, and ask only for what cannot be found here.",
         "clarify": "The request looks under-specified: ask one focused question first.",
         "side_question": "This is a side question: answer it briefly, then carry on with the main task.",
-        "plan_first": "This looks large or risky: write a short plan and confirm it before editing.",
+        "plan_first": "This looks large or risky: write a short plan, then carry it out; pause only before a step that cannot be undone.",
         "try_hive": "This looks hard: if the cause is unknown or a direct attempt fails, use the Hive.",
         "try_delegate": "This splits into independent parts: consider handing them to sub-agents in parallel."
+      },
+      "hintChips": {
+        "answered": "Reply to agent",
+        "resolve": "Look first",
+        "clarify": "Ask first",
+        "side_question": "Side question",
+        "plan_first": "Plan first",
+        "try_hive": "Hive if stuck",
+        "try_delegate": "Delegate parts"
       },
       "answerIds": {
         "turn_type": "Task type",
@@ -515,11 +505,13 @@
         "task_complexity": "Scope",
         "reasoning_depth": "Reasoning depth",
         "tool_complexity": "Tool use"
+      },
+      "log": {
+        "thisTurn": "This turn",
+        "earlier": "Show earlier lines",
+        "latest": "Jump to latest"
       }
     },
-    "decisions": "Jev",
-    "memory": "Experience",
-    "images": "Images",
     "empty": "No events recorded in this session yet.",
     "quiet": "No activity for {{duration}}",
     "passed": "Passed",
@@ -556,6 +548,9 @@
       "memory.recalled": "Recalled experience",
       "artifact.image": "Image",
       "memory.stored": "Memory saved",
+      "memory.applied": "Lessons followed",
+      "memory.retired": "Lesson retired",
+      "memory.merged": "Lessons merged",
       "compaction_start": "Compacting context…",
       "compaction_end": "Compaction ended",
       "context.usage": "Context usage",
@@ -567,6 +562,9 @@
       "board": {
         "update": "Board updated",
         "switched": "Board turned on or off"
+      },
+      "permissions": {
+        "mode": "Permission mode"
       },
       "checkpoint": {
         "taken": "Checkpoint saved"
@@ -681,7 +679,6 @@
       "failed": "Failed"
     },
     "boardView": {
-      "tab": "Board",
       "title": "Plain-language board",
       "switch": "Plain-language board for this project",
       "switching": "Switching…",
@@ -689,7 +686,6 @@
       "unknown": "No board in this conversation yet. It comes with mu conversations while the plain-language board is on under Features.",
       "off": "Once it is on, this says in plain words how the work is going, what the agent is doing now, and what needs you.",
       "cost": "For this project only. Each update costs one model call.",
-      "open": "Turn on the board",
       "empty": "Give the agent a moment; this will say in plain words how it is going.",
       "checks": "{{done}} of {{total}} checks done",
       "ended": "Stopped",
@@ -699,6 +695,7 @@
       "needsYouText": "The agent is waiting for your answer in the conversation.",
       "quote": "Quote in your reply",
       "quoteHint": "Click one to quote it in your reply; nothing is sent until you send it.",
+      "earlier": "Earlier",
       "phases": {
         "understanding": "Understanding the task",
         "planning": "Planning",
@@ -736,6 +733,66 @@
         "confirm": {
           "waiting_reply": "It waits for your reply."
         }
+      }
+    },
+    "lessonsView": {
+      "filterLabel": "Which lessons to show",
+      "active": "In use",
+      "all": "All",
+      "count": "{{count}} lessons",
+      "count_one": "{{count}} lesson",
+      "count_other": "{{count}} lessons",
+      "search": "Search lessons",
+      "kinds": {
+        "correction": "Correction",
+        "preference": "Rule",
+        "pitfall": "Pitfall",
+        "workaround": "Workaround",
+        "fact": "Fact"
+      },
+      "everywhere": "All projects",
+      "status": {
+        "retired": "Retired",
+        "superseded": "Replaced"
+      },
+      "uses": "Recalled {{recalled}} · Followed {{applied}}",
+      "origins": {
+        "user": "From your correction or rule",
+        "outcome": "From the agent’s own way out",
+        "model": "Kept by the model",
+        "subagent": "From a sub-agent’s report",
+        "command": "Kept with /remember"
+      },
+      "updated": "Updated {{date}}",
+      "editLabel": "Lesson text",
+      "retire": "Retire",
+      "retireConfirm": "Retire this lesson? It will no longer be brought into a turn.",
+      "loadFailed": "The lessons could not be read",
+      "saveFailed": "The lesson was not changed",
+      "empty": "No lessons for this project yet. mu learns them from your corrections, from its own ways out of trouble and from /remember.",
+      "noneActive": "No lessons in use. All also lists the retired and replaced ones.",
+      "noMatch": "No lesson matches.",
+      "noProject": "This conversation has no project folder, so only the lessons for all projects are listed.",
+      "notes": {
+        "label": "What the lessons did in this session",
+        "recalled": "This turn brought in {{count}} lessons",
+        "recalled_one": "This turn brought in {{count}} lesson",
+        "recalled_other": "This turn brought in {{count}} lessons",
+        "briefed": "A sub-agent’s brief carried {{count}} lessons: {{task}}",
+        "briefed_one": "A sub-agent’s brief carried {{count}} lesson: {{task}}",
+        "briefed_other": "A sub-agent’s brief carried {{count}} lessons: {{task}}",
+        "applied": "{{count}} lessons were followed",
+        "applied_one": "{{count}} lesson was followed",
+        "applied_other": "{{count}} lessons were followed",
+        "retired": "Retired: {{lesson}}",
+        "retiredUnused": "Retired: {{lesson}} (recalled {{count}} times, never followed)",
+        "retiredUnused_one": "Retired: {{lesson}} (recalled {{count}} time, never followed)",
+        "retiredUnused_other": "Retired: {{lesson}} (recalled {{count}} times, never followed)",
+        "retiredContradicted": "Retired: {{lesson}} (your newer word contradicts it)",
+        "retiredForgotten": "Retired: {{lesson}} (at your request)",
+        "mergedSame": "Merged into: {{lesson}}",
+        "mergedRefines": "Kept a more precise wording: {{lesson}}",
+        "mergedContradicts": "Not kept, it contradicts: {{lesson}}"
       }
     },
     "activityLoadFailed": "Could not load the collaboration activity. Retrying…",
@@ -779,6 +836,7 @@
         "lessons": "Checking lessons from earlier sessions",
         "skills": "Choosing which skills this session needs",
         "capabilities": "Choosing which capabilities this task needs",
+        "goal_check": "Checking whether the goal holds",
         "permissionReview": "JeV is reviewing: {{summary}}"
       },
       "goal": {
@@ -864,7 +922,21 @@
           "cdpConnectTimeout": "Timed out connecting to the browser.",
           "cdpConnectFailed": "Could not connect to the browser."
         }
+      },
+      "permissions": {
+        "mode": "Permission mode: {{mode}}"
+      },
+      "board": {
+        "on": "Board: on",
+        "off": "Board: off"
       }
+    },
+    "gauges": {
+      "context": "Context",
+      "contextHint": "What the model reads next takes up {{percent}} of its context",
+      "cache": "Cache hits",
+      "cacheHint": "Cache hits: {{turn}} in the latest turn, {{session}} across the whole conversation",
+      "pending": "Shown after mu’s next reply"
     }
   },
   "menu": {
@@ -900,11 +972,57 @@
   "noData": "No data",
   "labelWithSelectedCount": "{{label}} ({{selected}}/{{total}})",
   "selectedSkillsWithCount": "Selected skills · {{count}}",
+  "commandPalette": {
+    "title": "Command palette",
+    "placeholder": "Search conversations, settings and commands",
+    "groups": {
+      "conversations": "Conversations",
+      "settings": "Settings",
+      "commands": "Commands"
+    },
+    "searchMessages": "Search messages for “{{query}}”",
+    "empty": "No matches",
+    "noConversations": "No conversations yet. Type to find settings and commands.",
+    "openSettings": "Open settings",
+    "actions": {
+      "newConversation": "Start a new chat",
+      "scheduledTasks": "Open scheduled tasks"
+    },
+    "commandWaits": "Runs once this reply is done"
+  },
   "window": {
     "minimize": "Minimize",
     "maximize": "Maximize",
     "restore": "Restore"
   },
   "collapseSidebar": "Collapse sidebar",
-  "expandSidebar": "Expand sidebar"
+  "expandSidebar": "Expand sidebar",
+  "workPanel": {
+    "label": "Work panel",
+    "tabsLabel": "Work panel tabs",
+    "tabs": {
+      "board": "Board",
+      "judge": "Judge",
+      "hive": "Hive",
+      "lessons": "Lessons",
+      "files": "Files",
+      "preview": "Preview",
+      "source": "Source"
+    },
+    "close": "Close the work panel",
+    "resize": "Resize the work panel",
+    "unread": "{{tab}}, new",
+    "noProject": "This conversation has no project folder, so there are no files or changes to show.",
+    "previewEmpty": "Nothing to preview yet. Files and pages opened from the conversation show here.",
+    "previewHidden": "The preview is hidden."
+  },
+  "nodeRuntime": {
+    "title": "Download Node.js?",
+    "message": "mu runs agents and tools on its own copy of Node.js, which is not downloaded yet.",
+    "detail": "Node.js {{version}} (about {{size}} MB) will be downloaded from nodejs.org and unpacked into:\n{{folder}}\n\n\"Later\" downloads nothing: mu opens as usual, says so where Node.js is needed, and asks again at the next start.",
+    "download": "Download",
+    "later": "Later",
+    "note": "Node.js is not downloaded, so this agent cannot run. mu asks again at the next start.",
+    "toolNote": "Node.js is not downloaded, so tools that need it cannot run. mu asks again at the next start."
+  }
 }

@@ -554,7 +554,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
   const importHistoryContent = (
     <div data-testid='skill-import-history-page' className='flex flex-col h-full w-full'>
       <div className='space-y-16px pb-24px'>
-        <div className='px-[16px] md:px-[32px] py-20px bg-base rd-16px md:rd-24px shadow-sm border border-b-base'>
+        <div className='px-[16px] md:px-[32px] py-20px bg-base rd-16px md:rd-24px border border-color-b-base'>
           <div className='flex flex-col sm:flex-row sm:items-start justify-between gap-12px'>
             <div>
               <div className='flex items-center gap-10px'>
@@ -578,9 +578,9 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
           </div>
         </div>
 
-        <div className='px-[16px] md:px-[32px] py-16px bg-base rd-16px md:rd-24px shadow-sm border border-b-base'>
+        <div className='px-[16px] md:px-[32px] py-16px bg-base rd-16px md:rd-24px border border-color-b-base'>
           {importHistoryGroups.length === 0 ? (
-            <div className='border border-dashed border-border-1 bg-fill-1 rd-10px px-12px py-14px text-12px text-t-tertiary'>
+            <div className='px-12px py-14px text-12px text-t-tertiary'>
               {t('settings.skillsHub.importHistoryEmpty', { defaultValue: 'No import records yet.' })}
             </div>
           ) : (
@@ -602,7 +602,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
                     className={`border rd-12px px-12px py-10px ${
                       failedRecords.length > 0
                         ? 'border-[rgba(var(--warning-6),0.28)] bg-[rgba(var(--warning-6),0.03)]'
-                        : 'border-border-1 bg-fill-1'
+                        : 'border-transparent bg-fill-1'
                     }`}
                   >
                     <div className='flex flex-col sm:flex-row sm:items-start justify-between gap-8px'>
@@ -718,11 +718,11 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
         ) : null}
         <span className={`text-12px px-10px py-2px rd-[100px] font-medium ${countClass}`}>{count}</span>
       </div>
-      <div className='flex flex-col gap-8px rounded-12px border border-border-2 bg-2 p-8px md:rounded-16px md:p-10px'>
+      <div className='flex flex-col gap-4px rounded-8px border border-solid border-[var(--border-base)] bg-base p-4px'>
         {skills.length > 0 ? (
           skills.map((skill) => renderReadonlySkillCard(skill, variant))
         ) : (
-          <div className='text-center text-t-secondary text-13px py-32px bg-fill-1 rd-12px border border-border-2 border-dashed'>
+          <div className='text-center text-t-secondary text-13px py-32px'>
             {t('settings.skillsHub.noSearchResults', { defaultValue: 'No matching skills.' })}
           </div>
         )}
@@ -821,9 +821,9 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
         </div>
       )}
       {mySkills.length > 0 ? (
-        <div className='flex flex-col gap-8px rounded-12px border border-border-2 bg-2 p-8px md:rounded-16px md:p-10px'>
+        <div className='flex flex-col gap-4px rounded-8px border border-solid border-[var(--border-base)] bg-base p-4px'>
           {filteredSkills.length === 0 && (
-            <div className='text-center text-t-secondary text-13px py-32px bg-fill-1 rd-12px border border-border-2 border-dashed'>
+            <div className='text-center text-t-secondary text-13px py-32px'>
               {t('settings.skillsHub.noSearchResults', { defaultValue: 'No matching skills.' })}
             </div>
           )}
@@ -906,7 +906,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
           ))}
         </div>
       ) : (
-        <div className='text-center text-t-secondary text-13px py-40px bg-fill-1 rd-12px border border-border-2 border-dashed'>
+        <div className='text-center text-t-secondary text-13px py-40px rounded-8px border border-solid border-[var(--border-base)] bg-base'>
           {loading
             ? t('common.loading', { defaultValue: 'Please wait...' })
             : t('settings.skillsHub.noSkills', {
@@ -923,13 +923,13 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
       <div data-testid='official-skills-section'>
         <p className='m-0 mb-12px text-12px leading-relaxed text-t-tertiary'>
           {t('settings.skillsHub.officialHint', {
-            defaultValue: 'Built-in skills maintained by AionUi — read-only and updated with each release.',
+            defaultValue: 'Built-in skills maintained by mu — read-only and updated with each release.',
           })}
         </p>
         {officialSkills.length > 0 ? (
-          <div className='flex flex-col gap-8px rounded-12px border border-border-2 bg-2 p-8px md:rounded-16px md:p-10px'>
+          <div className='flex flex-col gap-4px rounded-8px border border-solid border-[var(--border-base)] bg-base p-4px'>
             {filteredOfficialSkills.length === 0 && (
-              <div className='text-center text-t-secondary text-13px py-32px bg-fill-1 rd-12px border border-border-2 border-dashed'>
+              <div className='text-center text-t-secondary text-13px py-32px'>
                 {t('settings.skillsHub.noSearchResults', { defaultValue: 'No matching skills.' })}
               </div>
             )}
@@ -938,7 +938,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
             )}
           </div>
         ) : (
-          <div className='text-center text-t-secondary text-13px py-40px bg-fill-1 rd-12px border border-border-2 border-dashed'>
+          <div className='text-center text-t-secondary text-13px py-40px rounded-8px border border-solid border-[var(--border-base)] bg-base'>
             {loading
               ? t('common.loading', { defaultValue: 'Please wait...' })
               : t('settings.skillsHub.officialSkillsEmpty', { defaultValue: 'No official skills available.' })}

@@ -159,6 +159,25 @@ describe('PetSettings enable switch', () => {
     expect(getEnableSwitch().getAttribute('aria-checked')).toBe('false');
   });
 
+  it('is a page of its own: the switch on top, and the other rows only while the pet is on', async () => {
+    getPetEnabledMock.mockResolvedValue(false);
+    render(<PetSettings />);
+    expect(screen.getByRole('heading', { name: 'pet.desktopPet' })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(getEnableSwitch()).not.toBeDisabled();
+    });
+    const rows = () => screen.getAllByTestId(/^row-/).map((row) => row.dataset.testid);
+    expect(rows()).toEqual(['row-pet.enable']);
+    fireEvent.click(getEnableSwitch());
+    await waitFor(() => {
+      expect(rows()).toEqual(['row-pet.enable', 'row-pet.size', 'row-pet.dnd', 'row-pet.confirmBubble']);
+    });
+    fireEvent.click(getEnableSwitch());
+    await waitFor(() => {
+      expect(rows()).toEqual(['row-pet.enable']);
+    });
+  });
+
   it('AC5: maps an undefined authoritative value to OFF at the UI', async () => {
     getPetEnabledMock.mockResolvedValue(undefined);
     render(<PetSettings />);

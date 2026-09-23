@@ -8,6 +8,8 @@ import { describe, expect, it } from 'vitest';
 import {
   resolveLocalFileLinkPath,
   resolveLocalFileLinkReference,
+  resolveRelativeFileLinkReference,
+  resolveWebLinkHref,
   toLocalFileHref,
 } from '@/renderer/components/Markdown/markdownUtils';
 
@@ -147,5 +149,71 @@ describe('resolveLocalFileLinkPath', () => {
       'file:///C:/Users/Administrator/AppData/Roaming/AionUi/report.xlsx'
     );
     expect(toLocalFileHref('/var/folders/demo/report.xlsx')).toBe('file:///var/folders/demo/report.xlsx');
+  });
+});
+
+describe('resolveRelativeFileLinkReference', () => {
+  it('reads a path written relative to the workspace as a file, keeping it relative', () => {
+    expect(resolveRelativeFileLinkReference('index.html')).toEqual({
+      filePath: 'index.html',
+      rawReference: 'index.html',
+    });
+    expect(resolveRelativeFileLinkReference('./src/a.ts')).toEqual({
+      filePath: './src/a.ts',
+      rawReference: './src/a.ts',
+    });
+    expect(resolveRelativeFileLinkReference('../shared/x.md')).toEqual({
+      filePath: '../shared/x.md',
+      rawReference: '../shared/x.md',
+    });
+    expect(resolveRelativeFileLinkReference('Makefile')).toEqual({ filePath: 'Makefile', rawReference: 'Makefile' });
+  });
+
+  it('reads line references the same way as absolute links', () => {
+    expect(resolveRelativeFileLinkReference('src/a.ts:12')).toEqual({
+      filePath: 'src/a.ts',
+      line: 12,
+      rawReference: 'src/a.ts:12',
+    });
+    expect(resolveRelativeFileLinkReference('src/a.ts:12:7')).toEqual({
+      filePath: 'src/a.ts',
+      line: 12,
+      column: 7,
+      rawReference: 'src/a.ts:12:7',
+    });
+    expect(resolveRelativeFileLinkReference('docs/x.md#L3-L9')).toEqual({
+      filePath: 'docs/x.md',
+      line: 3,
+      endLine: 9,
+      rawReference: 'docs/x.md#L3-L9',
+    });
+    expect(resolveRelativeFileLinkReference('docs/x.md#intro')).toBeNull();
+  });
+
+  it('leaves addresses, fragments, app routes and directories alone', () => {
+    expect(resolveRelativeFileLinkReference('https://aionui.com/docs')).toBeNull();
+    expect(resolveRelativeFileLinkReference('mailto:hi@example.com')).toBeNull();
+    expect(resolveRelativeFileLinkReference('//cdn.example.com/a.js')).toBeNull();
+    expect(resolveRelativeFileLinkReference('#top')).toBeNull();
+    expect(resolveRelativeFileLinkReference('?q=1')).toBeNull();
+    expect(resolveRelativeFileLinkReference('/settings')).toBeNull();
+    expect(resolveRelativeFileLinkReference('docs/')).toBeNull();
+    expect(resolveRelativeFileLinkReference('')).toBeNull();
+  });
+});
+
+describe('resolveWebLinkHref', () => {
+  it('opens addresses as written', () => {
+    expect(resolveWebLinkHref('https://aionui.com/docs#L10')).toBe('https://aionui.com/docs#L10');
+    expect(resolveWebLinkHref('mailto:hi@example.com')).toBe('mailto:hi@example.com');
+    expect(resolveWebLinkHref('//cdn.example.com/a.js')).toBe('https://cdn.example.com/a.js');
+  });
+
+  it('sends nothing to the app itself: fragments, queries and unresolved paths go nowhere', () => {
+    expect(resolveWebLinkHref('#top')).toBeNull();
+    expect(resolveWebLinkHref('?q=1')).toBeNull();
+    expect(resolveWebLinkHref('index.html')).toBeNull();
+    expect(resolveWebLinkHref('/settings')).toBeNull();
+    expect(resolveWebLinkHref('')).toBeNull();
   });
 });

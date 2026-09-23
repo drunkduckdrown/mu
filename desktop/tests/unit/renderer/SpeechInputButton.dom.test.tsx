@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -14,10 +14,12 @@ const mocks = vi.hoisted(() => ({
   status: 'idle' as 'idle' | 'recording' | 'transcribing',
   errorCode: null as string | null,
   errorMessage: null as string | null,
+  /** The voice input switch in settings. */
+  speechEnabled: true,
 }));
 
 vi.mock('@/renderer/services/clientBusinessSettings', () => ({
-  getClientBusinessSetting: vi.fn(() => Promise.resolve({ enabled: true })),
+  getClientBusinessSetting: vi.fn(() => Promise.resolve({ enabled: mocks.speechEnabled })),
 }));
 
 vi.mock('@/renderer/services/SpeechToTextService', () => ({
@@ -70,6 +72,29 @@ describe('SpeechInputButton', () => {
     mocks.status = 'idle';
     mocks.errorCode = null;
     mocks.errorMessage = null;
+    mocks.speechEnabled = true;
+  });
+
+  it('renders nothing while voice input is off, not even its hidden file input, and follows the switch', async () => {
+    mocks.speechEnabled = false;
+    const { container } = render(<SpeechInputButton onTranscript={vi.fn()} />);
+    // Let the settings read settle: until it has, the component also renders nothing, so an early check proves nothing.
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(container.innerHTML).toBe('');
+
+    mocks.speechEnabled = true;
+    act(() => {
+      window.dispatchEvent(new Event('speech-to-text-config-changed'));
+    });
+    expect(await screen.findByRole('button')).toBeInTheDocument();
+
+    mocks.speechEnabled = false;
+    act(() => {
+      window.dispatchEvent(new Event('speech-to-text-config-changed'));
+    });
+    await waitFor(() => expect(container.innerHTML).toBe(''));
   });
 
   it('puts the HTTP status of a failed transcription into the translated message, not the English status text', async () => {

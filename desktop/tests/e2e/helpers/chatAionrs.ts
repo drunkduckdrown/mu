@@ -436,16 +436,3 @@ export async function attachAionrsFolder(page: Page, folderPath: string): Promis
   // Skip actual click for smoke test (would trigger file dialog)
   console.log(`[attachAionrsFolder] Attach button found (folder: ${folderPath})`);
 }
-
-/**
- * Upload files to aionrs conversation using file input.
- * @param page Playwright page
- * @param filePaths Array of absolute file paths
- */
-export async function uploadAionrsFiles(page: Page, filePaths: string[]): Promise<void> {
-  const fileInput = page.locator('[data-testid="aionrs-file-upload-input"]');
-  await fileInput.setInputFiles(filePaths);
-
-  // Wait for file preview tags to appear
-  await page.waitForSelector('[data-testid^="aionrs-file-tag-"]', { timeout: 5_000 });
-}

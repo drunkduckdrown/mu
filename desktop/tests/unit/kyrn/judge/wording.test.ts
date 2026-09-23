@@ -1,7 +1,10 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createInstance, type TFunction } from 'i18next';
 import {
   answerLabel,
+  hintChips,
   hintLines,
   JUDGE_ERROR_KINDS,
   JUDGE_REASONS,
@@ -105,6 +108,39 @@ describe('JeV card wording: hints and answers', () => {
       const view = locale.kyrn.judgeView;
       for (const id of PREFLIGHT_HINT_IDS) expect((view.hints as Record<string, string>)[id]).toBeTruthy();
       for (const id of PREFLIGHT_QUESTION_IDS) expect((view.answerIds as Record<string, string>)[id]).toBeTruthy();
+    }
+  });
+});
+
+describe('JeV hint chips', () => {
+  it('names each hint the harness sends in a word or two, and keeps an unknown code as recorded', () => {
+    expect(hintChips(en, ['answered', 'resolve', 'try_hive'])).toEqual([
+      { id: 'answered', label: copy.hintChips.answered },
+      { id: 'resolve', label: copy.hintChips.resolve },
+      { id: 'try_hive', label: copy.hintChips.try_hive },
+    ]);
+    expect(hintChips(chinese, ['plan_first'])).toEqual([{ id: 'plan_first', label: zh.hintChips.plan_first }]);
+    // Older records have sentences without ids: no chip for those.
+    expect(hintChips(en, ['', 'someday_hint'])).toEqual([{ id: 'someday_hint', label: 'someday_hint' }]);
+  });
+
+  it('has a chip and a sentence for every hint in all 13 languages', () => {
+    const root = path.resolve(__dirname, '../../../..');
+    const { supportedLanguages } = JSON.parse(
+      readFileSync(path.join(root, 'packages/desktop/src/common/config/i18n-config.json'), 'utf8')
+    ) as { supportedLanguages: string[] };
+    expect(supportedLanguages).toHaveLength(13);
+    for (const language of supportedLanguages) {
+      const locale = JSON.parse(
+        readFileSync(
+          path.join(root, 'packages/desktop/src/renderer/services/i18n/locales', language, 'common.json'),
+          'utf8'
+        )
+      ) as { kyrn: { judgeView: { hints: Record<string, string>; hintChips: Record<string, string> } } };
+      for (const id of PREFLIGHT_HINT_IDS) {
+        expect(locale.kyrn.judgeView.hintChips[id], `${language} chip ${id}`).toBeTruthy();
+        expect(locale.kyrn.judgeView.hints[id], `${language} hint ${id}`).toBeTruthy();
+      }
     }
   });
 });

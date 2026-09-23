@@ -64,10 +64,10 @@
   "more": "Más",
   "refresh": "Actualizar",
   "readOnly": "Solo lectura",
-  "tray.showWindow": "Mostrar AionUi",
+  "tray.showWindow": "Mostrar mu",
   "tray.newChat": "Nuevo chat",
   "tray.closeToTray": "Minimizar a bandeja",
-  "tray.about": "Acerca de AionUi",
+  "tray.about": "Acerca de mu",
   "tray.restart": "Reiniciar aplicación",
   "tray.quit": "Salir",
   "tray.pauseAll": "Pausar todas las tareas",
@@ -77,61 +77,40 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Este sistema no es compatible con el backend incluido",
-      "description": "AionUi se abrió, pero el backend local AionCore no puede ejecutarse en esta versión de Linux. Actualiza a una distribución de Linux compatible y reinicia AionUi.",
+      "description": "mu se abrió, pero su servicio local no puede ejecutarse en esta versión de Linux. Actualiza a una distribución de Linux compatible y reinicia mu.",
       "requiredVersions": "Símbolos de runtime requeridos: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "La instalación de AionUi está incompleta",
-      "description": "Esta instalación no tiene los recursos locales necesarios, por lo que AionCore no puede iniciar. Descarga e instala la última versión de AionUi. Si el problema persiste después de reinstalar, verifica si el software de seguridad o antivirus puso en cuarentena AionCore.",
+      "title": "La instalación de mu está incompleta",
+      "description": "Esta instalación no tiene los recursos locales necesarios, por lo que el servicio local de mu no puede iniciar. Descarga e instala la última versión de mu. Si el problema persiste después de reinstalar, verifica si el software de seguridad o antivirus puso en cuarentena archivos de mu.",
       "downloadLatest": "Descargar la última versión",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Reporte de diagnóstico enviado",
-      "diagnosticsReportFailed": "Error al enviar el reporte de diagnóstico",
-      "runtimeComponentDescription": "Esta instalación no tiene los componentes de runtime necesarios, por lo que {{resource}} no puede iniciar. Reinstala el último paquete de AionUi. Si sigue fallando, verifica si el software de seguridad o antivirus puso en cuarentena componentes de AionUi."
+      "runtimeComponentDescription": "Esta instalación no tiene los componentes de runtime necesarios, por lo que {{resource}} no puede iniciar. Reinstala el último paquete de mu. Si sigue fallando, verifica si el software de seguridad o antivirus puso en cuarentena componentes de mu."
     },
     "packageArchitectureMismatch": {
-      "title": "Incompatibilidad de arquitectura del paquete AionUi",
-      "description": "Este paquete de AionUi es para {{packageArch}}, pero esta Mac es {{deviceArch}}. Es posible que hayas descargado el paquete incorrecto. Descarga e instala el paquete {{expectedArch}}."
+      "title": "Incompatibilidad de arquitectura del paquete mu",
+      "description": "Este paquete de mu es para {{packageArch}}, pero esta Mac es {{deviceArch}}. Es posible que hayas descargado el paquete incorrecto. Descarga e instala el paquete {{expectedArch}}."
     },
     "dataMigration": {
       "title": "Error al migrar los datos locales",
-      "description": "AionUi se abrió, pero AionCore se detuvo al inicializar los datos locales. Reinstalar AionUi puede no solucionar este problema. Envía un informe de diagnóstico o contacta con soporte para que se pueda inspeccionar la migración de la base de datos local.",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
-      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico"
+      "description": "mu se abrió, pero su servicio local se detuvo al inicializar los datos locales. Reinstalar mu puede no solucionar este problema. El registro de la aplicación muestra dónde se detuvo la migración de la base de datos local."
     },
     "databaseNewerThanApp": {
-      "title": "Se requiere una versión más reciente de AionUi",
-      "description": "Tus datos locales fueron creados por una versión más reciente de AionUi y esta versión no puede abrirlos. Actualiza AionUi a la última versión para continuar; tus datos están intactos y no es necesario reinstalar ni restablecer nada.",
-      "descriptionWithVersion": "Tus datos locales fueron creados por una versión de AionUi más reciente que la instalada ahora (v{{currentVersion}}), por lo que esta versión no puede abrirlos. Actualiza AionUi a la última versión para continuar; tus datos están intactos y no es necesario reinstalar ni restablecer nada."
+      "title": "Se requiere una versión más reciente de mu",
+      "description": "Tus datos locales fueron creados por una versión más reciente de mu y esta versión no puede abrirlos. Actualiza mu a la última versión para continuar; tus datos están intactos y no es necesario reinstalar ni restablecer nada.",
+      "descriptionWithVersion": "Tus datos locales fueron creados por una versión de mu más reciente que la instalada ahora (v{{currentVersion}}), por lo que esta versión no puede abrirlos. Actualiza mu a la última versión para continuar; tus datos están intactos y no es necesario reinstalar ni restablecer nada."
     },
     "localDataRepair": {
       "title": "Error al reparar los datos locales",
-      "description": "AionUi se abrió, pero AionCore se detuvo al preparar datos locales de inicio, como registros de asistentes o agentes. Reinstalar AionUi puede no solucionar este problema. Envía un informe de diagnóstico o contacta con soporte para que se pueda inspeccionar la base de datos local.",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
-      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico"
+      "description": "mu se abrió, pero su servicio local se detuvo al preparar datos locales de inicio, como registros de asistentes o agentes. Reinstalar mu puede no solucionar este problema. El registro de la aplicación muestra qué datos locales no se pudieron preparar."
     },
     "startupDirectory": {
       "title": "El directorio de inicio no está disponible",
-      "description": "AionUi se abrió, pero AionCore no pudo iniciarse porque el directorio de trabajo o de registros configurado no existe, no está disponible o está bloqueado por permisos. Comprueba que los directorios configurados existen y admiten escritura, y reinicia AionUi.",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
-      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico"
+      "description": "mu se abrió, pero su servicio local no pudo iniciarse porque el directorio de trabajo o de registros configurado no existe, no está disponible o está bloqueado por permisos. Comprueba que los directorios configurados existen y admiten escritura, y reinicia mu."
     },
     "recoverableDatabaseCorruption": {
       "title": "Los datos locales están dañados",
-      "description": "AionUi detectó que la base de datos local está dañada y no puede continuar el inicio. Tras la confirmación, AionUi hará una copia de seguridad de la base de datos antigua y creará una nueva base de datos local para continuar el inicio. Las conversaciones anteriores ya no se mostrarán y la base de datos antigua se conservará como archivo de copia de seguridad.",
+      "description": "mu detectó que la base de datos local está dañada y no puede continuar el inicio. Tras la confirmación, mu hará una copia de seguridad de la base de datos antigua y creará una nueva base de datos local para continuar el inicio. Las conversaciones anteriores ya no se mostrarán y la base de datos antigua se conservará como archivo de copia de seguridad.",
       "confirmRebuild": "Hacer copia de seguridad y reconstruir la base de datos",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsHint": "Enviar el diagnóstico no modificará la base de datos local.",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
-      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico",
       "rebuildFailed": "No se pudo hacer la copia de seguridad ni reconstruir la base de datos",
       "confirmDialog": {
         "title": "¿Reconstruir la base de datos?",
@@ -141,42 +120,27 @@
       }
     },
     "transientConcurrentStartup": {
-      "title": "AionUi se está iniciando",
-      "description": "Cuando se abrió esta ventana, otro proceso de inicio de AionUi todavía estaba usando los datos locales. Esto es temporal y tus datos están seguros: no es necesario reinstalar. Espera un momento e inténtalo de nuevo, o reinicia AionUi.",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Informe de diagnóstico enviado",
-      "diagnosticsReportFailed": "No se pudo enviar el informe de diagnóstico",
-      "diagnosticsHint": "Si esto sigue ocurriendo, puedes enviar un informe de diagnóstico."
+      "title": "mu se está iniciando",
+      "description": "Cuando se abrió esta ventana, otro proceso de inicio de mu todavía estaba usando los datos locales. Esto es temporal y tus datos están seguros: no es necesario reinstalar. Espera un momento e inténtalo de nuevo, o reinicia mu."
     },
     "pendingSlow": {
       "title": "Iniciando",
-      "description": "AionCore se está iniciando, espera un momento. Si no responde después de un rato, puedes salir de la aplicación y volver a abrirla."
+      "description": "El servicio local se está iniciando, espera un momento. Si no responde después de un rato, puedes salir de la aplicación y volver a abrirla."
     },
     "exited": {
       "title": "El inicio no se completó",
-      "description": "AionCore no pudo completar el inicio y se cerró. Reinicia la aplicación; si esto sigue ocurriendo, envía un diagnóstico.",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Diagnóstico enviado",
-      "diagnosticsReportFailed": "No se pudo enviar el diagnóstico, inténtalo de nuevo"
+      "description": "El servicio local no pudo completar el inicio y se cerró. Reinicia la aplicación; si esto sigue ocurriendo, revisa el registro de la aplicación."
     },
     "portReportTimeout": {
       "title": "Tiempo de inicio agotado",
-      "description": "AionCore no terminó de iniciarse en el tiempo previsto. Reinicia la aplicación; si esto sigue ocurriendo, envía un diagnóstico.",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Diagnóstico enviado",
-      "diagnosticsReportFailed": "No se pudo enviar el diagnóstico, inténtalo de nuevo"
+      "description": "El servicio local no terminó de iniciarse en el tiempo previsto. Reinicia la aplicación; si esto sigue ocurriendo, revisa el registro de la aplicación."
     },
     "startupFailed": {
       "title": "Error al iniciar",
-      "description": "AionCore no pudo iniciarse. Reinicia la aplicación; si esto sigue ocurriendo, envía un diagnóstico.",
-      "sendDiagnostics": "Enviar diagnóstico",
-      "diagnosticsSent": "Diagnóstico enviado",
-      "diagnosticsReportSuccess": "Diagnóstico enviado",
-      "diagnosticsReportFailed": "No se pudo enviar el diagnóstico, inténtalo de nuevo"
-    }
+      "description": "El servicio local no pudo iniciarse. Reinicia la aplicación; si esto sigue ocurriendo, revisa el registro de la aplicación."
+    },
+    "openLogs": "Abrir la carpeta de registros",
+    "openLogsFailed": "No se pudo abrir la carpeta de registros"
   },
   "fileAttach.addFiles": "Agregar archivos",
   "fileAttach.myDevice": "Subir desde el dispositivo",
@@ -205,14 +169,15 @@
     "starting": "Iniciando mu…",
     "startingHint": "Conectando con el núcleo local de mu y leyendo la configuración del modelo y del juez.",
     "startupError": "No se pudo iniciar mu",
-    "activity": "Colaboración",
-    "files": "Archivos",
-    "hive": "Hive",
     "hiveView": {
       "title": "Hive",
+      "agents": "Subagentes",
       "open": "Abrir Hive",
       "inspect": "Inspeccionar {{name}}",
       "summary": "{{active}} activas · {{done}} completadas / {{total}}",
+      "counts": "en curso: {{running}} · terminados: {{done}} · con error: {{failed}}",
+      "none": "Aún no hay subagentes en esta conversación.",
+      "details": "Mapa y registros",
       "pending": "Esperando el estado de la abeja",
       "unknown": "Estado no disponible",
       "runs": "Ejecuciones de Hive",
@@ -295,8 +260,6 @@
       }
     },
     "judgeView": {
-      "title": "Veredictos y su efecto",
-      "description": "Consulta qué evaluó el juez y qué ocurrió realmente. Las sugerencias y las acciones confirmadas se muestran por separado.",
       "empty": "Aún no hay veredictos registrados en esta sesión.",
       "question": "Pregunta",
       "result": "Veredicto",
@@ -306,12 +269,6 @@
       "answers": "Respuestas del modelo",
       "noResult": "No se registró ningún resultado legible",
       "unreported": "No registrado",
-      "records": "Registros",
-      "returnedCount": "Pasados a la capa de ejecución",
-      "receiptCount": "Entregas confirmadas",
-      "runtimeEvents": "Otros eventos de ejecución",
-      "filter": "Filtrar por pregunta",
-      "allQuestions": "Todas las preguntas",
       "scoreValue": "Puntuación: {{value}}",
       "latency": "{{ms}} ms",
       "more": "+{{count}} más",
@@ -361,6 +318,10 @@
         "browser": "¿Qué debe hacer el navegador a continuación?",
         "recall": "¿Qué lecciones anteriores se aplican ahora?",
         "capture": "¿Es esto una corrección o preferencia duradera?",
+        "outcome": "¿Encontró este turno una salida que valga la pena guardar?",
+        "worth": "¿Vale la pena guardar esta lección?",
+        "merge": "¿Debe la nueva lección fusionarse con una ya guardada?",
+        "applied": "¿Se siguieron las lecciones?",
         "risk": "¿Esta acción requiere la confirmación del usuario?",
         "drift": "¿El trabajo sigue bien encaminado?",
         "completion": "¿Este cambio todavía necesita verificación?",
@@ -376,7 +337,9 @@
         "diagnostics": "¿Cuándo deben llegar estos diagnósticos al modelo?",
         "patch": "¿El parche del subagente se ciñe a su tarea?",
         "review": "¿Qué gravedad tiene cada hallazgo de la revisión?",
-        "board": "¿En qué punto está el trabajo?"
+        "board": "¿En qué punto está el trabajo?",
+        "relate": "¿Qué supone este hallazgo para uno anterior?",
+        "approval": "¿Es un paso que la tarea necesita, hecho como lo esperarías?"
       },
       "fields": {
         "turnType": "Tipo de tarea",
@@ -391,6 +354,8 @@
         "hide": "Habilidades que se sugiere ocultar",
         "relevant": "Habilidades relevantes",
         "apply": "Lecciones sugeridas",
+        "applied": "Seguidas",
+        "notApplied": "No seguidas",
         "publish": "Permitir publicación",
         "deliver": "Permitir entrega",
         "path": "Archivo candidato",
@@ -409,7 +374,8 @@
         "phase": "Fase",
         "focus": "Criterio en curso",
         "needsUser": "Necesita al usuario",
-        "update": "Reescribir el tablero"
+        "update": "Reescribir el tablero",
+        "relation": "Relación"
       },
       "values": {
         "true": "Sí",
@@ -489,7 +455,20 @@
         "bad_request": "El juez rechazó la solicitud",
         "server": "Error del servidor del juez",
         "invalid_response": "Respuesta del juez ilegible",
-        "verdict": "El juez respondió"
+        "verdict": "El juez respondió",
+        "learn": "Guardar la salida",
+        "reusable": "Útil otra vez",
+        "one_off": "Solo esta vez",
+        "already_known": "Ya conocida",
+        "same": "Misma lección",
+        "refines": "Más precisa",
+        "contradicts": "La contradice",
+        "supersedes": "La reemplaza",
+        "supports": "La respalda",
+        "unrelated": "Sin relación",
+        "preference": "Regla permanente",
+        "approve": "Dejar que se ejecute",
+        "beyond": "Más de lo que pediste"
       },
       "probabilityValue": "Probabilidad de «sí»: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -498,11 +477,22 @@
       "errorValue": "Error · {{kind}}",
       "noAnswerAfter": "Sin respuesta tras {{duration}}",
       "hints": {
+        "answered": "Este mensaje responde a la propia pregunta del agente: actúa en consecuencia y no vuelvas a preguntar.",
+        "resolve": "La solicitud es vaga y puede cambiar archivos: revisa el proyecto, di qué supones y pregunta solo lo que no se pueda encontrar aquí.",
         "clarify": "La solicitud parece poco definida: haz primero una pregunta concreta.",
         "side_question": "Es una pregunta aparte: respóndela brevemente y sigue con la tarea principal.",
-        "plan_first": "Parece grande o arriesgado: escribe un plan breve y confírmalo antes de editar.",
+        "plan_first": "Parece grande o arriesgado: escribe un plan breve y llévalo a cabo; detente a confirmar solo antes de un paso que no se pueda deshacer.",
         "try_hive": "Parece difícil: si no se conoce la causa o un intento directo falla, recurre a Hive.",
         "try_delegate": "Se divide en partes independientes: plantéate encargarlas a subagentes en paralelo."
+      },
+      "hintChips": {
+        "answered": "Respuesta al agente",
+        "resolve": "Mirar primero",
+        "clarify": "Preguntar primero",
+        "side_question": "Pregunta aparte",
+        "plan_first": "Planificar primero",
+        "try_hive": "Hive si se atasca",
+        "try_delegate": "Delegar partes"
       },
       "answerIds": {
         "turn_type": "Tipo de tarea",
@@ -515,11 +505,13 @@
         "task_complexity": "Alcance",
         "reasoning_depth": "Profundidad de razonamiento",
         "tool_complexity": "Uso de herramientas"
+      },
+      "log": {
+        "thisTurn": "Este turno",
+        "earlier": "Mostrar líneas anteriores",
+        "latest": "Ir a lo último"
       }
     },
-    "decisions": "Jev",
-    "memory": "Experiencia",
-    "images": "Imágenes",
     "empty": "Todavía no hay eventos registrados en esta sesión.",
     "quiet": "Sin actividad desde hace {{duration}}",
     "passed": "Aceptado",
@@ -556,6 +548,9 @@
       "memory.recalled": "Experiencia recuperada",
       "artifact.image": "Imagen",
       "memory.stored": "Experiencia guardada",
+      "memory.applied": "Lecciones seguidas",
+      "memory.retired": "Lección retirada",
+      "memory.merged": "Lecciones fusionadas",
       "compaction_start": "Compactando el contexto…",
       "compaction_end": "Compactación finalizada",
       "context.usage": "Uso del contexto",
@@ -567,6 +562,9 @@
       "board": {
         "update": "Tablero actualizado",
         "switched": "Tablero activado o desactivado"
+      },
+      "permissions": {
+        "mode": "Modo de permisos"
       },
       "checkpoint": {
         "taken": "Punto de control guardado"
@@ -681,7 +679,6 @@
       "failed": "Fallida"
     },
     "boardView": {
-      "tab": "Tablero",
       "title": "Tablero en lenguaje claro",
       "switch": "Tablero en lenguaje claro de este proyecto",
       "switching": "Cambiando…",
@@ -689,7 +686,6 @@
       "unknown": "Esta conversación aún no tiene tablero. Aparece en las conversaciones de mu mientras el tablero en lenguaje claro está activado en Funciones.",
       "off": "Cuando está activado, explica con palabras sencillas cómo va el trabajo, qué hace ahora el agente y qué necesita de ti.",
       "cost": "Solo para este proyecto. Cada actualización cuesta una llamada al modelo.",
-      "open": "Activar el tablero",
       "empty": "Dale un momento al agente; aquí verás con palabras sencillas cómo va.",
       "checks": "{{done}} de {{total}} comprobaciones hechas",
       "ended": "Detenido",
@@ -699,6 +695,7 @@
       "needsYouText": "El agente espera tu respuesta en la conversación.",
       "quote": "Citar en tu respuesta",
       "quoteHint": "Haz clic en uno para citarlo en tu respuesta; no se envía nada hasta que lo envíes tú.",
+      "earlier": "Antes",
       "phases": {
         "understanding": "Entendiendo la tarea",
         "planning": "Planificando",
@@ -736,6 +733,66 @@
           "focus": "{{now}} (En curso: {{focus}})",
           "planning": "Está pensando cómo hacerlo; aún no ha cambiado nada."
         }
+      }
+    },
+    "lessonsView": {
+      "filterLabel": "Qué lecciones mostrar",
+      "active": "En uso",
+      "all": "Todas",
+      "count": "{{count}} lecciones",
+      "count_one": "{{count}} lección",
+      "count_other": "{{count}} lecciones",
+      "search": "Buscar lecciones",
+      "kinds": {
+        "correction": "Corrección",
+        "preference": "Regla",
+        "pitfall": "Trampa",
+        "workaround": "Alternativa",
+        "fact": "Dato"
+      },
+      "everywhere": "Todos los proyectos",
+      "status": {
+        "retired": "Retirada",
+        "superseded": "Sustituida"
+      },
+      "uses": "Recordada {{recalled}} · Seguida {{applied}}",
+      "origins": {
+        "user": "De tu corrección o regla",
+        "outcome": "De la salida que encontró el propio agente",
+        "model": "Guardada por el modelo",
+        "subagent": "Del informe de un subagente",
+        "command": "Guardada con /remember"
+      },
+      "updated": "Actualizada el {{date}}",
+      "editLabel": "Texto de la lección",
+      "retire": "Retirar",
+      "retireConfirm": "¿Retirar esta lección? Ya no se llevará a ningún turno.",
+      "loadFailed": "No se pudieron leer las lecciones",
+      "saveFailed": "La lección no se cambió",
+      "empty": "Aún no hay lecciones para este proyecto. mu las aprende de tus correcciones, de sus propias salidas y de /remember.",
+      "noneActive": "No hay lecciones en uso. Todas muestra también las retiradas y las sustituidas.",
+      "noMatch": "Ninguna lección coincide.",
+      "noProject": "Esta conversación no tiene carpeta de proyecto, así que solo se muestran las lecciones para todos los proyectos.",
+      "notes": {
+        "label": "Lo que hicieron las lecciones en esta sesión",
+        "recalled": "Este turno trajo {{count}} lecciones",
+        "recalled_one": "Este turno trajo {{count}} lección",
+        "recalled_other": "Este turno trajo {{count}} lecciones",
+        "briefed": "El encargo de un subagente llevó {{count}} lecciones: {{task}}",
+        "briefed_one": "El encargo de un subagente llevó {{count}} lección: {{task}}",
+        "briefed_other": "El encargo de un subagente llevó {{count}} lecciones: {{task}}",
+        "applied": "Se siguieron {{count}} lecciones",
+        "applied_one": "Se siguió {{count}} lección",
+        "applied_other": "Se siguieron {{count}} lecciones",
+        "retired": "Retirada: {{lesson}}",
+        "retiredUnused": "Retirada: {{lesson}} (recordada {{count}} veces, nunca seguida)",
+        "retiredUnused_one": "Retirada: {{lesson}} (recordada {{count}} vez, nunca seguida)",
+        "retiredUnused_other": "Retirada: {{lesson}} (recordada {{count}} veces, nunca seguida)",
+        "retiredContradicted": "Retirada: {{lesson}} (contradice lo que dijiste después)",
+        "retiredForgotten": "Retirada: {{lesson}} (a petición tuya)",
+        "mergedSame": "Fusionada con: {{lesson}}",
+        "mergedRefines": "Se guardó una redacción más precisa: {{lesson}}",
+        "mergedContradicts": "No guardada, contradice: {{lesson}}"
       }
     },
     "activityLoadFailed": "No se pudo cargar la actividad de colaboración. Reintentando…",
@@ -779,6 +836,7 @@
         "lessons": "Revisando lecciones de sesiones anteriores",
         "skills": "Eligiendo las habilidades que necesita esta sesión",
         "capabilities": "Eligiendo las capacidades que necesita esta tarea",
+        "goal_check": "Comprobando si se ha alcanzado el objetivo",
         "permissionReview": "JeV está revisando: {{summary}}"
       },
       "goal": {
@@ -864,7 +922,21 @@
           "cdpConnectFailed": "No se pudo conectar con el navegador.",
           "browserSpawnFailed": "No se pudo iniciar {{command}}."
         }
+      },
+      "permissions": {
+        "mode": "Modo de permisos: {{mode}}"
+      },
+      "board": {
+        "on": "Tablero: activado",
+        "off": "Tablero: desactivado"
       }
+    },
+    "gauges": {
+      "context": "Contexto",
+      "contextHint": "Lo que el modelo leerá a continuación ocupa el {{percent}} de su contexto",
+      "cache": "Aciertos de caché",
+      "cacheHint": "Aciertos de caché: {{turn}} en el último turno, {{session}} en toda la conversación",
+      "pending": "Se muestra tras la próxima respuesta de mu"
     }
   },
   "menu": {
@@ -900,11 +972,57 @@
   "noData": "No hay datos",
   "labelWithSelectedCount": "{{label}} ({{selected}}/{{total}})",
   "selectedSkillsWithCount": "Habilidades seleccionadas · {{count}}",
+  "commandPalette": {
+    "title": "Paleta de comandos",
+    "placeholder": "Buscar conversaciones, configuración y comandos",
+    "groups": {
+      "conversations": "Conversaciones",
+      "settings": "Configuración",
+      "commands": "Comandos"
+    },
+    "searchMessages": "Buscar «{{query}}» en los mensajes",
+    "empty": "Sin resultados",
+    "noConversations": "Aún no hay conversaciones. Escribe para buscar en la configuración y los comandos.",
+    "openSettings": "Abrir la configuración",
+    "actions": {
+      "newConversation": "Empezar un chat nuevo",
+      "scheduledTasks": "Abrir las tareas programadas"
+    },
+    "commandWaits": "Se ejecutará cuando termine esta respuesta"
+  },
   "window": {
     "minimize": "Minimizar",
     "maximize": "Maximizar",
     "restore": "Restaurar"
   },
   "collapseSidebar": "Contraer barra lateral",
-  "expandSidebar": "Expandir barra lateral"
+  "expandSidebar": "Expandir barra lateral",
+  "workPanel": {
+    "label": "Panel de trabajo",
+    "tabsLabel": "Pestañas del panel de trabajo",
+    "tabs": {
+      "board": "Tablero",
+      "judge": "Veredictos",
+      "hive": "Hive",
+      "lessons": "Lecciones",
+      "files": "Archivos",
+      "preview": "Vista previa",
+      "source": "Código"
+    },
+    "close": "Cerrar el panel de trabajo",
+    "resize": "Cambiar el ancho del panel de trabajo",
+    "unread": "{{tab}}, novedades",
+    "noProject": "Esta conversación no tiene carpeta de proyecto, así que no hay archivos ni cambios que mostrar.",
+    "previewEmpty": "Aún no hay nada que previsualizar. Aquí aparecen los archivos y las páginas que se abren desde la conversación.",
+    "previewHidden": "La vista previa está oculta."
+  },
+  "nodeRuntime": {
+    "title": "¿Descargar Node.js?",
+    "message": "mu ejecuta agentes y herramientas con su propia copia de Node.js, que aún no se ha descargado.",
+    "detail": "Se descargará Node.js {{version}} (unos {{size}} MB) de nodejs.org y se descomprimirá en:\n{{folder}}\n\n«Más tarde» no descarga nada: mu se abre como siempre, avisa donde se necesita Node.js y vuelve a preguntar en el próximo inicio.",
+    "download": "Descargar",
+    "later": "Más tarde",
+    "note": "Node.js no está descargado, así que este agente no puede ejecutarse. mu volverá a preguntar en el próximo inicio.",
+    "toolNote": "Node.js no está descargado, así que las herramientas que lo necesitan no pueden ejecutarse. mu volverá a preguntar en el próximo inicio."
+  }
 }

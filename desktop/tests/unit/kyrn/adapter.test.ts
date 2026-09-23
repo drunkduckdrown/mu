@@ -14,7 +14,7 @@ import {
   readAppLanguage,
 } from '../../../packages/desktop/src/process/agent/kyrn/KyrnAgent.ts';
 import type { JsonRecord } from '../../../packages/desktop/src/process/agent/kyrn/piRpc.ts';
-import { activityPage } from '../../../packages/desktop/src/process/agent/kyrn/telemetry';
+import { activityPage, modelLevels } from '../../../packages/desktop/src/process/agent/kyrn/telemetry';
 
 const noop = (): void => {};
 
@@ -50,6 +50,8 @@ type FixtureOptions = {
   here?: boolean;
   /** What pi's `get_commands` answers. */
   commands?: JsonRecord[];
+  /** What pi's `get_available_models` answers; unset: a fixture model and the judge's gateway model. */
+  models?: JsonRecord[];
 };
 
 function fixture(options: FixtureOptions = {}) {
@@ -111,7 +113,7 @@ function fixture(options: FixtureOptions = {}) {
               };
             case 'get_available_models':
               return {
-                models: [
+                models: options.models ?? [
                   { provider: 'fixture', id: 'model', name: 'Fixture Model' },
                   { provider: 'vercel-ai-gateway', id: 'openai/gpt-5', name: 'GPT-5' },
                 ],
@@ -337,6 +339,31 @@ describe('KYRN ACP bridge', () => {
       await expect(
         f.agent.setSessionConfigOption({ sessionId: session.sessionId, configId: 'model', value: 'fake/unknown' })
       ).rejects.toThrow('Unsupported');
+    } finally {
+      f.cleanup();
+    }
+  });
+  it('records the thinking levels each offered model takes, by pi’s rule, for the send box’s picker', async () => {
+    const f = fixture({
+      models: [
+        {
+          provider: 'fixture',
+          id: 'model',
+          name: 'Fixture Model',
+          reasoning: true,
+          thinkingLevelMap: { minimal: null, xhigh: 'max-effort' },
+        },
+        { provider: 'fixture', id: 'plain', name: 'No Reasoning' },
+        { provider: 'vercel-ai-gateway', id: 'openai/gpt-5', name: 'GPT-5', reasoning: true },
+      ],
+    });
+    try {
+      const { sessionId } = await f.agent.newSession({ cwd: tmpdir(), mcpServers: [] });
+      // Only what the picker offers: the gateway nobody picked is left out, as it is from the model list.
+      expect(modelLevels(f.store, sessionId)).toEqual({
+        'fixture/model': ['off', 'low', 'medium', 'high', 'xhigh'],
+        'fixture/plain': ['off'],
+      });
     } finally {
       f.cleanup();
     }

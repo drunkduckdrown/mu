@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "فعالیت ابزار",
-    "calls": "{{count}} فراخوانی",
-    "calls_one": "{{count}} فراخوانی",
-    "commands": "{{count}} دستور",
-    "commands_one": "{{count}} دستور",
     "input": "ورودی",
     "output": "خروجی",
     "loading": "در حال بارگیری خروجی کامل…",
     "loadError": "خروجی کامل بارگیری نشد.",
     "retry": "تلاش دوباره",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "نمایش بیشتر",
+    "showLess": "نمایش کمتر"
+  },
+  "activity": {
+    "running": "در حال اجرای {{label}} · {{steps}} گام",
+    "summary": "{{steps}} گام",
+    "summaryFailed": "{{steps}} گام · {{failed}} ناموفق"
   },
   "kind": {
     "edit": "ویرایش فایل",

@@ -179,23 +179,16 @@
   height: auto;
   padding: 12px 14px;
   border: 1px solid var(--border-base, #e5e6eb);
-  border-radius: var(--mu-radius-lg, 12px);
+  border-radius: 8px;
   background: var(--bg-base, #fff);
-  box-shadow: var(--mu-shadow-1, none);
   color: var(--text-primary);
   text-align: start;
   white-space: normal;
-  transition:
-    border-color var(--mu-duration, 160ms) var(--mu-ease, ease),
-    box-shadow var(--mu-duration, 160ms) var(--mu-ease, ease),
-    transform var(--mu-duration, 160ms) var(--mu-ease, ease);
+  transition: background-color var(--mu-duration, 160ms) var(--mu-ease, ease);
 }
 
 .starter:global(.arco-btn):hover {
-  border-color: var(--mu-violet-4, var(--brand-hover));
-  background: var(--bg-base, #fff);
-  box-shadow: var(--mu-shadow-2, 0 4px 12px rgba(0, 0, 0, 0.08));
-  transform: translateY(-1px);
+  background: var(--bg-2, #f7f8fa);
 }
 
 .starterIcon {
@@ -205,9 +198,7 @@
   width: 28px;
   height: 28px;
   flex-shrink: 0;
-  border-radius: 9px;
-  background: var(--mu-gradient-soft, var(--brand-light));
-  color: var(--primary);
+  color: var(--text-secondary);
 }
 
 .starterText {
@@ -276,7 +267,7 @@
   inset-inline-start: 0;
   width: 42%;
   border-radius: 3px;
-  background: var(--mu-gradient, var(--brand));
+  background: var(--text-tertiary, #86909c);
   animation: mu-sweep 1.5s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
@@ -341,9 +332,5 @@
   .starter:global(.arco-btn),
   .pulseDot {
     transition: none;
-  }
-
-  .starter:global(.arco-btn):hover {
-    transform: none;
   }
 }

@@ -7,16 +7,36 @@
   "modified": "已修改",
   "applyNote": "修改对新会话生效。正在运行的会话沿用启动时的配置，重新连接后才会使用新配置。",
   "apiKey": "API 密钥",
-  "keyHelp": "只写不读：保存后不会再显示。存放在本机 harness 的 .env 中（仅本人可读）。",
+  "keyHelp": "保存后不再显示。只存在这台电脑上，只有你的账户能读。",
   "keyKeep": "留空则保留已保存的密钥",
   "endpointRule": "请使用 HTTPS；只有本机地址（127.0.0.1、localhost）可以用 HTTP。地址里不能带用户名、密码、查询参数或片段。",
   "sections": {
     "judges": "判定器",
+    "judgeTiers": "判定层级",
     "decisions": "判定点",
     "features": "功能",
-    "models": "模型与提供商",
+    "moreFeatures": "更多功能",
+    "providers": "提供商",
+    "defaultModel": "默认模型",
     "permissions": "权限",
     "context": "上下文"
+  },
+  "pages": {
+    "decisions": {
+      "input": "输入判定点",
+      "context": "上下文判定点",
+      "memory": "经验库判定点",
+      "tools": "工具与安全判定点",
+      "turn": "回合判定点",
+      "team": "协作判定点"
+    },
+    "features": {
+      "input": "输入功能",
+      "context": "上下文功能",
+      "tools": "工具与安全功能",
+      "turn": "回合功能",
+      "other": "其他功能"
+    }
   },
   "modes": {
     "active": "生效",
@@ -24,11 +44,11 @@
     "off": "关闭",
     "activeHelp": "判定结果直接起作用。",
     "shadowHelp": "照常提问并记录，但不改变任何行为。",
-    "offHelp": "不提问，行为与原版 pi 相同。"
+    "offHelp": "不提问，这一步不经判定，照常进行。"
   },
   "harness": {
-    "tooOld": "当前的 mu harness 版本较旧，还不能描述自己的判定点和功能。更新 harness 后这里才会列出；基础设置仍可正常使用。",
-    "unsupported": "harness 用了本应用不认识的自述格式（版本 {{version}}）。请更新应用后再编辑判定点和功能。"
+    "tooOld": "当前的 mu 版本较旧，还不能列出自己的判定点和功能。更新 mu 后这里才会列出；基础设置仍可正常使用。",
+    "unsupported": "mu 用了本应用不认识的格式描述自己（版本 {{version}}）。请更新应用后再编辑判定点和功能。"
   },
   "load": {
     "failed": "无法读取设置"
@@ -43,7 +63,7 @@
     "failed": "保存失败：{{reason}}"
   },
   "units": {
-    "ms": "毫秒",
+    "s": "秒",
     "tokens": "token"
   },
   "options": {
@@ -62,63 +82,62 @@
     "description": "判定器被提问的每一个环节。没有单独指定模式的判定点跟随默认模式。",
     "defaultMode": "默认模式",
     "defaultModeHelp": "没有单独指定模式的判定点都用它。",
-    "follow": "跟随默认（{{mode}}）",
-    "feature": "功能：{{name}}",
-    "featureOff": "功能已关闭，不会提问",
+    "useDefault": "改回默认（{{mode}}）",
+    "featureOff": "所属功能已关闭，现在不会问这一项。",
     "groups": {
       "input": "输入",
       "context": "上下文",
+      "memory": "经验库",
       "tools": "工具与安全",
-      "turn": "轮次",
+      "turn": "回合",
       "team": "协作"
     },
-    "otherGroup": "其他"
+    "otherGroup": "其他",
+    "pageLead": "没有单独指定模式的判定点跟随默认模式；默认模式和搜索在「{{page}}」页。",
+    "none": "这里还没有判定点。"
   },
   "features": {
-    "description": "harness 在模型周围做的各项工作。没改过的选项会一直跟随 harness 的默认值。",
-    "beta": "Beta",
+    "lead": "mu 在后台替你做的事。关掉一项，mu 就不再做这件事。",
+    "moreLead": "mu 能做的其他事，按起作用的地方分组。每一项的选项点一下就能打开。",
+    "beta": "测试版",
     "reset": "恢复默认",
-    "asks": "相关判定点：{{names}}。",
     "permissionsElsewhere": "新对话的默认模式在「权限」里设置。",
-    "boardModelElsewhere": "写看板的模型在「模型与提供商」里选。"
+    "boardModelElsewhere": "写看板的模型在「默认模型」里选。",
+    "options": "选项",
+    "noOptions": "没有别的可设置：只有这个开关。",
+    "noSuchFeature": "这个版本的 mu 没有这项功能。",
+    "none": "这里还没有功能。",
+    "part": "选项第 {{part}} 页，共 {{parts}} 页",
+    "previousPart": "上一页",
+    "nextPart": "下一页"
   },
   "judges": {
-    "tiers": "判定层级",
     "tiersHelp": "判定器按顺序依次尝试；后一级只处理前面几级拿不准的问题。",
     "order": "顺序",
-    "judge": "判定器",
+    "orderHelp": "排在第一的就是「判定器」页选的那个。",
+    "tierTitle": "第 {{index}} 级：{{name}}",
     "type": "接入方式",
+    "access": {
+      "jev": "自动",
+      "typesafe": "直连 TypeSafe",
+      "gateway": "经 Vercel AI Gateway"
+    },
     "model": "判定模型",
-    "modelHelp": "通用大模型充当判定器时填写 provider/model-id。",
-    "endpoint": "接口地址",
+    "customTier": "你自己加的判定器，要改它请编辑 mu 的设置文件。",
     "endpointDefault": "使用服务的默认地址",
-    "timeout": "超时",
-    "keyVariable": "密钥变量名",
-    "keyVariableHelp": "可用 TYPESAFE_API_KEY、AI_GATEWAY_API_KEY，或以 MU_JUDGE_ 开头的名字。",
     "types": {
-      "jev": "Jev（自动选择通道）",
-      "typesafe": "Jev 直连（TypeSafe）",
-      "gateway": "Jev（经 Vercel AI Gateway）",
-      "local": "本地判定器（Laya）",
-      "http": "自建 HTTP 判定服务",
-      "llm": "通用大模型充当判定器",
-      "mock": "模拟（只给中性回答）",
       "jevHelp": "配置了 TypeSafe 密钥就直连，否则走 Vercel AI Gateway。",
       "typesafeHelp": "始终直连 TypeSafe。",
       "gatewayHelp": "始终经由 Vercel AI Gateway。",
-      "localHelp": "运行在本机的 Laya 判定服务。",
-      "httpHelp": "任何接收 {state, questions} 并返回 {answers} 的接口。",
-      "llmHelp": "用你已有的某个生成式模型，按提示以 JSON 作答。",
-      "mockHelp": "用于测试或离线使用：不会真的提问。"
+      "localHelp": "在这台电脑上运行。"
     },
     "intro": "mu 工作时要做很多小判断：这条消息该怎么处理、这一步会不会违反你定的规则……判定器负责回答。选一个就行。",
     "choose": "选择判定器",
-    "custom": "现在排在第一位的是自定义判定器，可以在「高级设置」里查看和修改。",
-    "advanced": "高级设置",
+    "custom": "现在排在第一位的是自定义判定器，可以在「判定层级」页查看和修改。",
     "keyPlaceholder": "粘贴 TypeSafe 或 Vercel AI Gateway 的密钥",
     "choices": {
       "jev": {
-        "title": "Jev",
+        "title": "JeV",
         "tag": "推荐",
         "description": "又快又准，按次计费。需要 TypeSafe 或 Vercel AI Gateway 的密钥。"
       },
@@ -133,7 +152,7 @@
       "running": "正在本机运行",
       "stopped": "已安装，没有运行。mu 用到它时会自己启动。",
       "missing": "还没有安装。",
-      "platform": "这台电脑跑不了 Laya：它需要 Apple Silicon 的 Mac。可以在高级设置里填一个你自己的判定服务地址。",
+      "platform": "这台电脑跑不了 Laya：它需要 Windows 或 Linux（x64 或 arm64），或者 Apple Silicon 的 Mac。",
       "needsUv": "安装需要先装好 uv（Python 的包管理工具），装好后回到这里。",
       "uvLink": "怎么安装 uv",
       "install": "安装 Laya",
@@ -151,6 +170,26 @@
         "setup": "安装没有完成，可以再试一次。",
         "start": "Laya 没能启动。",
         "stop": "Laya 没能停止。"
+      },
+      "onnx": {
+        "missing": "这台电脑上还没有 Laya 的模型（约 {{size}} MB）。mu 不会替你下载：请从 Hugging Face 下载这些文件，放进模型文件夹，再点「检查并启动」。",
+        "stopped": "模型已就位，Laya 没有运行。选了 Laya 作为判定器时，mu 会在打开 App 时自己启动它。",
+        "starting": "正在检查模型并启动 Laya… 第一次检查要读完整个模型，需要一会儿。",
+        "missingFiles": "还缺：{{files}}",
+        "wrongFiles": "这些文件不是 mu 测试过的版本，请重新下载：{{files}}",
+        "folder": "模型文件夹：{{folder}}",
+        "command": "装了 Hugging Face 命令行（hf）的话，一条命令就能下全：",
+        "page": "去 Hugging Face 下载",
+        "openFolder": "打开模型文件夹",
+        "check": "检查并启动",
+        "problem": {
+          "missing": "缺少部分模型文件。",
+          "wrong": "部分模型文件不是 mu 测试过的版本，请重新下载。",
+          "runtime": "这台电脑运行不了这个模型。",
+          "port": "Laya 的端口（{{port}}）已被别的程序占用。",
+          "stopped": "Laya 还没准备好就停了。",
+          "foreign": "这里在运行一个不是 mu 启动的 Laya，请在启动它的地方停止它。"
+        }
       }
     }
   },
@@ -163,14 +202,12 @@
     "manual": "已配置（手动）"
   },
   "context": {
-    "description": "对话何时压缩、如何压缩。与 pi 的 settings.json 共用。",
+    "description": "对话何时压缩、如何压缩。存在 mu 的设置文件里，命令行里的 mu 也用同一份。",
     "auto": "自动压缩",
     "autoHelp": "上下文快满时自动压缩历史。",
     "limit": "上下文上限",
     "limitHelp": "0 表示使用模型的上下文窗口减去预留量；否则填 {{min}} 到 {{max}}。在下一次请求模型之前检查，不是硬性截断。",
-    "limitProblem": "请填 0，或 {{min}} 到 {{max}} 之间的整数。",
-    "beta": "免摘要压缩",
-    "betaHelp": "压缩时逐段判断保留还是裁剪原文，而不是让模型写摘要。与「功能」里的免摘要压缩是同一个开关。"
+    "limitProblem": "请填 0，或 {{min}} 到 {{max}} 之间的整数。"
   },
   "permissions": {
     "description": "mu 动手之前要不要先问你。这里定的是新对话默认用的模式；每个对话还能在发送框的「权限」里单独切换。",
@@ -229,7 +266,7 @@
     }
   },
   "providers": {
-    "lead": "模型从哪里来：订阅账号和接口地址；还有写人话看板的模型。对话用哪个模型、思考等级多少，在发送框里选。",
+    "lead": "模型从哪里来：订阅账号和接口地址。对话用哪个模型、思考等级多少，在发送框里选。",
     "title": "提供商",
     "custom": "自定义提供商",
     "manualGroup": "手动配置",
@@ -242,7 +279,7 @@
     "name": "显示名称",
     "namePlaceholder": "例如：我的中转服务",
     "id": "ID",
-    "idHelp": "小写字母、数字和连字符。保存后不可更改，模型以 provider/model 的形式引用它。",
+    "idHelp": "小写字母、数字和连字符。保存后不能再改。",
     "idProblem": {
       "format": "只能用小写字母、数字和连字符，以字母或数字开头，最多 40 个字符。",
       "reserved": "这是内置提供商的 ID。用它建条目会改写那个内置提供商，而不是新增一个。",
@@ -251,7 +288,6 @@
     "baseUrl": "接口地址（Base URL）",
     "keyEnter": "粘贴 API 密钥",
     "keyReplace": "当前使用的是手动配置的密钥，在此输入会替换它",
-    "keyHelp": "密钥存入 harness 的 .env（变量 {{variable}}），models.json 里只写引用，保存后不再显示。",
     "authHeader": "同时发送 Authorization: Bearer 头（部分中转服务需要）",
     "headers": "手动配置的额外请求头会原样保留：{{names}}。它们的值属于机密，请在 models.json 中修改。",
     "pick": "在左侧选择一个提供商，或添加一个。",
@@ -276,6 +312,18 @@
     "removeUnsaved": "它还没保存，移除后这里填的内容都会丢掉。",
     "removeEntry": "保存后这个手动配置的条目会从 models.json 里删除。如果它改写的是内置提供商，那个提供商会恢复默认。",
     "removeDefault": "新会话默认用的就是它，所以默认模型也会清空。"
+  },
+  "defaults": {
+    "summary": "新会话启动时使用。对话中仍可随时切换。",
+    "provider": "提供商",
+    "model": "模型",
+    "level": "思考等级",
+    "levelUnset": "不指定",
+    "levelHelp": "该模型不支持的等级已置灰。",
+    "levelClamped": "不指定时为「中」。模型不支持的等级会自动改用最接近的可用等级。",
+    "noReasoning": "这个模型不支持思考，用它启动的会话思考固定为关闭。",
+    "notSet": "未指定",
+    "pickProvider": "请先选择提供商。"
   },
   "accounts": {
     "signIn": "登录",
@@ -344,7 +392,7 @@
   },
   "test": {
     "run": "测试连接",
-    "hint": "由本应用发出一次最小请求：优先取模型列表，取不到就用第一个模型请求 1 个 token。",
+    "hint": "由本应用发出一次最小的请求：先取模型列表，取不到就让第一个模型回一个字。",
     "okModels": "连接成功（{{ms}} 毫秒），接口返回了 {{count, number}} 个模型。",
     "okCompletion": "连接成功（{{ms}} 毫秒），模型已应答。",
     "auth": "密钥被拒绝（HTTP {{status}}）。",
@@ -418,7 +466,6 @@
       },
       "anthropic": {
         "title": "Anthropic 兼容接口",
-        "tag": "Claude",
         "description": "Claude，以及兼容 Messages 格式的服务",
         "modelPlaceholder": "例如 claude-sonnet-5"
       },
@@ -540,10 +587,10 @@
     "modelsUnreadable": "无法解析 models.json，请先手动修复，再保存提供商。",
     "modelsCommented": "models.json 中有注释，从这里保存会把它们删掉，请手动编辑提供商。",
     "option": {
-      "type": "“{{name}}”的值类型不对。",
-      "range": "“{{name}}”超出了允许的范围。",
-      "choice": "“{{name}}”不在可选项里。",
-      "length": "“{{name}}”内容过长，或有空白条目。"
+      "type": "「{{name}}」的值类型不对。",
+      "range": "「{{name}}」超出了允许的范围。",
+      "choice": "「{{name}}」不在可选项里。",
+      "length": "「{{name}}」内容过长，或有空白条目。"
     },
     "invalidJson": "{{file}} 不是有效的 JSON，请手动修正后重新载入。",
     "unreadable": "无法读取 {{file}}。",

@@ -1,28 +1,38 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Button, Modal, Tag } from '@arco-design/web-react';
 import { Plus } from '@icon-park/react';
 import classNames from 'classnames';
 import { useTranslation } from 'react-i18next';
-import {
-  KEY_PROVIDERS,
-  isSubscriptionProvider,
-  type LoginStatus,
-  type SubscriptionProvider,
-} from '@/common/kyrn/login';
+import { KEY_PROVIDERS, isSubscriptionProvider, type SubscriptionProvider } from '@/common/kyrn/login';
 import {
   ENDPOINT_TYPES,
+  PROVIDER_ID,
   RESERVED_PROVIDER_IDS,
+  suggestProviderId,
   type AvailableModels,
   type ProviderSettings,
 } from '@/common/kyrn/models';
 import type { KyrnSettings } from '@/common/kyrn/types';
 import ProviderMark from '@renderer/components/brand/ProviderMark';
+import { providerDisplayName } from '@/renderer/utils/model/providerName';
+import {
+  consumePendingDeepLink,
+  subscribePendingDeepLink,
+  type DeepLinkAddProviderDetail,
+} from '@renderer/hooks/system/useDeepLink';
 import AccountDetail from '../accounts/AccountDetail';
 import { providerName } from '../accounts/LoginWaiting';
 import { useSubscriptionLogin } from '../accounts/useSubscriptionLogin';
 import type { Draft } from '../draft';
 import ProviderEditor from './ProviderEditor';
-import { blankProvider, camel, customProviderName, freeProviderId, providerProblems } from './endpoints';
+import {
+  blankProvider,
+  camel,
+  customProviderName,
+  endpointOfLink,
+  freeProviderId,
+  providerProblems,
+} from './endpoints';
 import { EndpointMark, ProviderHead, RemoveMenu, StatusDot, type DotState } from './parts';
 import { markRemoved } from './removed';
 import styles from './providers.module.css';
@@ -40,8 +50,6 @@ type ProviderManagerProps = {
   onModels: (patch: Partial<KyrnSettings['models']>) => void;
   /** A key typed for a provider, and the id change of a provider that is not saved yet. */
   onKeys: (keys: Record<string, string>) => void;
-  /** Who is signed in, so the startup model can offer their models before a running mu has reported them. */
-  onAccounts?: (accounts: LoginStatus['signedIn']) => void;
   /** Reported providers removed on this screen, which the snapshot of mu's last connection still lists. */
   hidden: ReadonlySet<string>;
   /** Between the heading and the list: why models.json cannot be edited, when it cannot. */
@@ -58,14 +66,13 @@ const comparable = ({ key: _key, keySet: _set, headerNames: _names, ...rest }: P
  * save bar, and a provider is removed from its more-actions menu after a question.
  */
 export default function ProviderManager(props: ProviderManagerProps) {
-  const { draft, base, available, onModels, onKeys, onAccounts, hidden, children } = props;
+  const { draft, base, available, onModels, onKeys, hidden, children } = props;
   const { t } = useTranslation();
   const [modal, modalHolder] = Modal.useModal();
   const flow = useSubscriptionLogin();
   const { providers, foreign, commented, problem, defaults } = draft.settings.models;
   const readOnly = commented || Boolean(problem);
   const [selection, setSelection] = useState<Selection>();
-  useEffect(() => onAccounts?.(flow.accounts), [flow.accounts, onAccounts]);
 
   const saved = new Map(base.models.providers.map((provider) => [provider.id, provider]));
   const own = new Set([...providers.map((provider) => provider.id), ...foreign.map((entry) => entry.id)]);
@@ -121,6 +128,39 @@ export default function ProviderManager(props: ProviderManagerProps) {
     onModels({ providers: [...providers, blankProvider(freeProviderId(taken))] });
     setSelection({ kind: 'custom', index: providers.length });
   };
+  // A mu:// add-provider link: a new provider filled from it, unsaved like one added by hand, with the id its name
+  // suggests when the editor would accept that id.
+  const addFromLink = (link: DeepLinkAddProviderDetail) => {
+    const taken = new Set([...takenFor(providers.length), ...flow.offered]);
+    const name = link.name?.trim() ?? '';
+    const suggested = suggestProviderId(name);
+    const id =
+      PROVIDER_ID.test(suggested) && !RESERVED_PROVIDER_IDS.has(suggested) && !taken.has(suggested)
+        ? suggested
+        : freeProviderId(taken);
+    onModels({
+      providers: [
+        ...providers,
+        { ...blankProvider(id), name, api: endpointOfLink(link.platform), baseUrl: link.base_url?.trim() ?? '' },
+      ],
+    });
+    if (link.api_key) onKeys({ ...draft.providerKeys, [id]: link.api_key });
+    setSelection({ kind: 'custom', index: providers.length });
+  };
+  // The link waits for this page: taken when the page opens, or at once when it is already open. Not while models.json
+  // cannot be written, as the add button is not; the page says why.
+  const takeLink = useRef<((link: DeepLinkAddProviderDetail) => void) | undefined>(undefined);
+  useEffect(() => {
+    takeLink.current = readOnly ? undefined : addFromLink;
+  });
+  useEffect(() => {
+    const take = () => {
+      const link = consumePendingDeepLink();
+      if (link) takeLink.current?.(link);
+    };
+    take();
+    return subscribePendingDeepLink(take);
+  }, []);
   const replace = (index: number, next: ProviderSettings) => {
     const previous = providers[index];
     if (previous.id !== next.id && previous.id in draft.providerKeys) {
@@ -284,12 +324,8 @@ export default function ProviderManager(props: ProviderManagerProps) {
       <div className={styles.editor} data-testid='mu-provider-builtin'>
         <ProviderHead
           mark={<EndpointMark size={20} />}
-          title={current.id}
-          badges={
-            <Tag size='small' color='green'>
-              {t('mu.providers.usable')}
-            </Tag>
-          }
+          title={providerDisplayName(t, current.id)}
+          badges={<Tag size='small'>{t('mu.providers.usable')}</Tag>}
         />
         <div className={styles.fields}>
           <div className={styles.hint}>{t('mu.providers.builtinHelp')}</div>
@@ -311,11 +347,9 @@ export default function ProviderManager(props: ProviderManagerProps) {
 
   return (
     <div className={styles.providers}>
+      {/* The page's own title names the providers: this head only says what can be done, and adds one. */}
       <div className={styles.managerHead}>
-        <div className='min-w-0'>
-          <h3 className={styles.managerTitle}>{t('mu.providers.title')}</h3>
-          <p className={styles.hint}>{t('mu.providers.summary')}</p>
-        </div>
+        <p className={classNames(styles.hint, 'min-w-0 m-0')}>{t('mu.providers.summary')}</p>
         <Button
           type='primary'
           size='small'
@@ -374,7 +408,7 @@ export default function ProviderManager(props: ProviderManagerProps) {
               is('builtin', entry.id),
               () => setSelection({ kind: 'builtin', id: entry.id }),
               <EndpointMark />,
-              entry.id,
+              providerDisplayName(t, entry.id),
               <StatusDot state='ready' label={t('mu.providers.usable')} />
             )
           )}

@@ -152,14 +152,6 @@ vi.mock('@/renderer/hooks/mcp/catalog', () => ({
   ensureBackendMcpCatalog: vi.fn().mockResolvedValue({ allServers: [] }),
 }));
 
-vi.mock('@/renderer/hooks/chat/useInputFocusRing', () => ({
-  useInputFocusRing: () => ({
-    activeBorderColor: '#000',
-    inactiveBorderColor: '#ccc',
-    activeShadow: 'none',
-  }),
-}));
-
 vi.mock('@/renderer/pages/guid/hooks/useGuidModelSelection', () => ({
   useGuidModelSelection: () => modelSelectionMock,
 }));
@@ -213,14 +205,6 @@ vi.mock('@/renderer/pages/guid/components/GuidInputCard', () => ({
 
 vi.mock('@/renderer/pages/guid/components/GuidModelSelector', () => ({
   default: () => <div data-testid='guid-model-selector' />,
-}));
-
-vi.mock('@/renderer/pages/guid/components/QuickActionButtons', () => ({
-  default: () => <div data-testid='guid-quick-actions' />,
-}));
-
-vi.mock('@/renderer/components/settings/SettingsModal/contents/FeedbackReportModal', () => ({
-  default: () => null,
 }));
 
 vi.mock('@/renderer/components/chat/SpeechInputButton', () => ({
@@ -294,9 +278,6 @@ const guidInputCardProps = {
   placeholder: 'Message',
   isInputActive: false,
   isFileDragging: false,
-  activeBorderColor: 'var(--color-primary-6)',
-  inactiveBorderColor: 'var(--color-border-2)',
-  activeShadow: 'none',
   dragHandlers: {},
   files: [],
   onRemoveFile: vi.fn(),

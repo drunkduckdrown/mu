@@ -22,6 +22,14 @@ import { audioExts, getFileExtension, imageExts } from '@/renderer/services/File
 import FilePreview from '@/renderer/components/media/FilePreview';
 import HorizontalFileList from '@/renderer/components/media/HorizontalFileList';
 import { classifyConfigSetError, useAcpConfigOptions } from '@/renderer/hooks/agent/useAcpConfigOptions';
+import {
+  ComposerModelChip,
+  GoalLine,
+  goalIsLive,
+  offersGoal,
+  useConversationGoal,
+  GOAL_CLEAR_COMMAND,
+} from './Composer';
 import { useAcpModelInfo } from '@/renderer/hooks/agent/useAcpModelInfo';
 import { useAutoTitle } from '@/renderer/hooks/chat/useAutoTitle';
 import { getSendBoxDraftHook, type FileOrFolderItem } from '@/renderer/hooks/chat/useSendBoxDraft';
@@ -45,6 +53,7 @@ import { allSupportedExts } from '@/renderer/services/FileService';
 import { iconColors } from '@/renderer/styles/colors';
 import type { SessionRef } from '@/common/adapter/ipcBridge';
 import CrossSessionDisabledBanner from '@/renderer/components/chat/CrossSessionDisabledBanner';
+import NodeRuntimeNote from './NodeRuntimeNote';
 import { useCrossSessionMessageEnabled } from '@/renderer/hooks/chat/useCrossSessionMessageEnabled';
 import { emitter, type SendBoxCommandState, useAddEventListener } from '@/renderer/utils/emitter';
 import { localSelectionItems, mergeFileSelectionItems } from '@/renderer/utils/file/fileSelection';
@@ -415,7 +424,6 @@ Please check your local CLI tool authentication status`,
     enqueue,
     remove,
     prioritize,
-    sendNow,
     clear,
     reorder,
     toggleMode,
@@ -440,6 +448,13 @@ Please check your local CLI tool authentication status`,
   // read it — every send path has to both forward and release it.
   const [selectedSessions, setSelectedSessions] = useState<SessionRef[]>([]);
   const { enabled: crossSessionEnabled } = useCrossSessionMessageEnabled();
+
+  // A goal is one long command the person types, `/goal <condition>`, and runs until the condition holds; a message
+  // always goes out as it was written. Only mu offers the command, so only there is a running goal read (the
+  // harness's `goal.state`) and shown in the line above the input.
+  const goalOffered = offersGoal(slashCommands);
+  const goal = useConversationGoal(conversation_id, goalOffered);
+  const liveGoal = goalIsLive(goal) ? goal : null;
 
   // Supporting agents (mid-turn delivery) send immediately, busy or not.
   // Non-supporting agents can no longer send while the agent is replying —
@@ -526,12 +541,9 @@ Please check your local CLI tool authentication status`,
     }
   };
 
-  // Explicit "add to queue" entry — visibility is keyed only to the user's
-  // own input (non-empty draft), never to the agent's busy/replying state:
-  // tying it to that racy, async signal made the entry appear/disappear
-  // unpredictably. Clicking while idle is semantically fine — the queue's own
-  // mode governs (auto drains immediately, manual holds). Shown for both
-  // supporting and non-supporting backends. Clears the draft the same way a
+  // Explicit "add to queue" entry: offered only while the agent is busy, when a message may have to wait; idle, a
+  // message is sent at once and the entry would be a disabled circle among the chips. While busy it is enabled once
+  // the draft holds something. Shown for both supporting and non-supporting backends. Clears the draft the same way a
   // send would.
   const canQueueCurrentDraft = content.trim().length > 0;
   const handleAddToQueue = useCallback(() => {
@@ -539,7 +551,11 @@ Please check your local CLI tool authentication status`,
     // `@@` references must ride along, and must be released from the send box
     // the same way the draft text is — otherwise they leak into whatever the
     // user sends next.
-    enqueue({ input: content, files: allFiles, sessions: selectedSessions.length > 0 ? selectedSessions : undefined });
+    enqueue({
+      input: content,
+      files: allFiles,
+      sessions: selectedSessions.length > 0 ? selectedSessions : undefined,
+    });
     setContent('');
     clearFiles();
     setSelectedSessions([]);
@@ -575,10 +591,42 @@ Please check your local CLI tool authentication status`,
     onFilesSelected: appendSelectedFiles,
   });
 
-  const { entries: attachEntries, hiddenFileInput: attachHiddenInput } = useAttachEntry({
-    openFileSelector,
-    onLocalFilesAdded: handleFilesAdded,
-  });
+  const { entries: attachEntries } = useAttachEntry({ openFileSelector });
+
+  // Stop conversation handler
+  const handleStop = async (): Promise<void> => {
+    // Cancelling is best-effort: swallow errors (e.g. backend WS not yet
+    // connected → 409) so they don't bubble up as unhandled rejections.
+    // UI state is still reset via finally.
+    const turnId = runtimeView.activeTurnId;
+    if (!turnId) {
+      resetState();
+      resetActiveExecution('stop');
+      return;
+    }
+    runtimeView.markStopRequested(turnId);
+    try {
+      const result = await ipcBridge.conversation.stop.invoke({ conversation_id, turn_id: turnId });
+      runtimeView.markStopAcknowledged(turnId, result.runtime);
+    } catch (error) {
+      console.warn('[AcpSendBox] stop request failed', error);
+      runtimeView.resetLocalGate('stop_failed');
+    } finally {
+      resetState();
+      resetActiveExecution('stop');
+    }
+  };
+  const effectiveHandleStop = teamRuntime?.onStop ?? handleStop;
+  // Ending a goal is a command the person gives: it travels the lane of mu's own board switch, which holds a
+  // command until the turn ends. A running goal never ends its turn by itself (mu sends the agent back to work
+  // from one continuation to the next), so the run is stopped and the command goes out as it settles.
+  const handleEndGoal = useCallback(
+    (heard: (state: SendBoxCommandState) => void) => {
+      emitter.emit('sendbox.command', GOAL_CLEAR_COMMAND, conversation_id, heard);
+      if (isBusy) void effectiveHandleStop();
+    },
+    [conversation_id, effectiveHandleStop, isBusy]
+  );
 
   const sheetEntries = useMemo<MobileActionSheetEntry[]>(() => {
     if (!isMobile) return [];
@@ -761,30 +809,6 @@ Please check your local CLI tool authentication status`,
     [conversation_id, setAtPath]
   );
 
-  // Stop conversation handler
-  const handleStop = async (): Promise<void> => {
-    // Cancelling is best-effort: swallow errors (e.g. backend WS not yet
-    // connected → 409) so they don't bubble up as unhandled rejections.
-    // UI state is still reset via finally.
-    const turnId = runtimeView.activeTurnId;
-    if (!turnId) {
-      resetState();
-      resetActiveExecution('stop');
-      return;
-    }
-    runtimeView.markStopRequested(turnId);
-    try {
-      const result = await ipcBridge.conversation.stop.invoke({ conversation_id, turn_id: turnId });
-      runtimeView.markStopAcknowledged(turnId, result.runtime);
-    } catch (error) {
-      console.warn('[AcpSendBox] stop request failed', error);
-      runtimeView.resetLocalGate('stop_failed');
-    } finally {
-      resetState();
-      resetActiveExecution('stop');
-    }
-  };
-  const effectiveHandleStop = teamRuntime?.onStop ?? handleStop;
   const handleSendNowQueued = useCallback(
     async (item: ConversationCommandQueueItem) => {
       if (supportsMidturnDelivery) {
@@ -824,7 +848,8 @@ Please check your local CLI tool authentication status`,
   const sendBoxWidthClass = getChatSurfaceWidthClass();
 
   return (
-    <div className={`${sendBoxWidthClass} flex flex-col mt-auto mb-16px`}>
+    // `data-composer-zone`: the work panel, floating in a narrow window, stops above this.
+    <div data-composer-zone className={`${sendBoxWidthClass} flex flex-col mt-auto mb-16px`}>
       <CommandQueuePanel
         items={queuedCommands}
         mode={queueMode}
@@ -847,7 +872,9 @@ Please check your local CLI tool authentication status`,
         onStop={effectiveHandleStop}
         onRetryStart={teamRuntime?.onRetryStart ? () => void teamRuntime.onRetryStart?.() : undefined}
       />
+      <NodeRuntimeNote conversationId={conversation_id} />
       <CrossSessionDisabledBanner />
+      {liveGoal && <GoalLine key={liveGoal.text} goal={liveGoal} onEnd={handleEndGoal} />}
       <SendBox
         onMobilePlusClick={isMobile ? () => setIsMobileSheetOpen(true) : undefined}
         value={content}
@@ -887,14 +914,10 @@ Please check your local CLI tool authentication status`,
         defaultMultiLine={!isMobile}
         lockMultiLine={!isMobile}
         tools={
-          <FileAttachButton
-            openFileSelector={openFileSelector}
-            onLocalFilesAdded={handleFilesAdded}
-            loadedMcpStatuses={loadedMcpStatuses}
-          />
-        }
-        rightTools={
-          <div className='flex items-center gap-8px min-w-0'>
+          // Left of the input: attachments, then what the agent is allowed to do. The model and its
+          // thinking level sit on the right, beside the send button.
+          <>
+            <FileAttachButton openFileSelector={openFileSelector} loadedMcpStatuses={loadedMcpStatuses} />
             {showModeSelector && (
               <AgentModeSelector
                 backend={backend}
@@ -911,7 +934,16 @@ Please check your local CLI tool authentication status`,
                 configOptionsPort={teamPermission?.configOptionsPort}
               />
             )}
-          </div>
+          </>
+        }
+        rightTools={
+          <ComposerModelChip
+            conversation_id={conversation_id}
+            busy={isBusy}
+            prepareRuntime={prepareRuntimeConfig}
+            prepareSetRuntime={teamPermission?.warmupSession}
+            configOptionsPort={teamPermission?.configOptionsPort}
+          />
         }
         prefix={
           <>
@@ -935,7 +967,6 @@ Please check your local CLI tool authentication status`,
                     return (
                       <Tag
                         key={item.path}
-                        color='blue'
                         closable
                         onClose={() => {
                           const newAtPath = atPath.filter((v) => (typeof v === 'string' ? true : v.path !== item.path));
@@ -978,26 +1009,19 @@ Please check your local CLI tool authentication status`,
             {tokenUsage ? <ContextUsageIndicator tokenUsage={tokenUsage} context_limit={context_limit} /> : undefined}
           </>
         }
-        onAddToDraft={handleAddToQueue}
+        onAddToDraft={isBusy ? handleAddToQueue : undefined}
         addToDraftDisabled={!canQueueCurrentDraft}
-        addToDraftTooltip={
-          isBusy
-            ? t('conversation.commandQueue.addToQueueBusyHint', {
-                defaultValue: 'Save to Draft box and send it later.',
-              })
-            : t('conversation.commandQueue.addToQueue', { defaultValue: 'Save to Draft box' })
-        }
+        addToDraftTooltip={t('conversation.commandQueue.addToQueueBusyHint', {
+          defaultValue: 'Save to Draft box and send it later.',
+        })}
       ></SendBox>
       {isMobile && (
-        <>
-          <MobileActionSheet
-            open={isMobileSheetOpen}
-            onClose={() => setIsMobileSheetOpen(false)}
-            title={t('common.more', { defaultValue: 'More' })}
-            entries={sheetEntries}
-          />
-          {attachHiddenInput}
-        </>
+        <MobileActionSheet
+          open={isMobileSheetOpen}
+          onClose={() => setIsMobileSheetOpen(false)}
+          title={t('common.more', { defaultValue: 'More' })}
+          entries={sheetEntries}
+        />
       )}
     </div>
   );

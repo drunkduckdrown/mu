@@ -1,8 +1,11 @@
 /*
  * mu colour scheme: white and black, with light lavender and light pink as a small accent.
  *
- * The page is the upstream one, neutral: white, near-white greys and black text in light, near-black
- * greys and white text in dark. The brand colours only mark what can be acted on or what is chosen:
+ * The page is neutral: the content surface is white with black text in light, near-black with white
+ * text in dark. The titlebar and the sidebar take the faintest grey (--bg-2), set apart by hairlines, so
+ * the structure shows without the page looking grey. Boxes on the page are white with a hairline, not grey
+ * fills. Both message inputs share one surface (--mu-composer-bg): white in light, a shade above the page in
+ * dark. The brand colours only mark what can be acted on or what is chosen:
  * primary buttons and the send button (a light lavender fill, a pink-to-lavender wash, dark text on
  * both), the selected row's thin bar, focus rings, selection, links and small dots. The judge keeps
  * pink as its mark, on a tint that is all but white.
@@ -90,7 +93,11 @@
   --mu-ring: rgba(167, 139, 245, 0.26);
   --mu-selection: rgba(205, 189, 251, 0.5);
 
-  /* The message input (send box and the new-conversation card): a grey hairline, lavender when focused. */
+  /* The veil under the command palette: the page's own white, so what lies under it recedes without turning grey. */
+  --mu-scrim: rgba(255, 255, 255, 0.72);
+
+  /* The message input (send box and the new-conversation card): its surface and a grey hairline. */
+  --mu-composer-bg: #ffffff;
   --mu-input-border: #e5e6eb;
   --mu-input-border-active: var(--mu-accent-border);
   --mu-input-shadow-active: 0 0 0 3px rgba(201, 184, 251, 0.24), 0 6px 20px rgba(0, 0, 0, 0.05);
@@ -140,8 +147,8 @@
   --aou-10: #0f1118;
 
   --bg-base: #ffffff;
-  --bg-1: #f9fafb;
-  --bg-2: #f2f3f5;
+  --bg-1: #ffffff;
+  --bg-2: #f7f7f8;
   --bg-3: #e5e6eb;
   --bg-4: #c9cdd4;
   --bg-5: #adb4c1;
@@ -253,6 +260,9 @@
   --mu-ring: rgba(180, 162, 250, 0.3);
   --mu-selection: rgba(180, 162, 250, 0.34);
 
+  --mu-scrim: rgba(0, 0, 0, 0.6);
+
+  --mu-composer-bg: #1a1a1a;
   --mu-input-border: #333333;
   --mu-input-border-active: var(--mu-accent-border);
   --mu-input-shadow-active: 0 0 0 3px rgba(180, 162, 250, 0.18), 0 8px 28px rgba(0, 0, 0, 0.5);
@@ -288,8 +298,8 @@
   --aou-10: #f0f1f4;
 
   --bg-base: #0e0e0e;
-  --bg-1: #1a1a1a;
-  --bg-2: #262626;
+  --bg-1: #111111;
+  --bg-2: #1a1a1a;
   --bg-3: #333333;
   --bg-4: #404040;
   --bg-5: #4d4d4d;

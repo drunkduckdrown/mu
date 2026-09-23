@@ -15,3 +15,23 @@ export function useClock(): (at: number | string | Date) => string {
   const language = i18n?.language;
   return useCallback((at: number | string | Date) => formatClock(at, language), [language]);
 }
+
+/** A log's clock: 24-hour, to the second, the same width on every line, in the app language's digits. */
+const LOG_CLOCK: Intl.DateTimeFormatOptions = {
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+};
+
+export function useLogClock(): (at: number | string | Date) => string {
+  const { i18n } = useTranslation();
+  const language = i18n?.language;
+  return useCallback(
+    (at: number | string | Date) => {
+      const date = at instanceof Date ? at : new Date(at);
+      return Number.isNaN(date.getTime()) ? '' : formatDateTime(date, language, LOG_CLOCK);
+    },
+    [language]
+  );
+}

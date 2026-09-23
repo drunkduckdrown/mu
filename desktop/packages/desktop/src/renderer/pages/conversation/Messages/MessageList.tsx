@@ -56,11 +56,20 @@ import MessageText from './components/MessageText';
 import MessageThinking, { ThoughtHistory } from './components/MessageThinking';
 import type { WriteFileResult } from './types';
 import { useAutoScroll } from './useAutoScroll';
+import { useCoalescedMessages } from './useCoalescedMessages';
 import SelectionReplyButton from './components/SelectionReplyButton';
 
 type IMessageVO =
   | TMessage
-  | { type: 'file_summary'; id: string; diffs: FileChangeInfo[]; sourceMessageIds: string[]; created_at: number }
+  | {
+      type: 'file_summary';
+      id: string;
+      diffs: FileChangeInfo[];
+      sourceMessageIds: string[];
+      /** The rows the diffs were read from — used only to tell an unchanged summary from a rebuilt one. */
+      sources: TMessage[];
+      created_at: number;
+    }
   | {
       type: 'tool_summary';
       id: string;
@@ -159,6 +168,39 @@ const getProcessedItemAnchorId = (item: IProcessedItem): string => {
  */
 const getProcessedItemKey = (item: IProcessedItem): string =>
   'type' in item && item.type === 'thinking_history' ? item.id : getProcessedItemAnchorId(item);
+
+/** The grouped rows are memoised so an unchanged group is not redrawn when another row streams. */
+const ThoughtHistoryRow = React.memo(ThoughtHistory);
+const FileChangesRow = React.memo(MessageFileChanges);
+
+const sameRefs = (a: readonly unknown[], b: readonly unknown[]): boolean =>
+  a.length === b.length && a.every((item, index) => item === b[index]);
+
+/**
+ * The grouped rows — a run of tool calls, a turn's thoughts, a set of file changes — are rebuilt on every chunk of a
+ * streamed reply, and a rebuilt group is a new object even when nothing in it moved. Handing React the previous
+ * object instead lets those rows stand still while another row streams.
+ */
+const reuseUnchangedGroups = (previous: Map<string, IProcessedItem>, items: IProcessedItem[]): IProcessedItem[] =>
+  items.map((item) => {
+    if (!('type' in item)) return item;
+    const before = previous.get(item.id);
+    if (!before || before === item || !('type' in before) || before.type !== item.type) return item;
+    if (item.type === 'tool_summary' && before.type === 'tool_summary' && sameRefs(item.messages, before.messages)) {
+      return before;
+    }
+    if (
+      item.type === 'thinking_history' &&
+      before.type === 'thinking_history' &&
+      sameRefs(item.messages, before.messages)
+    ) {
+      return before;
+    }
+    if (item.type === 'file_summary' && before.type === 'file_summary' && sameRefs(item.sources, before.sources)) {
+      return before;
+    }
+    return item;
+  });
 
 const getProcessedItemCreatedAt = (item: IProcessedItem): number => {
   if ('type' in item && ['file_summary', 'tool_summary', 'thinking_history', 'artifact'].includes(item.type)) {
@@ -405,7 +447,8 @@ const MessageItem: React.FC<{
 );
 
 const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }> = ({ emptySlot }) => {
-  const list = useMessageList();
+  // At most one redraw a frame while a reply streams; a new or removed row still lands at once.
+  const list = useCoalescedMessages(useMessageList());
   const isMessageListLoading = useMessageListLoading();
   const pagination = useMessagePaginationState();
   const artifacts = useConversationArtifacts();
@@ -425,6 +468,8 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
   const handledTargetKeyRef = useRef<string>('');
   const loadingTargetKeyRef = useRef<string>('');
   const scrollerElementRef = useRef<HTMLDivElement | null>(null);
+  // Last render's grouped rows, so a group that did not change keeps the object React already drew.
+  const previousItemsRef = useRef<Map<string, IProcessedItem>>(new Map());
   const contentElementRef = useRef<HTMLDivElement | null>(null);
   // Thoughts the reader opened. An opened thought keeps its own row, still open, after it stops
   // being live, so completion or cancellation never collapses what is being read.
@@ -483,22 +528,26 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
     addTurnThoughtHistory();
     let diffsChanges: FileChangeInfo[] = [];
     let diffsSourceMessageIds: string[] = [];
+    let diffsSources: TMessage[] = [];
     let toolList: Array<IMessageToolGroup | IMessageAcpToolCall | IMessageToolCall> = [];
     let toolSourceMessageIds: string[] = [];
 
-    const pushFileDiffChanges = (changes: FileChangeInfo, sourceMessageId: string, created_at: number) => {
+    const pushFileDiffChanges = (changes: FileChangeInfo, source: TMessage, created_at: number) => {
       if (!diffsChanges.length) {
         diffsSourceMessageIds = [];
+        diffsSources = [];
         result.push({
           type: 'file_summary',
-          id: `summary-${sourceMessageId}`,
+          id: `summary-${source.id}`,
           diffs: diffsChanges,
           sourceMessageIds: diffsSourceMessageIds,
+          sources: diffsSources,
           created_at,
         });
       }
       diffsChanges.push(changes);
-      diffsSourceMessageIds.push(sourceMessageId);
+      diffsSourceMessageIds.push(source.id);
+      diffsSources.push(source);
       toolList = [];
       toolSourceMessageIds = [];
     };
@@ -517,12 +566,14 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
       toolSourceMessageIds.push(message.id);
       diffsChanges = [];
       diffsSourceMessageIds = [];
+      diffsSources = [];
     };
     const pushStandaloneMessage = (message: TMessage) => {
       toolList = [];
       toolSourceMessageIds = [];
       diffsChanges = [];
       diffsSourceMessageIds = [];
+      diffsSources = [];
       result.push(message);
     };
     const resetGroupedItems = () => {
@@ -530,6 +581,7 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
       toolSourceMessageIds = [];
       diffsChanges = [];
       diffsSourceMessageIds = [];
+      diffsSources = [];
     };
 
     for (let i = 0, len = list.length; i < len; i++) {
@@ -569,7 +621,7 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
           writeFileResults.forEach((writeFileResult) => {
             pushFileDiffChanges(
               parseDiff(writeFileResult.file_diff, writeFileResult.file_name),
-              message.id,
+              message,
               message.created_at ?? 0
             );
           });
@@ -606,9 +658,11 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
         created_at: artifact.created_at,
       }));
 
-    const items = [...result, ...visibleArtifacts].toSorted(
-      (a, b) => getProcessedItemCreatedAt(a) - getProcessedItemCreatedAt(b)
+    const items = reuseUnchangedGroups(
+      previousItemsRef.current,
+      [...result, ...visibleArtifacts].toSorted((a, b) => getProcessedItemCreatedAt(a) - getProcessedItemCreatedAt(b))
     );
+    previousItemsRef.current = new Map(items.map((item) => [item.id, item]));
     return { items, activeThinkingId: liveThoughtId };
   }, [artifacts, isProcessing, list, openThoughtIds]);
 
@@ -863,7 +917,7 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
           className={`${rowWidthClass} min-w-0 message-item px-8px m-t-10px thinking_history`}
           style={highlighted ? highlightStyle : undefined}
         >
-          <ThoughtHistory messages={item.messages} />
+          <ThoughtHistoryRow messages={item.messages} />
         </div>
       );
     }
@@ -875,8 +929,8 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
           className={`${rowWidthClass} min-w-0 message-item px-8px m-t-10px ${item.type}`}
           style={highlighted ? highlightStyle : undefined}
         >
-          {item.type === 'file_summary' && <MessageFileChanges diffsChanges={item.diffs} />}
-          {item.type === 'tool_summary' && <MessageToolGroupSummary messages={item.messages}></MessageToolGroupSummary>}
+          {item.type === 'file_summary' && <FileChangesRow diffsChanges={item.diffs} />}
+          {item.type === 'tool_summary' && <MessageToolGroupSummary messages={item.messages} />}
         </div>
       );
     }
@@ -919,7 +973,7 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
             data-testid='message-list-scroller'
             // Break out of the parent's 20px horizontal padding so the scrollbar hugs the
             // window edge, while re-applying that padding inside to keep message content inset.
-            className='flex-1 h-full overflow-y-auto pb-10px box-border -mx-20px px-20px'
+            className='message-list-scroller flex-1 h-full overflow-y-auto pb-10px box-border -mx-20px px-20px'
             style={{ overflowAnchor: 'none' }}
             onPointerDown={handlePointerDown}
             onScroll={handleMessageListScroll}
@@ -944,22 +998,20 @@ const MessageList: React.FC<{ className?: string; emptySlot?: React.ReactNode }>
         </ImagePreviewContext.Provider>
       </Image.PreviewGroup>
 
+      {/* Released from the bottom: one small pill offers the way back, and nothing else moves. */}
       {showScrollButton && (
-        <>
-          {/* Gradient mask */}
-          <div className='absolute bottom-0 start-0 end-0 h-100px pointer-events-none' />
-          {/* Scroll button */}
-          <div className='absolute bottom-20px left-50% transform -translate-x-50% z-100'>
-            <div
-              className='flex items-center justify-center w-40px h-40px rd-full bg-base shadow-lg cursor-pointer hover:bg-1 transition-all hover:scale-110 border-1 border-solid border-3'
-              onClick={handleScrollButtonClick}
-              title={t('messages.scrollToBottom')}
-              style={{ lineHeight: 0 }}
-            >
-              <Down theme='filled' size='20' fill={iconColors.secondary} style={{ display: 'block' }} />
-            </div>
-          </div>
-        </>
+        <div className='absolute bottom-16px left-50% transform -translate-x-50% z-100'>
+          <button
+            type='button'
+            data-testid='jump-to-latest'
+            className='flex items-center gap-6px h-28px ps-10px pe-8px rd-999px bg-base cursor-pointer border-1 border-solid border-3 text-12px text-t-secondary hover:text-t-primary transition-colors duration-150'
+            onClick={handleScrollButtonClick}
+            aria-label={t('messages.scrollToBottom')}
+          >
+            {t('messages.scrollToBottom')}
+            <Down theme='outline' size='12' fill={iconColors.secondary} style={{ display: 'block' }} />
+          </button>
+        </div>
       )}
 
       <SelectionReplyButton messages={list} />

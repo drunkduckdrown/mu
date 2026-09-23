@@ -8,6 +8,7 @@ import ChatConversation from '@/renderer/pages/conversation/components/ChatConve
 const usePresetAssistantInfoMock = vi.fn();
 const acpChatMock = vi.fn(() => <div data-testid='mock-acp-chat'>acp chat</div>);
 const acpModelSelectorMock = vi.fn(() => <div data-testid='mock-acp-model-selector'>model selector</div>);
+const runtimeReady = vi.hoisted(() => ({ current: false }));
 
 vi.mock('@/renderer/pages/conversation/Messages/MessageList', () => ({
   default: ({ className }: { className?: string }) => <div className={className}>message history</div>,
@@ -41,6 +42,18 @@ vi.mock('@/renderer/pages/conversation/platforms/acp/AcpChat', () => ({
 vi.mock('@/renderer/components/agent/AcpModelSelector', () => ({
   __esModule: true,
   default: (props: unknown) => acpModelSelectorMock(props),
+}));
+
+vi.mock('@/renderer/components/agent/AcpRuntimeRestartButton', () => ({
+  __esModule: true,
+  default: ({ availability }: { availability?: string }) => (
+    <div data-testid='mock-runtime-restart' data-availability={availability} />
+  ),
+}));
+
+vi.mock('@/renderer/hooks/agent/useAcpConfigOptions', () => ({
+  classifyConfigSetError: () => 'unknown',
+  useAcpConfigOptions: () => ({ isRuntimeReady: runtimeReady.current }),
 }));
 
 vi.mock('@/renderer/pages/conversation/components/ChatSlider.tsx', () => ({
@@ -85,6 +98,7 @@ describe('ChatConversation legacy runtime rendering', () => {
     usePresetAssistantInfoMock.mockReset();
     acpChatMock.mockClear();
     acpModelSelectorMock.mockClear();
+    runtimeReady.current = false;
     usePresetAssistantInfoMock.mockReturnValue({ info: undefined, isLoading: false });
   });
 
@@ -142,46 +156,28 @@ describe('ChatConversation legacy runtime rendering', () => {
     );
   });
 
-  it('passes the resolved assistant backend to the ACP model selector for ACP conversations', () => {
-    usePresetAssistantInfoMock.mockReturnValue({
-      info: {
-        name: 'Research Assistant',
-        logo: '📚',
-        isEmoji: true,
-        backend: 'codex',
-        assistantId: 'assistant-research',
-      },
-      isLoading: false,
-    });
+  it('keeps the model picker out of the header of an ACP conversation; the header restarts the runtime once it is ready', () => {
+    // The model and its thinking level are the composer's chip; the header carries no second picker.
+    const acpConversation = {
+      id: 'conv-acp',
+      user_id: 'user-1',
+      name: 'ACP history',
+      type: 'acp',
+      model: {},
+      extra: { workspace: '/tmp/aionui-history', backend: 'claude', current_model_id: 'model-1' },
+      status: 'finished',
+      source: 'aionui',
+      created_at: 1,
+      modified_at: 1,
+      pinned: false,
+    } as TChatConversation;
 
-    render(
-      <ChatConversation
-        conversation={
-          {
-            id: 'conv-acp',
-            user_id: 'user-1',
-            name: 'ACP history',
-            type: 'acp',
-            model: {},
-            extra: { workspace: '/tmp/aionui-history', backend: 'claude', current_model_id: 'model-1' },
-            status: 'finished',
-            source: 'aionui',
-            created_at: 1,
-            modified_at: 1,
-            pinned: false,
-          } as TChatConversation
-        }
-      />
-    );
+    const { rerender } = render(<ChatConversation conversation={acpConversation} />);
+    expect(acpModelSelectorMock).not.toHaveBeenCalled();
+    expect(screen.getByTestId('mock-runtime-restart').getAttribute('data-availability')).toBe('initializing');
 
-    expect(screen.getByTestId('mock-acp-model-selector')).toBeInTheDocument();
-    expect(acpModelSelectorMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        conversation_id: 'conv-acp',
-        backend: 'codex',
-        initialModelId: 'model-1',
-        waitForWarmup: true,
-      })
-    );
+    runtimeReady.current = true;
+    rerender(<ChatConversation conversation={acpConversation} />);
+    expect(screen.getByTestId('mock-runtime-restart').getAttribute('data-availability')).toBe('ready');
   });
 });

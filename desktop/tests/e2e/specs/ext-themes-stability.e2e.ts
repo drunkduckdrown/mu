@@ -43,14 +43,14 @@ test.describe('Extension: Themes', () => {
 
 test.describe('Extension: Assistants', () => {
   test('assistant settings page loads', async ({ page }) => {
-    await goToSettings(page, 'agent');
+    await goToSettings(page, 'assistants');
     await waitForSettle(page);
     const body = await page.locator('body').textContent();
     expect(body!.length).toBeGreaterThan(50);
   });
 
   test('extension assistant preset may appear in list', async ({ page }) => {
-    await goToSettings(page, 'agent');
+    await goToSettings(page, 'assistants');
     await waitForSettle(page);
 
     const body = await page.locator('body').textContent();
@@ -61,7 +61,7 @@ test.describe('Extension: Assistants', () => {
 
   test('screenshot: assistants with extensions', async ({ page }) => {
     test.skip(!process.env.E2E_SCREENSHOTS, 'screenshots disabled');
-    await goToSettings(page, 'agent');
+    await goToSettings(page, 'assistants');
     await waitForSettle(page);
     await takeScreenshot(page, 'ext-assistants');
   });
@@ -73,7 +73,7 @@ test.describe('Extension: Assistants', () => {
 
 test.describe('Extension System Stability', () => {
   test('navigating across all settings pages with extensions does not crash', async ({ page }) => {
-    const tabs = ['agent', 'tools', 'display', 'webui', 'system', 'about'] as const;
+    const tabs = ['assistants', 'tools', 'display', 'system', 'about'] as const;
 
     for (const tab of tabs) {
       await goToSettings(page, tab);
@@ -96,7 +96,7 @@ test.describe('Extension System Stability', () => {
     const errors: string[] = [];
     page.on('pageerror', (err) => errors.push(err.message));
 
-    const tabs = ['agent', 'tools', 'display', 'webui'] as const;
+    const tabs = ['assistants', 'tools', 'display'] as const;
     for (const tab of tabs) {
       await goToSettings(page, tab);
       await waitForSettle(page);

@@ -43,7 +43,7 @@
     "subAgentsPlaceholder": "انتخاب هم‌تیمی‌ها",
     "confirm": "تأیید و ایجاد",
     "noSupportedAgents": "عامل پشتیبانی‌شده‌ای نصب نشده است",
-    "supportedAgentsHint": "در حال حاضر از عامل‌های Claude و Aion CLI پشتیبانی می‌شود. عامل‌های بیشتر به‌زودی اضافه می‌شوند.",
+    "supportedAgentsHint": "در حال حاضر از Claude و عامل داخلی پشتیبانی می‌شود. عامل‌های بیشتر به‌زودی اضافه می‌شوند.",
     "leaderDesc": "اهداف شما را درک می‌کند و عامل‌ها را برای تکمیل وظایف هماهنگ می‌کند",
     "searchPlaceholder": "جستجو",
     "noSearchResults": "نتیجه‌ای یافت نشد",

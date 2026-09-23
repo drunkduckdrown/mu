@@ -69,7 +69,7 @@ interface AutoUpdateCheckParams {
  * mu's builds are the releases of its own repository. mu is a fork of AionUi and never asks AionUi's update server
  * (static.aionui.com) or AionUi's GitHub: either would offer AionUi's installer as an update of mu.
  */
-const DEFAULT_REPO = 'qybaihe/MU';
+const DEFAULT_REPO = 'qybaihe/mu';
 const DEFAULT_USER_AGENT = 'mu';
 const ALLOWED_ASSET_EXTS = new Set(['.exe', '.msi', '.dmg', '.zip', '.deb', '.rpm']);
 const ALLOWED_DOWNLOAD_HOSTS = new Set<string>([

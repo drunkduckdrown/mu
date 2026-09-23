@@ -34,6 +34,8 @@ interface WorkspaceOpenButtonProps {
    * itself stays, showing only Browser.
    */
   isTemporary: boolean;
+  /** Name the current tool beside its icon: where the icon alone reads as a keyboard sign (the work panel's files). */
+  labelled?: boolean;
 }
 
 const STORAGE_KEY = 'workspace-open-preference';
@@ -46,7 +48,7 @@ const isExternalTool = (tool: ToolType): tool is ExternalToolType => tool !== 'b
  * Covers VS Code / Terminal / File Explorer (external programs) plus the in-app
  * browser, and remembers the user's last choice so the main button repeats it.
  */
-const WorkspaceOpenButton: React.FC<WorkspaceOpenButtonProps> = ({ workspacePath, isTemporary }) => {
+const WorkspaceOpenButton: React.FC<WorkspaceOpenButtonProps> = ({ workspacePath, isTemporary, labelled = false }) => {
   const { t } = useTranslation();
   /**
    * 预览上下文是可选的：本组件主要负责拉起外部程序，浏览器只是附带的一项。
@@ -165,6 +167,7 @@ const WorkspaceOpenButton: React.FC<WorkspaceOpenButtonProps> = ({ workspacePath
     }
   }, [currentTool]);
 
+  const currentLabel = toolOptions.find((option) => option.key === currentTool)?.label ?? '';
   const tooltipContent =
     currentTool === 'browser'
       ? t('conversation.workspace.openWith.browser', { defaultValue: 'Browser' })
@@ -208,9 +211,11 @@ const WorkspaceOpenButton: React.FC<WorkspaceOpenButtonProps> = ({ workspacePath
           type='text'
           size='small'
           className='workspace-open-button__btn flex items-center gap-4px ps-8px pe-4px'
+          aria-label={labelled ? undefined : tooltipContent}
           onClick={() => handleOpenWith(currentTool)}
         >
           {currentIcon}
+          {labelled ? <span className='text-12px'>{currentLabel}</span> : null}
         </Button>
       </Tooltip>
 
@@ -226,6 +231,7 @@ const WorkspaceOpenButton: React.FC<WorkspaceOpenButtonProps> = ({ workspacePath
           size='small'
           className='workspace-open-button__dropdown-btn ps-2px pe-4px'
           style={{ marginInlineStart: '-4px' }}
+          aria-label={t('conversation.workspace.openWith.choose')}
         >
           <Down size={12} className={`transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
         </Button>

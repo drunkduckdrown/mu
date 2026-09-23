@@ -138,7 +138,6 @@ class AutoUpdaterService extends EventEmitter {
     autoUpdater.autoDownload = false;
     autoUpdater.autoInstallOnAppQuit = true;
     this.configureDevAutoUpdateDebug();
-    const cdnFeedOptions = buildCdnFeedOptions();
 
     // Set the correct update channel based on platform and architecture before
     // any update checks are performed
@@ -146,6 +145,16 @@ class AutoUpdaterService extends EventEmitter {
     if (channel !== undefined) {
       autoUpdater.channel = channel;
       log.info(`Update channel set to: ${channel}`);
+    }
+
+    // mu has no update feed yet (updateFeed.ts refuses to build one). This service is created
+    // when its module loads, so leave the feed unset instead of failing the app's startup.
+    let cdnFeedOptions: ReturnType<typeof buildCdnFeedOptions>;
+    try {
+      cdnFeedOptions = buildCdnFeedOptions();
+    } catch (error) {
+      log.info('[auto-update] No update feed configured:', error instanceof Error ? error.message : error);
+      return;
     }
     autoUpdater.setFeedURL(cdnFeedOptions);
     log.info('Update feed set to CDN provider');

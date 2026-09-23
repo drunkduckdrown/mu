@@ -5,29 +5,10 @@
  */
 
 /**
- * Framework-free core for WebUI browser notifications: pure gating and a
- * controller that turns conversation events into notification payloads.
- * Kept free of React / DOM globals so it is unit-testable in the node project.
+ * Framework-free core for turn notifications: a controller that turns
+ * conversation events into notification payloads. Kept free of React / DOM
+ * globals so it is unit-testable in the node project.
  */
-
-export type NotificationPermissionState = 'default' | 'granted' | 'denied';
-
-export type NotificationGate = {
-  isElectron: boolean;
-  hasNotificationApi: boolean;
-  isSecureContext: boolean;
-  permission: NotificationPermissionState;
-  settingEnabled: boolean;
-  documentHidden: boolean;
-};
-
-export const shouldShowNotification = (gate: NotificationGate): boolean =>
-  !gate.isElectron &&
-  gate.hasNotificationApi &&
-  gate.isSecureContext &&
-  gate.permission === 'granted' &&
-  gate.settingEnabled &&
-  gate.documentHidden;
 
 /**
  * Max length of a conversation name embedded in a turn-completed notification.
@@ -57,11 +38,10 @@ export type NotificationPayload = {
 
 export type BrowserNotificationDeps = {
   /**
-   * Whether a notification may be shown right now. The WebUI path derives this
-   * from the browser gate (`shouldShowNotification`); the desktop path uses its
-   * own condition (window focus is checked in the main process). Injecting the
-   * predicate keeps this controller — and its turn-finish detection / dedup —
-   * shared across both paths.
+   * Whether a notification may be shown right now. The renderer answers with a
+   * cheap setting check; the real decision (window focus) is made in the main
+   * process. Injecting the predicate keeps this controller — and its
+   * turn-finish detection / dedup — independent of that policy.
    */
   shouldShow: () => boolean;
   show: (payload: NotificationPayload) => void;

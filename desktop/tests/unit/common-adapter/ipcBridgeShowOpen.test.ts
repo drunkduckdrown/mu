@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const nativeInvoke = vi.hoisted(() => vi.fn(async () => ['/native/path']));
 
@@ -38,76 +38,21 @@ vi.mock('@/common/adapter/httpBridge', () => {
   };
 });
 
-type WindowWithElectron = { electronAPI?: unknown };
-
-const setElectron = (present: boolean): void => {
-  const win = globalThis as unknown as { window?: WindowWithElectron };
-  if (!win.window) win.window = {};
-  if (present) win.window.electronAPI = { emit: vi.fn(), on: vi.fn() };
-  else delete win.window.electronAPI;
-};
-
-describe('ipcBridge dialog.showOpen platform dispatch', () => {
+describe('ipcBridge dialog.showOpen', () => {
   beforeEach(() => {
     nativeInvoke.mockClear();
-    setElectron(false);
   });
 
-  afterEach(async () => {
-    const { registerWebShowOpenHandler } = await import('@/common/adapter/ipcBridge');
-    registerWebShowOpenHandler(null);
-    const win = globalThis as unknown as { window?: WindowWithElectron };
-    delete win.window;
-  });
-
-  it('falls back to the native IPC channel when no web handler is registered', async () => {
+  it('goes through the native Electron IPC channel', async () => {
     const { dialog } = await import('@/common/adapter/ipcBridge');
 
     await expect(dialog.showOpen.invoke({ properties: ['openDirectory'] })).resolves.toEqual(['/native/path']);
     expect(nativeInvoke).toHaveBeenCalledTimes(1);
   });
 
-  it('routes to the registered web handler outside Electron', async () => {
-    const { dialog, registerWebShowOpenHandler } = await import('@/common/adapter/ipcBridge');
-    const webHandler = vi.fn(async () => ['/data/project']);
-    registerWebShowOpenHandler(webHandler);
-
-    const options = { properties: ['openDirectory' as const], defaultPath: '/data' };
-    await expect(dialog.showOpen.invoke(options)).resolves.toEqual(['/data/project']);
-
-    expect(webHandler).toHaveBeenCalledWith(options);
-    expect(nativeInvoke).not.toHaveBeenCalled();
-  });
-
-  it('keeps using the native dialog inside Electron even when a handler is registered', async () => {
-    const { dialog, registerWebShowOpenHandler } = await import('@/common/adapter/ipcBridge');
-    const webHandler = vi.fn(async () => ['/data/project']);
-    registerWebShowOpenHandler(webHandler);
-    setElectron(true);
-
-    await expect(dialog.showOpen.invoke({ properties: ['openFile'] })).resolves.toEqual(['/native/path']);
-
-    expect(webHandler).not.toHaveBeenCalled();
-    expect(nativeInvoke).toHaveBeenCalledTimes(1);
-  });
-
-  it('restores native dispatch when the handler is unregistered', async () => {
-    const { dialog, registerWebShowOpenHandler } = await import('@/common/adapter/ipcBridge');
-    const webHandler = vi.fn(async () => ['/data/project']);
-
-    registerWebShowOpenHandler(webHandler);
-    await dialog.showOpen.invoke({ properties: ['openDirectory'] });
-    expect(webHandler).toHaveBeenCalledTimes(1);
-
-    registerWebShowOpenHandler(null);
-    await expect(dialog.showOpen.invoke({ properties: ['openDirectory'] })).resolves.toEqual(['/native/path']);
-    expect(webHandler).toHaveBeenCalledTimes(1);
-    expect(nativeInvoke).toHaveBeenCalledTimes(1);
-  });
-
   it('propagates a cancelled picker as undefined', async () => {
-    const { dialog, registerWebShowOpenHandler } = await import('@/common/adapter/ipcBridge');
-    registerWebShowOpenHandler(vi.fn(async () => undefined));
+    const { dialog } = await import('@/common/adapter/ipcBridge');
+    nativeInvoke.mockResolvedValueOnce(undefined as unknown as string[]);
 
     await expect(dialog.showOpen.invoke({ properties: ['openDirectory'] })).resolves.toBeUndefined();
   });

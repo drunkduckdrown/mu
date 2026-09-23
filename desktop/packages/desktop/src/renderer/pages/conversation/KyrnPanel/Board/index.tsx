@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import type { Activity } from '@/common/kyrn/types';
 import { formatNumber } from '@/renderer/services/i18n/format';
 import { emitter, type SendBoxCommandState } from '@/renderer/utils/emitter';
-import { asksUser, boardView, share, type BoardUpdate } from './board';
+import { useClock } from '../clock';
+import { asksUser, boardHistory, boardView, share, type BoardUpdate } from './board';
 import { boardWords, type BoardWords } from './wording';
 import styles from './Board.module.css';
 
@@ -18,26 +19,22 @@ type Pending = { to: boolean; stage: 'waiting' | 'sent' };
 /**
  * The plain-language board: where the work stands, in plain words, for the person and never for the model. The
  * harness writes it (Jev picks the facts, a plain-speaking model writes them up) and presents it; this shows the
- * latest one. The switch is the harness's own `/board on|off`, sent into the conversation like a typed command, so
- * the board stays per project and the app never writes its settings. It is offered only where the harness has said
- * it has a board: anywhere else the command would reach a model as a message.
+ * latest one, what needs the person, and a quiet list of what the board said before. The switch is the harness's own
+ * `/board on|off`, sent into the conversation like a typed command, so the board stays per project and the app never
+ * writes its settings. It is offered only where the harness has said it has a board: anywhere else the command
+ * would reach a model as a message.
  */
 export default function Board({ events, conversationId }: { events: Activity[]; conversationId: string }) {
   const { t, i18n } = useTranslation();
   const view = useMemo(() => boardView(events), [events]);
   // A fixed board is rebuilt in the reader's language; a model's board is shown as it wrote it.
-  const words = useMemo(
-    () =>
-      view.update
-        ? boardWords(
-            view.update,
-            t,
-            (key) => i18n.exists(key),
-            (value) => formatNumber(value, i18n.language)
-          )
-        : undefined,
-    [i18n, t, view.update]
-  );
+  const say = useMemo(() => {
+    const has = (key: string) => i18n.exists(key);
+    const number = (value: number) => formatNumber(value, i18n.language);
+    return (update: BoardUpdate) => boardWords(update, t, has, number);
+  }, [i18n, t]);
+  const words = useMemo(() => (view.update ? say(view.update) : undefined), [say, view.update]);
+  const history = useMemo(() => boardHistory(events, view.update), [events, view.update]);
   const [pending, setPending] = useState<Pending>();
   const on = view.on ?? false;
   // The board that was there when the panel opened is not news (give the panel `key={conversationId}`), nor is the
@@ -86,7 +83,7 @@ export default function Board({ events, conversationId }: { events: Activity[]; 
           {t('common.kyrn.boardView.unknown')}
         </p>
       ) : !on ? (
-        <Off switching={switching} onOpen={() => turn(true)} />
+        <Off />
       ) : view.update ? (
         <Current update={view.update} words={words ?? view.update} fresh={news === view.update} />
       ) : (
@@ -94,6 +91,7 @@ export default function Board({ events, conversationId }: { events: Activity[]; 
           {t('common.kyrn.boardView.empty')}
         </p>
       )}
+      {on && history.length ? <Earlier history={history} say={say} /> : null}
       {/* In place from the start, so what changes in it is announced; only news goes in. One paragraph per part,
           read with a pause between them in any language: the model's lines bring their own punctuation. */}
       <div className={styles.announce} aria-live='polite' aria-atomic='true' data-testid='mu-board-announce'>
@@ -107,22 +105,20 @@ export default function Board({ events, conversationId }: { events: Activity[]; 
   );
 }
 
-function Off({ switching, onOpen }: { switching: boolean; onOpen: () => void }) {
+/** What the switch above does, and what it costs. The switch is the one way to turn the board on. */
+function Off() {
   const { t } = useTranslation();
   return (
     <div className={styles.off} data-testid='mu-board-off'>
       <p className={styles.offText}>{t('common.kyrn.boardView.off')}</p>
       <p className={styles.faint}>{t('common.kyrn.boardView.cost')}</p>
-      <Button size='small' type='primary' disabled={switching} data-testid='mu-board-open' onClick={onOpen}>
-        {t('common.kyrn.boardView.open')}
-      </Button>
     </div>
   );
 }
 
 /**
- * The latest board, top to bottom: the stage, what the agent does now (the largest line), how far it is, and what
- * it needs from the person. A new one (`fresh`) fades in.
+ * The latest board, top to bottom: the stage, what the agent does now (the main paragraph), how far it is, and
+ * what it needs from the person, each item with its action. A new one (`fresh`) fades in.
  */
 function Current({ update, words, fresh }: { update: BoardUpdate; words: BoardWords; fresh: boolean }) {
   const { t, i18n } = useTranslation();
@@ -134,25 +130,27 @@ function Current({ update, words, fresh }: { update: BoardUpdate; words: BoardWo
   });
   const quote = (item: string) =>
     emitter.emit('sendbox.reply', { messageId: `mu-board:${update.id}`, content: item, position: 'left' });
+  const marks = [
+    update.phase ? (
+      <span
+        key='phase'
+        className={classNames(styles.phase, update.phase === 'stuck' && styles.stuck)}
+        data-testid='mu-board-phase'
+      >
+        <span className={styles.phaseDot} aria-hidden='true' />
+        {t(`common.kyrn.boardView.phases.${update.phase}`)}
+      </span>
+    ) : null,
+    update.ended ? <span key='ended'>{t('common.kyrn.boardView.ended')}</span> : null,
+    update.by === 'rules' ? (
+      <Tooltip key='brief' content={t('common.kyrn.boardView.briefHelp')}>
+        <span className={styles.brief}>{t('common.kyrn.boardView.brief')}</span>
+      </Tooltip>
+    ) : null,
+  ].filter(Boolean);
   return (
     <div className={styles.current} data-testid='mu-board-current'>
-      <div className={styles.marks}>
-        {update.phase ? (
-          <span
-            className={classNames(styles.phase, update.phase === 'stuck' && styles.stuck)}
-            data-testid='mu-board-phase'
-          >
-            <span className={styles.phaseDot} aria-hidden='true' />
-            {t(`common.kyrn.boardView.phases.${update.phase}`)}
-          </span>
-        ) : null}
-        {update.ended ? <span className={styles.faint}>{t('common.kyrn.boardView.ended')}</span> : null}
-        {update.by === 'rules' ? (
-          <Tooltip content={t('common.kyrn.boardView.briefHelp')}>
-            <span className={styles.brief}>{t('common.kyrn.boardView.brief')}</span>
-          </Tooltip>
-        ) : null}
-      </div>
+      {marks.length ? <div className={styles.marks}>{marks}</div> : null}
       <div key={update.id} className={classNames(fresh && styles.fresh)} data-fresh={fresh ? 'true' : undefined}>
         {words.now ? (
           <p className={styles.now} data-testid='mu-board-now'>
@@ -181,32 +179,64 @@ function Current({ update, words, fresh }: { update: BoardUpdate; words: BoardWo
         </div>
       ) : null}
       {asksUser(update) ? (
-        <div className={styles.ask} data-testid='mu-board-ask'>
-          <div className={styles.askTitle}>{t('common.kyrn.boardView.needsYou')}</div>
+        <section className={styles.ask} data-testid='mu-board-ask' aria-label={t('common.kyrn.boardView.needsYou')}>
+          <h4 className={styles.sectionTitle}>{t('common.kyrn.boardView.needsYou')}</h4>
           {words.confirm.length ? (
             <>
               <ul className={styles.askList}>
                 {words.confirm.map((item, index) => (
                   <li key={`${index}:${item}`}>
-                    <button
-                      type='button'
+                    <Button
+                      type='text'
+                      long
                       className={styles.askItem}
                       data-testid='mu-board-confirm'
                       title={t('common.kyrn.boardView.quote')}
                       onClick={() => quote(item)}
                     >
-                      {item}
-                    </button>
+                      <span className={styles.askText} data-testid='mu-board-confirm-text'>
+                        {item}
+                      </span>
+                      <span className={styles.askAction}>{t('common.reply')}</span>
+                    </Button>
                   </li>
                 ))}
               </ul>
-              <div className={styles.faint}>{t('common.kyrn.boardView.quoteHint')}</div>
+              <p className={styles.faint}>{t('common.kyrn.boardView.quoteHint')}</p>
             </>
           ) : (
-            <div className={styles.askText}>{t('common.kyrn.boardView.needsYouText')}</div>
+            <p className={styles.askPlain}>{t('common.kyrn.boardView.needsYouText')}</p>
           )}
-        </div>
+        </section>
       ) : null}
     </div>
+  );
+}
+
+/** What the board said before, newest first: one quiet line each, at the time it came. */
+function Earlier({
+  history,
+  say,
+}: {
+  history: { at: number; update: BoardUpdate }[];
+  say: (update: BoardUpdate) => BoardWords;
+}) {
+  const { t } = useTranslation();
+  const clock = useClock();
+  return (
+    <section className={styles.earlier} data-testid='mu-board-earlier' aria-label={t('common.kyrn.boardView.earlier')}>
+      <h4 className={styles.sectionTitle}>{t('common.kyrn.boardView.earlier')}</h4>
+      <ul className={styles.earlierList}>
+        {history.map(({ at, update }) => {
+          const words = say(update);
+          return (
+            <li key={update.id} className={styles.earlierItem}>
+              <span className={styles.earlierTime}>{clock(at)}</span>
+              <span className={styles.earlierText}>{words.progress || words.now}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 }

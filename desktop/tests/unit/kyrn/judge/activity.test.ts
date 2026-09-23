@@ -1,4 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { SUPPORTED_LANGUAGES } from '@/common/config/i18n';
 import {
   answerRows,
   DECISIONS,
@@ -350,6 +354,45 @@ describe('JeV judgment cards: readable result and details', () => {
     expect(resultFacts(card(ledger({ specId: 'turn.drift', outcome: undefined })))).toEqual([]);
   });
 
+  it('words what the experience library decided in every language: verdicts as values, the followed as fields', () => {
+    // The outcomes as the harness records them: a scalar verdict, one verdict per candidate or kept lesson, id lists.
+    const facts = [
+      ...resultFacts(card(ledger({ specId: 'memory.capture', outcome: 'preference' }))),
+      ...resultFacts(card(ledger({ specId: 'memory.outcome', outcome: 'learn' }))),
+      ...resultFacts(card(ledger({ specId: 'memory.worth', outcome: ['reusable', 'one_off', 'already_known'] }))),
+      ...resultFacts(
+        card(ledger({ specId: 'memory.merge', outcome: ['same', 'refines', 'contradicts', 'unrelated'] }))
+      ),
+      ...resultFacts(card(ledger({ specId: 'memory.applied', outcome: { applied: ['lesson-1'], notApplied: [] } }))),
+    ];
+    const values = facts.flatMap((fact) => (fact.tally ? [fact.name] : fact.name === 'result' ? fact.values : []));
+    const fields = facts.filter((fact) => !fact.tally).map((fact) => fact.name);
+    expect(values).toEqual([
+      'preference',
+      'learn',
+      'reusable',
+      'one_off',
+      'already_known',
+      'same',
+      'refines',
+      'contradicts',
+      'unrelated',
+    ]);
+    expect(fields).toEqual(['result', 'result', 'applied']);
+
+    const localeRoot = fileURLToPath(
+      new URL('../../../../packages/desktop/src/renderer/services/i18n/locales/', import.meta.url)
+    );
+    for (const language of SUPPORTED_LANGUAGES) {
+      const view = JSON.parse(readFileSync(join(localeRoot, language, 'common.json'), 'utf8')).kyrn.judgeView;
+      for (const value of values) expect(view.values[value], `${language} values.${value}`).toBeTruthy();
+      for (const field of [...fields, 'notApplied'])
+        expect(view.fields[field], `${language} fields.${field}`).toBeTruthy();
+      for (const stage of ['outcome', 'worth', 'merge', 'applied'])
+        expect(view.questions[stage], `${language} questions.${stage}`).toBeTruthy();
+    }
+  });
+
   it('keeps the recorded probabilities for the details, ranked for a choice', () => {
     const { rows, more } = answerRows(
       card(
@@ -420,6 +463,10 @@ describe('JeV judgment cards: what the view can translate', () => {
       'browser.step',
       'memory.recall',
       'memory.capture',
+      'memory.outcome',
+      'memory.worth',
+      'memory.merge',
+      'memory.applied',
       'tool.risk',
       'turn.drift',
       'turn.completion',

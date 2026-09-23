@@ -493,9 +493,8 @@ const AionrsSendBox: React.FC<{
     onFilesSelected: appendSelectedFiles,
   });
 
-  const { entries: attachEntries, hiddenFileInput: attachHiddenInput } = useAttachEntry({
+  const { entries: attachEntries } = useAttachEntry({
     openFileSelector,
-    onLocalFilesAdded: handleFilesAdded,
     dividerBefore: true,
   });
 
@@ -742,7 +741,8 @@ const AionrsSendBox: React.FC<{
   const sendBoxWidthClass = getChatSurfaceWidthClass();
 
   return (
-    <div className={`${sendBoxWidthClass} flex flex-col mt-auto mb-16px`}>
+    // `data-composer-zone`: the work panel, floating in a narrow window, stops above this.
+    <div data-composer-zone className={`${sendBoxWidthClass} flex flex-col mt-auto mb-16px`}>
       <CommandQueuePanel
         items={queuedCommands}
         mode={queueMode}
@@ -797,7 +797,7 @@ const AionrsSendBox: React.FC<{
         placeholder={
           current_model?.use_model
             ? t('acp.sendbox.placeholder', {
-                backend: agent_name || 'AionCLI',
+                backend: agent_name || 'mu',
                 defaultValue: `Send message to {{backend}}...`,
               })
             : t('conversation.chat.noModelSelected')
@@ -809,13 +809,7 @@ const AionrsSendBox: React.FC<{
         supportedExts={allSupportedExts}
         defaultMultiLine={!isMobile}
         lockMultiLine={!isMobile}
-        tools={
-          <FileAttachButton
-            openFileSelector={openFileSelector}
-            onLocalFilesAdded={handleFilesAdded}
-            loadedMcpStatuses={loadedMcpStatuses}
-          />
-        }
+        tools={<FileAttachButton openFileSelector={openFileSelector} loadedMcpStatuses={loadedMcpStatuses} />}
         rightTools={
           <div className='flex items-center gap-8px min-w-0'>
             <AgentModeSelector
@@ -905,15 +899,12 @@ const AionrsSendBox: React.FC<{
         }
       />
       {isMobile && (
-        <>
-          <MobileActionSheet
-            open={isMobileSheetOpen}
-            onClose={() => setIsMobileSheetOpen(false)}
-            title={t('common.more', { defaultValue: 'More' })}
-            entries={sheetEntries}
-          />
-          {attachHiddenInput}
-        </>
+        <MobileActionSheet
+          open={isMobileSheetOpen}
+          onClose={() => setIsMobileSheetOpen(false)}
+          title={t('common.more', { defaultValue: 'More' })}
+          entries={sheetEntries}
+        />
       )}
     </div>
   );

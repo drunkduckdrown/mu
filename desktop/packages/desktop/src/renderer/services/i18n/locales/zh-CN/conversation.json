@@ -12,12 +12,7 @@
     "clearWorkspace": "移除项目",
     "openFolder": "打开文件夹",
     "none": "无",
-    "quickActionsTitle": "AionUi 能做什么？",
-    "quickActionFeedback": "反馈问题",
-    "quickActionStar": "喜欢我们？点个星吧",
-    "skillsMarket": "AionUi 技能市场",
-    "skillsMarketDesc": "按需搜索并调用社区 Skills，一次配置，所有Agent通用。",
-    "skillsMarketDetails": "详情 >>"
+    "quickActionsTitle": "mu 能做什么？"
   },
   "history": {
     "recents": "最近",
@@ -118,7 +113,7 @@
   "createFailed": "创建会话失败",
   "createError": {
     "pathVariants": {
-      "WORKSPACE_PATH_UNAVAILABLE": "所选工作区路径不可用。请确保工作区路径“{{workspacePath}}”真实存在且可访问。"
+      "WORKSPACE_PATH_UNAVAILABLE": "所选工作区路径不可用。请确保工作区路径「{{workspacePath}}」真实存在且可访问。"
     },
     "codes": {
       "TEAM_ASSISTANT_ID_REQUIRED": "创建团队前请先选择助手。",
@@ -146,7 +141,7 @@
       "check_provider_base_url": "请检查模型服务商的 Base URL、接口路径、代理和 API 兼容性。",
       "change_model": "请选择当前账号可用且支持该请求的模型。",
       "reduce_context": "请减少消息内容、引用文件或上下文大小后重试。",
-      "send_feedback": "请提交反馈并附带日志，方便团队排查。"
+      "send_feedback": "请重试；如果仍然失败，请查看应用日志。"
     },
     "ownership": {
       "aionui": "应用",
@@ -157,7 +152,7 @@
     "codes": {
       "AIONUI_STREAM_BROKEN": {
         "title": "响应流异常中断",
-        "body": "消息已发送，但响应流异常结束。请先重试；如果反复出现，可以提交反馈。"
+        "body": "消息已发送，但响应流异常结束。请先重试；如果反复出现，请查看应用日志。"
       },
       "AIONUI_STATE_INCONSISTENT": {
         "title": "会话状态不一致",
@@ -169,7 +164,7 @@
       },
       "AIONUI_INTERNAL_ERROR": {
         "title": "应用处理失败",
-        "body": "本次请求在应用处理过程中失败。请先重试一次；如果仍然出现，可以提交反馈。"
+        "body": "本次请求在应用处理过程中失败。请先重试一次；如果仍然出现，请查看应用日志。"
       },
       "AIONUI_CONVERSATION_BUSY": {
         "title": "会话正在处理上一条消息",
@@ -318,7 +313,7 @@
       "WORKSPACE_PATH_RUNTIME_UNAVAILABLE": {
         "title": "当前 Agent 在该工作区路径下运行失败",
         "body": "请确保当前工作区路径真实存在。",
-        "bodyWithPath": "当前 Agent 在该工作区路径下运行失败。请确保工作区路径“{{workspacePath}}”真实存在。"
+        "bodyWithPath": "当前 Agent 在该工作区路径下运行失败。请确保工作区路径「{{workspacePath}}」真实存在。"
       },
       "UNKNOWN_UPSTREAM_ERROR": {
         "title": "上游 Agent 或模型服务商出错",
@@ -326,7 +321,7 @@
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
         "title": "读取团队辅助进程响应失败",
-        "body": "AionUi 无法读取本地团队辅助进程的响应。请先重试一次，如果持续出现，再重启应用。"
+        "body": "mu 无法读取本地团队辅助进程的响应。请先重试一次，如果持续出现，再重启应用。"
       },
       "MCP_TOOL_REMOTE_ERROR": {
         "title": "本地团队辅助进程拒绝了这次请求",
@@ -334,11 +329,11 @@
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
         "title": "团队辅助进程返回了异常响应",
-        "body": "AionUi 收到了本地团队辅助进程的异常响应。请先重试一次，如果持续出现再反馈问题。"
+        "body": "mu 收到了本地团队辅助进程的异常响应。请先重试一次，如果持续出现再反馈问题。"
       },
       "MCP_TCP_READ_FAILED": {
         "title": "读取本地团队辅助进程失败",
-        "body": "AionUi 无法读取本地团队辅助进程的 TCP 响应。请先重试一次，如仍失败可重启应用。"
+        "body": "mu 无法读取本地团队辅助进程的 TCP 响应。请先重试一次，如仍失败可重启应用。"
       },
       "TEAM_SERVICE_UNAVAILABLE": {
         "title": "团队服务尚未就绪",
@@ -377,6 +372,7 @@
     "addFile": "添加文件",
     "refresh": "刷新",
     "temporarySpace": "临时空间",
+    "temporaryWorkspace": "临时工作区",
     "dragOverlayTitle": "拖拽导入",
     "dragOverlayDesc": "将文件或文件夹拖到此处，即可复制到当前项目。",
     "dragOverlayHint": "提示：若已选择文件夹，将直接导入该文件夹。",
@@ -440,11 +436,12 @@
       "vscode": "VS Code",
       "terminal": "终端",
       "explorer": "文件资源管理器",
-      "browser": "浏览器"
+      "browser": "浏览器",
+      "choose": "选择打开方式"
     },
-    "collapsePanel": "收起项目面板",
+    "collapsePanel": "收起工作面板",
     "togglePanel": "展开或收起项目面板",
-    "expandPanel": "展开项目面板"
+    "expandPanel": "展开工作面板"
   },
   "minimap": {
     "searchAria": "搜索会话",
@@ -587,6 +584,7 @@
   "thinking": {
     "label": "思考中...",
     "history": "思考记录",
+    "thoughtFor": "思考了 {{time}}",
     "labelWithTime": "{{label}} · {{time}}",
     "completeWithTime": "思考完成 · {{time}}",
     "elapsed": "（{{time}}）"
@@ -616,6 +614,16 @@
     "mediaPathFallback": "该 Agent 不原生支持此文件类型，将以文件路径形式发送。",
     "hintWithSessions": "输入 / 唤起命令，@ 引用文件，@@ 引用会话，↑/↓ 切换历史消息"
   },
+  "composer": {
+    "goalLine": {
+      "running": "目标进行中：{{goal}}",
+      "paused": "目标已暂停：{{goal}}",
+      "end": "结束",
+      "endLabel": "结束目标"
+    },
+    "thinkingNote": "切换思考强度会丢失提示缓存，同一模型尽量不切",
+    "modelBusy": "等这一轮回复结束再换模型。"
+  },
   "agentTip": {
     "codes": {
       "ACP_EMPTY_TURN": {
@@ -640,13 +648,13 @@
         "body": "本轮有 {{count}} 个步骤失败且未生效。agy 仍会把这类轮次标记为成功，请核对实际结果而非回复内容。"
       },
       "CLI_VERSION_OLDER": {
-        "body": "已安装的 {{cli}} 低于 AionUi 验证过的版本，部分功能可能缺失。建议升级 {{cli}}。 （本地 {{reported}} / AionUi 验证过 {{verified}}）"
+        "body": "已安装的 {{cli}} 低于 mu 验证过的版本，部分功能可能缺失。建议升级 {{cli}}。 （本地 {{reported}} / mu 验证过 {{verified}}）"
       },
       "CLI_VERSION_NEWER": {
-        "body": "已安装的 {{cli}} 高于 AionUi 验证过的版本。通常仍可正常使用；如遇异常行为请反馈。 （本地 {{reported}} / AionUi 验证过 {{verified}}）"
+        "body": "已安装的 {{cli}} 高于 mu 验证过的版本。通常仍可正常使用；如遇异常行为请反馈。 （本地 {{reported}} / mu 验证过 {{verified}}）"
       },
       "CODEX_RETRYING": {
-        "body": "{{detail}}（累计第 {{attempts}} 次重试，已等待 {{elapsed}}——Agent 的服务方反复中断连接，AionUi 正在等待重连。）"
+        "body": "{{detail}}（累计第 {{attempts}} 次重试，已等待 {{elapsed}}——Agent 的服务方反复中断连接，mu 正在等待重连。）"
       }
     }
   },
@@ -670,7 +678,7 @@
       "newDir": "新建目录"
     },
     "namePlaceholder": "名称",
-    "deleteConfirm": "删除“{{name}}”？此操作无法撤销。",
+    "deleteConfirm": "删除「{{name}}」？此操作无法撤销。",
     "renameFailed": "重命名失败",
     "newFileFailed": "新建文件失败",
     "newDirFailed": "新建目录失败",
@@ -726,7 +734,7 @@
         "conflicted": "!",
         "unknown": "?"
       },
-      "conflictedHint": "请先在 AionUi 之外解决此冲突",
+      "conflictedHint": "请先在 mu 之外解决此冲突",
       "opaqueHint": "该状态来自更新版本的后端 — 仅供查看",
       "degraded": "由于无法更新 git 索引，刷新正以较慢的模式运行",
       "truncated": "变更过多，仅显示前一部分",
@@ -745,7 +753,7 @@
         "discard": "丢弃更改",
         "stageAll": "全部暂存",
         "unstageAll": "全部取消暂存",
-        "blockedHint": "请先在 AionUi 之外解决冲突，然后再暂存或丢弃",
+        "blockedHint": "请先在 mu 之外解决冲突，然后再暂存或丢弃",
         "confirmDiscardTitle": "要丢弃更改吗？",
         "confirmDiscardTracked": "{{count}} 个文件的修改将丢失，且无法撤销。",
         "confirmDiscardUntracked": "{{count}} 个新文件将被移到回收站。",

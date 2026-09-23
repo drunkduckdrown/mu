@@ -146,21 +146,31 @@ test.describe('ACP multimodal prompt', () => {
         timeout: 15_000,
       });
 
-      // 2. Attach the probe image through the REAL upload input (uploads to
-      //    POST /api/fs/upload and lands in the uploadFile chip lane).
+      // 2. Attach the probe image by dropping it on the send box. mu is Electron
+      //    only: there is no hidden <input type="file"> any more, and the "+"
+      //    button opens the host's own dialog, which Playwright cannot drive.
+      //    A drop travels the same lane (processDroppedFiles → POST /api/fs/upload
+      //    → the uploadFile chip).
       const probePng = writeProbePng();
-      const fileInput = page.locator('[data-testid="aionrs-file-upload-input"]');
+      const probeBase64 = fs.readFileSync(probePng).toString('base64');
       try {
-        await fileInput.setInputFiles(probePng, { timeout: 60_000 });
+        await page.waitForSelector(CHAT_INPUT, { timeout: 60_000 });
+        const dataTransfer = await page.evaluateHandle(async (base64: string) => {
+          const bytes = Uint8Array.from(atob(base64), (char) => char.charCodeAt(0));
+          const transfer = new DataTransfer();
+          transfer.items.add(new File([bytes], 'probe-red-square.png', { type: 'image/png' }));
+          return transfer;
+        }, probeBase64);
+        await page.dispatchEvent(CHAT_INPUT, 'drop', { dataTransfer });
       } catch (error) {
         const bodyText = await page
           .evaluate(() => document.body?.innerText?.slice(0, 1500) ?? '<no body>')
           .catch(() => '<page unreadable>');
         await page
-          .screenshot({ path: `tests/e2e/screenshots/image-e2e-${backend}-no-upload-input.png` })
+          .screenshot({ path: `tests/e2e/screenshots/image-e2e-${backend}-no-send-box.png` })
           .catch(() => undefined);
         console.log(
-          `[image-e2e] ${backend} upload input missing. hash=${await page.evaluate(() => window.location.hash).catch(() => '?')}\npage text:\n${bodyText}`
+          `[image-e2e] ${backend} send box missing. hash=${await page.evaluate(() => window.location.hash).catch(() => '?')}\npage text:\n${bodyText}`
         );
         throw error;
       }

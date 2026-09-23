@@ -104,14 +104,14 @@ const BrowserDataSection: React.FC = () => {
   }, [t]);
 
   return (
-    <div className='px-[12px] md:px-[32px] py-16px bg-2 rd-16px'>
-      <div className='text-14px font-medium text-t-primary mb-8px'>{t('settings.browserData.title')}</div>
-
+    // The page's title names it: the section is only its rows.
+    <div className='px-16px md:px-24px py-4px bg-base border border-color-b-base rd-8px'>
       <PreferenceRow
         label={t('settings.browserData.agentControlLabel')}
         description={t('settings.browserData.agentControlDesc')}
       >
         <Switch
+          size='small'
           checked={agentControlEnabled}
           loading={switchLoading || isLoading}
           onChange={handleToggleAgentControl}

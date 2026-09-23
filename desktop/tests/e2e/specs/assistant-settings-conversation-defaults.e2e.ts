@@ -403,8 +403,11 @@ function normalizeUiText(value: string | null | undefined): string {
 }
 
 function locateConversationModelButton(page: Page) {
+  // An ACP conversation's model sits in the composer's chip; the header no longer carries a picker.
   return page
-    .locator('[data-testid="aionrs-model-selector"], [data-testid="chat-model-selector"], .header-model-btn')
+    .locator(
+      '[data-testid="aionrs-model-selector"], [data-testid="chat-model-selector"], [data-testid="composer-model-pill"]'
+    )
     .first();
 }
 

@@ -5,7 +5,6 @@
  */
 
 import type { TChatConversation } from '@/common/config/storage';
-import type { PresetAssistantInfo } from '@/renderer/hooks/agent/usePresetAssistantInfo';
 import { resolveConversationLeadingMark } from '@/renderer/pages/conversation/utils/conversationAssistantIdentity';
 import { describe, expect, it } from 'vitest';
 
@@ -53,6 +52,18 @@ describe('resolveConversationLeadingMark', () => {
       value: '📚',
       label: 'Academic Paper',
     });
+  });
+
+  it('labels an assistant the conversation stored from the backend as mu', () => {
+    const result = resolveConversationLeadingMark(
+      makeConversation({
+        assistant: { id: 'aionui-assistant', name: 'AionUi Butler', avatar: '🤵' },
+      } as Partial<TChatConversation>),
+      undefined,
+      TEST_LOGOS
+    );
+
+    expect(result).toEqual({ kind: 'emoji', value: '🤵', label: 'mu Butler' });
   });
 
   it('falls back to the backend logo when there is no assistant info', () => {

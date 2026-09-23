@@ -14,10 +14,7 @@
 !define AIONUI_MSG_INSTALLER_LOG_EN "Installer log"
 !define AIONUI_MSG_BLOCK_SEPARATOR "----------------------------------------"
 
-!define AIONUI_MSG_SEND_REPORT_ZH "是否将此安装失败报告发送给 mu 团队？报告会包含错误码和当前安装日志。"
-!define AIONUI_MSG_SEND_REPORT_EN "Send this installer failure report to the mu team? The report includes the error code and the current installer log."
-
-!define AIONUI_MSG_GENERIC_FAILURE_ZH "安装器无法继续。请查看诊断信息、安装日志路径，或将失败报告发送给 mu 团队。"
+!define AIONUI_MSG_GENERIC_FAILURE_ZH "安装器无法继续。请查看诊断信息和安装日志路径。"
 !define AIONUI_MSG_GENERIC_ACTION_ZH "请关闭上面列出的程序后重新运行安装器。如果没有列出具体程序，请重启 Windows 后再次运行安装器。"
 
 !define AIONUI_MSG_VERIFY_REQUIRED_FILE_EN "mu installation is incomplete. Missing required file:"
@@ -27,13 +24,13 @@
 
 !define AIONUI_MSG_EXTRACT_FAILED_EN "mu could not extract the application files correctly."
 !define AIONUI_MSG_EXTRACT_FAILED_ZH "mu 无法正确解压应用文件。"
-!define AIONUI_MSG_EXTRACT_FAILED_ACTION_EN "Download a fresh installer and run it again. If it still fails, send the installer report to the mu team."
-!define AIONUI_MSG_EXTRACT_FAILED_ACTION_ZH "请重新下载安装器后再次运行。如果仍然失败，请将安装失败报告发送给 mu 团队。"
+!define AIONUI_MSG_EXTRACT_FAILED_ACTION_EN "Download a fresh installer and run it again. If it still fails, share the installer log shown below with the mu team."
+!define AIONUI_MSG_EXTRACT_FAILED_ACTION_ZH "请重新下载安装器后再次运行。如果仍然失败，请将下方显示的安装日志提供给 mu 团队。"
 
-!define AIONUI_MSG_BUNDLED_AIONCORE_INCOMPLETE_EN "mu installed, but the bundled AionCore resources are incomplete."
-!define AIONUI_MSG_BUNDLED_AIONCORE_INCOMPLETE_ZH "mu 已安装部分文件，但内置 AionCore 资源不完整。"
-!define AIONUI_MSG_BUNDLED_AIONCORE_INCOMPLETE_ACTION_EN "Download a fresh installer and run it again. If it still fails, send the installer report to the mu team."
-!define AIONUI_MSG_BUNDLED_AIONCORE_INCOMPLETE_ACTION_ZH "请重新下载安装器后再次运行。如果仍然失败，请将安装失败报告发送给 mu 团队。"
+!define AIONUI_MSG_BUNDLED_AIONCORE_INCOMPLETE_EN "mu installed, but the bundled local service resources are incomplete."
+!define AIONUI_MSG_BUNDLED_AIONCORE_INCOMPLETE_ZH "mu 已安装部分文件，但内置的本地服务资源不完整。"
+!define AIONUI_MSG_BUNDLED_AIONCORE_INCOMPLETE_ACTION_EN "Download a fresh installer and run it again. If it still fails, share the installer log shown below with the mu team."
+!define AIONUI_MSG_BUNDLED_AIONCORE_INCOMPLETE_ACTION_ZH "请重新下载安装器后再次运行。如果仍然失败，请将下方显示的安装日志提供给 mu 团队。"
 
 !define AIONUI_MSG_ARCH_MISMATCH_EN "Installation package architecture mismatch."
 !define AIONUI_MSG_ARCH_MISMATCH_ZH "安装包架构不匹配。"
@@ -77,8 +74,8 @@
 !define AIONUI_MSG_FILE_OR_FOLDER_IN_USE_ZH "mu 无法继续，因为安装目录中的文件或文件夹仍被占用："
 !define AIONUI_MSG_APPLICATION_USING_IT_EN "Application using it:"
 !define AIONUI_MSG_APPLICATION_USING_IT_ZH "正在使用它的应用："
-!define AIONUI_MSG_CLOSE_LISTED_RETRY_EN "Close the application listed above, then click Retry. If you are not sure what to close, click Cancel to send the installer log to the mu team."
-!define AIONUI_MSG_CLOSE_LISTED_RETRY_ZH "请关闭上面列出的应用，然后点击重试。如果不确定要关闭哪个程序，请点击取消，将安装日志发送给 mu 团队。"
+!define AIONUI_MSG_CLOSE_LISTED_RETRY_EN "Close the application listed above, then click Retry. If you are not sure what to close, click Cancel to show the diagnostics and installer log."
+!define AIONUI_MSG_CLOSE_LISTED_RETRY_ZH "请关闭上面列出的应用，然后点击重试。如果不确定要关闭哪个程序，请点击取消，查看诊断信息和安装日志。"
 
 !define AIONUI_MSG_CLOSE_OR_REMOVE_PREVIOUS_EN "mu could not finish closing or removing the previous version."
 !define AIONUI_MSG_CLOSE_OR_REMOVE_PREVIOUS_ZH "mu 无法完成关闭或移除旧版本。"

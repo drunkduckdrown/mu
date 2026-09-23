@@ -1,28 +1,27 @@
 import React from 'react';
-import { Alert } from '@arco-design/web-react';
+import classNames from 'classnames';
 import type { TFunction } from 'i18next';
 import { formatDuration } from '@/renderer/services/i18n/format';
 
 /**
  * An error as the panel shows it: a translated headline the person can act on, and the raw message of the harness,
- * the bridge or the OS under it as a detail. The detail is never the only text.
+ * the bridge or the OS under it as a detail. The detail is never the only text. A line in the page's own colours,
+ * marked by a rule at its start: the panel tints nothing, errors included.
  */
 export function ErrorNotice({ title, detail, className }: { title: string; detail?: string; className?: string }) {
   return (
-    <Alert
-      className={className}
-      type='error'
-      {...(detail
-        ? {
-            title,
-            content: (
-              <span className='text-12px text-t-secondary whitespace-pre-wrap break-words' dir='auto'>
-                {detail}
-              </span>
-            ),
-          }
-        : { content: title })}
-    />
+    <div
+      role='alert'
+      className={classNames('flex flex-col gap-2px min-w-0 ps-8px py-2px', className)}
+      style={{ borderInlineStart: '2px solid var(--text-primary)' }}
+    >
+      <span className='text-13px leading-20px text-t-primary font-500'>{title}</span>
+      {detail ? (
+        <span className='text-12px leading-18px text-t-secondary whitespace-pre-wrap break-words' dir='auto'>
+          {detail}
+        </span>
+      ) : null}
+    </div>
   );
 }
 

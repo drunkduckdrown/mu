@@ -10,7 +10,6 @@ import { initUpdateBridge } from './updateBridge';
 import { initSystemSettingsBridge } from './systemSettingsBridge';
 import { initWindowControlsBridge } from './windowControlsBridge';
 import { initNotificationBridge } from './notificationBridge';
-import { initWebuiBridge } from './webuiBridge';
 import { initThemeBridge } from './themeBridge';
 import { initKyrnBridge } from './kyrnBridge';
 import { initKyrnBrowserBridge } from './kyrnBrowserBridge';
@@ -24,7 +23,6 @@ export function initAllBridges(_deps: BridgeDependencies = {}): void {
   initUpdateBridge();
   initSystemSettingsBridge();
   initNotificationBridge();
-  initWebuiBridge();
   initThemeBridge();
   initKyrnBridge();
   initKyrnBrowserBridge();
@@ -38,7 +36,6 @@ export {
   initThemeBridge,
   initUpdateBridge,
   initWindowControlsBridge,
-  initWebuiBridge,
 };
 export { registerWindowMaximizeListeners } from './windowControlsBridge';
 export const disposeAllTeamSessions = (): Promise<void> => Promise.resolve();

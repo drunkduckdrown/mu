@@ -6,7 +6,7 @@ import { I18nextProvider } from 'react-i18next';
 import type { Activity } from '@/common/kyrn/types';
 import common from '@/renderer/services/i18n/locales/en-US/common.json';
 import zhCommon from '@/renderer/services/i18n/locales/zh-CN/common.json';
-import ContextPanel from '@/renderer/pages/conversation/KyrnPanel/ContextPanel';
+import ContextPanel from '@/renderer/pages/conversation/KyrnPanel/Judge/ContextPanel';
 
 let next = 0;
 const event = (kind: string, payload: Record<string, unknown>): Activity => ({

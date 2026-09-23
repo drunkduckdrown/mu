@@ -70,6 +70,10 @@ interface EventTypes {
    * the send box of that conversation may react.
    */
   'sendbox.mention.session': [{ id: string; name: string }, string | undefined];
+  /** Open the command palette, or close it when it is open: Cmd/Ctrl+K and the sidebar's search entry. */
+  'commandPalette.toggle': void;
+  /** Open the message search with a query already typed in: the command palette hands its query on. */
+  'conversationSearch.open': [string];
 }
 
 export const emitter = new EventEmitter<EventTypes>();

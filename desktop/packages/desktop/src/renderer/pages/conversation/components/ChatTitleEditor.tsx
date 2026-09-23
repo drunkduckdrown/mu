@@ -39,9 +39,9 @@ const ChatTitleEditor: React.FC<ChatTitleEditorProps> = ({
   // so the title renders as nothing. Without a placeholder the header looks
   // blank and the click-to-rename region collapses to zero height, leaving no
   // way to name the conversation. The placeholder is display-only — the rename
-  // draft still starts from the stored (empty) name.
+  // draft still starts from the stored (empty) name. It is the name the sidebar row and the command palette show.
   const isTitleBlank = typeof title === 'string' && title.trim() === '';
-  const displayTitle = isTitleBlank ? t('conversation.historySearch.untitled') : title;
+  const displayTitle = isTitleBlank ? t('conversation.welcome.newConversation') : title;
 
   const startEditing = () => {
     if (!canRenameTitle) return;
@@ -58,7 +58,8 @@ const ChatTitleEditor: React.FC<ChatTitleEditorProps> = ({
       )}
       style={{ width: '100%', maxWidth: `${titleAreaMaxWidth}px` }}
     >
-      {leading && <div className='shrink-0 flex items-center ps-8px'>{leading}</div>}
+      {/* `empty:hidden`: an agent without a logo renders no icon, and its empty slot must not indent the title. */}
+      {leading && <div className='shrink-0 flex items-center ps-8px empty:hidden'>{leading}</div>}
       {editingTitle && canRenameTitle ? (
         <div className='min-w-0 flex-1 px-8px py-5px'>
           <Input

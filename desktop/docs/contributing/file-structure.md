@@ -7,7 +7,7 @@ Rules for organizing files and directories across the entire Electron project.
 ### Root Directory Rules
 
 - **README translations** belong in `docs/readme/`, not at root. Only the main `readme.md` stays at root (GitHub convention)
-- **Guide documents** (deployment, testing, WebUI, CDP, etc.) belong in `docs/guides/`
+- **Guide documents** (deployment, testing, CDP, etc.) belong in `docs/guides/`
 - **Contributor documentation** (dev setup, code style, file structure, PR workflow) belongs in `docs/contributing/`
 - **Architecture documentation** belongs in `docs/architecture/` (research notes under `docs/architecture/research/`)
 - **Feature specs / PRDs / design drafts** belong in `docs/specs/` (or `docs/prds/` for formal PRDs maintained by the product team)
@@ -37,7 +37,6 @@ src/
 │   ├── agent/         #   AI platform connections
 │   ├── channels/      #   Multi-channel messaging
 │   ├── extensions/    #   Plugin system
-│   ├── webserver/     #   WebUI server
 │   ├── worker/        #   Background workers (fork)
 │   └── i18n/          #   Main-process i18n
 ├── common/            # Shared layer — cross-process types, adapters, utilities
@@ -125,7 +124,7 @@ Cross-process communication MUST go through:
 
 | Type       | Pattern               | Examples                          |
 | ---------- | --------------------- | --------------------------------- |
-| Bridge     | `<domain>Bridge.ts`   | `cronBridge.ts`, `webuiBridge.ts` |
+| Bridge     | `<domain>Bridge.ts`   | `cronBridge.ts` |
 | Service    | `<Name>Service.ts`    | `CronService.ts`, `McpService.ts` |
 | Interface  | `I<Name>Service.ts`   | `IConversationService.ts`         |
 | Repository | `<Name>Repository.ts` | `SqliteConversationRepository.ts` |

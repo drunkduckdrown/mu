@@ -18,102 +18,132 @@ vi.mock('@/common', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: { count?: number; name?: string; status?: string }) => {
-      if (key === 'tools.execution.callAria') return `${options?.name} · ${options?.status}`;
-      if (key === 'tools.execution.calls') return `${options?.count} calls`;
-      if (key === 'tools.execution.commands') return `${options?.count} commands`;
-      return key;
+    i18n: { language: 'en-US' },
+    t: (key: string, options?: Record<string, unknown>) => {
+      const templates: Record<string, string> = {
+        'tools.execution.callAria': '{{name}} · {{status}}',
+        'tools.activity.running': '{{steps}} steps · running {{label}}',
+        'tools.activity.summary': '{{steps}} steps',
+        'tools.activity.summaryFailed': '{{steps}} steps · {{failed}} failed',
+      };
+      const template = templates[key] ?? key;
+      return template.replace(/\{\{(\w+)\}\}/g, (match, name: string) =>
+        options && name in options ? String(options[name]) : match
+      );
     },
   }),
 }));
 
+let callSeq = 0;
 const tool = (
   name: string,
-  status: 'completed' | 'error' | 'running' | 'canceled',
+  status: 'completed' | 'error' | 'running' | 'pending' | 'canceled',
   input?: Record<string, unknown>,
   output?: string
-): ToolMessage =>
-  ({
-    id: `${name}-${status}`,
+): ToolMessage => {
+  const id = `${name}-${status}-${(callSeq += 1)}`;
+  return {
+    id,
     conversation_id: 'conversation-1',
     type: 'tool_call',
     content: {
-      call_id: `${name}-${status}`,
+      call_id: id,
       name,
       args: input ?? {},
       status,
       output,
     },
-  }) as ToolMessage;
+  } as ToolMessage;
+};
 
 afterEach(() => {
   vi.mocked(ipcBridge.database.getConversationMessage.invoke).mockReset();
 });
 
 describe('MessageToolGroupSummary', () => {
-  it('shows calls, commands, and the latest command preview in its compact header', () => {
+  it('shows a lone call as its own line, with no summary box above it', () => {
+    render(<MessageToolGroupSummary messages={[tool('read', 'completed', { path: 'src/app.ts' })]} />);
+
+    const calls = within(screen.getByRole('group', { name: 'tools.execution.title' }));
+    expect(calls.getByRole('button', { name: 'read · tools.status.success' })).toHaveTextContent('src/app.ts');
+    // No header naming the group, no counts, no second copy of the call.
+    expect(screen.queryByTestId('tool-activity-group')).not.toBeInTheDocument();
+    expect(screen.getAllByText('src/app.ts')).toHaveLength(1);
+  });
+
+  it('folds a run of calls into one line that names what is running', () => {
     render(
       <MessageToolGroupSummary
         messages={[
-          tool('Read', 'completed', { path: 'src/app.ts' }),
-          tool('Shell Command', 'completed', { command: 'npm run lint' }),
+          tool('read', 'completed', { path: 'src/app.ts' }),
+          tool('bash', 'running', { command: 'npm test' }),
+          tool('write', 'pending', { path: 'src/app.ts' }),
         ]}
       />
     );
 
-    const header = screen.getByRole('button', { name: /tools.execution.title/ });
-    expect(header).toHaveTextContent('2 calls · 1 commands');
-    expect(header).toHaveTextContent('tools.status.success');
+    expect(screen.getByTestId('tool-activity-group')).toBeInTheDocument();
+    const header = screen.getByRole('button', { name: /3 steps/ });
+    expect(header).toHaveTextContent('3 steps · running bash npm test');
     expect(header).toHaveAttribute('aria-expanded', 'false');
-    expect(screen.getByText('npm run lint')).toBeInTheDocument();
+    // The steps themselves wait for a click.
+    expect(screen.queryByRole('button', { name: 'read · tools.status.success' })).not.toBeInTheDocument();
+
+    fireEvent.click(header);
+    expect(header).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'read · tools.status.success' })).toHaveTextContent('src/app.ts');
+    expect(screen.getByRole('button', { name: 'bash · tools.status.executing' })).toHaveTextContent('npm test');
   });
 
-  it('leaves the command count out when no call ran a command', () => {
-    render(<MessageToolGroupSummary messages={[tool('Read', 'completed', { path: 'src/app.ts' })]} />);
+  it('keeps a finished run folded, and says how many steps failed', () => {
+    render(
+      <MessageToolGroupSummary
+        messages={[
+          tool('read', 'completed', { path: 'src/app.ts' }),
+          tool('bash', 'error', { command: 'npm test' }, 'FAIL src/app.test.ts\n  1 test failed'),
+        ]}
+      />
+    );
 
-    const header = screen.getByRole('button', { name: /tools.execution.title/ });
-    expect(header).toHaveTextContent('1 calls');
-    expect(header).not.toHaveTextContent('commands');
-    expect(header).not.toHaveTextContent('·');
+    const header = screen.getByRole('button', { name: /2 steps/ });
+    expect(header).toHaveTextContent('2 steps · 1 failed');
+    expect(header).toHaveAttribute('aria-expanded', 'false');
   });
 
-  it('keeps a failed call visible in the collapsed header instead of reading as clean', () => {
+  it('shows a failed step’s own words without asking for a click', () => {
+    render(
+      <MessageToolGroupSummary
+        messages={[
+          tool('read', 'completed', { path: 'src/app.ts' }),
+          tool('bash', 'error', { command: 'npm test' }, 'FAIL src/app.test.ts\n  1 test failed'),
+          tool('read', 'completed', { path: 'src/b.ts' }),
+        ]}
+      />
+    );
+
+    const error = screen.getByTestId('tool-activity-error');
+    expect(error).toHaveTextContent('bash');
+    expect(error).toHaveTextContent('FAIL src/app.test.ts');
+    // Only the failure is surfaced — the successes stay folded.
+    expect(screen.getAllByTestId('tool-activity-error')).toHaveLength(1);
+  });
+
+  it('keeps each call’s own status once the run is opened', () => {
     const { container } = render(
       <MessageToolGroupSummary
         messages={[
-          tool('Shell Command', 'error', { command: 'npm test' }, 'exit 1'),
-          tool('Read', 'completed', { path: 'src/app.ts' }),
+          tool('read', 'completed', { path: 'src/app.ts' }),
+          tool('bash', 'running', { command: 'npm run lint' }),
+          tool('write', 'error', { path: 'src/app.ts' }),
         ]}
       />
     );
 
-    const header = screen.getByRole('button', { name: /tools.execution.title/ });
-    expect(header).toHaveAttribute('aria-expanded', 'false');
-    expect(header).toHaveTextContent('tools.status.error');
-    expect(header).not.toHaveTextContent('tools.status.success');
+    fireEvent.click(screen.getByRole('button', { name: /3 steps/ }));
+    expect(container.querySelector('.arco-badge-status-success')).toBeInTheDocument();
+    expect(container.querySelector('.arco-badge-status-processing')).toBeInTheDocument();
     expect(container.querySelector('.arco-badge-status-error')).toBeInTheDocument();
-  });
-
-  it('reports work in progress before earlier failures, and cancellation before success', () => {
-    const { rerender } = render(
-      <MessageToolGroupSummary
-        messages={[
-          tool('Write', 'error', { path: 'src/app.ts' }),
-          tool('Shell Command', 'running', { command: 'npm run lint' }),
-        ]}
-      />
-    );
-    expect(screen.getByRole('button', { name: /tools.execution.title/ })).toHaveTextContent('tools.status.executing');
-
-    rerender(
-      <MessageToolGroupSummary
-        messages={[
-          tool('Read', 'completed', { path: 'src/app.ts' }),
-          tool('Shell Command', 'canceled', { command: 'npm run lint' }),
-        ]}
-      />
-    );
-    expect(screen.getByRole('button', { name: /tools.execution.title/ })).toHaveTextContent('tools.status.canceled');
+    expect(screen.getByRole('button', { name: 'write · tools.status.error' })).toBeInTheDocument();
   });
 
   it('keeps raw output out of the page until its own call is opened', () => {
@@ -123,39 +153,21 @@ describe('MessageToolGroupSummary', () => {
       />
     );
 
+    // The line shows the grey command preview only; output needs its own click.
+    expect(screen.getByText('npm run lint')).toBeInTheDocument();
     expect(screen.queryByText('lint output: 0 problems')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /tools.execution.title/ }));
-    // The call list shows the grey command preview only; output still needs its own click.
-    const calls = within(screen.getByRole('group', { name: 'tools.execution.title' }));
-    expect(calls.getByText('npm run lint')).toBeInTheDocument();
-    expect(screen.queryByText('lint output: 0 problems')).not.toBeInTheDocument();
+    const call = screen.getByRole('button', { name: 'Shell Command · tools.status.success' });
+    expect(call).toHaveAttribute('aria-expanded', 'false');
 
-    fireEvent.click(calls.getByRole('button', { name: 'Shell Command · tools.status.success' }));
+    fireEvent.click(call);
+    expect(call).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText('lint output: 0 problems')).toBeInTheDocument();
     expect(screen.getByText('tools.execution.output')).toBeInTheDocument();
-  });
-
-  it('opens running calls while retaining completed and failed statuses', () => {
-    const { container } = render(
-      <MessageToolGroupSummary
-        messages={[
-          tool('Read', 'completed', { path: 'src/app.ts' }),
-          tool('Shell Command', 'running', { command: 'npm run lint' }),
-          tool('Write', 'error', { path: 'src/app.ts' }),
-        ]}
-      />
-    );
-
-    expect(screen.getByRole('button', { name: /tools.execution.title/ })).toHaveAttribute('aria-expanded', 'true');
-    expect(container.querySelector('.arco-badge-status-success')).toBeInTheDocument();
-    expect(container.querySelector('.arco-badge-status-processing')).toBeInTheDocument();
-    expect(container.querySelector('.arco-badge-status-error')).toBeInTheDocument();
   });
 
   it('shows a no-detail call without making it an expandable log entry', () => {
     render(<MessageToolGroupSummary messages={[tool('Ping', 'completed')]} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /tools.execution.title/ }));
     const calls = within(screen.getByRole('group', { name: 'tools.execution.title' }));
     expect(calls.getByText('Ping')).toBeInTheDocument();
     expect(calls.queryByRole('button')).not.toBeInTheDocument();
@@ -205,7 +217,6 @@ describe('MessageToolGroupSummary', () => {
     );
 
     expect(invoke).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByText('tools.execution.title'));
     fireEvent.click(screen.getByRole('button', { name: 'rg · tools.status.success' }));
 
     await waitFor(() => {
@@ -254,7 +265,6 @@ describe('MessageToolGroupSummary', () => {
       />
     );
 
-    fireEvent.click(screen.getByText('tools.execution.title'));
     fireEvent.click(screen.getByRole('button', { name: 'rg · tools.status.success' }));
     expect(await screen.findByText('tools.execution.loadError')).toBeInTheDocument();
     fireEvent.click(screen.getByText('tools.execution.retry'));

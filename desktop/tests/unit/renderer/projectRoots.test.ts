@@ -66,6 +66,22 @@ describe('toRootRefs', () => {
     expect(refs.map((r) => r.role)).toEqual(['workspace', 'attached']);
   });
 
+  it('names only the workspace root by the given title: a temporary folder name means nothing to the person', () => {
+    const detail: ProjectDetailDto = {
+      project_id: 'p1',
+      name: 'Proj',
+      explorer: {
+        workspace_pe_id: 'peW',
+        entries: [
+          entry({ pe_id: 'peW', role: 'workspace', display_path: '/data/conversations/acp-temp-6d952732' }),
+          entry({ pe_id: 'peA', role: 'attached', display_name: 'Lib', order_index: 1 }),
+        ],
+      },
+    };
+    expect(toRootRefs(detail, 'Temporary workspace').map((r) => r.title)).toEqual(['Temporary workspace', 'Lib']);
+    expect(toRootRefs(detail).map((r) => r.title)).toEqual(['acp-temp-6d952732', 'Lib']);
+  });
+
   it('returns an empty array for a project with no entries', () => {
     const detail: ProjectDetailDto = {
       project_id: 'p1',

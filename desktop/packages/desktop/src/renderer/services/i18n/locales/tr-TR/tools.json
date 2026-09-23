@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "Araç etkinliği",
-    "calls": "{{count}} çağrı",
-    "calls_one": "{{count}} çağrı",
-    "commands": "{{count}} komut",
-    "commands_one": "{{count}} komut",
     "input": "Girdi",
     "output": "Çıktı",
     "loading": "Tam çıktı yükleniyor…",
     "loadError": "Tam çıktı yüklenemedi.",
     "retry": "Yeniden dene",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "Daha fazla göster",
+    "showLess": "Daha az göster"
+  },
+  "activity": {
+    "running": "{{steps}} adım · çalışıyor {{label}}",
+    "summary": "{{steps}} adım",
+    "summaryFailed": "{{steps}} adım · {{failed}} başarısız"
   },
   "kind": {
     "edit": "Dosya düzenleme",

@@ -1,8 +1,7 @@
 /**
- * Butler diagnose button — the "Ask the Butler" chip next to the feedback
- * pill on conversation error bubbles. Clicking it must jump to the home chat
- * with a diagnosis prompt (containing the error text) pre-filled, mirroring
- * the report modal's "Solve via chat" flow.
+ * Butler diagnose button — the "Ask the Butler" chip on conversation error
+ * bubbles. Clicking it must jump to the home chat with a diagnosis prompt
+ * (containing the error text) pre-filled.
  *
  * Uses the ACP E2E stream injector to fabricate an error tip without needing
  * a real broken agent session.
@@ -75,10 +74,10 @@ test('error bubble butler chip pre-fills a diagnosis prompt in the home chat', a
       { id: conversation.id, text: ERROR_TEXT }
     );
 
-    // The error bubble should surface both chips.
+    // The error bubble surfaces the Butler chip, and no report chip.
     const butlerChip = page.locator('button:has-text("找管家排查"), button:has-text("Ask the Butler")').first();
     await expect(butlerChip).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('button:has-text("反馈问题"), button:has-text("Report Issue")').first()).toBeVisible();
+    await expect(page.locator('button:has-text("反馈问题"), button:has-text("Report Issue")')).toHaveCount(0);
 
     await butlerChip.click();
 

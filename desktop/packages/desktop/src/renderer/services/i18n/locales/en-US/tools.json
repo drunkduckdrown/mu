@@ -69,16 +69,19 @@
   },
   "execution": {
     "title": "Tool activity",
-    "calls": "{{count}} calls",
-    "calls_one": "{{count}} call",
-    "commands": "{{count}} commands",
-    "commands_one": "{{count}} command",
     "input": "Input",
     "output": "Output",
     "loading": "Loading full output…",
     "loadError": "Could not load full output.",
     "retry": "Retry",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "Show more",
+    "showLess": "Show less"
+  },
+  "activity": {
+    "running": "{{steps}} steps · running {{label}}",
+    "summary": "{{steps}} steps",
+    "summaryFailed": "{{steps}} steps · {{failed}} failed"
   },
   "kind": {
     "edit": "File edit",

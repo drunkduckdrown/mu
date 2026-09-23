@@ -4,43 +4,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-// Sentry must be initialized first
-// Use electron-specific renderer package only inside Electron; fall back to the
-// browser SDK when running as a web server (no window.electronAPI).
-if ((window as { electronAPI?: unknown }).electronAPI) {
-  // Dynamic import avoids bundling sentry-ipc:// protocol code into the web build
-  import('@sentry/electron/renderer')
-    .then((Sentry) =>
-      Sentry.init({
-        beforeSend(event) {
-          if (!(window as { __backendStartupFailed?: boolean }).__backendStartupFailed) {
-            return event;
-          }
-          const haystacks: string[] = [];
-          if (event.message) haystacks.push(event.message);
-          const exceptions = event.exception?.values ?? [];
-          for (const ex of exceptions) {
-            if (ex.value) haystacks.push(ex.value);
-          }
-          if (haystacks.some((h) => /Failed to fetch|window\.__backendPort|__backendPort unset/.test(h))) {
-            return null;
-          }
-          return event;
-        },
-      })
-    )
-    .catch(() => {});
-}
-
 // Runtime patches must be imported early
 import './utils/ui/runtimePatches';
 
 // Browser adapter setup
 import '@/common/adapter/browser';
-
-// WebUI only: serve `dialog.showOpen` with a server-side picker, since the
-// native Electron dialog channel has no provider outside the desktop app.
-import './components/workspace/registerWebFsPicker';
 
 // React and core dependencies
 import type { PropsWithChildren } from 'react';
@@ -50,8 +18,6 @@ import { SWRConfig } from 'swr';
 import type { TFunction } from 'i18next';
 
 // Context providers
-import { AuthProvider } from './hooks/context/AuthContext';
-import { FeedbackProvider } from './hooks/context/FeedbackContext';
 import { ThemeProvider } from './hooks/context/ThemeContext';
 import { PreviewProvider } from './pages/conversation/Preview/context/PreviewContext';
 
@@ -104,14 +70,12 @@ import GpuAutoDisableNotice from './components/layout/GpuAutoDisableNotice';
 import Layout from './components/layout/Layout';
 import Router from './components/layout/Router';
 import Sider from './components/layout/Sider';
-import { useAuth } from './hooks/context/AuthContext';
 import { ConversationHistoryProvider } from './hooks/context/ConversationHistoryContext';
 import type { BackendStartupFailureInfo } from '@/common/types/platform/electron';
 import type { IRuntimeStatusEvent, RuntimeFailureKind } from '@/common/adapter/ipcBridge';
 import {
   InstallationIntegrityContent,
   InstallationIntegrityModalHost,
-  type InstallationIntegrityDiagnostics,
   getBackendStartupInstallationDescription,
   getDownloadLatestModalActionProps,
   getRuntimeComponentInstallationDescription,
@@ -200,43 +164,6 @@ function isInstallationIntegrityFailure(kind: RuntimeFailureKind | undefined): b
   return INSTALLATION_INTEGRITY_FAILURES.has(kind ?? 'unknown');
 }
 
-function captureRuntimeInstallationIntegrityFailure(event: IRuntimeStatusEvent): void {
-  if (!isInstallationIntegrityFailure(event.failure_kind)) {
-    return;
-  }
-
-  void import('@sentry/electron/renderer')
-    .then((Sentry) => {
-      Sentry.withScope((scope) => {
-        scope.setTag('aionui.installation_integrity', event.failure_kind ?? 'unknown');
-        scope.setTag('aionui.runtime_resource', event.resource);
-        scope.setTag('aionui.runtime_resource_id', event.resource_id ?? '');
-        scope.setTag('aionui.runtime_scope', event.scope.kind);
-        Sentry.captureMessage('runtime-installation-integrity-failure', 'error');
-      });
-    })
-    .catch(() => {});
-}
-
-function buildRuntimeInstallationDiagnostics(
-  event: IRuntimeStatusEvent,
-  description: string
-): InstallationIntegrityDiagnostics {
-  return {
-    source: 'runtime_status',
-    description,
-    runtime: {
-      failureKind: event.failure_kind,
-      message: event.message,
-      phase: event.phase,
-      resource: event.resource,
-      resourceId: event.resource_id,
-      scopeId: event.scope.id,
-      scopeKind: event.scope.kind,
-    },
-  };
-}
-
 function resolveRuntimeResourceLabel(event: IRuntimeStatusEvent, t: TFunction): string {
   if (event.resource === 'node') {
     return t('settings.runtimeResource.node');
@@ -259,15 +186,9 @@ const RuntimeFailureDialogs: React.FC = () => {
       showDialog: (event) => {
         const resource = resolveRuntimeResourceLabel(event, t);
         const description = getRuntimeComponentInstallationDescription(t, resource);
-        const controller = showInstallationIntegrityModal(
-          modal,
-          t,
-          description,
-          buildRuntimeInstallationDiagnostics(event, description)
-        );
+        const controller = showInstallationIntegrityModal(modal, t, description);
         return { close: () => controller.close() };
       },
-      report: (event) => captureRuntimeInstallationIntegrityFailure(event),
     });
 
     const offStatus = ipcBridge.runtime.statusChanged.on((event: IRuntimeStatusEvent) => {
@@ -294,13 +215,8 @@ const RuntimeFailureDialogs: React.FC = () => {
       });
     });
 
-    const onBeforeUnload = () => reconciler.flushPending();
-    window.addEventListener('beforeunload', onBeforeUnload);
-
     return () => {
-      window.removeEventListener('beforeunload', onBeforeUnload);
       offStatus();
-      reconciler.flushPending();
       reconciler.dispose();
     };
   }, [modal, t]);
@@ -323,25 +239,17 @@ const AppProviders: React.FC<PropsWithChildren> = ({ children }) =>
     SWRConfig,
     { value: SWR_DEFAULTS },
     React.createElement(
-      AuthProvider,
+      ThemeProvider,
       null,
       React.createElement(
-        ThemeProvider,
+        PreviewProvider,
         null,
         React.createElement(
-          PreviewProvider,
+          React.Fragment,
           null,
-          React.createElement(
-            FeedbackProvider,
-            null,
-            React.createElement(
-              React.Fragment,
-              null,
-              React.createElement(RuntimeFailureDialogs, null),
-              React.createElement(GpuAutoDisableNotice, null),
-              children
-            )
-          )
+          React.createElement(RuntimeFailureDialogs, null),
+          React.createElement(GpuAutoDisableNotice, null),
+          children
         )
       )
     )
@@ -354,28 +262,23 @@ const Config: React.FC<PropsWithChildren> = ({ children }) => {
   } = useTranslation();
   const arcoLocale = useMemo(() => arcoLocales[language] ?? buildAppArcoLocale(t), [language, t]);
 
-  return React.createElement(
-    ConfigProvider,
-    { theme: { primaryColor: '#4E5969' }, locale: arcoLocale, rtl: isRtlLanguage(language) },
-    children
-  );
+  // No `theme` here: Arco writes a primaryColor inline on <body>, one value for both appearances. mu's primary,
+  // per appearance, is in styles/themes/mu-arco.css.
+  return React.createElement(ConfigProvider, { locale: arcoLocale, rtl: isRtlLanguage(language) }, children);
 };
 
 const Main = () => {
-  const { ready } = useAuth();
   const [configReady, setConfigReady] = useState(false);
 
   useEffect(() => {
-    if (!ready) return;
     void bootstrapRendererConfig().finally(() => setConfigReady(true));
-  }, [ready]);
+  }, []);
 
   useEffect(() => {
-    if (!ready) return;
     void repairAllCronJobTimeZonesOnce();
-  }, [ready]);
+  }, []);
 
-  if (!ready || !configReady) {
+  if (!configReady) {
     return null;
   }
 
@@ -469,11 +372,6 @@ const BackendStartupFailureDialog: React.FC<{ failure: BackendStartupFailureInfo
                               ? 'incomplete_installation'
                               : 'startup_failed'
           }
-          diagnostics={{
-            source: 'backend_startup_failure',
-            description,
-            backendStartupFailure: failure as unknown as Record<string, unknown>,
-          }}
         />
       </div>
     );
@@ -498,7 +396,7 @@ const BackendStartupFailureDialog: React.FC<{ failure: BackendStartupFailureInfo
   return (
     <div className='min-h-screen bg-bg-1'>
       <Modal visible closable={false} maskClosable={false} footer={null} title={title}>
-        <div className='text-t-1'>
+        <div className='text-t-primary'>
           <Typography.Paragraph className='mb-0 text-t-secondary'>{description}</Typography.Paragraph>
           {requiredVersions ? (
             <Typography.Paragraph className='mt-12px mb-0 text-12px text-t-tertiary'>

@@ -12,12 +12,7 @@
     "clearWorkspace": "Retirer le dossier",
     "openFolder": "Ouvrir un dossier",
     "none": "Aucun",
-    "quickActionsTitle": "Que peut faire AionUi ?",
-    "quickActionFeedback": "Des retours ou suggestions ?",
-    "quickActionStar": "Vous aimez ? Donnez-nous une étoile !",
-    "skillsMarket": "Marché de compétences AionUi",
-    "skillsMarketDesc": "Recherchez et activez des compétences communautaires à la demande. Configurez une fois, disponible pour tous les agents.",
-    "skillsMarketDetails": "Voir plus >>"
+    "quickActionsTitle": "Que peut faire mu ?"
   },
   "history": {
     "recents": "Récents",
@@ -146,7 +141,7 @@
       "check_provider_base_url": "Vérifiez l'URL de base du fournisseur de modèles, le chemin d'accès à l'API, le proxy et la compatibilité de l'API.",
       "change_model": "Choisissez un modèle disponible pour le compte courant et prenant en charge cette demande.",
       "reduce_context": "Réduisez le contenu du message, les fichiers référencés ou la taille du contexte, puis réessayez.",
-      "send_feedback": "Envoyez des commentaires avec des journaux afin que l'équipe puisse enquêter."
+      "send_feedback": "Réessayez ; si l'échec persiste, consultez le journal de l'application."
     },
     "ownership": {
       "aionui": "Application",
@@ -157,7 +152,7 @@
     "codes": {
       "AIONUI_STREAM_BROKEN": {
         "title": "Le flux de réponse a été interrompu",
-        "body": "L'application a accepté votre message mais le flux de réponses s'est terminé de manière inattendue. Veuillez réessayer ; si cela se reproduit, envoyez vos commentaires."
+        "body": "L'application a accepté votre message mais le flux de réponses s'est terminé de manière inattendue. Veuillez réessayer ; si cela se reproduit, consultez le journal de l'application."
       },
       "AIONUI_STATE_INCONSISTENT": {
         "title": "L'état de la conversation n'est pas synchronisé",
@@ -169,7 +164,7 @@
       },
       "AIONUI_INTERNAL_ERROR": {
         "title": "La demande a échoué dans l'application",
-        "body": "La demande a échoué pendant que l'application la traitait. Veuillez réessayer une fois ; si cela se répète, envoyez des commentaires."
+        "body": "La demande a échoué pendant que l'application la traitait. Veuillez réessayer une fois ; si cela se répète, consultez le journal de l'application."
       },
       "AIONUI_CONVERSATION_BUSY": {
         "title": "La conversation est occupée",
@@ -326,7 +321,7 @@
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
         "title": "Échec de la lecture de la réponse de l'assistant de l'équipe",
-        "body": "AionUi n'a pas pu lire la réponse de l'assistant de l'équipe locale. Réessayez une fois et si cela continue, redémarrez l'application."
+        "body": "mu n'a pas pu lire la réponse de l'assistant de l'équipe locale. Réessayez une fois et si cela continue, redémarrez l'application."
       },
       "MCP_TOOL_REMOTE_ERROR": {
         "title": "L'assistant de l'équipe locale a rejeté la demande",
@@ -334,11 +329,11 @@
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
         "title": "L'assistant de l'équipe a renvoyé une réponse inattendue",
-        "body": "AionUi a reçu une réponse inattendue de la part de l'assistant de l'équipe locale. Réessayez une fois et signalez-le si le problème persiste."
+        "body": "mu a reçu une réponse inattendue de la part de l'assistant de l'équipe locale. Réessayez une fois et signalez-le si le problème persiste."
       },
       "MCP_TCP_READ_FAILED": {
         "title": "Échec de la lecture de l'assistant de l'équipe locale",
-        "body": "AionUi n'a pas pu lire la réponse TCP de l'assistant de l'équipe locale. Réessayez une fois et redémarrez l'application si elle continue d'échouer."
+        "body": "mu n'a pas pu lire la réponse TCP de l'assistant de l'équipe locale. Réessayez une fois et redémarrez l'application si elle continue d'échouer."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
         "title": "Le service d'équipe n'est pas encore prêt",
@@ -377,6 +372,7 @@
     "addFile": "Ajouter un fichier",
     "refresh": "Actualiser",
     "temporarySpace": "Espace temporaire",
+    "temporaryWorkspace": "Espace de travail temporaire",
     "dragOverlayTitle": "Déposer pour importer",
     "dragOverlayDesc": "Faites glisser des fichiers ou dossiers ici pour les copier dans cet espace de travail.",
     "dragOverlayHint": "Astuce : déposez n'importe où pour importer dans le dossier sélectionné.",
@@ -440,11 +436,12 @@
       "vscode": "VS Code",
       "terminal": "Terminal",
       "explorer": "Explorateur de fichiers",
-      "browser": "Navigateur"
+      "browser": "Navigateur",
+      "choose": "Choisir comment ouvrir"
     },
-    "collapsePanel": "Masquer le panneau du projet",
+    "collapsePanel": "Masquer le panneau de travail",
     "togglePanel": "Afficher ou masquer le panneau du projet",
-    "expandPanel": "Afficher le panneau du projet"
+    "expandPanel": "Afficher le panneau de travail"
   },
   "minimap": {
     "searchAria": "Rechercher dans la conversation",
@@ -587,6 +584,7 @@
   "thinking": {
     "label": "Réflexion...",
     "history": "Historique de réflexion",
+    "thoughtFor": "A réfléchi pendant {{time}}",
     "labelWithTime": "{{label}} · {{time}}",
     "completeWithTime": "Réflexion terminée · {{time}}",
     "elapsed": "({{time}})"
@@ -616,6 +614,16 @@
     "mediaPathFallback": "Cet agent ne prend pas en charge nativement ce type de fichier ; il sera envoyé sous forme de chemin de fichier.",
     "hintWithSessions": "/ pour les commandes, @ pour les fichiers, @@ pour les conversations, ↑/↓ pour l’historique"
   },
+  "composer": {
+    "goalLine": {
+      "running": "Objectif en cours : {{goal}}",
+      "paused": "Objectif en pause : {{goal}}",
+      "end": "Terminer",
+      "endLabel": "Terminer l’objectif"
+    },
+    "thinkingNote": "Changer le niveau de réflexion perd le cache du prompt ; gardez-le stable sur un même modèle",
+    "modelBusy": "Changez de modèle une fois cette réponse terminée."
+  },
   "agentTip": {
     "codes": {
       "ACP_EMPTY_TURN": {
@@ -640,13 +648,13 @@
         "body": "{{count}} étape(s) ont échoué et n'ont PAS pris effet. agy termine malgré tout ces tours comme réussis : vérifiez le résultat réel plutôt que la réponse."
       },
       "CLI_VERSION_OLDER": {
-        "body": "Le {{cli}} installé est antérieur à la version validée par AionUi ; certaines fonctionnalités peuvent manquer. Envisagez de mettre à jour {{cli}}. (installé : {{reported}} / vérifié par AionUi : {{verified}})"
+        "body": "Le {{cli}} installé est antérieur à la version validée par mu ; certaines fonctionnalités peuvent manquer. Envisagez de mettre à jour {{cli}}. (installé : {{reported}} / vérifié par mu : {{verified}})"
       },
       "CLI_VERSION_NEWER": {
-        "body": "Le {{cli}} installé est postérieur à la version validée par AionUi. Cela devrait fonctionner ; signalez tout comportement anormal. (installé : {{reported}} / vérifié par AionUi : {{verified}})"
+        "body": "Le {{cli}} installé est postérieur à la version validée par mu. Cela devrait fonctionner ; signalez tout comportement anormal. (installé : {{reported}} / vérifié par mu : {{verified}})"
       },
       "CODEX_RETRYING": {
-        "body": "{{detail}} (tentative {{attempts}}, {{elapsed}} écoulées — le fournisseur de l'agent coupe la connexion à répétition ; AionUi patiente.)"
+        "body": "{{detail}} (tentative {{attempts}}, {{elapsed}} écoulées — le fournisseur de l'agent coupe la connexion à répétition ; mu patiente.)"
       }
     }
   },
@@ -726,7 +734,7 @@
         "conflicted": "!",
         "unknown": "?"
       },
-      "conflictedHint": "Résolvez d'abord ce conflit en dehors d'AionUi",
+      "conflictedHint": "Résolvez d'abord ce conflit en dehors de mu",
       "opaqueHint": "Cet état provient d'un backend plus récent — affiché en lecture seule",
       "degraded": "L'actualisation est ralentie car l'index git ne peut pas être écrit",
       "truncated": "Trop de modifications — seule la première partie est affichée",
@@ -745,7 +753,7 @@
         "discard": "Abandonner les modifications",
         "stageAll": "Tout indexer",
         "unstageAll": "Tout désindexer",
-        "blockedHint": "Résolvez le conflit en dehors d'AionUi avant d'indexer ou d'abandonner",
+        "blockedHint": "Résolvez le conflit en dehors de mu avant d'indexer ou d'abandonner",
         "confirmDiscardTitle": "Abandonner les modifications ?",
         "confirmDiscardTracked": "Les modifications de {{count}} fichiers seront perdues. Cette action est irréversible.",
         "confirmDiscardUntracked": "{{count}} nouveaux fichiers seront déplacés vers la corbeille.",

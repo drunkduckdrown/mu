@@ -37,7 +37,9 @@ const FontWeightSelect: React.FC<FontWeightSelectProps> = ({ value, onChange }) 
 
   return (
     <AionSelect
-      className='w-140px'
+      className='w-170px'
+      prefix={<span className='text-t-secondary'>{t('settings.fontWeightLabel')}</span>}
+      aria-label={t('settings.fontWeightLabel')}
       value={value}
       onChange={(next) => onChange(typeof next === 'string' ? next : SYSTEM_FONT_WEIGHT)}
       options={options}

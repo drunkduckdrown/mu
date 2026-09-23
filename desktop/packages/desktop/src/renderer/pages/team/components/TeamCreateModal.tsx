@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { ipcBridge } from '@/common';
 import type { TTeam } from '@/common/types/team/teamTypes';
 import type { TeamAssistantInput } from '@/common/adapter/teamMapper';
-import { useAuth } from '@renderer/hooks/context/AuthContext';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import AionModal from '@renderer/components/base/AionModal';
 import { WorkspaceFolderSelect } from '@renderer/components/workspace';
@@ -15,6 +14,7 @@ import {
   getConversationCreateErrorMessage,
 } from '@renderer/pages/conversation/utils/conversationCreateError';
 import { useTeamAssistantOptions } from '../hooks/useTeamAssistantOptions';
+import { DESKTOP_USER_ID } from '../teamUser';
 import type { TeamAssistantOption } from './assistantSelectUtils';
 import { resolveDefaultTeamAgentModel } from './teamCreateModelResolver';
 import TeamAssistantPicker from './memberPicker/TeamAssistantPicker';
@@ -40,7 +40,6 @@ type Props = {
 
 const TeamCreateModal: React.FC<Props> = ({ visible, onClose, onCreated }) => {
   const { t, i18n } = useTranslation();
-  const { user } = useAuth();
   const layout = useLayoutContext();
   const isMobile = layout?.isMobile ?? false;
   const { assistants: allAssistants } = useTeamAssistantOptions(i18n?.language ?? 'en-US');
@@ -100,7 +99,7 @@ const TeamCreateModal: React.FC<Props> = ({ visible, onClose, onCreated }) => {
       Message.warning(t('team.create.selectOneLeader', { defaultValue: 'Select one Team Leader' }));
       return;
     }
-    const user_id = user?.id ?? 'system_default_user';
+    const user_id = DESKTOP_USER_ID;
     setLoading(true);
     try {
       const resolvedModels = await Promise.all(
@@ -165,7 +164,7 @@ const TeamCreateModal: React.FC<Props> = ({ visible, onClose, onCreated }) => {
   const assistantPicker = (
     <>
       {allAssistants.length === 0 ? (
-        <div className='flex min-h-112px items-center justify-center rounded-8px border border-dashed border-border-2 bg-fill-1 py-14px text-13px text-t-tertiary'>
+        <div className='flex min-h-112px items-center justify-center rounded-8px bg-fill-1 py-14px text-13px text-t-tertiary'>
           {t('team.create.noSupportedAgents', { defaultValue: 'No supported assistants available' })}
         </div>
       ) : (
@@ -224,7 +223,7 @@ const TeamCreateModal: React.FC<Props> = ({ visible, onClose, onCreated }) => {
       style={{ height: 'min(54vh, 470px)', minHeight: 390 }}
     >
       <section
-        className='flex min-h-0 flex-col border-e border-border-3 px-20px pb-18px pt-12px'
+        className='flex min-h-0 flex-col border-e border-border-2 px-20px pb-18px pt-12px'
         data-testid='team-create-assistant-pane'
       >
         <div className='mb-12px text-15px font-600 leading-22px text-t-secondary'>

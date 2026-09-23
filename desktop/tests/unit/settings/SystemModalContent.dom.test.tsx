@@ -41,10 +41,6 @@ vi.mock('@/renderer/components/base/AionScrollArea', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
-vi.mock('@/renderer/components/base/FeedbackButton', () => ({
-  default: () => <button type='button'>settings.oneClickFeedback</button>,
-}));
-
 vi.mock('@/renderer/components/settings/LanguageSwitcher', () => ({
   default: () => <div>LanguageSwitcher</div>,
 }));
@@ -108,6 +104,7 @@ vi.mock('@arco-design/web-react', async (importOriginal) => {
 });
 
 import SystemModalContent from '@/renderer/components/settings/SettingsModal/contents/SystemModalContent';
+import ConversationPreferences from '@/renderer/components/settings/SettingsModal/contents/SystemModalContent/ConversationPreferences';
 
 const defaultSystemInfo = {
   cacheDir: '/cache',
@@ -117,14 +114,15 @@ const defaultSystemInfo = {
   arch: 'arm64',
 };
 
-const renderContent = () =>
+const renderContent = (content: React.ReactElement = <SystemModalContent />) =>
   render(
     <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
-      <ConfigProvider>
-        <SystemModalContent />
-      </ConfigProvider>
+      <ConfigProvider>{content}</ConfigProvider>
     </SWRConfig>
   );
+
+/** What a conversation may wait for and keep: the conversations page, split off the system page. */
+const renderConversations = () => renderContent(<ConversationPreferences />);
 
 describe('SystemModalContent directory settings', () => {
   beforeEach(() => {
@@ -262,6 +260,18 @@ describe('SystemModalContent directory settings', () => {
     expect(await screen.findByText('settings.changeLogDir')).toBeInTheDocument();
   });
 
+  it('holds the machine only: the language and what a conversation may wait for are pages of their own', async () => {
+    renderContent();
+
+    await screen.findByText('/work');
+    expect(screen.getByText('settings.closeToTray')).toBeInTheDocument();
+    expect(screen.getByText('settings.notification')).toBeInTheDocument();
+    expect(screen.queryByText('LanguageSwitcher')).not.toBeInTheDocument();
+    expect(screen.queryByText('settings.promptTimeout')).not.toBeInTheDocument();
+    expect(screen.queryByText('settings.crossSessionMessage')).not.toBeInTheDocument();
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+  });
+
   it('loads ACP timeouts from backend client settings', async () => {
     clientBusinessSettingsMocks.getClientBusinessSetting.mockImplementation(async (key: string) => {
       if (key === 'acp.promptTimeout') return 640;
@@ -269,7 +279,7 @@ describe('SystemModalContent directory settings', () => {
       return undefined;
     });
 
-    renderContent();
+    renderConversations();
 
     expect(await screen.findByDisplayValue('640')).toBeInTheDocument();
     expect(await screen.findByDisplayValue('9')).toBeInTheDocument();
@@ -282,7 +292,7 @@ describe('SystemModalContent directory settings', () => {
       return undefined;
     });
 
-    renderContent();
+    renderConversations();
 
     expect(await screen.findByDisplayValue('300')).toBeInTheDocument();
     expect(await screen.findByDisplayValue('5')).toBeInTheDocument();
@@ -292,7 +302,7 @@ describe('SystemModalContent directory settings', () => {
 
   it('persists ACP timeout changes through backend client settings', async () => {
     const user = userEvent.setup();
-    renderContent();
+    renderConversations();
 
     const timeoutInputs = await screen.findAllByRole('spinbutton');
     const promptTimeoutInput = timeoutInputs[0];

@@ -69,20 +69,19 @@
   },
   "execution": {
     "title": "Активность инструментов",
-    "calls": "{{count}} вызовов",
-    "calls_one": "{{count}} вызов",
-    "calls_few": "{{count}} вызова",
-    "calls_many": "{{count}} вызовов",
-    "commands": "{{count}} команд",
-    "commands_one": "{{count}} команда",
-    "commands_few": "{{count}} команды",
-    "commands_many": "{{count}} команд",
     "input": "Ввод",
     "output": "Вывод",
     "loading": "Загрузка полного вывода…",
     "loadError": "Не удалось загрузить полный вывод.",
     "retry": "Повторить",
-    "callAria": "{{name}} · {{status}}"
+    "callAria": "{{name}} · {{status}}",
+    "showMore": "Показать больше",
+    "showLess": "Показать меньше"
+  },
+  "activity": {
+    "running": "{{steps}} шагов · выполняется {{label}}",
+    "summary": "{{steps}} шагов",
+    "summaryFailed": "{{steps}} шагов · {{failed}} с ошибкой"
   },
   "kind": {
     "edit": "Правка файла",

@@ -50,14 +50,6 @@ vi.mock('@/common', () => ({
   },
 }));
 
-vi.mock('@/renderer/hooks/chat/useInputFocusRing', () => ({
-  useInputFocusRing: () => ({
-    activeBorderColor: 'var(--color-primary-6)',
-    inactiveBorderColor: 'var(--color-border-2)',
-    activeShadow: 'none',
-  }),
-}));
-
 vi.mock('@/renderer/hooks/context/ConversationContext', () => ({
   useConversationContextSafe: () => ({
     conversation_id: CONVERSATION_ID,

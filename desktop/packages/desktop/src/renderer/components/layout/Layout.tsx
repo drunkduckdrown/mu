@@ -6,43 +6,33 @@
 
 import { ipcBridge } from '@/common';
 import { TEAM_MODE_ENABLED } from '@/common/config/constants';
-import PwaPullToRefresh from '@/renderer/components/layout/PwaPullToRefresh';
 import Titlebar from '@/renderer/components/layout/Titlebar';
-import JudgePulse from '@renderer/components/brand/JudgePulse';
 import MuMark from '@renderer/components/brand/MuMark';
-import { Layout as ArcoLayout, Drawer, Tooltip } from '@arco-design/web-react';
+import { Layout as ArcoLayout, Message, Tooltip } from '@arco-design/web-react';
 import classNames from 'classnames';
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { setGlobalNavigate } from '@/renderer/utils/navigation';
 import { usePreviewContext } from '@renderer/pages/conversation/Preview';
-import { ProjectPanelHost } from '@renderer/components/layout/ProjectPanelHost';
-import { ProjectPanelMobileOverlay } from '@renderer/components/layout/ProjectPanelMobileOverlay';
-import { setCurrentProject, useCurrentProject } from '@renderer/pages/conversation/explorer/currentProjectStore';
+import WorkPanelHost from '@renderer/components/layout/WorkPanel';
+import { useWorkPanelMemory } from '@renderer/components/layout/WorkPanel/workPanelStore';
+import { setCurrentProject } from '@renderer/pages/conversation/explorer/currentProjectStore';
 import {
   setCurrentConversation,
   useCurrentConversation,
 } from '@renderer/pages/conversation/explorer/currentConversationStore';
-import KyrnPanel, { onHiveFocus, type HiveFocusRequest } from '@renderer/pages/conversation/KyrnPanel';
 import { useContainerWidth } from '@renderer/pages/conversation/hooks/useContainerWidth';
-import { useProjectExplorerColumnWidth } from '@renderer/hooks/ui/useProjectExplorerColumnWidth';
 import { useResizableSplit } from '@renderer/hooks/ui/useResizableSplit';
-import { useProjectPreviewRegionWidth } from '@renderer/hooks/ui/useProjectPreviewRegionWidth';
-import { useProjectPanelCollapse } from '@renderer/hooks/ui/useProjectPanelCollapse';
-import { MIN_PREVIEW_PANEL_PX } from '@renderer/pages/conversation/utils/layoutCalc';
-import { PreviewPanel } from '@renderer/pages/conversation/Preview';
 import { LayoutContext } from '@renderer/hooks/context/LayoutContext';
 import { NavigationHistoryProvider } from '@renderer/hooks/context/NavigationHistoryContext';
 import { useDeepLink } from '@renderer/hooks/system/useDeepLink';
 import { useNotificationClick } from '@renderer/hooks/system/notification/useNotificationClick';
-import { useBrowserNotification } from '@renderer/hooks/system/notification/useBrowserNotification';
 import { useDesktopTurnNotification } from '@renderer/hooks/system/notification/useDesktopTurnNotification';
 import { cleanupSiderTooltips } from '@renderer/utils/ui/siderTooltip';
 import { useConversationShortcuts } from '@renderer/hooks/ui/useConversationShortcuts';
 import { isElectronDesktop } from '@renderer/utils/platform';
-import { IS_DISCONTINUED_BUILD } from '@/renderer/utils/discontinuedBuild';
-import UpdateMigrationDialog from '@/renderer/components/settings/UpdateMigrationDialog';
+import { deferredRuntimeNeeds } from '@renderer/services/runtime/deferredNodeRuntime';
 import '@renderer/styles/layout.css';
 
 const SidebarIcon: React.FC<{ size?: number; strokeWidth?: number }> = ({ size = 18, strokeWidth = 4 }) => (
@@ -97,7 +87,11 @@ const useDebug = () => {
 const UpdateModal = React.lazy(() => import('@/renderer/components/settings/UpdateModal'));
 
 const DEFAULT_SIDER_WIDTH = 260;
-const DESKTOP_COLLAPSED_WIDTH = 0;
+/**
+ * Collapsed on a desktop, the sidebar is a rail of its icons: the mark, a new conversation, search, the scheduled
+ * tasks, the settings and the theme, each with its tooltip. On a phone it slides away entirely.
+ */
+const DESKTOP_COLLAPSED_WIDTH = 56;
 // 桌面侧栏连续可调：下限 200；低于此值拖拽即吸附收起（消灭旧 130 死区）。
 // 上限 = 窗口宽 50%（动态随窗口）。
 const SIDER_MIN_WIDTH = 200;
@@ -132,7 +126,6 @@ const Layout: React.FC<{
   const { onClick } = useDebug();
   useDeepLink();
   useNotificationClick();
-  useBrowserNotification();
   useDesktopTurnNotification();
   const navigate = useNavigate();
   const location = useLocation();
@@ -142,14 +135,14 @@ const Layout: React.FC<{
     setCollapsed((previous) => !previous);
   }, []);
   useConversationShortcuts({ navigate, toggleSider });
-  // Expose navigate to code running outside the Router tree (e.g. the globally
-  // mounted FeedbackReportModal's "via chat" action).
+  // Expose navigate to code running outside the Router tree (e.g. dialogs
+  // mounted above the Router in the provider tree).
   useEffect(() => {
     setGlobalNavigate(navigate);
     return () => setGlobalNavigate(null);
   }, [navigate]);
   const { t } = useTranslation();
-  // The "AionUi" wordmark acts as Home / Back-to-Chat, but only from settings routes.
+  // The mu wordmark acts as Home / Back-to-Chat, but only from settings routes.
   // In non-settings routes the user is already "home", so it is a no-op (and not actionable).
   const isSettingsRoute = location.pathname.startsWith('/settings');
   // Only wired to the wordmark in the isSettingsRoute branch below, so the
@@ -176,61 +169,18 @@ const Layout: React.FC<{
   // Use closePreview directly — closePreviewIfScopeChanged skips the call
   // when lastScopeRef is already null (e.g. on team routes where it was
   // never updated), which would leave the panel open.
-  const {
-    closePreview: closePreviewOnRouteChange,
-    isOpen: isPreviewOpen,
-    isMaximized: isPreviewMaximized,
-  } = usePreviewContext();
-  // Layout-level explorer column width engine (stage3 FULL / P2): measure the
-  // [content | explorer] row, clamp the explorer width so chat (+ preview) keep
-  // their reserve. Active only when a project is bound and on desktop.
-  const currentProject = useCurrentProject();
+  const { closePreview: closePreviewOnRouteChange, isMaximized: isPreviewMaximized } = usePreviewContext();
+  // The work panel (preview, files, source control, kernel tabs) sits in the
+  // measured [content | panel] row; the row's width bounds the panel so the
+  // transcript keeps its room.
   const currentConversation = useCurrentConversation();
-  const [hiveFocusRequest, setHiveFocusRequest] = useState<HiveFocusRequest>();
+  const workPanel = useWorkPanelMemory(currentConversation);
   const { containerRef: mainRowRef, containerWidth: mainRowWidth } = useContainerWidth();
-  const explorerActive = Boolean(currentProject) && !isMobile;
-  const { widthPx: explorerWidthPx, createDragHandle: createExplorerDragHandle } = useProjectExplorerColumnWidth(
-    mainRowWidth,
-    isPreviewOpen,
-    explorerActive
-  );
-  // P3: host-level collapse (project-scoped on desktop; overlay on mobile). The
-  // explorer stays mounted (width 0) on collapse, so it is not remounted.
-  const { collapsed: explorerCollapsed, setCollapsed: setExplorerCollapsed } = useProjectPanelCollapse({
-    projectId: currentProject,
-    isMobile,
-    active: Boolean(currentProject),
-  });
-  const scopedHiveFocus = hiveFocusRequest?.conversationId === currentConversation ? hiveFocusRequest : undefined;
-  const collapseExplorer = useCallback(() => {
-    setExplorerCollapsed(true);
-  }, [setExplorerCollapsed]);
-
-  useEffect(() => {
-    setHiveFocusRequest(undefined);
-  }, [currentConversation]);
-  useEffect(() => {
-    return onHiveFocus((request) => {
-      if (request.conversationId !== currentConversation) return;
-      setHiveFocusRequest(request);
-      setExplorerCollapsed(false);
-    });
-  }, [currentConversation, setExplorerCollapsed]);
-  // Mobile overlay width: most of the viewport, capped.
-  const explorerMobileWidthPx = Math.min(420, Math.max(280, Math.round(viewportWidth * 0.85)));
-  // P4 (②B): hoist the preview region to the Layout host for project
-  // conversations so it is structurally persistent (no remount on same-project
-  // switches). ChatLayout renders chat only in that case (previewHosted).
-  const previewRegionActive = Boolean(currentProject) && !isMobile && isPreviewOpen;
-  // 最大化：隐藏聊天区、让预览铺满它腾出的空间；左侧边栏与右侧资源管理器列均不动。
-  // Maximized: hide the chat area and let the preview fill the space it vacated;
-  // the left sidebar and the right explorer column are both left untouched.
-  const previewMaximized = previewRegionActive && isPreviewMaximized;
-  const { widthPx: previewWidthPx, createDragHandle: createPreviewRegionDragHandle } = useProjectPreviewRegionWidth(
-    mainRowWidth,
-    explorerCollapsed ? 0 : explorerWidthPx,
-    previewRegionActive
-  );
+  // 最大化：隐藏聊天区、让工作面板的预览铺满它腾出的空间；左侧边栏不动。
+  // Maximized: hide the chat area and let the work panel's preview fill the
+  // space it vacated; the left sidebar is left untouched.
+  const previewMaximized =
+    !isMobile && Boolean(currentConversation) && workPanel.open && workPanel.tab === 'preview' && isPreviewMaximized;
   const routeLayoutMountedRef = useRef(false);
   useEffect(() => {
     if (!routeLayoutMountedRef.current) {
@@ -297,6 +247,16 @@ const Layout: React.FC<{
   useEffect(() => {
     cleanupSiderTooltips();
   }, [isMobile, collapsed, location.pathname, location.search, location.hash]);
+
+  // The Node.js download was put off at this start and something needed it: a conversation says so above its
+  // composer (NodeRuntimeNote), the first place anywhere else (an MCP server, a custom agent) in one toast.
+  useEffect(
+    () =>
+      ipcBridge.runtime.deferredFailure.on((event) => {
+        if (deferredRuntimeNeeds.record(event.scope)) Message.info(t('common.nodeRuntime.toolNote'));
+      }),
+    [t]
+  );
 
   // Bridge Main Process logs to F12 Console
   useEffect(() => {
@@ -400,7 +360,7 @@ const Layout: React.FC<{
 
           <ArcoLayout className={'size-full layout flex-1 min-h-0'}>
             <ArcoLayout.Sider
-              collapsedWidth={isMobile ? 0 : 0}
+              collapsedWidth={isMobile ? 0 : DESKTOP_COLLAPSED_WIDTH}
               collapsed={collapsed}
               width={siderWidth}
               className={classNames('!bg-2 layout-sider', {
@@ -410,7 +370,9 @@ const Layout: React.FC<{
             >
               <ArcoLayout.Header
                 className={classNames(
-                  'flex items-center justify-start pt-8px pb-8px ps-18px pe-16px gap-12px layout-sider-header',
+                  'flex items-center pt-8px pb-8px gap-12px layout-sider-header',
+                  // The rail centres the mark over its icons.
+                  collapsed && !isMobile ? 'justify-center px-0' : 'justify-start ps-18px pe-16px',
                   isMobile && 'layout-sider-header--mobile',
                   {
                     'cursor-pointer group ': collapsed,
@@ -442,8 +404,6 @@ const Layout: React.FC<{
                 ) : (
                   <div className='text-16px text-t-primary collapsed-hidden font-semibold'>mu</div>
                 )}
-                {/* Static for now: whoever owns judge activity passes the state (see JudgePulse). */}
-                <JudgePulse state='idle' className='collapsed-hidden -ms-4px' />
                 {isMobile && !collapsed && (
                   <button
                     type='button'
@@ -476,12 +436,12 @@ const Layout: React.FC<{
                 })}
             </ArcoLayout.Sider>
 
-            {/* Content + project Explorer share one measured flex row (stage3
-                FULL / P2). `mainRowRef` gives the [content|explorer] width for the
-                explorer clamp (independent of the split → non-circular). The
-                explorer column is a sibling of the route content, above the
-                per-conversation subtree → persists across same-project switches. */}
-            <div ref={mainRowRef} className='flex flex-1 min-h-0 overflow-hidden'>
+            {/* The route content and the work panel share one measured flex row.
+                `mainRowRef` gives the [content | panel] width that bounds the panel
+                (independent of the panel's own width, so the clamp is non-circular).
+                The panel is a sibling of the route content, above the
+                per-conversation subtree, so it persists across conversation switches. */}
+            <div ref={mainRowRef} className='relative flex flex-1 min-h-0 overflow-hidden'>
               <ArcoLayout.Content
                 className={'bg-1 layout-content flex flex-col min-h-0 flex-1'}
                 onClick={() => {
@@ -500,94 +460,12 @@ const Layout: React.FC<{
                 }
               >
                 <Outlet />
-                <PwaPullToRefresh />
                 <Suspense fallback={null}>
                   <UpdateModal />
                 </Suspense>
-                {IS_DISCONTINUED_BUILD && <UpdateMigrationDialog />}
               </ArcoLayout.Content>
-              {/* Hoisted preview region (project conversations only). Structurally
-                  persistent: lives above the per-conversation subtree, so a
-                  same-project conversation switch does not remount it. */}
-              {previewRegionActive && (
-                <div
-                  data-project-preview-region
-                  className='preview-panel flex flex-col relative overflow-visible'
-                  style={{
-                    // 最大化时铺满聊天区腾出的空间（explorer 列仍占其固定宽度）；
-                    // 否则用拖拽得到的固定宽度。还原后自动回到该宽度。
-                    // Maximized: fill the space the chat vacated (the explorer column
-                    // keeps its own fixed width); otherwise the dragged fixed width,
-                    // which restoring returns to automatically.
-                    ...(previewMaximized
-                      ? { flexGrow: 1, flexShrink: 1, flexBasis: 0 }
-                      : { width: `${Math.round(previewWidthPx)}px`, flexGrow: 0, flexShrink: 0 }),
-                    // 只保留左边框作为与会话区的分界；上/右/下不留边距，
-                    // 否则窗口底色会从缝隙里透出来（深色模式下尤其突兀）。
-                    // Left border only, as the divider from the chat area. No outer
-                    // margins: any gap would expose the window's own background,
-                    // which is jarring in dark mode.
-                    borderLeft: '1px solid var(--bg-3)',
-                    minWidth: `${MIN_PREVIEW_PANEL_PX}px`,
-                    boxSizing: 'border-box',
-                  }}
-                >
-                  {/* 最大化时聊天区已隐藏，拖拽把手无处可拖，隐藏之。
-                      While maximized the chat is hidden, so the resize handle has
-                      nothing to drag against — hide it. */}
-                  {!previewMaximized &&
-                    createPreviewRegionDragHandle({
-                      className: 'absolute top-0 bottom-0 z-30',
-                      style: { width: '20px', left: '-20px' },
-                      reverse: true,
-                      linePlacement: 'end',
-                      lineClassName: 'opacity-30 group-hover:opacity-100 group-active:opacity-100',
-                      lineStyle: { width: '2px' },
-                    })}
-                  <div className='h-full w-full overflow-hidden'>
-                    <PreviewPanel />
-                  </div>
-                </div>
-              )}
-              {explorerActive && (
-                <ProjectPanelHost
-                  widthPx={explorerWidthPx}
-                  collapsed={explorerCollapsed}
-                  focus={scopedHiveFocus}
-                  dragHandle={createExplorerDragHandle({
-                    className: 'absolute start-0 top-0 bottom-0 z-20',
-                    reverse: true,
-                  })}
-                />
-              )}
+              {workspaceAvailable && <WorkPanelHost rowWidth={mainRowWidth} isMobile={isMobile} />}
             </div>
-
-            {/* Mobile overlay: backdrop + fixed panel + floating collapse handle. */}
-            {isMobile && Boolean(currentProject) && (
-              <ProjectPanelMobileOverlay
-                projectId={currentProject}
-                collapsed={explorerCollapsed}
-                onCollapse={collapseExplorer}
-                widthPx={explorerMobileWidthPx}
-                focus={scopedHiveFocus}
-              />
-            )}
-            {/* Non-project chats keep their existing workspace controls; Hive opens on demand. */}
-            {!currentProject && scopedHiveFocus && (
-              <Drawer
-                title={t('common.kyrn.activity')}
-                visible={!explorerCollapsed}
-                width={isMobile ? explorerMobileWidthPx : Math.min(460, viewportWidth)}
-                footer={null}
-                onCancel={collapseExplorer}
-              >
-                <KyrnPanel
-                  key={scopedHiveFocus.conversationId}
-                  conversationId={scopedHiveFocus.conversationId}
-                  focus={scopedHiveFocus}
-                />
-              </Drawer>
-            )}
           </ArcoLayout>
         </div>
       </NavigationHistoryProvider>

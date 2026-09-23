@@ -4,15 +4,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Divider, Typography, Button, Switch, Message } from '@arco-design/web-react';
-import { Github, Right } from '@icon-park/react';
+import { Button, Switch, Message } from '@arco-design/web-react';
+import { FolderOpen, Github, Right } from '@icon-park/react';
 import React, { useEffect, useState } from 'react';
 import MuMark from '@renderer/components/brand/MuMark';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
 import { useSettingsViewMode } from '../settingsViewContext';
 import { isElectronDesktop, openExternalUrl } from '@/renderer/utils/platform';
-import FeedbackReportModal from './FeedbackReportModal';
 import { ipcBridge } from '@/common';
 import {
   describeUpdateError,
@@ -20,8 +19,6 @@ import {
   runUpdateCheck,
 } from '@/renderer/components/settings/checkForUpdatesShared';
 import { UPDATE_AVAILABLE_EVENT } from '@/renderer/components/settings/useUpdateNotificationController';
-import { IS_DISCONTINUED_BUILD } from '@/renderer/utils/discontinuedBuild';
-import { OPEN_MIGRATION_DIALOG_EVENT } from '@/renderer/components/settings/UpdateMigrationDialog';
 import {
   getUpdateReadyState,
   setUpdateReadyState,
@@ -29,15 +26,16 @@ import {
   type UpdateReadyState,
 } from '@/renderer/components/settings/updateReadyState';
 
-// __APP_VERSION__ is injected by electron.vite.config.ts `define:` from the
-// repo-root package.json. The previous `import packageJson from
-// '../../../../../../package.json'` resolved to packages/desktop/package.json
-// which is a workspace placeholder permanently pinned at "0.0.0".
+// Both are injected by electron.vite.config.ts `define:`. __MU_VERSION__ is mu's own version
+// (packages/desktop/package.json), the one shown here; __APP_VERSION__ is the fork's (the repo-root
+// package.json), the update check's fallback when the main process cannot say.
 declare const __APP_VERSION__: string;
+declare const __MU_VERSION__: string;
 
-type LinkItem =
-  | { title: string; url: string; icon: React.ReactNode; onClick?: never }
-  | { title: string; onClick: () => void; icon: React.ReactNode; url?: never };
+const MU_REPO_URL = 'https://github.com/qybaihe/mu';
+const MU_RELEASES_URL = 'https://github.com/qybaihe/mu/releases';
+
+type LinkItem = { title: string; icon: React.ReactNode; open: () => void };
 
 const AboutModalContent: React.FC = () => {
   const { t } = useTranslation();
@@ -46,7 +44,6 @@ const AboutModalContent: React.FC = () => {
   const isElectron = isElectronDesktop();
 
   const [includePrerelease, setIncludePrerelease] = useState(false);
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [updateReadyState, setLocalUpdateReadyState] = useState<UpdateReadyState>(() => getUpdateReadyState());
   const [checking, setChecking] = useState(false);
 
@@ -71,13 +68,6 @@ const AboutModalContent: React.FC = () => {
   };
 
   const checkUpdate = async () => {
-    // Discontinued build: guide to the AionPro website instead of any in-app
-    // version detection. Dead-branched out of normal builds by the flag.
-    if (IS_DISCONTINUED_BUILD) {
-      window.dispatchEvent(new CustomEvent(OPEN_MIGRATION_DIALOG_EVENT));
-      return;
-    }
-
     if (updateReadyState.ready) {
       if (updateReadyState.preparing) return;
       if (updateReadyState.filePath) {
@@ -113,127 +103,114 @@ const AboutModalContent: React.FC = () => {
     }
   };
 
+  // Only the desktop app has a log folder to open.
+  const openLogFolder = window.electronAPI?.openLogFolder;
   const linkItems: LinkItem[] = [
     {
-      title: t('settings.helpDocumentation'),
-      url: 'https://github.com/iOfficeAI/AionUi/wiki',
-      icon: <Right theme='outline' size='16' className='rtl-mirror' />,
+      title: t('common.github'),
+      icon: <Github theme='outline' size='16' />,
+      open: () => void openLink(MU_REPO_URL).catch((error) => console.error('Failed to open link:', error)),
     },
     {
       title: t('settings.updateLog'),
-      url: 'https://github.com/iOfficeAI/AionUi/releases',
       icon: <Right theme='outline' size='16' className='rtl-mirror' />,
+      open: () => void openLink(MU_RELEASES_URL).catch((error) => console.error('Failed to open link:', error)),
     },
-    {
-      title: t('settings.bugReport'),
-      onClick: () => setShowFeedbackModal(true),
-      icon: <Right theme='outline' size='16' className='rtl-mirror' />,
-    },
-    {
-      title: t('settings.contactMe'),
-      url: 'https://x.com/WailiVery',
-      icon: <Right theme='outline' size='16' className='rtl-mirror' />,
-    },
-    {
-      title: t('settings.officialWebsite'),
-      url: 'https://www.aionui.com',
-      icon: <Right theme='outline' size='16' className='rtl-mirror' />,
-    },
+    ...(openLogFolder
+      ? [
+          {
+            title: t('common.backendStartup.openLogs'),
+            icon: <FolderOpen theme='outline' size='16' />,
+            open: () => {
+              void openLogFolder().catch(() => {
+                Message.error(t('common.backendStartup.openLogsFailed'));
+              });
+            },
+          },
+        ]
+      : []),
   ];
 
-  return (
-    <div className='flex flex-col h-full w-full'>
-      {/* Content Area */}
-      <div
-        className={classNames(
-          'flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-24px',
-          isPageMode && 'px-0 overflow-visible'
-        )}
-      >
-        <div className='flex flex-col max-w-500px mx-auto'>
-          {/* App Info Section */}
-          <div className='flex flex-col items-center pb-24px'>
-            <MuMark size={64} halo className='mt-8px mb-16px' />
-            <Typography.Title heading={3} className='text-24px font-bold text-t-primary mb-8px'>
-              mu
-            </Typography.Title>
-            <Typography.Text className='text-14px text-t-secondary mb-12px text-center'>
-              {t('common.kyrn.brand.tagline')}
-            </Typography.Text>
-            <div className='flex items-center justify-center gap-8px mb-16px'>
-              <span className='px-10px py-4px rd-6px text-13px bg-fill-2 text-t-primary font-500'>
-                v{__APP_VERSION__}
-              </span>
-              <div
-                className='text-t-primary cursor-pointer hover:text-t-secondary transition-colors p-4px'
-                role='link'
-                aria-label={t('common.github')}
-                title={t('common.github')}
-                onClick={() =>
-                  openLink('https://github.com/iOfficeAI/AionUi').catch((error) =>
-                    console.error('Failed to open link:', error)
-                  )
-                }
-              >
-                <Github theme='outline' size='20' />
-              </div>
-            </div>
+  const version = `v${__MU_VERSION__}`;
+  const rowClass = 'flex min-h-48px items-center justify-between gap-24px py-10px';
+  const rowTitleClass = 'text-14px font-500 text-t-primary';
 
-            {/* Check Update Section */}
-            {isElectron && (
-              <div className='flex flex-col items-center gap-12px w-full max-w-300px bg-fill-2 p-16px rounded-lg'>
-                <Button
-                  type='primary'
-                  long
-                  loading={checking || updateReadyState.preparing}
-                  disabled={updateReadyState.preparing}
-                  onClick={() => void checkUpdate()}
-                >
-                  {updateReadyState.preparing
-                    ? t('update.preparingInstall')
-                    : updateReadyState.ready
-                      ? t('settings.updateReadyInstall', { version: updateReadyState.version })
-                      : checking
-                        ? t('settings.checkingForUpdates')
-                        : t('settings.checkForUpdates')}
-                </Button>
-                <div className='flex items-center justify-between w-full'>
-                  <Typography.Text className='text-12px text-t-secondary'>
-                    {t('settings.includePrereleaseUpdates')}
-                  </Typography.Text>
-                  <Switch size='small' checked={includePrerelease} onChange={handlePrereleaseChange} />
-                </div>
-              </div>
+  return (
+    <div
+      className={classNames('flex w-full flex-col gap-16px', !isPageMode && 'px-24px pb-16px')}
+      data-testid='about-content'
+    >
+      {/* Which mu this is: the mark and the name, set on the left like every settings page. In the app the version
+          heads the update row, beside the button that checks it; elsewhere it sits by the name. */}
+      <div className='flex items-center gap-16px'>
+        <MuMark size={48} halo />
+        <div className='flex min-w-0 flex-col gap-4px'>
+          <div className='flex items-center gap-8px'>
+            <span className='text-18px font-600 leading-24px text-t-primary'>mu</span>
+            {isElectron ? null : (
+              <span
+                className='rd-6px bg-fill-2 px-8px py-2px text-12px font-500 text-t-secondary'
+                data-testid='about-version'
+              >
+                {version}
+              </span>
             )}
           </div>
-
-          {/* Divider */}
-          <Divider className='my-16px' />
-
-          {/* Links Section */}
-          <div className='flex flex-col gap-4px pt-8px'>
-            {linkItems.map((item, index) => (
-              <div
-                key={index}
-                className='flex items-center justify-between px-16px py-12px rd-8px hover:bg-fill-2 transition-all cursor-pointer group'
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if ('url' in item) {
-                    openLink(item.url).catch((error) => console.error('Failed to open link:', error));
-                  } else {
-                    item.onClick();
-                  }
-                }}
-              >
-                <Typography.Text className='text-14px text-t-primary'>{item.title}</Typography.Text>
-                <div className='text-t-secondary group-hover:text-t-primary transition-colors'>{item.icon}</div>
-              </div>
-            ))}
-          </div>
+          <span className='text-13px text-t-secondary'>{t('common.kyrn.brand.tagline')}</span>
         </div>
       </div>
-      <FeedbackReportModal visible={showFeedbackModal} onCancel={() => setShowFeedbackModal(false)} />
+
+      <div className='flex flex-col divide-y divide-b-base rd-8px border border-solid border-[var(--border-base)] bg-base px-16px'>
+        {isElectron ? (
+          <>
+            <div className={rowClass}>
+              <span className={rowTitleClass} data-testid='about-version'>
+                {t('update.currentVersion', { version })}
+              </span>
+              <Button
+                type={updateReadyState.ready ? 'primary' : 'secondary'}
+                size='small'
+                loading={checking || updateReadyState.preparing}
+                disabled={updateReadyState.preparing}
+                onClick={() => void checkUpdate()}
+              >
+                {updateReadyState.preparing
+                  ? t('update.preparingInstall')
+                  : updateReadyState.ready
+                    ? t('settings.updateReadyInstall', { version: updateReadyState.version })
+                    : checking
+                      ? t('settings.checkingForUpdates')
+                      : t('settings.checkForUpdates')}
+              </Button>
+            </div>
+            <div className={rowClass}>
+              <span className={rowTitleClass}>{t('settings.includePrereleaseUpdates')}</span>
+              <Switch size='small' checked={includePrerelease} onChange={handlePrereleaseChange} />
+            </div>
+          </>
+        ) : null}
+        {linkItems.map((item) => (
+          <div
+            key={item.title}
+            role='button'
+            tabIndex={0}
+            className={classNames(rowClass, 'group cursor-pointer')}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              item.open();
+            }}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter' && e.key !== ' ') return;
+              e.preventDefault();
+              item.open();
+            }}
+          >
+            <span className={rowTitleClass}>{item.title}</span>
+            <span className='flex text-t-secondary transition-colors group-hover:text-t-primary'>{item.icon}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

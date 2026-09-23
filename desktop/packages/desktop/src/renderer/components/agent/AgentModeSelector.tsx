@@ -254,7 +254,7 @@ const AgentModeSelector: React.FC<AgentModeSelectorProps> = ({
                   trailing badge is deliberate — the menu is ~260px and its labels already
                   truncate, so a right-hand "下一轮生效" would overflow. The two markers
                   are mutually exclusive by construction. */}
-              <span aria-hidden='true' className='w-16px shrink-0 text-primary'>
+              <span aria-hidden='true' className='w-16px shrink-0 text-t-primary'>
                 {current_mode === mode.value ? '✓' : pendingMode === mode.value ? '⏱' : ''}
               </span>
               {mode.description ? (

@@ -1283,6 +1283,31 @@
       ]
     },
     {
+      "name": "background",
+      "title": {
+        "zh": "后台命令",
+        "en": "Background commands"
+      },
+      "summary": {
+        "zh": "开发服务器、长时间构建放到后台跑，不占用回合。",
+        "en": "Dev servers and long builds run in the background without holding up the turn."
+      },
+      "defaultEnabled": true,
+      "options": [
+        {
+          "key": "maxJobs",
+          "kind": "number",
+          "default": 8,
+          "min": 1,
+          "max": 32,
+          "label": {
+            "zh": "同时运行的任务上限",
+            "en": "Jobs running at the same time"
+          }
+        }
+      ]
+    },
+    {
       "name": "welcome",
       "title": {
         "zh": "欢迎页",

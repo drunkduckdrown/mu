@@ -26,6 +26,7 @@ import { dispatchWorkspaceHasFilesEvent } from '@/renderer/utils/workspace/works
 
 import { ipcBridge } from '@/common';
 import { isBackendHttpError } from '@/common/adapter/httpBridge';
+import type { TChatConversation } from '@/common/config/storage';
 import { PROJECT_ERROR_DUPLICATE, PROJECT_ERROR_OVERLAP } from '@/common/types/project';
 import { usePreviewContext } from '@/renderer/pages/conversation/Preview';
 import WorkspaceOpenButton from '@/renderer/pages/conversation/components/ChatLayout/WorkspaceOpenButton';
@@ -67,7 +68,16 @@ import { rediscoverRepos, refreshAllRepos } from '../SourceControl/scmStore';
 export type ExplorerContainerProps = {
   /** Owning project id — scopes the store's fact cache + localStorage UI state. */
   projectId: string;
+  /**
+   * Which view to show, when the host picks it (the work panel's 文件 and 源码 tabs share
+   * one explorer). Without it the container shows its own Files/Changes switch.
+   */
+  view?: ExplorerView;
+  /** Asked when the container itself needs the other view (a search hit is revealed in Files). */
+  onViewChange?: (view: ExplorerView) => void;
 };
+
+export type ExplorerView = 'files' | 'changes';
 
 /** A local absolute path → `file://` URI (normalize `\`, ensure leading slash, encode). */
 const pathToFileUri = (p: string): string => {
@@ -173,7 +183,7 @@ export const buildExplorerPreviewPayload = async (
   };
 };
 
-export const ExplorerContainer: React.FC<ExplorerContainerProps> = ({ projectId }) => {
+export const ExplorerContainer: React.FC<ExplorerContainerProps> = ({ projectId, view, onViewChange }) => {
   const { t } = useTranslation();
   const { openPreview } = usePreviewContext();
   const activeConversationId = useCurrentConversation();
@@ -185,10 +195,18 @@ export const ExplorerContainer: React.FC<ExplorerContainerProps> = ({ projectId 
   });
   // Apply-time guard: only feed the store roots whose detail actually belongs to
   // the current project. Combined with the per-project remount (this component is
-  // keyed by `projectId` in ProjectPanelHost), a stale/other-project detail can
+  // keyed by `projectId` in the work panel), a stale/other-project detail can
   // never reach the tree — a mismatch yields no roots rather than another
   // project's (宁空勿画错).
   const detail = data && data.project_id === projectId ? data : undefined;
+  // The open conversation's record as its page cached it (no fetcher here, so no request of its own). It says whether
+  // the workspace is the temporary folder the app made for a conversation without a project.
+  const { data: activeConversation } = useSWR<TChatConversation | null>(
+    activeConversationId ? `conversation/${activeConversationId}` : null
+  );
+  const temporaryWorkspace = Boolean(
+    (activeConversation?.extra as { is_temporary_workspace?: boolean } | undefined)?.is_temporary_workspace
+  );
 
   // Let the workspace-collapse hook (keyed per-project via workspacePreferenceKey)
   // read + restore this project's panel open/closed preference. The hook starts
@@ -252,7 +270,12 @@ export const ExplorerContainer: React.FC<ExplorerContainerProps> = ({ projectId 
   // unmounts the inactive one for `changes`, which is safe because the SCM
   // subscription is owned by its store per project, not by the component's mount
   // (see ScmPanel's lifecycle note) — a tab switch never drops the backend watch.
-  const [activeTab, setActiveTab] = useState<'files' | 'changes'>('files');
+  const [ownTab, setOwnTab] = useState<ExplorerView>('files');
+  const activeTab = view ?? ownTab;
+  const setActiveTab = (next: ExplorerView): void => {
+    if (view === undefined) setOwnTab(next);
+    else if (next !== view) onViewChange?.(next);
+  };
   // Busy flag for the top-bar refresh: spins the icon and disables re-click while a
   // refresh is in flight (so rapid clicks don't fan out redundant backend round-trips).
   const [refreshing, setRefreshing] = useState(false);
@@ -464,7 +487,9 @@ export const ExplorerContainer: React.FC<ExplorerContainerProps> = ({ projectId 
   // another project's tree.
   if (!detail && isLoading) return <Spin loading />;
 
-  const roots = detail ? toRootRefs(detail) : [];
+  const roots = detail
+    ? toRootRefs(detail, temporaryWorkspace ? t('conversation.workspace.temporaryWorkspace') : undefined)
+    : [];
   // Search roots = the project's pe roots (each folder root, rel=''). fs/search
   // spans all bound folders; the front-end ranks the merged hit stream.
   const searchRoots = roots.map((root) => ({ pe_id: root.pe_id, relative_path: '' }));
@@ -509,7 +534,7 @@ export const ExplorerContainer: React.FC<ExplorerContainerProps> = ({ projectId 
     }
   };
 
-  const tabButton = (key: 'files' | 'changes', label: string) => (
+  const tabButton = (key: ExplorerView, label: string) => (
     <Button
       type='text'
       size='small'
@@ -541,8 +566,8 @@ export const ExplorerContainer: React.FC<ExplorerContainerProps> = ({ projectId 
           content, so anything placed to its left cannot be clicked. */}
       <div className='flex items-center gap-4px ps-12px pe-8px py-4px flex-shrink-0 border-b border-[var(--bg-3)]'>
         <div className='flex items-center gap-2px overflow-x-auto flex-1 min-w-0'>
-          {tabButton('files', t('conversation.explorer.tabs.files'))}
-          {tabButton('changes', t('conversation.explorer.tabs.changes'))}
+          {view === undefined && tabButton('files', t('conversation.explorer.tabs.files'))}
+          {view === undefined && tabButton('changes', t('conversation.explorer.tabs.changes'))}
         </div>
         <div className='flex items-center gap-2px flex-shrink-0'>
           {/* Right cluster order (VS Code parity): project-scope actions first (add
@@ -564,7 +589,7 @@ export const ExplorerContainer: React.FC<ExplorerContainerProps> = ({ projectId 
               onClick={handleAddFolder}
             />
           </Tooltip>
-          {workspacePath && <WorkspaceOpenButton workspacePath={workspacePath} isTemporary={false} />}
+          {workspacePath && <WorkspaceOpenButton workspacePath={workspacePath} isTemporary={false} labelled />}
           <Tooltip
             content={
               activeTab === 'changes'

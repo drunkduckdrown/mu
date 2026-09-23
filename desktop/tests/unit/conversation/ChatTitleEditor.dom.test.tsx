@@ -42,9 +42,9 @@ const renderEditor = (overrides: Partial<React.ComponentProps<typeof ChatTitleEd
 };
 
 describe('ChatTitleEditor with an empty conversation title', () => {
-  it('shows the untitled placeholder so the header is not blank', () => {
+  it('shows the name the sidebar and the palette give it, so the header is not blank', () => {
     renderEditor();
-    expect(screen.getByText('conversation.historySearch.untitled')).toBeInTheDocument();
+    expect(screen.getByText('conversation.welcome.newConversation')).toBeInTheDocument();
   });
 
   it('enters edit mode when the title region is clicked', () => {
@@ -64,7 +64,7 @@ describe('ChatTitleEditor with a named conversation', () => {
   it('renders the real title instead of the untitled placeholder', () => {
     renderEditor({ title: '每日 AI 论文简报' });
     expect(screen.getByText('每日 AI 论文简报')).toBeInTheDocument();
-    expect(screen.queryByText('conversation.historySearch.untitled')).not.toBeInTheDocument();
+    expect(screen.queryByText('conversation.welcome.newConversation')).not.toBeInTheDocument();
   });
 
   it('enters edit mode when the title region is clicked', () => {

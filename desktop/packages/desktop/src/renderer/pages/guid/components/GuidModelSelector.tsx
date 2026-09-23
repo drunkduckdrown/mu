@@ -5,25 +5,24 @@
  */
 
 import type { IProvider, TProviderWithModel } from '@/common/config/storage';
+import RuntimeSelectorPill from '@/renderer/components/agent/RuntimeSelectorPill';
+import { modelLevelMenu } from '@/renderer/pages/conversation/platforms/acp/Composer/ModelLevelMenu';
+import { filterModelMenu, modelMenu } from '@/renderer/pages/conversation/platforms/acp/Composer/modelMenu';
 import { iconColors } from '@/renderer/styles/colors';
 import { getModelDisplayLabel } from '@/renderer/utils/model/agentLogo';
 import type { AgentRuntimeDerivedOption } from '@/renderer/utils/model/agentRuntimeCatalog';
+import { providerDisplayName } from '@/renderer/utils/model/providerName';
 import type { AcpModelInfo } from '../types';
 import { getAvailableModels } from '../utils/modelUtils';
 import { Button, Dropdown, Menu, Tooltip } from '@arco-design/web-react';
 import { Brain, Down, Plus } from '@icon-park/react';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   composeRuntimeSelectorLabel,
-  getCurrentThoughtLevelLabel,
-  RUNTIME_SUBMENU_TRIGGER_PROPS,
-  RuntimeSelectorCheckedItem,
   RuntimeSelectorModelList,
   type RuntimeSelectorModelGroup,
-  RuntimeSelectorSubMenuTitle,
-  thoughtLevelOptionLabel,
 } from '@/renderer/components/agent/runtimeSelectorOptions';
 
 type GuidModelSelectorProps = {
@@ -43,6 +42,96 @@ type GuidModelSelectorProps = {
 
 /** Composite id for a provider+model pair, so the shared flat model list can track selection. */
 const providerCompositeId = (providerId: string, modelName: string) => `${providerId}::${modelName}`;
+
+type AcpModelChipProps = {
+  info: AcpModelInfo;
+  selected: string | null;
+  onSelect: (model: string) => void;
+  thoughtLevel: {
+    currentValue?: string | null;
+    options: ReadonlyArray<{ value: string; label?: string | null }>;
+  } | null;
+  onThoughtLevelSelect?: (value: string) => void;
+  label: string;
+};
+
+/**
+ * The model · thinking chip of the home page: the same pill and the same menu as a conversation's, fed by the models
+ * the agent reported last. The model picked here opens to the thinking levels; the pick is kept for the next send.
+ */
+const AcpModelChip: React.FC<AcpModelChipProps> = ({
+  info,
+  selected,
+  onSelect,
+  thoughtLevel,
+  onThoughtLevelSelect,
+  label,
+}) => {
+  const { t } = useTranslation();
+  const [visible, setVisible] = useState(false);
+  const [query, setQuery] = useState('');
+  const current = selected ?? info.current_model_id;
+  const groups = useMemo(
+    () =>
+      filterModelMenu(
+        modelMenu(
+          {
+            currentValue: current,
+            options: info.available_models.map((model) => ({
+              value: model.id,
+              label: model.label,
+              description: model.description,
+            })),
+          },
+          thoughtLevel,
+          {},
+          (id) => providerDisplayName(t, id)
+        ),
+        query
+      ),
+    [current, info.available_models, thoughtLevel, query, t]
+  );
+
+  const pick = (model: string, level?: string) => {
+    setVisible(false);
+    setQuery('');
+    if (model !== current) onSelect(model);
+    if (level) onThoughtLevelSelect?.(level);
+  };
+
+  return (
+    // The composer sits mid-page: the menu opens below the chip, flush right.
+    <Dropdown
+      trigger='click'
+      position='br'
+      popupVisible={visible}
+      onVisibleChange={(open) => {
+        setVisible(open);
+        if (!open) setQuery('');
+      }}
+      droplist={modelLevelMenu(t, {
+        groups,
+        total: info.available_models.length,
+        query,
+        onQuery: setQuery,
+        current,
+        level: thoughtLevel?.currentValue,
+        onPick: pick,
+      })}
+    >
+      <span className='inline-flex min-w-0'>
+        <RuntimeSelectorPill
+          testId='guid-model-selector'
+          className='sendbox-model-btn agent-mode-compact-pill'
+          label={label}
+          leading={<Brain theme='outline' size='14' fill={iconColors.secondary} className='shrink-0' />}
+          trailing={<Down size={12} className='text-t-tertiary shrink-0' />}
+          onClick={() => setVisible((open) => !open)}
+        />
+      </span>
+    </Dropdown>
+  );
+};
 
 const GuidModelSelector: React.FC<GuidModelSelectorProps> = ({
   isGeminiMode,
@@ -136,7 +225,7 @@ const GuidModelSelector: React.FC<GuidModelSelectorProps> = ({
       ? providerCompositeId(current_model.id, current_model.use_model || '')
       : null;
     const addModelItem = (
-      <Menu.Item key='add-model' className='text-12px text-t-secondary' onClick={() => navigate('/settings/model')}>
+      <Menu.Item key='add-model' className='text-12px text-t-secondary' onClick={() => navigate('/settings/providers')}>
         <Plus theme='outline' size='12' />
         {t('settings.addModel')}
       </Menu.Item>
@@ -194,95 +283,17 @@ const GuidModelSelector: React.FC<GuidModelSelectorProps> = ({
     );
   }
 
-  // ACP cached model selector
+  // The agent's remembered models: the conversation's model · thinking menu, by provider, in the same pill.
   if (currentAcpCachedModelInfo && currentAcpCachedModelInfo.available_models?.length > 0) {
-    if (currentAcpCachedModelInfo.available_models.length > 0) {
-      const modelListNode = (
-        <RuntimeSelectorModelList
-          models={currentAcpCachedModelInfo.available_models}
-          currentModelId={selectedAcpModel}
-          onSelect={(modelId) => setSelectedAcpModel(modelId)}
-        />
-      );
-
-      return (
-        <Dropdown
-          trigger='click'
-          droplist={
-            <Menu selectedKeys={selectedAcpModel ? [selectedAcpModel] : []}>
-              {normalizedThoughtLevelOption ? (
-                <>
-                  {/* Two-level layout: model row on top, thought-level row below;
-                      each expands into a left-side submenu. */}
-                  <Menu.SubMenu
-                    key='model'
-                    triggerProps={RUNTIME_SUBMENU_TRIGGER_PROPS}
-                    title={
-                      <RuntimeSelectorSubMenuTitle
-                        label={t('common.model', { defaultValue: 'Model' })}
-                        value={acpButtonLabel}
-                      />
-                    }
-                  >
-                    {modelListNode}
-                  </Menu.SubMenu>
-                  <Menu.SubMenu
-                    key='thought-level'
-                    triggerProps={RUNTIME_SUBMENU_TRIGGER_PROPS}
-                    title={
-                      <RuntimeSelectorSubMenuTitle
-                        label={t('agent.thoughtLevel.label')}
-                        value={getCurrentThoughtLevelLabel(t, normalizedThoughtLevelOption)}
-                      />
-                    }
-                  >
-                    {normalizedThoughtLevelOption.options.map((item) => (
-                      <Menu.Item
-                        key={item.value}
-                        className={item.value === normalizedThoughtLevelOption.currentValue ? '!bg-2' : ''}
-                        onClick={() => onThoughtLevelSelect?.(item.value)}
-                      >
-                        <RuntimeSelectorCheckedItem
-                          selected={item.value === normalizedThoughtLevelOption.currentValue}
-                          description={item.description}
-                        >
-                          {thoughtLevelOptionLabel(t, item)}
-                        </RuntimeSelectorCheckedItem>
-                      </Menu.Item>
-                    ))}
-                  </Menu.SubMenu>
-                </>
-              ) : (
-                modelListNode
-              )}
-            </Menu>
-          }
-        >
-          <Button className={'sendbox-model-btn guid-config-btn'} shape='round' size='small'>
-            <span className='flex items-center gap-6px min-w-0'>
-              <Brain theme='outline' size='14' fill={iconColors.secondary} className='shrink-0' />
-              <span className='guid-model-label'>{combinedAcpButtonLabel}</span>
-              <Down theme='outline' size='12' fill={iconColors.secondary} className='shrink-0' />
-            </span>
-          </Button>
-        </Dropdown>
-      );
-    }
-
     return (
-      <Tooltip content={t('conversation.welcome.modelSwitchNotSupported')} position='top'>
-        <Button
-          className={'sendbox-model-btn guid-config-btn'}
-          shape='round'
-          size='small'
-          style={{ cursor: 'default' }}
-        >
-          <span className='flex items-center gap-6px min-w-0'>
-            <Brain theme='outline' size='14' fill={iconColors.secondary} className='shrink-0' />
-            <span className='guid-model-label'>{acpButtonLabel}</span>
-          </span>
-        </Button>
-      </Tooltip>
+      <AcpModelChip
+        info={currentAcpCachedModelInfo}
+        selected={selectedAcpModel}
+        onSelect={setSelectedAcpModel}
+        thoughtLevel={normalizedThoughtLevelOption}
+        onThoughtLevelSelect={onThoughtLevelSelect}
+        label={combinedAcpButtonLabel}
+      />
     );
   }
 

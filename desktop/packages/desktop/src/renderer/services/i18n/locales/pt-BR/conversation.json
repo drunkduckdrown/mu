@@ -12,12 +12,7 @@
     "clearWorkspace": "Remover projeto",
     "openFolder": "Abrir Pasta",
     "none": "Nenhum",
-    "quickActionsTitle": "O que o AionUi pode fazer?",
-    "quickActionFeedback": "Reportar Problema",
-    "quickActionStar": "Gostou? Nos dê uma estrela!",
-    "skillsMarket": "Mercado de Habilidades AionUi",
-    "skillsMarketDesc": "Pesquise e ative as Habilidades da comunidade sob demanda. Configure uma vez, disponível para todos os agentes.",
-    "skillsMarketDetails": "Ver Mais >>"
+    "quickActionsTitle": "O que o mu pode fazer?"
   },
   "history": {
     "recents": "Recentes",
@@ -147,7 +142,7 @@
       "check_provider_base_url": "Verifique a URL Base do provedor de modelos, o caminho da API, o proxy e a compatibilidade da API.",
       "change_model": "Escolha um modelo disponível para a conta atual e que suporte esta solicitação.",
       "reduce_context": "Reduza o conteúdo da mensagem, os arquivos referenciados ou o tamanho do contexto e tente novamente.",
-      "send_feedback": "Envie feedback com logs para que a equipe possa investigar."
+      "send_feedback": "Tente novamente; se continuar falhando, verifique o log do aplicativo."
     },
     "ownership": {
       "aionui": "Aplicativo",
@@ -158,7 +153,7 @@
     "codes": {
       "AIONUI_STREAM_BROKEN": {
         "title": "O fluxo de resposta foi interrompido",
-        "body": "O aplicativo aceitou sua mensagem, mas o fluxo de resposta terminou inesperadamente. Tente novamente; se acontecer de novo, envie feedback."
+        "body": "O aplicativo aceitou sua mensagem, mas o fluxo de resposta terminou inesperadamente. Tente novamente; se acontecer de novo, verifique o log do aplicativo."
       },
       "AIONUI_STATE_INCONSISTENT": {
         "title": "O estado da conversa está fora de sincronia",
@@ -170,7 +165,7 @@
       },
       "AIONUI_INTERNAL_ERROR": {
         "title": "A solicitação falhou no aplicativo",
-        "body": "A solicitação falhou enquanto o aplicativo a estava processando. Tente novamente uma vez; se se repetir, envie feedback."
+        "body": "A solicitação falhou enquanto o aplicativo a estava processando. Tente novamente uma vez; se se repetir, verifique o log do aplicativo."
       },
       "AIONUI_CONVERSATION_BUSY": {
         "title": "A conversa está ocupada",
@@ -323,8 +318,8 @@
       },
       "WORKSPACE_PATH_CONTAINS_WHITESPACE_RUNTIME_UNSUPPORTED": {
         "title": "Este caminho de projeto não é mais compatível com execução",
-        "body": "Esta conversa ou tarefa existente usa um caminho de projeto cujos nomes de diretório contêm espaços ou outros caracteres de espaço em branco. O AionUi não oferece mais suporte ao envio de mensagens em caminhos desse tipo. Crie uma nova conversa ou tarefa com um caminho de projeto sem espaços em branco.",
-        "bodyWithPath": "O caminho de projeto existente \"{{workspacePath}}\" contém espaços ou outros caracteres de espaço em branco. O AionUi não oferece mais suporte ao envio de mensagens em conversas ou tarefas que usam esse caminho. Crie uma nova conversa ou tarefa com um caminho de projeto sem espaços em branco."
+        "body": "Esta conversa ou tarefa existente usa um caminho de projeto cujos nomes de diretório contêm espaços ou outros caracteres de espaço em branco. O mu não oferece mais suporte ao envio de mensagens em caminhos desse tipo. Crie uma nova conversa ou tarefa com um caminho de projeto sem espaços em branco.",
+        "bodyWithPath": "O caminho de projeto existente \"{{workspacePath}}\" contém espaços ou outros caracteres de espaço em branco. O mu não oferece mais suporte ao envio de mensagens em conversas ou tarefas que usam esse caminho. Crie uma nova conversa ou tarefa com um caminho de projeto sem espaços em branco."
       },
       "UNKNOWN_UPSTREAM_ERROR": {
         "title": "O agente ou provedor upstream falhou",
@@ -332,7 +327,7 @@
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
         "title": "Falha ao ler a resposta do processo auxiliar da equipe",
-        "body": "O AionUi não conseguiu ler a resposta do processo auxiliar local da equipe. Tente novamente uma vez e, se continuar acontecendo, reinicie o aplicativo."
+        "body": "O mu não conseguiu ler a resposta do processo auxiliar local da equipe. Tente novamente uma vez e, se continuar acontecendo, reinicie o aplicativo."
       },
       "MCP_TOOL_REMOTE_ERROR": {
         "title": "O processo auxiliar local da equipe rejeitou a solicitação",
@@ -340,11 +335,11 @@
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
         "title": "O processo auxiliar da equipe retornou uma resposta inesperada",
-        "body": "O AionUi recebeu uma resposta inesperada do processo auxiliar local da equipe. Tente novamente uma vez e informe o problema se ele persistir."
+        "body": "O mu recebeu uma resposta inesperada do processo auxiliar local da equipe. Tente novamente uma vez e informe o problema se ele persistir."
       },
       "MCP_TCP_READ_FAILED": {
         "title": "Falha ao ler do processo auxiliar local da equipe",
-        "body": "O AionUi não conseguiu ler a resposta TCP do processo auxiliar local da equipe. Tente novamente uma vez e reinicie o aplicativo se a falha persistir."
+        "body": "O mu não conseguiu ler a resposta TCP do processo auxiliar local da equipe. Tente novamente uma vez e reinicie o aplicativo se a falha persistir."
       },
       "TEAM_SERVICE_UNAVAILABLE": {
         "title": "O serviço da equipe ainda não está pronto",
@@ -383,6 +378,7 @@
     "addFile": "Adicionar Arquivo",
     "refresh": "Atualizar",
     "temporarySpace": "Espaço Temporário",
+    "temporaryWorkspace": "Espaço de trabalho temporário",
     "dragOverlayTitle": "Solte para importar",
     "dragOverlayDesc": "Arraste arquivos ou pastas para cá para copiá-los para este projeto.",
     "dragOverlayHint": "Dica: solte em qualquer lugar para importar para a pasta selecionada.",
@@ -446,11 +442,12 @@
       "vscode": "VS Code",
       "terminal": "Terminal",
       "explorer": "Explorador de Arquivos",
-      "browser": "Navegador"
+      "browser": "Navegador",
+      "choose": "Escolher como abrir"
     },
-    "collapsePanel": "Ocultar painel do projeto",
+    "collapsePanel": "Ocultar painel de trabalho",
     "togglePanel": "Mostrar ou ocultar painel do projeto",
-    "expandPanel": "Mostrar painel do projeto"
+    "expandPanel": "Mostrar painel de trabalho"
   },
   "minimap": {
     "searchAria": "Pesquisar na conversa",
@@ -593,6 +590,7 @@
   "thinking": {
     "label": "Pensando...",
     "history": "Histórico de raciocínio",
+    "thoughtFor": "Pensou por {{time}}",
     "labelWithTime": "{{label}} · {{time}}",
     "completeWithTime": "Raciocínio concluído · {{time}}",
     "elapsed": "({{time}})"
@@ -622,6 +620,16 @@
     "mediaPathFallback": "Este agente não tem suporte nativo para este tipo de arquivo; ele será enviado como um caminho de arquivo.",
     "hintWithSessions": "/ para comandos, @ para arquivos, @@ para conversas, ↑/↓ para o histórico"
   },
+  "composer": {
+    "goalLine": {
+      "running": "Meta em andamento: {{goal}}",
+      "paused": "Meta pausada: {{goal}}",
+      "end": "Encerrar",
+      "endLabel": "Encerrar a meta"
+    },
+    "thinkingNote": "Mudar o nível de raciocínio descarta o cache do prompt; mantenha-o estável no mesmo modelo",
+    "modelBusy": "Troque o modelo quando esta resposta terminar."
+  },
   "agentTip": {
     "codes": {
       "ACP_EMPTY_TURN": {
@@ -646,13 +654,13 @@
         "body": "{{count}} etapa(s) falharam e NÃO tiveram efeito. O agy encerra esses turnos como bem-sucedidos mesmo assim, então confira o resultado real em vez da resposta."
       },
       "CLI_VERSION_OLDER": {
-        "body": "O {{cli}} instalado é anterior à versão verificada pelo AionUi; alguns recursos podem estar ausentes. Considere atualizar o {{cli}}. (instalado: {{reported}} / verificado pelo AionUi: {{verified}})"
+        "body": "O {{cli}} instalado é anterior à versão verificada pelo mu; alguns recursos podem estar ausentes. Considere atualizar o {{cli}}. (instalado: {{reported}} / verificado pelo mu: {{verified}})"
       },
       "CLI_VERSION_NEWER": {
-        "body": "O {{cli}} instalado é posterior à versão verificada pelo AionUi. Deve continuar funcionando; relate qualquer comportamento estranho. (instalado: {{reported}} / verificado pelo AionUi: {{verified}})"
+        "body": "O {{cli}} instalado é posterior à versão verificada pelo mu. Deve continuar funcionando; relate qualquer comportamento estranho. (instalado: {{reported}} / verificado pelo mu: {{verified}})"
       },
       "CODEX_RETRYING": {
-        "body": "{{detail}} (tentativa {{attempts}}, {{elapsed}} decorridos — o provedor do agente derruba a conexão repetidamente; o AionUi está aguardando.)"
+        "body": "{{detail}} (tentativa {{attempts}}, {{elapsed}} decorridos — o provedor do agente derruba a conexão repetidamente; o mu está aguardando.)"
       }
     }
   },
@@ -732,7 +740,7 @@
         "conflicted": "!",
         "unknown": "?"
       },
-      "conflictedHint": "Resolva este conflito fora do AionUi primeiro",
+      "conflictedHint": "Resolva este conflito fora do mu primeiro",
       "opaqueHint": "Este estado vem de um backend mais novo — exibido somente leitura",
       "degraded": "A atualização está em modo mais lento porque o índice do git não pode ser gravado",
       "truncated": "Alterações demais para listar — mostrando apenas a primeira parte",
@@ -751,7 +759,7 @@
         "discard": "Descartar alterações",
         "stageAll": "Preparar tudo",
         "unstageAll": "Retirar tudo da preparação",
-        "blockedHint": "Resolva o conflito fora do AionUi antes de preparar ou descartar",
+        "blockedHint": "Resolva o conflito fora do mu antes de preparar ou descartar",
         "confirmDiscardTitle": "Descartar alterações?",
         "confirmDiscardTracked": "As edições em {{count}} arquivos serão perdidas. Isso não pode ser desfeito.",
         "confirmDiscardUntracked": "{{count}} novos arquivos serão movidos para a lixeira.",

@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { SettingsTabNavigateProvider } from '@/renderer/components/settings/SettingsModal/settingsViewContext';
 
 const hooks = vi.hoisted(() => ({
@@ -120,7 +120,7 @@ describe('ToolsModalContent image model guide', () => {
     cleanup();
   });
 
-  it('renders a clickable "go to configure" link that navigates to the model tab', async () => {
+  it('renders a "go to configure" text button that opens the providers page', async () => {
     const navigateToTab = vi.fn();
     render(
       <SettingsTabNavigateProvider value={navigateToTab}>
@@ -128,23 +128,22 @@ describe('ToolsModalContent image model guide', () => {
       </SettingsTabNavigateProvider>
     );
 
-    const link = await screen.findByText('settings.goToModelSettings');
-    // Rendered as an inline anchor (text link), not a button.
-    expect(link.tagName).toBe('A');
-    fireEvent.click(link);
+    // A text button, not an underlined link: it navigates. It is in the text colour and ends in a chevron, so it
+    // does not read as more of the sentence before it.
+    const button = await screen.findByRole('button', { name: 'settings.goToModelSettings' });
+    expect(button.className).toContain('!text-t-primary');
+    expect(within(button).getByTestId('go-to-model-settings-chevron')).toBeInTheDocument();
+    fireEvent.click(button);
 
-    await waitFor(() => expect(navigateToTab).toHaveBeenCalledWith('model'));
+    await waitFor(() => expect(navigateToTab).toHaveBeenCalledWith('providers'));
   });
 
   it('renders the guide text as plain text (no link) when no tab navigator is provided', async () => {
     const { container } = render(<ToolsModalContent />);
 
-    // The empty-state hint still shows the go-to-configure wording, but not as a clickable link.
+    // The empty-state hint still shows the go-to-configure wording, but nothing to click.
     await waitFor(() => expect(container.textContent).toContain('settings.goToModelSettings'));
-    const links = Array.from(container.querySelectorAll('a')).filter(
-      (a) => a.textContent === 'settings.goToModelSettings'
-    );
-    expect(links).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: 'settings.goToModelSettings' })).toBeNull();
   });
 });
 

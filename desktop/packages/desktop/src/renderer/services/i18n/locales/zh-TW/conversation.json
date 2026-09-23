@@ -12,12 +12,7 @@
     "clearWorkspace": "移除專案",
     "openFolder": "開啟資料夾",
     "none": "無",
-    "quickActionsTitle": "AionUi 能做什麼？",
-    "quickActionFeedback": "反饋問題",
-    "quickActionStar": "喜歡我們？點個星吧",
-    "skillsMarket": "AionUi Skills Market",
-    "skillsMarketDesc": "按需搜尋並啟用社區 Skills，一次設定，所有Agent通用。",
-    "skillsMarketDetails": "詳情 >>"
+    "quickActionsTitle": "mu 能做什麼？"
   },
   "history": {
     "recents": "最近",
@@ -146,7 +141,7 @@
       "check_provider_base_url": "請檢查模型服務商的 Base URL、介面路徑、代理和 API 相容性。",
       "change_model": "請選擇目前帳號可用且支援此請求的模型。",
       "reduce_context": "請減少訊息內容、引用的檔案或上下文大小後再試一次。",
-      "send_feedback": "請提交回饋並附上日誌，方便團隊排查。"
+      "send_feedback": "請重試；如果仍然失敗，請查看應用程式日誌。"
     },
     "ownership": {
       "aionui": "應用",
@@ -157,7 +152,7 @@
     "codes": {
       "AIONUI_STREAM_BROKEN": {
         "title": "回應流異常中斷",
-        "body": "訊息已送出，但回應流異常結束。請先重試；如果反覆出現，可以提交回饋。"
+        "body": "訊息已送出，但回應流異常結束。請先重試；如果反覆出現，請查看應用程式日誌。"
       },
       "AIONUI_STATE_INCONSISTENT": {
         "title": "會話狀態不一致",
@@ -169,7 +164,7 @@
       },
       "AIONUI_INTERNAL_ERROR": {
         "title": "應用處理失敗",
-        "body": "本次請求在應用程式處理過程中失敗。請先重試一次；如果仍然出現，可以提交回饋。"
+        "body": "本次請求在應用程式處理過程中失敗。請先重試一次；如果仍然出現，請查看應用程式日誌。"
       },
       "AIONUI_CONVERSATION_BUSY": {
         "title": "會話正在處理上一則訊息",
@@ -326,7 +321,7 @@
       },
       "MCP_HTTP_RESPONSE_READ_FAILED": {
         "title": "讀取團隊輔助程序回應失敗",
-        "body": "AionUi 無法讀取本地團隊輔助程序的回應。請先重試一次，若持續發生再重新啟動應用。"
+        "body": "mu 無法讀取本地團隊輔助程序的回應。請先重試一次，若持續發生再重新啟動應用。"
       },
       "MCP_TOOL_REMOTE_ERROR": {
         "title": "本地團隊輔助程序拒絕了這次請求",
@@ -334,11 +329,11 @@
       },
       "MCP_TOOL_RESPONSE_UNEXPECTED": {
         "title": "團隊輔助程序回傳了異常回應",
-        "body": "AionUi 收到了本地團隊輔助程序的異常回應。請先重試一次，若持續發生再回報問題。"
+        "body": "mu 收到了本地團隊輔助程序的異常回應。請先重試一次，若持續發生再回報問題。"
       },
       "MCP_TCP_READ_FAILED": {
         "title": "讀取本地團隊輔助程序失敗",
-        "body": "AionUi 無法讀取本地團隊輔助程序的 TCP 回應。請先重試一次，如仍失敗可重新啟動應用。"
+        "body": "mu 無法讀取本地團隊輔助程序的 TCP 回應。請先重試一次，如仍失敗可重新啟動應用。"
       },
       "TEAM_SERVICE_UNAVAILABLE": {
         "title": "團隊服務尚未就緒",
@@ -377,6 +372,7 @@
     "addFile": "新增檔案",
     "refresh": "重新整理",
     "temporarySpace": "臨時空間",
+    "temporaryWorkspace": "臨時工作區",
     "dragOverlayTitle": "拖曳匯入",
     "dragOverlayDesc": "將檔案或資料夾拖曳到此處即可複製到目前專案。",
     "dragOverlayHint": "提示：若已選取資料夾，會直接匯入該資料夾。",
@@ -440,11 +436,12 @@
       "vscode": "VS Code",
       "terminal": "終端機",
       "explorer": "檔案總管",
-      "browser": "瀏覽器"
+      "browser": "瀏覽器",
+      "choose": "選擇開啟方式"
     },
-    "collapsePanel": "收合專案面板",
+    "collapsePanel": "收合工作面板",
     "togglePanel": "展開或收合專案面板",
-    "expandPanel": "展開專案面板"
+    "expandPanel": "展開工作面板"
   },
   "minimap": {
     "searchAria": "搜尋對話",
@@ -587,6 +584,7 @@
   "thinking": {
     "label": "思考中...",
     "history": "思考紀錄",
+    "thoughtFor": "思考了 {{time}}",
     "labelWithTime": "{{label}} · {{time}}",
     "completeWithTime": "思考完成 · {{time}}",
     "elapsed": "（{{time}}）"
@@ -616,6 +614,16 @@
     "mediaPathFallback": "該 Agent 不原生支援此檔案類型，將以檔案路徑形式傳送。",
     "hintWithSessions": "輸入 / 喚起命令，@ 引用檔案，@@ 引用對話，↑/↓ 切換歷史訊息"
   },
+  "composer": {
+    "goalLine": {
+      "running": "目標進行中：{{goal}}",
+      "paused": "目標已暫停：{{goal}}",
+      "end": "結束",
+      "endLabel": "結束目標"
+    },
+    "thinkingNote": "切換思考強度會丟失提示快取，同一模型盡量不要切換",
+    "modelBusy": "等這一輪回覆結束再換模型。"
+  },
   "agentTip": {
     "codes": {
       "ACP_EMPTY_TURN": {
@@ -640,13 +648,13 @@
         "body": "本輪有 {{count}} 個步驟失敗且未生效。agy 仍會將這類輪次標記為成功，請核對實際結果而非回覆內容。"
       },
       "CLI_VERSION_OLDER": {
-        "body": "已安裝的 {{cli}} 低於 AionUi 驗證過的版本，部分功能可能缺失。建議升級 {{cli}}。 （本機 {{reported}} / AionUi 驗證過 {{verified}}）"
+        "body": "已安裝的 {{cli}} 低於 mu 驗證過的版本，部分功能可能缺失。建議升級 {{cli}}。 （本機 {{reported}} / mu 驗證過 {{verified}}）"
       },
       "CLI_VERSION_NEWER": {
-        "body": "已安裝的 {{cli}} 高於 AionUi 驗證過的版本。通常仍可正常使用；如遇異常行為請回報。 （本機 {{reported}} / AionUi 驗證過 {{verified}}）"
+        "body": "已安裝的 {{cli}} 高於 mu 驗證過的版本。通常仍可正常使用；如遇異常行為請回報。 （本機 {{reported}} / mu 驗證過 {{verified}}）"
       },
       "CODEX_RETRYING": {
-        "body": "{{detail}}（累計第 {{attempts}} 次重試，已等待 {{elapsed}}——Agent 的服務方反覆中斷連線，AionUi 正在等待重連。）"
+        "body": "{{detail}}（累計第 {{attempts}} 次重試，已等待 {{elapsed}}——Agent 的服務方反覆中斷連線，mu 正在等待重連。）"
       }
     }
   },
@@ -726,7 +734,7 @@
         "conflicted": "!",
         "unknown": "?"
       },
-      "conflictedHint": "請先在 AionUi 之外解決此衝突",
+      "conflictedHint": "請先在 mu 之外解決此衝突",
       "opaqueHint": "該狀態來自更新版本的後端 — 僅供檢視",
       "degraded": "由於無法更新 git 索引，重新整理正以較慢的模式執行",
       "truncated": "變更過多，僅顯示前一部分",
@@ -745,7 +753,7 @@
         "discard": "捨棄變更",
         "stageAll": "全部暫存",
         "unstageAll": "全部取消暫存",
-        "blockedHint": "請先在 AionUi 之外解決衝突，然後再暫存或捨棄",
+        "blockedHint": "請先在 mu 之外解決衝突，然後再暫存或捨棄",
         "confirmDiscardTitle": "要捨棄變更嗎？",
         "confirmDiscardTracked": "{{count}} 個檔案的修改將遺失，且無法復原。",
         "confirmDiscardUntracked": "{{count}} 個新檔案將被移到垃圾桶。",

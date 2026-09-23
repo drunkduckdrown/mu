@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Tooltip } from '@arco-design/web-react';
 import { AlarmClock } from '@icon-park/react';
 import classNames from 'classnames';
+import { rowButtonProps } from '@renderer/utils/ui/rowButton';
 import type { SiderTooltipProps } from '@renderer/utils/ui/siderTooltip';
 
 interface SiderScheduledEntryProps {
@@ -32,15 +33,18 @@ const SiderScheduledEntry: React.FC<SiderScheduledEntryProps> = ({
     return (
       <Tooltip {...siderTooltipProps} content={t('cron.scheduledTasks')} position='right'>
         <div
+          data-testid='sider-scheduled'
+          aria-label={t('cron.scheduledTasks')}
+          aria-current={isActive ? 'page' : undefined}
           className={classNames(
             'w-full h-34px flex items-center justify-center cursor-pointer transition-colors rd-8px text-t-primary',
             isActive ? 'bg-fill-3' : 'hover:bg-fill-3 active:bg-fill-4'
           )}
-          onClick={onClick}
+          {...rowButtonProps(onClick)}
         >
           <AlarmClock
             theme='outline'
-            size='20'
+            size='16'
             fill='currentColor'
             className='block leading-none shrink-0'
             style={{ lineHeight: 0 }}
@@ -53,12 +57,14 @@ const SiderScheduledEntry: React.FC<SiderScheduledEntryProps> = ({
   return (
     <Tooltip {...siderTooltipProps} content={t('cron.scheduledTasks')} position='right'>
       <div
+        data-testid='sider-scheduled'
+        aria-current={isActive ? 'page' : undefined}
         className={classNames(
           'box-border group h-34px w-full flex items-center justify-start gap-8px ps-10px pe-8px rd-0.5rem cursor-pointer shrink-0 transition-all text-t-primary',
           isMobile && 'sider-action-btn-mobile',
           isActive ? 'bg-fill-3' : 'hover:bg-fill-3 active:bg-fill-4'
         )}
-        onClick={onClick}
+        {...rowButtonProps(onClick)}
       >
         <span className='size-22px flex items-center justify-center shrink-0 text-t-primary'>
           <AlarmClock

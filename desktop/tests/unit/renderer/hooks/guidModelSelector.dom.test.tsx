@@ -9,6 +9,8 @@ import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import GuidModelSelector from '@/renderer/pages/guid/components/GuidModelSelector';
 
+const navigateMock = vi.hoisted(() => vi.fn());
+
 vi.mock('@/renderer/hooks/agent/useModelProviderList', () => ({
   useProvidersQuery: () => ({ data: [] }),
 }));
@@ -52,7 +54,12 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('react-router-dom', () => ({
-  useNavigate: () => vi.fn(),
+  useNavigate: () => navigateMock,
+}));
+
+// The real label measures itself for a marquee, which prints the text more than once.
+vi.mock('@/renderer/components/agent/MarqueePillLabel', () => ({
+  default: ({ children }: { children?: React.ReactNode }) => <span>{children}</span>,
 }));
 
 vi.mock('@icon-park/react', () => ({
@@ -159,7 +166,7 @@ describe('GuidModelSelector', () => {
     ).toHaveAttribute('data-tooltip-content', 'Use the default model currently configured by the CLI');
   });
 
-  it('splits ACP model and thought level into two submenus', () => {
+  it('offers the conversation’s model · thinking menu: models by provider, the one in use opening to its levels', () => {
     const setSelectedAcpModel = vi.fn();
     const onThoughtLevelSelect = vi.fn();
 
@@ -170,36 +177,35 @@ describe('GuidModelSelector', () => {
         current_model={undefined}
         setCurrentModel={vi.fn()}
         currentAcpCachedModelInfo={{
-          current_model_id: 'gpt-5.3-codex',
-          current_model_label: 'gpt-5.3-codex',
+          current_model_id: 'vercel-ai-gateway/zai/glm-5.1',
+          current_model_label: 'GLM 5.1',
           available_models: [
-            { id: 'gpt-5.3-codex', label: 'gpt-5.3-codex' },
-            { id: 'gpt-5.4-codex', label: 'gpt-5.4-codex' },
+            { id: 'vercel-ai-gateway/zai/glm-5.1', label: 'GLM 5.1' },
+            { id: 'openai/gpt-5', label: 'GPT-5' },
           ],
         }}
-        selectedAcpModel='gpt-5.3-codex'
+        selectedAcpModel='vercel-ai-gateway/zai/glm-5.1'
         setSelectedAcpModel={setSelectedAcpModel}
         thoughtLevelOption={thoughtLevelOption}
         onThoughtLevelSelect={onThoughtLevelSelect}
       />
     );
 
-    expect(screen.getByText('gpt-5.3-codex · Medium')).toBeInTheDocument();
+    expect(screen.getByText('GLM 5.1 · Medium')).toBeInTheDocument();
+    // By provider, each by its name rather than its id; no separate "Model" and "Thinking level" rows.
+    expect(screen.getByRole('group', { name: 'Vercel AI Gateway' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'OpenAI' })).toBeInTheDocument();
+    expect(screen.queryByText('Thinking Level')).not.toBeInTheDocument();
 
-    // First level: model submenu on top (shows current model), thought submenu below.
-    const titles = screen.getAllByTestId('submenu-title');
-    expect(titles[0]).toHaveTextContent('Model');
-    expect(titles[0]).toHaveTextContent('gpt-5.3-codex');
-    expect(titles[1]).toHaveTextContent('Thinking Level');
-    expect(titles[1]).toHaveTextContent('Medium');
-
-    // Second level: each submenu body holds the full option list.
-    const bodies = screen.getAllByTestId('submenu-body');
-    fireEvent.click(within(bodies[0]).getByText('gpt-5.4-codex'));
-    fireEvent.click(within(bodies[1]).getByText('High'));
-
-    expect(setSelectedAcpModel).toHaveBeenCalledWith('gpt-5.4-codex');
+    // The model in use opens to its levels: one pick sets the level.
+    const [inUse] = screen.getAllByTestId('submenu-body');
+    fireEvent.click(within(inUse).getByText('High'));
     expect(onThoughtLevelSelect).toHaveBeenCalledWith('high');
+    expect(setSelectedAcpModel).not.toHaveBeenCalled();
+
+    // Another model is picked as it is.
+    fireEvent.click(screen.getByText('GPT-5'));
+    expect(setSelectedAcpModel).toHaveBeenCalledWith('openai/gpt-5');
   });
 
   it('does not add thought level options to the Aion CLI provider model menu', () => {
@@ -220,5 +226,23 @@ describe('GuidModelSelector', () => {
     expect(screen.getAllByText('gpt-5.3-codex').length).toBeGreaterThan(0);
     expect(screen.queryByText('Thinking Level')).not.toBeInTheDocument();
     expect(screen.queryByText('Medium')).not.toBeInTheDocument();
+  });
+
+  it('sends "add a model" to the providers page, not the retired model page', () => {
+    navigateMock.mockClear();
+    render(
+      <GuidModelSelector
+        isGeminiMode
+        modelList={[]}
+        current_model={undefined}
+        setCurrentModel={vi.fn()}
+        currentAcpCachedModelInfo={null}
+        selectedAcpModel={null}
+        setSelectedAcpModel={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByText('settings.addModel'));
+    expect(navigateMock).toHaveBeenCalledWith('/settings/providers');
   });
 });

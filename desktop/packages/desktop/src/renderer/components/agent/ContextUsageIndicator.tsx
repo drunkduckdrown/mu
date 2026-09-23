@@ -77,11 +77,12 @@ const ContextUsageIndicator: React.FC<ContextUsageIndicatorProps> = ({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  // 根据状态获取颜色
+  // Grey while there is room; amber and red only when the window runs short. It sits in the send box,
+  // where the send button is the only accent.
   const getStrokeColor = () => {
     if (isDanger) return 'rgb(var(--danger-6))';
     if (isWarning) return 'rgb(var(--warning-6))';
-    return 'rgb(var(--primary-6))';
+    return 'var(--color-text-2)';
   };
 
   // 背景圆环颜色 - 适配深浅主题

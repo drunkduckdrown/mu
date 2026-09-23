@@ -8,7 +8,6 @@ import { ipcBridge } from '@/common';
 import AtFileMenu from '@/renderer/components/chat/AtFileMenu';
 import AtSessionMenu from '@/renderer/components/chat/AtSessionMenu';
 import BtwOverlay from '@/renderer/components/chat/BtwOverlay';
-import { useInputFocusRing } from '@/renderer/hooks/chat/useInputFocusRing';
 import SlashCommandMenu, { type SlashCommandMenuItem } from '@/renderer/components/chat/SlashCommandMenu';
 import { useBtwCommand } from '@/renderer/components/chat/BtwOverlay/useBtwCommand';
 import { getFuzzyMatchIndices, useSlashCommandController } from '@/renderer/hooks/chat/useSlashCommandController';
@@ -55,6 +54,7 @@ import React, { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMe
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
 import { useCompositionInput } from '@renderer/hooks/chat/useCompositionInput';
+import { rewriteIdeographicSlash } from './ideographicSlash';
 import { useConversationExport } from '@renderer/hooks/file/useConversationExport';
 import { useDragUpload } from '@renderer/hooks/file/useDragUpload';
 import { useLatestRef } from '@renderer/hooks/ui/useLatestRef';
@@ -69,6 +69,7 @@ import SpeechInputButton from '@/renderer/components/chat/SpeechInputButton';
 import { appendSpeechTranscript } from '@/renderer/hooks/system/useSpeechInput';
 import { createChainedDispatch, useLiveTranscriptInsertion } from '@/renderer/hooks/system/useLiveTranscriptInsertion';
 import { getConversationInputHistory, isCaretOnFirstLine } from '@/renderer/utils/chat/messageHistory';
+import SendArrowIcon from './SendArrowIcon';
 import './sendbox.css';
 
 const constVoid = (): void => undefined;
@@ -76,20 +77,9 @@ const constVoid = (): void => undefined;
 // Threshold: switch to multi-line mode directly when character count exceeds this value to avoid heavy layout work
 const MAX_SINGLE_LINE_CHARACTERS = 800;
 const BTW_COMMAND_RE = /^\/btw(?:\s+([\s\S]*))?$/i;
-/** Both mention lanes share one colour: the user needs to know a token is a
- *  live reference, not which kind it is, and a second colour would need a
- *  legend this UI does not have. */
-const MENTION_HIGHLIGHT_COLOR = 'var(--primary)';
 // Max items shown in the `@` dropdown (both data sources); the result panel skin
 // is unbounded (streaming append) — this caps only the inline mention menu.
 const AT_FILE_MENTION_LIMIT = 8;
-
-const SendArrowIcon: React.FC<{ size?: number }> = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox='0 0 24 24' fill='none' stroke='currentColor' aria-hidden='true'>
-    <path d='M12 19V5' strokeWidth='2.7' strokeLinecap='round' />
-    <path d='M6.5 10.5 12 5l5.5 5.5' strokeWidth='2.7' strokeLinecap='round' strokeLinejoin='round' />
-  </svg>
-);
 
 const DraftBoxActionIcon: React.FC<{ size?: number; color?: string; strokeWidth?: number }> = ({
   size = 16,
@@ -353,7 +343,6 @@ const SendBox: React.FC<{
   const [isSingleLine, setIsSingleLine] = useState(!effectiveDefaultMultiLine);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const isInputActive = isInputFocused;
-  const { activeBorderColor, inactiveBorderColor, activeShadow } = useInputFocusRing();
   const containerRef = useRef<HTMLDivElement>(null);
   const singleLineWidthRef = useRef<number>(0);
   const measurementCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -841,7 +830,13 @@ const SendBox: React.FC<{
     syncHighlightTextMetrics();
   }, [input, isInputFocused, isMobile, isSingleLine, syncHighlightTextMetrics]);
 
-  const handleTextAreaChange = (value: string) => {
+  const handleTextAreaChange = (rawValue: string) => {
+    // A Chinese IME writes `、` where the `/` key is: as the first character of an empty box that
+    // is the command menu's own key, so it becomes `/` and the menu opens, where there is a menu.
+    // Only what the IME committed counts: Arco hands the committed text over at compositionend,
+    // after our capture handler has already cleared `isComposing`.
+    const value =
+      !isComposing.current && mergedSlashCommands.length > 0 ? rewriteIdeographicSlash(input, rawValue) : rawValue;
     if (historyNavigationIndex !== null) {
       historyDraftRef.current = null;
       setHistoryNavigationIndex(null);
@@ -1315,7 +1310,7 @@ const SendBox: React.FC<{
   );
 
   // 使用共享的输入法合成处理
-  const { compositionHandlers, isComposingState, createKeyDownHandler } = useCompositionInput();
+  const { compositionHandlers, isComposing, isComposingState, createKeyDownHandler } = useCompositionInput();
 
   // 使用共享的PasteService集成
   const { onPaste, onFocus: handlePasteFocus } = usePasteService({
@@ -1895,11 +1890,7 @@ const SendBox: React.FC<{
       }
 
       segments.push(
-        <span
-          className='sendbox-highlight-mention'
-          key={`mention-${match.start}-${index}`}
-          style={{ color: MENTION_HIGHLIGHT_COLOR }}
-        >
+        <span className='sendbox-highlight-mention' key={`mention-${match.start}-${index}`}>
           {input.slice(match.start, match.end)}
         </span>
       );
@@ -1932,21 +1923,7 @@ const SendBox: React.FC<{
       )}
       <div
         ref={containerRef}
-        className={`sendbox-panel relative p-16px border-3 b bg-dialog-fill-0 b-solid rd-20px flex flex-col ${isOverlayOpen ? 'overflow-visible' : 'overflow-hidden'} ${isFileDragging ? 'b-dashed sendbox-panel--dragging' : ''}`}
-        style={{
-          transition: 'box-shadow 0.25s ease, border-color 0.25s ease',
-          ...(isFileDragging
-            ? {
-                backgroundColor: 'var(--color-primary-light-1)',
-                borderColor: 'rgb(var(--primary-3))',
-                borderWidth: '1px',
-              }
-            : {
-                borderWidth: '1px',
-                borderColor: isInputActive ? activeBorderColor : inactiveBorderColor,
-                boxShadow: isInputActive ? activeShadow : 'none',
-              }),
-        }}
+        className={`sendbox-panel relative p-16px rd-20px flex flex-col ${isOverlayOpen ? 'overflow-visible' : 'overflow-hidden'} ${isInputActive ? 'sendbox-panel--active' : ''} ${isFileDragging ? 'sendbox-panel--dragging' : ''}`}
         {...dragHandlers}
       >
         <BtwOverlay
@@ -2051,9 +2028,9 @@ const SendBox: React.FC<{
           {context}
           {/* Reply quote preview */}
           {replyQuote && (
-            <div className='flex items-start gap-10px mb-8px px-12px py-10px rd-10px bg-fill-1 b-1 b-solid b-border-2'>
+            <div className='flex items-start gap-10px mb-8px px-12px py-10px rd-10px bg-fill-1'>
               <div className='flex-shrink-0 mt-2px' style={{ lineHeight: 0 }}>
-                <Quote theme='filled' size='16' fill='rgb(var(--primary-6))' />
+                <Quote theme='filled' size='16' fill='var(--color-text-3)' />
               </div>
               <div className='flex-1 min-w-0 text-13px text-t-primary line-clamp-3 lh-20px whitespace-pre-wrap break-all'>
                 {replyQuote.content}
@@ -2076,7 +2053,7 @@ const SendBox: React.FC<{
                   closable
                   closeIcon={<CloseSmall theme='outline' size='12' />}
                   onClose={() => removeDomSnippet(snippet.id)}
-                  className='text-12px bg-fill-2 b-1 b-solid b-border-2 rd-4px'
+                  className='text-12px bg-fill-2 rd-4px'
                 >
                   {snippet.tag}
                 </Tag>
@@ -2104,7 +2081,7 @@ const SendBox: React.FC<{
                     );
                     onSelectedWorkspaceItemsChange(nextItems);
                   }}
-                  className='text-12px bg-fill-2 b-1 b-solid b-border-2 rd-4px'
+                  className='text-12px bg-fill-2 rd-4px'
                 >
                   {getSelectedItemDisplayLabel(item)}
                 </Tag>
@@ -2221,7 +2198,7 @@ const SendBox: React.FC<{
           )}
         </div>
         {!isSingleLine && (
-          <div className='flex items-center justify-between gap-2 w-full'>
+          <div className={`flex items-center justify-between gap-2 w-full${isMobile ? '' : ' sendbox-toolbar'}`}>
             <div
               className={
                 isMobileCompact

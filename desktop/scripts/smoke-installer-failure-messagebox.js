@@ -63,7 +63,7 @@ const INSTALLER_ERROR_SCENARIOS = [
     id: 'bundled-aioncore-incomplete',
     defineName: 'AIONUI_E_BUNDLED_AIONCORE_INCOMPLETE',
     code: 'E1030',
-    message: 'mu installed, but the bundled AionCore resources are incomplete.',
+    message: 'mu installed, but the bundled local service resources are incomplete.',
     action: 'Download a fresh installer and run it again.',
     diagnostics: 'scenario=bundled-aioncore-incomplete phase=verify-bundled-aioncore runtime=win32-x64 result=1',
   },
@@ -165,18 +165,11 @@ function findMakensis() {
 
 function copyHarnessProject(projectRoot) {
   const windowsDir = path.join(projectRoot, 'resources', 'windows');
-  const supportDir = path.join(windowsDir, 'support');
-  mkdirSync(supportDir, { recursive: true });
+  mkdirSync(windowsDir, { recursive: true });
 
-  for (const file of ['installer-observability.nsh', 'installer-errors-sentry.nsh', 'installer-messages.nsh']) {
+  for (const file of ['installer-observability.nsh', 'installer-errors.nsh', 'installer-messages.nsh']) {
     copyFileSync(path.join(repoRoot, 'resources', 'windows', file), path.join(windowsDir, file));
   }
-
-  copyFileSync(
-    path.join(repoRoot, 'resources', 'windows', 'support', 'report-installer-failure.ps1'),
-    path.join(supportDir, 'report-installer-failure.ps1')
-  );
-  writeFileSync(path.join(supportDir, '_sentry-dsn.generated.nsh'), '!define AIONUI_SENTRY_DSN ""\n', 'utf8');
 }
 
 function getArg(name, fallback) {
@@ -186,7 +179,7 @@ function getArg(name, fallback) {
 }
 
 function readInstallerErrorDefinitions() {
-  const source = readFileSync(path.join(repoRoot, 'resources', 'windows', 'installer-errors-sentry.nsh'), 'utf8');
+  const source = readFileSync(path.join(repoRoot, 'resources', 'windows', 'installer-errors.nsh'), 'utf8');
   const definitions = Array.from(source.matchAll(/!define\s+(AIONUI_E_[A-Z0-9_]+)\s+"(E\d{4})"/g), (match) => ({
     defineName: match[1],
     code: match[2],
@@ -248,7 +241,7 @@ function findInstallerErrorScenario(code) {
   return scenario;
 }
 
-function writeAutoDeclineScript(scriptPath) {
+function writeAutoCloseScript(scriptPath) {
   writeFileSync(
     scriptPath,
     `
@@ -256,9 +249,7 @@ param(
   [string]$ExePath,
   [string]$Code,
   [string]$ScenarioId,
-  [string]$LogPath,
-  [ValidateSet('yes', 'no')]
-  [string]$Answer
+  [string]$LogPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -314,8 +305,7 @@ function Find-FailureWindow([string]$Code, [int]$TimeoutSec = 90) {
     $windows = $root.FindAll([System.Windows.Automation.TreeScope]::Children, $windowCond)
     foreach ($window in $windows) {
       $text = Get-WindowText $window
-      if ($text -like "*mu installation failed ($Code)*" -or
-          ($text -like "*($Code)*" -and $text -like '*Send this installer failure report*')) {
+      if ($text -like "*mu installation failed ($Code)*") {
         return [ordered]@{ window = $window; text = $text; title = $window.Current.Name }
       }
     }
@@ -333,8 +323,7 @@ try {
     "scenario=$ScenarioId",
     'Suggested action:',
     'Diagnostics:',
-    'Installer log:',
-    'Send this installer failure report'
+    'Installer log:'
   )) {
     if ($failure.text -notlike "*$required*") {
       throw "Failure dialog for $Code is missing: $required"
@@ -347,25 +336,20 @@ try {
   if ($failure.text -like '*Blocking diagnostics:*') {
     throw "Failure dialog for $Code still uses the old Blocking diagnostics label."
   }
-  if ($Answer -eq 'yes') {
-    $yesZh = [string][char]26159
-    $buttons = @('Yes', $yesZh, "$yesZh(Y)", "$yesZh(&Y)")
-  } else {
-    $noZh = [string][char]21542
-    $buttons = @('No', $noZh, "$noZh(N)", "$noZh(&N)")
-  }
+  $okZh = [string][char]30830 + [string][char]23450
+  $buttons = @('OK', $okZh)
   if (-not (Try-ClickWindowButton $failure.window $buttons)) {
-    throw "$Answer button not found for $Code failure dialog."
+    throw "OK button not found for $Code failure dialog."
   }
 
   if (-not $proc.WaitForExit(60000)) {
-    throw "Harness did not exit after declining report for $Code."
+    throw "Harness did not exit after closing the failure dialog for $Code."
   }
   if ($proc.ExitCode -ne 2) {
     throw "Harness exited with $($proc.ExitCode) for $Code; expected 2."
   }
 
-  [pscustomobject]@{ code = $Code; answer = $Answer; exitCode = $proc.ExitCode; title = $failure.title; logPath = $LogPath } |
+  [pscustomobject]@{ code = $Code; exitCode = $proc.ExitCode; title = $failure.title; logPath = $LogPath } |
     ConvertTo-Json -Compress
 } finally {
   if (-not $proc.HasExited) {
@@ -394,7 +378,7 @@ SilentInstall normal
 !include "${nsisQuote(path.join(projectRoot, 'resources', 'windows', 'installer-observability.nsh'))}"
 !macro AIONUI_CLEAR_ACTIVE_INSTALLER_MARKER
 !macroend
-!include "${nsisQuote(path.join(projectRoot, 'resources', 'windows', 'installer-errors-sentry.nsh'))}"
+!include "${nsisQuote(path.join(projectRoot, 'resources', 'windows', 'installer-errors.nsh'))}"
 
 Section
   StrCpy $INSTDIR "$TEMP\\AionUi-messagebox-smoke"
@@ -415,7 +399,7 @@ SectionEnd
 `;
 }
 
-function verifyFailureLog(logPath, scenario, expectedReportReason) {
+function verifyFailureLog(logPath, scenario) {
   const { code, id } = scenario;
   if (!existsSync(logPath)) {
     throw new Error(`installer log was not written for ${code}: ${logPath}`);
@@ -432,24 +416,13 @@ function verifyFailureLog(logPath, scenario, expectedReportReason) {
       event.message.includes(`code=${code}`) &&
       event.message.includes(`scenario=${id}`)
   );
-  const hasReportSkipped = events.some(
-    (event) =>
-      event.event === 'report-skipped' &&
-      ((typeof event.message === 'string' &&
-        event.message.includes(`code=${code}`) &&
-        event.message.includes(`reason=${expectedReportReason}`)) ||
-        (event.code === code && event.reason === expectedReportReason))
-  );
 
   if (!hasSessionFailure) {
     throw new Error(`session-end failure event missing code or scenario id for ${code} (${id}): ${logPath}`);
   }
-  if (!hasReportSkipped) {
-    throw new Error(`report-skipped event missing after declining report for ${code}: ${logPath}`);
-  }
 }
 
-function runHarness({ autoDecline, compileOnly, makensis, scenario }) {
+function runHarness({ autoClose, compileOnly, makensis, scenario }) {
   const { code } = scenario;
   const root = mkdtempSync(path.join(tmpdir(), `aionui-failure-messagebox-${code}-`));
   const projectRoot = path.join(root, 'project');
@@ -459,11 +432,10 @@ function runHarness({ autoDecline, compileOnly, makensis, scenario }) {
     process.env.TEMP || tmpdir(),
     `aionui-installer-messagebox-smoke-${code}-${new Date().toISOString().replace(/[-:]/g, '').replace(/\..+$/, '').replace('T', '-')}-log.jsonl`
   );
-  const automationPath = path.join(root, 'auto-decline.ps1');
-  const reportStatusPath = path.join(process.env.TEMP || tmpdir(), 'aionui-installer-report.json');
+  const automationPath = path.join(root, 'auto-close.ps1');
 
   copyHarnessProject(projectRoot);
-  writeAutoDeclineScript(automationPath);
+  writeAutoCloseScript(automationPath);
   writeFileSync(nsiPath, createHarnessNsi({ exePath, logPath, projectRoot, scenario }), 'utf8');
 
   try {
@@ -480,63 +452,32 @@ function runHarness({ autoDecline, compileOnly, makensis, scenario }) {
       return { code, exePath, logPath, mode: 'compile-only' };
     }
 
-    if (autoDecline) {
-      const answer = autoDecline === 'consent' ? 'yes' : 'no';
-      const expectedReportReason = autoDecline === 'consent' ? 'empty-dsn' : 'user-declined';
-      rmSync(reportStatusPath, { force: true });
-      console.log(
-        `[failure-messagebox] ${code}: launching harness and auto-${answer === 'yes' ? 'consenting to' : 'declining'} report...`
-      );
+    if (autoClose) {
+      console.log(`[failure-messagebox] ${code}: launching harness and closing the failure dialog...`);
       const run = spawnSync(
         'powershell.exe',
-        [
-          '-NoProfile',
-          '-ExecutionPolicy',
-          'Bypass',
-          '-File',
-          automationPath,
-          exePath,
-          code,
-          scenario.id,
-          logPath,
-          answer,
-        ],
+        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', automationPath, exePath, code, scenario.id, logPath],
         { encoding: 'utf8' }
       );
       if (run.status !== 0) {
         process.stdout.write(run.stdout || '');
         process.stderr.write(run.stderr || '');
-        throw new Error(`auto-decline harness failed for ${code} with exit ${run.status}`);
+        throw new Error(`auto-close harness failed for ${code} with exit ${run.status}`);
       }
-      verifyFailureLog(logPath, scenario, expectedReportReason);
-      if (autoDecline === 'consent') {
-        if (!existsSync(reportStatusPath)) {
-          throw new Error(`report status file missing for ${code}: ${reportStatusPath}`);
-        }
-        const status = JSON.parse(readFileSync(reportStatusPath, 'utf8'));
-        if (status.code !== code) {
-          throw new Error(`report status code mismatch for ${code}: ${status.code}`);
-        }
-        if (status.status !== 'skipped' || status.reason !== 'empty-dsn') {
-          throw new Error(`unexpected report status for ${code}: ${JSON.stringify(status)}`);
-        }
-        if (typeof status.copyText !== 'string' || !status.copyText.includes(`mu installer failure ${code}`)) {
-          throw new Error(`report copyText missing support payload for ${code}`);
-        }
-      }
+      verifyFailureLog(logPath, scenario);
       console.log(`[failure-messagebox] ${code}: e2e ok: ${logPath}`);
-      return { code, exePath, logPath, mode: 'auto-decline' };
+      return { code, exePath, logPath, mode: 'auto' };
     }
 
-    console.log('[failure-messagebox] launching harness. Click No to close without attempting report upload.');
+    console.log('[failure-messagebox] launching harness. Click OK to close the failure dialog.');
     const run = spawnSync(exePath, [], { stdio: 'inherit' });
     if (run.status !== 2) {
       throw new Error(`harness exited with ${run.status}; expected installer failure exit code 2`);
     }
-    verifyFailureLog(logPath, scenario, 'user-declined');
+    verifyFailureLog(logPath, scenario);
     return { code, exePath, logPath, mode: 'manual' };
   } finally {
-    if (compileOnly || autoDecline || process.argv.includes('--cleanup')) {
+    if (compileOnly || autoClose || process.argv.includes('--cleanup')) {
       rmSync(root, { recursive: true, force: true });
     }
   }
@@ -566,11 +507,7 @@ function main() {
   }
 
   const allScenarios = process.argv.includes('--all-scenarios') || process.argv.includes('--all-codes');
-  const autoConsent = process.argv.includes('--auto-consent');
-  const autoDecline = process.argv.includes('--auto-decline');
-  if (autoConsent && autoDecline) {
-    throw new Error('Use only one of --auto-consent or --auto-decline.');
-  }
+  const autoClose = process.argv.includes('--auto');
   const compileOnly = process.argv.includes('--compile-only');
   const { scenarios } = getInstallerErrorScenarioMatrix();
   const selectedScenarios = allScenarios ? scenarios : [findInstallerErrorScenario(getArg('--code', 'E1003'))];
@@ -581,7 +518,7 @@ function main() {
   for (const scenario of selectedScenarios) {
     results.push(
       runHarness({
-        autoDecline: autoConsent ? 'consent' : autoDecline ? 'decline' : '',
+        autoClose,
         compileOnly,
         makensis,
         scenario,
@@ -596,7 +533,7 @@ function main() {
           coveredCodes: results.map((result) => result.code),
           coveredScenarios: selectedScenarios.map((scenario) => scenario.id),
           count: results.length,
-          mode: compileOnly ? 'compile-only' : autoConsent ? 'auto-consent' : autoDecline ? 'auto-decline' : 'manual',
+          mode: compileOnly ? 'compile-only' : autoClose ? 'auto' : 'manual',
         },
         null,
         2

@@ -153,28 +153,29 @@ const DevSettings: React.FC = () => {
   }
 
   return (
-    <div className='space-y-12px'>
+    // The same white cards with a hairline as the rest of the page: dev builds only, but no grey boxes there either.
+    <div className='space-y-16px'>
       {/* DevTools toggle */}
-      <div className='px-[12px] md:px-[32px] py-16px bg-2 rd-16px'>
+      <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px'>
         <PreferenceRow label={t('settings.devTools')}>
-          <Button
-            size='small'
-            type={isDevToolsOpen ? 'primary' : 'secondary'}
-            onClick={handleToggleDevTools}
-            className='shadow-md border-2 hover:shadow-lg transition-all'
-          >
+          <Button size='small' type={isDevToolsOpen ? 'primary' : 'secondary'} onClick={handleToggleDevTools}>
             {isDevToolsOpen ? t('settings.closeDevTools') : t('settings.openDevTools')}
           </Button>
         </PreferenceRow>
       </div>
 
       {/* CDP section */}
-      <div className='px-[12px] md:px-[32px] py-16px bg-2 rd-16px space-y-12px'>
+      <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px space-y-12px'>
         <div className='text-14px font-medium text-t-primary mb-8px'>{t('settings.cdp.title')}</div>
         <div className='space-y-12px'>
           {/* CDP remote debugging toggle */}
           <PreferenceRow label={t('settings.cdp.enable')} description={t('settings.cdp.enableDesc')}>
-            <Switch checked={status?.configEnabled ?? false} loading={switchLoading} onChange={handleToggle} />
+            <Switch
+              size='small'
+              checked={status?.configEnabled ?? false}
+              loading={switchLoading}
+              onChange={handleToggle}
+            />
           </PreferenceRow>
 
           {status?.configEnabled && status?.port && (

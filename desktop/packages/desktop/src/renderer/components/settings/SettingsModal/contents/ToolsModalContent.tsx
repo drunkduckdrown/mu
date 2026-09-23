@@ -14,8 +14,8 @@ import { mcpService } from '@/common/adapter/ipcBridge';
 import { type IMcpServer, BUILTIN_IMAGE_GEN_ID, BUILTIN_IMAGE_GEN_NAME } from '@/common/config/storage';
 import { isImageGenSupported } from '@/common/utils/imageModelAllowlist';
 import { parseError } from '@/common/utils';
-import { Divider, Form, Tooltip, Message, Modal, Switch } from '@arco-design/web-react';
-import { Help } from '@icon-park/react';
+import { Button, Divider, Form, Message, Modal, Switch } from '@arco-design/web-react';
+import { Right } from '@icon-park/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useConfigModelListWithImage from '@/renderer/hooks/agent/useConfigModelListWithImage';
@@ -198,13 +198,13 @@ const ModalMcpManagementSection: React.FC<{
   return (
     <div className='flex flex-col gap-16px min-h-0'>
       <div className='flex gap-8px items-center justify-between'>
-        <div className='text-14px text-t-primary'>{t('settings.mcpSettings')}</div>
+        <div className='text-14px font-500 text-t-primary'>{t('settings.mcpSettings')}</div>
         <div>{renderAddButton()}</div>
       </div>
 
       <div className='flex-1 min-h-0'>
         {visibleMcpServers.length === 0 && extensionMcpServers.length === 0 ? (
-          <div className='py-24px text-center text-t-secondary text-14px border border-dashed border-border-2 rd-12px'>
+          <div className='py-24px text-center text-t-secondary text-14px border border-dashed border-color-b-base rd-8px'>
             {t('settings.mcpNoServersFound')}
           </div>
         ) : (
@@ -212,34 +212,41 @@ const ModalMcpManagementSection: React.FC<{
             className={classNames('max-h-360px', isPageMode && 'max-h-none')}
             disableOverflow={isPageMode}
           >
-            <div className='space-y-12px'>
-              {visibleMcpServers.map((server) => (
-                <McpServerItem
-                  key={server.id}
-                  server={server}
-                  isCollapsed={mcpCollapseKey[server.id] || false}
-                  isTestingConnection={testingServers[server.id] || false}
-                  oauthStatus={oauthStatus[server.id]}
-                  isLoggingIn={loggingIn[server.id]}
-                  onToggleCollapse={() => toggleServerCollapse(server.id)}
-                  onTestConnection={handleTestMcpConnection}
-                  onEditServer={showEditMcpModal}
-                  onDeleteServer={showDeleteConfirm}
-                  onOAuthLogin={handleOAuthLogin}
-                />
+            {/* One row per server, set apart by hairlines: no boxes inside the tools card. The line sits on a wrapper,
+                because a borderless Arco collapse clears any border of its own. */}
+            <div className='flex flex-col'>
+              {visibleMcpServers.map((server, index) => (
+                <div key={server.id} className={index > 0 ? 'border-t border-t-b-base' : undefined}>
+                  <McpServerItem
+                    server={server}
+                    isCollapsed={mcpCollapseKey[server.id] || false}
+                    isTestingConnection={testingServers[server.id] || false}
+                    oauthStatus={oauthStatus[server.id]}
+                    isLoggingIn={loggingIn[server.id]}
+                    onToggleCollapse={() => toggleServerCollapse(server.id)}
+                    onTestConnection={handleTestMcpConnection}
+                    onEditServer={showEditMcpModal}
+                    onDeleteServer={showDeleteConfirm}
+                    onOAuthLogin={handleOAuthLogin}
+                  />
+                </div>
               ))}
-              {extensionMcpServers.map((server) => (
-                <McpServerItem
+              {extensionMcpServers.map((server, index) => (
+                <div
                   key={server.id}
-                  server={server}
-                  isCollapsed={mcpCollapseKey[server.id] || false}
-                  isTestingConnection={false}
-                  onToggleCollapse={() => toggleServerCollapse(server.id)}
-                  onTestConnection={handleTestMcpConnection}
-                  onEditServer={() => {}}
-                  onDeleteServer={() => {}}
-                  isReadOnly
-                />
+                  className={visibleMcpServers.length + index > 0 ? 'border-t border-t-b-base' : undefined}
+                >
+                  <McpServerItem
+                    server={server}
+                    isCollapsed={mcpCollapseKey[server.id] || false}
+                    isTestingConnection={false}
+                    onToggleCollapse={() => toggleServerCollapse(server.id)}
+                    onTestConnection={handleTestMcpConnection}
+                    onEditServer={() => {}}
+                    onDeleteServer={() => {}}
+                    isReadOnly
+                  />
+                </div>
               ))}
             </div>
           </AionScrollArea>
@@ -500,7 +507,7 @@ const ToolsModalContent: React.FC = () => {
       <AionScrollArea className='flex-1 min-h-0 pb-16px' disableOverflow={isPageMode}>
         <div className='space-y-16px'>
           {/* MCP 工具配置 */}
-          <div className='px-[12px] md:px-[32px] py-[24px] bg-2 rd-12px md:rd-16px flex flex-col min-h-0 border border-border-2'>
+          <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px flex flex-col min-h-0'>
             <div className='flex-1 min-h-0'>
               <AionScrollArea
                 className={classNames('h-full', isPageMode && 'overflow-visible')}
@@ -518,10 +525,11 @@ const ToolsModalContent: React.FC = () => {
             </div>
           </div>
           {/* 图像生成 */}
-          <div className='px-[12px] md:px-[32px] py-[24px] bg-2 rd-12px md:rd-16px border border-border-2'>
+          <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px'>
             <div className='flex items-center justify-between mb-16px'>
-              <span className='text-14px text-t-primary'>{t('settings.imageGeneration')}</span>
+              <span className='text-14px font-500 text-t-primary'>{t('settings.imageGeneration')}</span>
               <Switch
+                size='small'
                 disabled={
                   isUpdatingImageGeneration ||
                   isImageGenerationServerLoading ||
@@ -580,44 +588,29 @@ const ToolsModalContent: React.FC = () => {
                     ))}
                   </AionSelect>
                 ) : (
-                  <div className='text-t-secondary flex items-center'>
-                    {t('settings.noAvailable')}
+                  <div className='text-t-secondary flex flex-wrap items-center gap-4px'>
+                    <span>{t('settings.noAvailable')}</span>
                     {navigateToSettingsTab ? (
-                      <a
-                        className='text-inherit underline underline-offset-2 cursor-pointer'
-                        onClick={() => navigateToSettingsTab('model')}
+                      // In the text colour with a trailing chevron: it reads as the way there, not as more of the sentence.
+                      <Button
+                        type='text'
+                        size='small'
+                        className='!px-4px !text-t-primary !font-500'
+                        onClick={() => navigateToSettingsTab('providers')}
                       >
-                        {t('settings.goToModelSettings')}
-                      </a>
+                        <span className='inline-flex items-center gap-2px'>
+                          {t('settings.goToModelSettings')}
+                          <Right
+                            theme='outline'
+                            size={12}
+                            fill='currentColor'
+                            data-testid='go-to-model-settings-chevron'
+                          />
+                        </span>
+                      </Button>
                     ) : (
                       t('settings.goToModelSettings')
                     )}
-                    <Tooltip
-                      content={
-                        <div>
-                          {t('settings.needHelpTooltip')}
-                          <a
-                            href='https://github.com/iOfficeAI/AionUi/wiki/AionUi-Image-Generation-Tool-Model-Configuration-Guide'
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className='text-[rgb(var(--primary-6))] hover:text-[rgb(var(--primary-5))] underline ms-4px'
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {t('settings.configGuide')}
-                          </a>
-                        </div>
-                      }
-                    >
-                      <a
-                        href='https://github.com/iOfficeAI/AionUi/wiki/AionUi-Image-Generation-Tool-Model-Configuration-Guide'
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='ms-8px text-[rgb(var(--primary-6))] hover:text-[rgb(var(--primary-5))] cursor-pointer'
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Help theme='outline' size='14' />
-                      </a>
-                    </Tooltip>
                   </div>
                 )}
               </Form.Item>

@@ -27,6 +27,12 @@ type UseWorkspaceCollapseParams = {
    * that "send 你好 without picking a folder" leaves the panel collapsed.
    */
   isTemporaryWorkspace?: boolean;
+  /**
+   * False when the page's right side belongs to the Layout's work panel: this hook
+   * then neither answers the toggle nor reports a state, so the two never disagree
+   * about the titlebar button. Defaults to true.
+   */
+  enabled?: boolean;
 };
 
 type UseWorkspaceCollapseReturn = {
@@ -58,6 +64,7 @@ export function useWorkspaceCollapse({
   conversation_id,
   preferenceKey,
   isTemporaryWorkspace,
+  enabled = true,
 }: UseWorkspaceCollapseParams): UseWorkspaceCollapseReturn {
   // Workspace panel always starts collapsed; preference and hasFiles events
   // drive expand. See WORKSPACE_HAS_FILES_EVENT handler below.
@@ -77,7 +84,7 @@ export function useWorkspaceCollapse({
       return undefined;
     }
     const handleWorkspaceToggle = (event: Event) => {
-      if (!workspaceEnabled) {
+      if (!enabled || !workspaceEnabled) {
         return;
       }
       // Mark the cancelable event as handled so keyboard callers only suppress
@@ -99,7 +106,7 @@ export function useWorkspaceCollapse({
     return () => {
       window.removeEventListener(WORKSPACE_TOGGLE_EVENT, handleWorkspaceToggle);
     };
-  }, [workspaceEnabled, preferenceKey]);
+  }, [enabled, workspaceEnabled, preferenceKey]);
 
   // Auto expand/collapse workspace panel based on files state (user preference takes priority)
   useEffect(() => {
@@ -161,12 +168,13 @@ export function useWorkspaceCollapse({
 
   // Broadcast workspace state event
   useEffect(() => {
+    if (!enabled) return;
     if (!workspaceEnabled) {
       dispatchWorkspaceStateEvent(true);
       return;
     }
     dispatchWorkspaceStateEvent(rightSiderCollapsed);
-  }, [rightSiderCollapsed, workspaceEnabled]);
+  }, [enabled, rightSiderCollapsed, workspaceEnabled]);
 
   // Force collapse when workspace is disabled
   useEffect(() => {

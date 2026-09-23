@@ -7,15 +7,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { onHiveFocus, requestHiveFocus, type HiveFocusRequest } from '@/renderer/pages/conversation/KyrnPanel/focus';
+import { Message } from '@arco-design/web-react';
+import type { IRuntimeStatusEvent } from '@/common/adapter/ipcBridge';
 import {
   setCurrentConversation,
   resetCurrentConversationForTest,
 } from '@/renderer/pages/conversation/explorer/currentConversationStore';
-import {
-  setCurrentProject,
-  resetCurrentProjectForTest,
-} from '@/renderer/pages/conversation/explorer/currentProjectStore';
+import { resetCurrentProjectForTest } from '@/renderer/pages/conversation/explorer/currentProjectStore';
 
 // Mirror the project convention: t() echoes the key so labels/tooltips are assertable.
 vi.mock('react-i18next', () => ({
@@ -34,6 +32,9 @@ const shortcutMocks = vi.hoisted(() => ({
 const featureMocks = vi.hoisted(() => ({
   teamModeEnabled: false,
 }));
+const runtimeMocks = vi.hoisted(() => ({
+  deferredFailure: undefined as undefined | ((event: IRuntimeStatusEvent) => void),
+}));
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
   useLocation: () => ({ pathname: currentPathname, search: '', hash: '' }),
@@ -50,6 +51,16 @@ vi.mock('@/common', () => ({
       logStream: { on: () => () => {} },
     },
     task: { stopAll: { invoke: () => Promise.resolve({ success: false }) } },
+    runtime: {
+      deferredFailure: {
+        on: (callback: (event: IRuntimeStatusEvent) => void) => {
+          runtimeMocks.deferredFailure = callback;
+          return () => {
+            runtimeMocks.deferredFailure = undefined;
+          };
+        },
+      },
+    },
   },
 }));
 
@@ -59,12 +70,10 @@ vi.mock('@/common/config/constants', () => ({
     return featureMocks.teamModeEnabled;
   },
 }));
-vi.mock('@/renderer/components/layout/PwaPullToRefresh', () => ({ default: () => null }));
 vi.mock('@/renderer/components/layout/Titlebar', () => ({ default: () => null }));
 vi.mock('@/renderer/components/settings/UpdateModal', () => ({ default: () => null }));
 vi.mock('@renderer/hooks/system/useDeepLink', () => ({ useDeepLink: () => {} }));
 vi.mock('@renderer/hooks/system/notification/useNotificationClick', () => ({ useNotificationClick: () => {} }));
-vi.mock('@renderer/hooks/system/notification/useBrowserNotification', () => ({ useBrowserNotification: () => {} }));
 vi.mock('@renderer/hooks/file/useDirectorySelection', () => ({
   useDirectorySelection: () => ({ contextHolder: null }),
 }));
@@ -79,20 +88,22 @@ vi.mock('@renderer/pages/conversation/Preview', () => ({
   usePreviewContext: () => ({ closePreview: () => {} }),
   PreviewPanel: () => null,
 }));
-vi.mock('@renderer/components/layout/ProjectPanelHost', () => ({
-  ProjectPanelHost: ({ collapsed, focus }: { collapsed: boolean; focus?: HiveFocusRequest }) => (
-    <div data-testid='project-host' data-collapsed={collapsed} data-run={focus?.runId} />
+vi.mock('@renderer/components/layout/WorkPanel', () => ({
+  default: ({ isMobile }: { rowWidth: number; isMobile: boolean }) => (
+    <aside data-testid='work-panel' data-mobile={isMobile} />
   ),
-}));
-vi.mock('@renderer/components/layout/ProjectPanelMobileOverlay', () => ({ ProjectPanelMobileOverlay: () => null }));
-vi.mock('@renderer/pages/conversation/KyrnPanel', () => ({
-  onHiveFocus: (listener: (request: HiveFocusRequest) => void) => onHiveFocus(listener),
-  default: ({ conversationId }: { conversationId: string }) => <div data-testid='hive-panel'>{conversationId}</div>,
 }));
 
 import Layout from '@renderer/components/layout/Layout';
 
 const renderLayout = () => render(<Layout sider={<div>sider</div>} />);
+
+const missing = (kind: IRuntimeStatusEvent['scope']['kind'], id: string): IRuntimeStatusEvent => ({
+  resource: 'node',
+  scope: { kind, id },
+  phase: 'failed',
+  failure_kind: 'bundled_resource_missing',
+});
 
 const BACK_KEY = 'common.back';
 
@@ -195,48 +206,20 @@ describe('Layout sider brand Home button', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it('opens the project Hive panel without toggling an already open panel closed', () => {
-    currentPathname = '/conversation/conv-1';
-    setCurrentProject('project-1');
-    setCurrentConversation('conv-1');
-    localStorage.setItem('project-panel-collapse:project-1', 'collapsed');
-    renderLayout();
-    expect(screen.getByTestId('project-host')).toHaveAttribute('data-collapsed', 'true');
-    act(() => requestHiveFocus({ conversationId: 'conv-1', runId: 'run-1' }));
-    expect(screen.getByTestId('project-host')).toHaveAttribute('data-collapsed', 'false');
-    act(() => requestHiveFocus({ conversationId: 'conv-1', runId: 'run-1' }));
-    expect(screen.getByTestId('project-host')).toHaveAttribute('data-collapsed', 'false');
-  });
-
-  it('ignores a Hive focus request belonging to another conversation', () => {
-    currentPathname = '/conversation/conv-1';
-    setCurrentProject('project-1');
-    setCurrentConversation('conv-1');
-    localStorage.setItem('project-panel-collapse:project-1', 'collapsed');
-    renderLayout();
-    act(() => requestHiveFocus({ conversationId: 'foreign', runId: 'run-1' }));
-    expect(screen.getByTestId('project-host')).toHaveAttribute('data-collapsed', 'true');
-    expect(screen.getByTestId('project-host')).not.toHaveAttribute('data-run');
-  });
-
-  it('opens no-project Hive on demand without adding another permanent workspace', () => {
+  it('puts the work panel beside the content on a conversation page, and nowhere else', () => {
     currentPathname = '/conversation/conv-1';
     setCurrentConversation('conv-1');
-    renderLayout();
-    expect(screen.queryByTestId('hive-panel')).not.toBeInTheDocument();
-    act(() => requestHiveFocus({ conversationId: 'conv-1', runId: 'run-1' }));
-    expect(screen.getByTestId('hive-panel')).toHaveTextContent('conv-1');
-    expect(screen.queryByTestId('project-host')).not.toBeInTheDocument();
-  });
-
-  it('drops the previous conversation Hive drawer on conversation change', () => {
-    currentPathname = '/conversation/conv-1';
-    setCurrentConversation('conv-1');
-    renderLayout();
-    act(() => requestHiveFocus({ conversationId: 'conv-1', runId: 'run-1' }));
-    expect(screen.getByTestId('hive-panel')).toHaveTextContent('conv-1');
+    const { container, unmount } = renderLayout();
+    const panel = screen.getByTestId('work-panel');
+    // A sibling of the route content in the one measured row: switching conversations never remounts it.
+    expect(panel.parentElement).toBe(container.querySelector('.layout-content')?.parentElement);
     act(() => setCurrentConversation('conv-2'));
-    expect(screen.queryByTestId('hive-panel')).not.toBeInTheDocument();
+    expect(screen.getByTestId('work-panel')).toBe(panel);
+    unmount();
+
+    currentPathname = '/guid';
+    renderLayout();
+    expect(screen.queryByTestId('work-panel')).not.toBeInTheDocument();
   });
 
   it('provides common shortcuts with a functional sider toggle', () => {
@@ -252,6 +235,19 @@ describe('Layout sider brand Home button', () => {
 
     act(() => shortcutMocks.params?.toggleSider());
     expect(sider).not.toHaveClass('collapsed');
+  });
+
+  it('collapses to a narrow rail on a desktop that keeps the mark, not to nothing', () => {
+    currentPathname = '/conversation/xyz';
+    const { container } = renderLayout();
+    const sider = container.querySelector('.layout-sider') as HTMLElement;
+
+    act(() => shortcutMocks.params?.toggleSider());
+    expect(sider).toHaveClass('collapsed');
+    expect(sider.style.width).toBe('56px');
+    expect(screen.getByTestId('sider-brand-mark')).toBeVisible();
+    // The sidebar's own content is still there, as a rail.
+    expect(screen.getByText('sider')).toBeInTheDocument();
   });
 
   it('keeps the common shortcut owner mounted on team routes', () => {
@@ -274,6 +270,25 @@ describe('Layout sider brand Home button', () => {
     for (let i = 0; i < 4; i++) fireEvent.click(icon);
     expect(openDevTools).toHaveBeenCalled();
     expect(navigate).not.toHaveBeenCalled();
+  });
+
+  it('says once, in a toast, that something outside a conversation needed the Node.js runtime put off at start', () => {
+    const info = vi.spyOn(Message, 'info').mockImplementation(() => () => {});
+    renderLayout();
+
+    act(() => {
+      // A conversation says so above its own composer; the backend's own check at start waits for nothing.
+      runtimeMocks.deferredFailure?.(missing('conversation', 'layout-conv'));
+      runtimeMocks.deferredFailure?.(missing('custom_agent', 'startup'));
+    });
+    expect(info).not.toHaveBeenCalled();
+
+    act(() => {
+      runtimeMocks.deferredFailure?.(missing('mcp', 'layout-fetch'));
+      runtimeMocks.deferredFailure?.(missing('custom_agent', 'layout-writer'));
+    });
+    expect(info).toHaveBeenCalledTimes(1);
+    expect(info).toHaveBeenCalledWith('common.nodeRuntime.toolNote');
   });
 
   it('opens the update notification directly for tray update checks', () => {

@@ -86,6 +86,7 @@ describe('Runtime event lines by the harness codes', () => {
       ['lessons', 'Checking lessons from earlier sessions', '正在查看以往会话中的经验'],
       ['skills', 'Choosing which skills this session needs', '正在挑选本次会话需要的技能'],
       ['capabilities', 'Choosing which capabilities this task needs', '正在挑选这个任务需要的能力'],
+      ['goal_check', 'Checking whether the goal holds', '正在检查目标是否达成'],
     ];
     for (const [code, english, chinese] of cases) {
       expect(both('progress', { step: 'english step', code })).toEqual([[english], [chinese]]);
@@ -210,7 +211,7 @@ describe('Runtime event lines by the harness codes', () => {
     };
     expect(both('frame.updated', payload)).toEqual([
       ['How does this change the task: “use pnpm”?', 'Which port should the server use?', 'Third?'],
-      ['这条消息会怎样改变任务：“use pnpm”？', 'Which port should the server use?', 'Third?'],
+      ['这条消息会怎样改变任务：「use pnpm」？', 'Which port should the server use?', 'Third?'],
     ]);
     expect(say(tw, 'frame.updated', payload, 'zh-TW')[0]).toBe('這則訊息會怎樣改變任務：「use pnpm」？');
     // Older sessions carry no codes; a code without its message keeps the question as written.
@@ -248,7 +249,7 @@ describe('Runtime event lines by the harness codes', () => {
         'yandex returned results that have nothing to do with the query, as engines do for clients they take for robots',
       ],
       [
-        '“altavista”不是可用的搜索来源（features.web.search）',
+        '「altavista」不是可用的搜索来源（features.web.search）',
         'bing 出错：ETIMEDOUT',
         'google 返回了人机验证页面：它把这个客户端当成了机器人',
         'brave 返回了 HTTP 503',
@@ -513,12 +514,12 @@ describe('Browser run lines', () => {
       [
         finished('needs_confirmation', 'not_confirmed', { label: 'Pay now' }, 'x'),
         'Needs confirmation: “Pay now” looks irreversible and was not confirmed.',
-        '需要确认：“Pay now”看起来无法撤销，且没有得到确认。',
+        '需要确认：「Pay now」看起来无法撤销，且没有得到确认。',
       ],
       [
         finished('blocked', 'no_value', { label: 'Email' }, 'x'),
         'Blocked: No value could be produced for “Email”.',
-        '受阻：无法为“Email”生成要填写的内容。',
+        '受阻：无法为「Email」生成要填写的内容。',
       ],
       [
         finished('blocked', 'stuck', { actions: 3 }, 'three actions in a row changed nothing'),
@@ -588,7 +589,7 @@ describe('Odd payloads', () => {
         frame: { openQuestions: [] },
         openQuestionCodes: [{ code: 'unclear_change', params: { message: 'use pnpm' } }, null],
       })
-    ).toEqual(['这条消息会怎样改变任务：“use pnpm”？']);
+    ).toEqual(['这条消息会怎样改变任务：「use pnpm」？']);
     // More problems than codes: the rest stay as written.
     expect(
       say(zh, 'web.search', {
@@ -616,7 +617,21 @@ describe('Odd payloads', () => {
 describe('Kinds without codes', () => {
   it('leaves other kinds to the generic summary', () => {
     expect(say(zh, 'memory.stored', { lesson: 'x' })).toBeUndefined();
-    expect(say(zh, 'board.switched', { on: true })).toBeUndefined();
+    expect(say(zh, 'inherit.found', { rules: 1, skills: 0, servers: 0, problems: 0 })).toBeUndefined();
+  });
+
+  it('says whether the board is on, not that it was switched: the harness reports it each time it starts', () => {
+    expect(both('board.switched', { on: true, cwd: '/p', model: null, modelChosen: false })).toEqual([
+      ['Board: on'],
+      ['看板：打开'],
+    ]);
+    expect(both('board.switched', { on: false, cwd: '/p', model: null, modelChosen: false })).toEqual([
+      ['Board: off'],
+      ['看板：关闭'],
+    ]);
+    expect(say(tw, 'board.switched', { on: false }, 'zh-TW')).toEqual(['看板：關閉']);
+    // Without a state there is nothing to say: the generic summary stands in.
+    expect(say(zh, 'board.switched', { on: 'yes' })).toBeUndefined();
   });
 
   it('has every sentence in en-US, zh-CN and zh-TW', () => {

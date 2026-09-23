@@ -109,6 +109,24 @@ describe('SingleChatEmptyState', () => {
     expect(screen.getByText('AI Assistant')).toBeInTheDocument();
   });
 
+  it('shows the name alone, no mark and no robot, when the assistant has no logo of its own', () => {
+    useSWRMock.mockReturnValue({
+      data: { id: 'conv-1', type: 'acp', name: '', extra: { backend: 'custom' } },
+    });
+    usePresetAssistantInfoMock.mockReturnValue({ info: { name: 'mu', logo: '', isEmoji: false, isFallback: true } });
+
+    const { rerender } = render(<SingleChatEmptyState conversation_id='conv-1' />);
+    const state = screen.getByTestId('single-chat-empty-state');
+    expect(screen.getByText('mu')).toBeInTheDocument();
+    expect(screen.queryByTestId('mu-mark')).not.toBeInTheDocument();
+    expect(state.querySelector('img, svg')).toBeNull();
+
+    usePresetAssistantInfoMock.mockReturnValue({ info: null });
+    rerender(<SingleChatEmptyState conversation_id='conv-1' />);
+    expect(screen.queryByTestId('mu-mark')).not.toBeInTheDocument();
+    expect(screen.getByTestId('single-chat-empty-state').querySelector('img, svg')).toBeNull();
+  });
+
   it('renders nothing until the conversation record loads', () => {
     useSWRMock.mockReturnValue({ data: undefined });
     usePresetAssistantInfoMock.mockReturnValue({ info: null });

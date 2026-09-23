@@ -1,42 +1,27 @@
-/* A section of the mu settings area: a heading, then cards. Each section is its own size container, so its rows
-   and the provider manager lay themselves out by the room they really have (page, modal or a narrow window). */
+/* A page of mu's settings: the page header, then plain panels. Each section is its own size container, so its rows
+   and the provider manager lay themselves out by the room they really have (a page or a narrow window). */
 .section {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
   container: mu-section / inline-size;
 }
 
-.heading {
+/* Several panels stacked, as one block of a page. */
+.stack {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 8px 16px;
-}
-
-.title {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 24px;
-}
-
-.description {
-  margin: 2px 0 0;
-  color: var(--text-secondary);
-  font-size: 12px;
-  line-height: 18px;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
 }
 
 .card {
   min-width: 0;
-  padding: 4px 16px;
-  border: 1px solid var(--color-border-2);
-  border-radius: 12px;
-  background: var(--bg-1);
+  padding: 0 16px;
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+  background: var(--bg-base);
 }
 
 .cardHead {
@@ -63,10 +48,11 @@
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 18px;
+  text-wrap: balance;
 }
 
 .cardBody {
-  border-top: 1px solid var(--color-border-1);
+  border-top: 1px solid var(--border-base);
 }
 
 .groupTitle {
@@ -76,13 +62,6 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   line-height: 18px;
-}
-
-.mono {
-  color: var(--text-secondary);
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-  font-size: 11px;
-  font-weight: 400;
 }
 
 .search {
@@ -101,6 +80,7 @@
   font-size: 12px;
   line-height: 18px;
   padding: 0 0 10px;
+  text-wrap: balance;
 }
 
 .dim {
@@ -111,16 +91,16 @@
 .choices {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .choice {
   display: flex;
   gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--color-border-2);
-  border-radius: 12px;
-  background: var(--bg-1);
+  padding: 12px 16px;
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+  background: var(--bg-base);
   cursor: pointer;
   transition:
     border-color 0.15s ease,
@@ -129,7 +109,7 @@
 }
 
 .choice:hover {
-  border-color: var(--mu-accent-border, rgb(var(--primary-3)));
+  border-color: var(--color-border-3);
 }
 
 .choice:focus-visible {
@@ -140,8 +120,7 @@
 .choiceActive,
 .choiceActive:hover {
   border-color: var(--mu-accent-border, rgb(var(--primary-5)));
-  background: var(--mu-accent-tint, rgb(var(--primary-1) / 45%));
-  box-shadow: 0 0 0 3px var(--mu-ring, rgb(var(--primary-2) / 45%));
+  background: var(--bg-base);
   cursor: default;
 }
 
@@ -152,7 +131,7 @@
   margin-top: 3px;
   border: 1.5px solid var(--color-border-3);
   border-radius: 50%;
-  background: var(--bg-1);
+  background: var(--bg-base);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -160,7 +139,7 @@
 
 .choiceActive .choiceRadio {
   border-color: rgb(var(--primary-6));
-  box-shadow: inset 0 0 0 3.5px var(--bg-1);
+  box-shadow: inset 0 0 0 3.5px var(--bg-base);
   background: rgb(var(--primary-6));
 }
 
@@ -195,11 +174,34 @@
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 18px;
+  text-wrap: balance;
 }
 
 .choiceBody {
   margin-top: 12px;
   cursor: auto;
+}
+
+/* The same choices as plain rows of the card they sit in (人话模型): no box of their own, hairlines between them. */
+.choiceRows {
+  display: flex;
+  flex-direction: column;
+}
+
+.choiceRows > .choice,
+.choiceRows > .choice:hover {
+  padding: 12px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.choiceRows > .choice + .choice {
+  border-top: 1px solid var(--border-base);
+}
+
+.choiceRows > .choice:focus-visible {
+  outline-offset: -2px;
 }
 
 .choiceField {
@@ -226,6 +228,12 @@
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 18px;
+  text-wrap: balance;
+}
+
+/* Laya further down the judge order: its panel in the card, spaced as a row. */
+.tierPanel {
+  padding: 10px 0;
 }
 
 /* Laya on this machine: where it stands, what can be done, and the script's last words while it works. */
@@ -275,25 +283,163 @@
   word-break: break-word;
 }
 
-.advancedToggle {
-  align-self: flex-start;
+.localJudgeModel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.localJudgeCommand {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.localJudgeCommand code {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--color-fill-1);
+  color: var(--text-primary);
+  font-family: var(--font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
+  font-size: 11px;
+  line-height: 16px;
+  word-break: break-all;
+  user-select: all;
+}
+
+/* Plain rows, laid out like the app's other settings pages: a panel of rows, each a readable title, one sentence and
+   its control (the features' switches, the decision points' modes). A feature's options are a page of their own. */
+.plainList {
+  display: flex;
+  flex-direction: column;
+  padding: 0 16px;
+  border: 1px solid var(--border-base);
+  border-radius: 8px;
+  background: var(--bg-base);
+}
+
+.plainRow + .plainRow {
+  border-top: 1px solid var(--border-base);
+}
+
+.plainMain {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 0;
+}
+
+.plainText {
+  flex: 1;
+  min-width: 0;
+}
+
+.plainTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.featureBeta {
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--mu-accent-fill, var(--color-primary-light-1));
+  color: var(--mu-accent-on, rgb(var(--primary-6)));
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.plainSummary {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  text-wrap: balance;
+}
+
+.plainNote {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+/* A feature's row: the way to its options page, then its switch. */
+.featureControls {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.featureOpen {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 2px 0;
-  border: 0;
-  background: none;
   color: var(--text-secondary);
   font-size: 12px;
-  cursor: pointer;
 }
 
-.advancedToggle:hover {
-  color: rgb(var(--primary-6));
-}
-
-.advanced {
+.featureReset {
   display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* The pages of a feature with more options than one page holds: where this one is, and the way on and back. */
+.featureParts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+@container mu-section (max-width: 520px) {
+  .plainList {
+    padding: 0 12px;
+  }
+}
+
+.plainControl {
+  display: flex;
+  flex-shrink: 0;
   flex-direction: column;
-  gap: 14px;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.plainMuted {
+  opacity: 0.55;
+}
+
+.groupLabel {
+  margin: 8px 0 -6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+@container mu-section (max-width: 560px) {
+  .plainMain {
+    flex-wrap: wrap;
+  }
+
+  .plainControl {
+    align-items: flex-start;
+  }
 }

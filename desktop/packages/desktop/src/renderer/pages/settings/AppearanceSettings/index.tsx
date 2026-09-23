@@ -5,14 +5,17 @@
  */
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import AppearanceModalContent from '@/renderer/components/settings/SettingsModal/contents/AppearanceModalContent';
-import SettingsPageWrapper from '../components/SettingsPageWrapper';
+import { SettingsPage } from '../components/SettingsPageHeader';
 
+/** How mu looks: the language, the theme, the type and the scale. The desktop pet is the next page. */
 const AppearanceSettings: React.FC = () => {
+  const { t } = useTranslation();
   return (
-    <SettingsPageWrapper>
+    <SettingsPage title={t('settings.appearancePanel')}>
       <AppearanceModalContent />
-    </SettingsPageWrapper>
+    </SettingsPage>
   );
 };
 

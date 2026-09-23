@@ -37,5 +37,13 @@ export const entryToRootRef = (entry: ProjectEntryDto): RootRef => ({
   runtimeStatus: entry.runtime_status,
 });
 
-/** Full project detail → ordered pe roots for the projection. */
-export const toRootRefs = (detail: ProjectDetailDto): RootRef[] => detail.explorer.entries.map(entryToRootRef);
+/**
+ * Full project detail → ordered pe roots for the projection. `workspaceTitle`, when given, names the workspace root
+ * instead of its folder: a conversation without a project works in a temporary folder the app made, whose name
+ * (`acp-temp-6d952732`) means nothing to the person.
+ */
+export const toRootRefs = (detail: ProjectDetailDto, workspaceTitle?: string): RootRef[] =>
+  detail.explorer.entries.map((entry) => {
+    const root = entryToRootRef(entry);
+    return workspaceTitle && entry.pe_id === detail.explorer.workspace_pe_id ? { ...root, title: workspaceTitle } : root;
+  });

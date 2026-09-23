@@ -360,6 +360,17 @@ describe('httpBridge', () => {
       expect(isBackendHttpError(null)).toBe(false);
       expect(isBackendHttpError('string')).toBe(false);
     });
+
+    it('shows the upstream product names in its messages as mu and keeps the raw body', () => {
+      const body = { error: 'AionCore could not reach AionUi', code: 'AIONUI_INTERNAL_ERROR' };
+      const err = new BackendHttpError({ method: 'GET', path: '/api/aionui/x', status: 500, body });
+      expect(err.backendMessage).toBe('mu could not reach mu');
+      expect(err.message).toBe(
+        'Backend GET /api/aionui/x failed (500): {"error":"mu could not reach mu","code":"AIONUI_INTERNAL_ERROR"}'
+      );
+      expect(err.code).toBe('AIONUI_INTERNAL_ERROR');
+      expect(err.body).toBe(body);
+    });
   });
 
   describe('wsEmitter', () => {

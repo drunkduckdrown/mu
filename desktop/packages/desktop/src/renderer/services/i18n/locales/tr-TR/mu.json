@@ -7,16 +7,36 @@
   "modified": "Değiştirildi",
   "applyNote": "Değişiklikler yeni oturumlarda geçerli olur. Çalışan bir oturum başladığı yapılandırmayı korur; değişiklikleri alması için yeniden bağlayın.",
   "apiKey": "API anahtarı",
-  "keyHelp": "Yalnızca yazılır: kaydedildikten sonra bir daha gösterilmez. Bu makinede çalışma zamanının .env dosyasında tutulur (yalnızca sahibi okuyabilir).",
+  "keyHelp": "Kaydedildikten sonra bir daha gösterilmez. Yalnızca bu bilgisayarda kalır ve yalnızca sizin hesabınız okuyabilir.",
   "keyKeep": "Kayıtlı anahtarı korumak için boş bırakın",
   "endpointRule": "HTTPS kullanın; HTTP yalnızca bu makine için (127.0.0.1, localhost). Adreste kullanıcı adı, şifre, sorgu veya parça bulunmamalı.",
   "sections": {
     "judges": "Hakemler",
+    "judgeTiers": "Hakem kademeleri",
     "decisions": "Karar noktaları",
     "features": "Özellikler",
-    "models": "Modeller ve sağlayıcılar",
+    "moreFeatures": "Diğer özellikler",
+    "providers": "Sağlayıcılar",
+    "defaultModel": "Varsayılan model",
     "permissions": "İzinler",
     "context": "Bağlam"
+  },
+  "pages": {
+    "decisions": {
+      "input": "Karar noktaları: Girdi",
+      "context": "Karar noktaları: Bağlam",
+      "memory": "Karar noktaları: Dersler",
+      "tools": "Karar noktaları: Araçlar ve güvenlik",
+      "turn": "Karar noktaları: Tur",
+      "team": "Karar noktaları: Ekip çalışması"
+    },
+    "features": {
+      "input": "Diğer özellikler: Girdi",
+      "context": "Diğer özellikler: Bağlam",
+      "tools": "Diğer özellikler: Araçlar ve güvenlik",
+      "turn": "Diğer özellikler: Tur",
+      "other": "Diğer özellikler: Diğer"
+    }
   },
   "modes": {
     "active": "Etkin",
@@ -24,11 +44,11 @@
     "off": "Kapalı",
     "activeHelp": "Karar uygulanır.",
     "shadowHelp": "Sorulur ve kaydedilir, ama hiçbir şey değişmez.",
-    "offHelp": "Soru sorulmaz. Sade pi gibi davranır."
+    "offHelp": "Soru sorulmaz. O adım karar olmadan devam eder."
   },
   "harness": {
-    "tooOld": "Bu çalışma zamanı, karar noktalarını ve özelliklerini tanımlayamayacak kadar eski. Bunları burada görmek için mu çalışma zamanını güncelleyin; temel ayarlar yine de çalışır.",
-    "unsupported": "Çalışma zamanı kendini bu uygulamanın tanımadığı bir biçimde tanımlıyor (sürüm {{version}}). Karar noktalarını ve özellikleri düzenlemek için uygulamayı güncelleyin."
+    "tooOld": "Bu mu sürümü, karar noktalarını ve özelliklerini listeleyemeyecek kadar eski. Bunları burada görmek için mu’yu güncelleyin; temel ayarlar yine de çalışır.",
+    "unsupported": "mu kendini bu uygulamanın tanımadığı bir biçimde tanımlıyor (sürüm {{version}}). Karar noktalarını ve özellikleri düzenlemek için uygulamayı güncelleyin."
   },
   "load": {
     "failed": "Ayarlar yüklenemedi"
@@ -43,7 +63,7 @@
     "failed": "Kaydedilemedi: {{reason}}"
   },
   "units": {
-    "ms": "ms",
+    "s": "sn",
     "tokens": "token"
   },
   "options": {
@@ -62,59 +82,58 @@
     "description": "Hakeme soru sorulan her nokta. Bir noktaya kendi modunu vermedikçe varsayılan modu izler.",
     "defaultMode": "Varsayılan mod",
     "defaultModeHelp": "Kendi modu olmayan her karar noktası için.",
-    "follow": "Varsayılanı izle ({{mode}})",
-    "feature": "Özellik: {{name}}",
+    "useDefault": "Varsayılana dön ({{mode}})",
     "featureOff": "Özellik kapalı: soru sorulmaz",
     "groups": {
       "input": "Girdi",
       "context": "Bağlam",
+      "memory": "Dersler",
       "tools": "Araçlar ve güvenlik",
       "turn": "Tur",
       "team": "Ekip çalışması"
     },
-    "otherGroup": "Diğer"
+    "otherGroup": "Diğer",
+    "pageLead": "Bir noktaya kendi modunu vermedikçe varsayılan modu izler. Varsayılan mod ve arama “{{page}}” sayfasında.",
+    "none": "Burada henüz karar noktası yok."
   },
   "features": {
-    "description": "mu çalışma zamanının model çevresinde yaptığı işler. Değiştirmediğiniz değerler çalışma zamanının varsayılanlarını izlemeye devam eder.",
+    "lead": "mu'nun arka planda sizin için yaptıkları. Birini kapatırsanız mu onu yapmayı bırakır.",
+    "moreLead": "mu’nun yapabildiği diğer her şey, etki ettiği yere göre gruplandı. Her özelliğin seçenekleri bir tık uzakta.",
     "beta": "Beta",
     "reset": "Varsayılanlara dön",
-    "asks": "Karar noktaları: {{names}}.",
     "permissionsElsewhere": "Yeni bir konuşmanın modu İzinler bölümünde seçilir.",
-    "boardModelElsewhere": "Panoyu yazan model, Modeller ve sağlayıcılar bölümünde seçilir."
+    "boardModelElsewhere": "Panoyu yazan model, Varsayılan model bölümünde seçilir.",
+    "options": "Seçenekler",
+    "noOptions": "Ayarlanacak başka bir şey yok: yalnızca anahtar var.",
+    "noSuchFeature": "mu’nun bu sürümünde böyle bir özellik yok.",
+    "none": "Burada henüz özellik yok.",
+    "part": "Seçenekler, sayfa {{part}}/{{parts}}",
+    "previousPart": "Önceki sayfa",
+    "nextPart": "Sonraki sayfa"
   },
   "judges": {
-    "tiers": "Kademeler",
     "tiersHelp": "Hakemler sırayla denenir. Sonraki hakem yalnızca öncekilerin emin olamadığı soruları görür.",
     "order": "Sıra",
-    "judge": "Hakem",
+    "orderHelp": "İlki, Hakemler sayfasında seçilen hakemdir.",
+    "tierTitle": "{{index}}. kademe: {{name}}",
     "type": "Erişim yolu",
+    "access": {
+      "jev": "Otomatik",
+      "typesafe": "Doğrudan TypeSafe",
+      "gateway": "Vercel AI Gateway üzerinden"
+    },
     "model": "Hakem modeli",
-    "modelHelp": "Hakem olarak genel bir model için: provider/model-id.",
-    "endpoint": "Uç nokta",
+    "customTier": "Kendi eklediğiniz bir hakem. Değiştirmek için mu'nun ayar dosyasını düzenleyin.",
     "endpointDefault": "Hizmetin varsayılan adresi",
-    "timeout": "Zaman aşımı",
-    "keyVariable": "Anahtar değişkeni",
-    "keyVariableHelp": "TYPESAFE_API_KEY, AI_GATEWAY_API_KEY veya MU_JUDGE_ ile başlayan bir ad.",
     "types": {
-      "jev": "Jev (otomatik yol)",
-      "typesafe": "Jev, doğrudan (TypeSafe)",
-      "gateway": "Vercel AI Gateway üzerinden Jev",
-      "local": "Yerel hakem (Laya)",
-      "http": "Kendi HTTP hakem hizmetiniz",
-      "llm": "Hakem olarak genel bir model",
-      "mock": "Sahte (tarafsız yanıtlar)",
       "jevHelp": "Anahtarı ayarlıysa doğrudan TypeSafe, değilse Vercel AI Gateway.",
       "typesafeHelp": "Her zaman doğrudan TypeSafe.",
       "gatewayHelp": "Her zaman Vercel AI Gateway üzerinden.",
-      "localHelp": "Bu makinede çalışan Laya yardımcı hizmeti.",
-      "httpHelp": "{state, questions} alıp {answers} döndüren herhangi bir uç nokta.",
-      "llmHelp": "Sağlayıcılarınızdan, JSON olarak yanıt vermesi istenen üretken bir model.",
-      "mockHelp": "Testler ve çevrimdışı çalışma için: hiçbir şey sorulmaz."
+      "localHelp": "Bu bilgisayarda çalışır."
     },
     "intro": "mu çalışırken pek çok küçük soruyla karşılaşır: bu mesaj nasıl ele alınmalı, bu adım koyduğunuz bir kuralı çiğniyor mu? Bunları hakem yanıtlar. Birini seçin.",
     "choose": "Bir hakem seçin",
-    "custom": "Şu an ilk sıradaki hakem özel bir hakem: Gelişmiş altında görüp değiştirebilirsiniz.",
-    "advanced": "Gelişmiş",
+    "custom": "Şu an ilk sıradaki hakem özel bir hakem: Hakem kademeleri sayfasında görüp değiştirebilirsiniz.",
     "keyPlaceholder": "TypeSafe veya Vercel AI Gateway anahtarını yapıştırın",
     "choices": {
       "jev": {
@@ -133,7 +152,7 @@
       "running": "Bu makinede çalışıyor",
       "stopped": "Kurulu, çalışmıyor. mu gerektiğinde onu başlatır.",
       "missing": "Henüz kurulu değil.",
-      "platform": "Laya bu bilgisayarda çalışamaz: Apple Silicon işlemcili bir Mac gerekir. Gelişmiş bölümünde kendi hakem hizmetinizin adresini girebilirsiniz.",
+      "platform": "Laya bu bilgisayarda çalışamaz: Windows veya Linux (x64 ya da arm64) ya da Apple Silicon işlemcili bir Mac gerekir.",
       "needsUv": "Kurulum için bir Python paket yöneticisi olan uv gerekiyor. Onu kurun, sonra buraya dönün.",
       "uvLink": "uv nasıl kurulur",
       "install": "Laya'yı kur",
@@ -151,6 +170,26 @@
         "setup": "Kurulum tamamlanmadı. Yeniden deneyebilirsiniz.",
         "start": "Laya başlamadı.",
         "stop": "Laya durmadı."
+      },
+      "onnx": {
+        "missing": "Laya'nın modeli henüz bu bilgisayarda yok (yaklaşık {{size}} MB). mu onu sizin yerinize indirmez: dosyaları Hugging Face'ten indirip model klasörüne koyun, ardından \"Denetle ve başlat\"a basın.",
+        "stopped": "Model yerinde, Laya çalışmıyor. Hakem olarak Laya seçiliyse mu, uygulama açıldığında onu kendisi başlatır.",
+        "starting": "Model denetleniyor ve Laya başlatılıyor… İlk denetim modelin tamamını okur, biraz sürer.",
+        "missingFiles": "Hâlâ eksik: {{files}}",
+        "wrongFiles": "mu ile test edilen sürüm değil, yeniden indirin: {{files}}",
+        "folder": "Model klasörü: {{folder}}",
+        "command": "Hugging Face komut satırı (hf) varsa bu tek komut her şeyi indirir:",
+        "page": "Hugging Face'ten al",
+        "openFolder": "Model klasörünü aç",
+        "check": "Denetle ve başlat",
+        "problem": {
+          "missing": "Bazı model dosyaları eksik.",
+          "wrong": "Bazı model dosyaları mu ile test edilen sürüm değil. Yeniden indirin.",
+          "runtime": "Bu bilgisayar modeli çalıştıramadı.",
+          "port": "Laya'nın bağlantı noktasını ({{port}}) başka bir program kullanıyor.",
+          "stopped": "Laya hazır olmadan durdu.",
+          "foreign": "Burada mu'nun başlatmadığı bir Laya çalışıyor. Onu başlatıldığı yerden durdurun."
+        }
       }
     }
   },
@@ -163,14 +202,12 @@
     "manual": "Ayarlandı (elle)"
   },
   "context": {
-    "description": "Konuşmanın ne zaman ve nasıl sıkıştırılacağı. pi'nin settings.json dosyasıyla ortaktır.",
+    "description": "Konuşmanın ne zaman ve nasıl sıkıştırılacağı. mu’nun ayar dosyasında tutulur; komut satırındaki mu da aynı dosyayı kullanır.",
     "auto": "Otomatik sıkıştırma",
     "autoHelp": "Bağlam neredeyse dolduğunda geçmişi sıkıştırır.",
     "limit": "Bağlam sınırı",
     "limitHelp": "0 ise modelin penceresi, ayrılan pay düşülerek kullanılır. Aksi hâlde {{min}} ile {{max}} arası. Sonraki model isteğinden önce kontrol edilir; kesin bir sınır değildir.",
-    "limitProblem": "0 ya da {{min}} ile {{max}} arasında bir tam sayı girin.",
-    "beta": "Özetsiz sıkıştırma",
-    "betaHelp": "Özet yazmak yerine özgün bölümleri hakemin kararıyla korur ya da budar. Sıkıştırma özelliğindeki ayarın aynısıdır."
+    "limitProblem": "0 ya da {{min}} ile {{max}} arasında bir tam sayı girin."
   },
   "permissions": {
     "description": "mu'nun bir işlem yapmadan önce size sorup sormayacağını belirler. Her yeni konuşma bu modda başlar; her konuşmanın modu yine de kendi mesaj alanındaki “İzinler” menüsünden değiştirilebilir.",
@@ -229,7 +266,7 @@
     "flagged": "Riskli: {{flag}}."
   },
   "providers": {
-    "lead": "Modellerin nereden geldiği: abonelikler ve uç noktalar; ayrıca sade dildeki panoyu yazan model. Bir konuşmanın modeli ve düşünme düzeyi, o konuşmanın mesaj alanında seçilir.",
+    "lead": "Modellerin nereden geldiği: abonelikler ve uç noktalar. Bir konuşmanın modeli ve düşünme düzeyi, o konuşmanın mesaj alanında seçilir.",
     "title": "Sağlayıcılar",
     "custom": "Özel sağlayıcılar",
     "manualGroup": "Elle yazılmış",
@@ -242,7 +279,7 @@
     "name": "Görünen ad",
     "namePlaceholder": "örn. Proxy'm",
     "id": "ID",
-    "idHelp": "Küçük harf, rakam ve kısa çizgi. Kaydedildikten sonra değiştirilemez; provider/model biçiminde kullanılır.",
+    "idHelp": "Küçük harf, rakam ve kısa çizgi. Kaydedildikten sonra değiştirilemez.",
     "idProblem": {
       "format": "Küçük harf, rakam ve kısa çizgi kullanın; harf ya da rakamla başlasın (en fazla 40).",
       "reserved": "Bu, yerleşik bir sağlayıcının ID'si. Bunun altındaki bir kayıt yeni bir sağlayıcı eklemek yerine o sağlayıcıyı yeniden yönlendirir.",
@@ -251,7 +288,6 @@
     "baseUrl": "Temel URL",
     "keyEnter": "API anahtarını yapıştırın",
     "keyReplace": "Elle yazılmış bir anahtar kullanılıyor. Buraya yazdığınız anahtar onun yerini alır.",
-    "keyHelp": "Çalışma zamanının .env dosyasına {{variable}} olarak kaydedilir; models.json yalnızca referansı tutar. Bir daha gösterilmez.",
     "authHeader": "Authorization: Bearer başlığını da gönder (bazı proxy'ler bunu ister)",
     "headers": "Elle yazılmış ek başlıklar olduğu gibi korunur: {{names}}. Değerleri gizlidir ve models.json içinde düzenlenir.",
     "pick": "Soldan bir sağlayıcı seçin ya da yeni bir tane ekleyin.",
@@ -276,6 +312,18 @@
     "removeUnsaved": "Henüz kaydedilmedi; burada doldurduklarınız atılır.",
     "removeEntry": "Kaydettiğinizde bu elle yazılmış kayıt models.json dosyasından silinir. Yerleşik bir sağlayıcıyı geçersiz kılıyorsa o sağlayıcı varsayılanlarına döner.",
     "removeDefault": "Yeni oturumlar bununla başlıyor, bu yüzden varsayılan model de temizlenir."
+  },
+  "defaults": {
+    "summary": "What a new session starts with. You can still switch inside a conversation.",
+    "provider": "Sağlayıcı",
+    "model": "Model",
+    "level": "Düşünme düzeyi",
+    "levelUnset": "Belirtme",
+    "levelHelp": "Levels this model does not take are disabled.",
+    "levelClamped": "Not set means medium. A level the model does not take becomes the nearest one it does.",
+    "noReasoning": "This model does not think, so a session with it always starts with thinking off.",
+    "notSet": "Belirtilmedi",
+    "pickProvider": "Choose a provider first."
   },
   "accounts": {
     "signIn": "Giriş yap",
@@ -344,7 +392,7 @@
   },
   "test": {
     "run": "Bağlantıyı sına",
-    "hint": "Bu uygulamadan tek bir küçük istek gönderilir: model listesi, o alınamazsa ilk modelle tek bir token.",
+    "hint": "Bu uygulamadan tek bir küçük istek gönderilir: model listesi, o alınamazsa ilk modelden tek kelimelik bir yanıt.",
     "okModels": "Bağlandı ({{ms}} ms). Uç nokta {{count, number}} model listeliyor.",
     "okCompletion": "Bağlandı ({{ms}} ms). Model yanıt verdi.",
     "auth": "Anahtar reddedildi (HTTP {{status}}).",
@@ -418,7 +466,6 @@
       },
       "anthropic": {
         "title": "Anthropic uyumlu API",
-        "tag": "Claude",
         "description": "Claude ve Messages biçimini kullanan hizmetler",
         "modelPlaceholder": "örn. claude-sonnet-5"
       },

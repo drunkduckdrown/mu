@@ -186,7 +186,7 @@ describe('the line, in the language of the app', () => {
   it('says what Jev made of the message, in Chinese and in English', () => {
     const chat = jev({ title: 'JeV · chat', rawOutput: { turnType: 'chat', state: 'applied', by: 'jev-latest' } });
     const zh = showLine('zh', chat);
-    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^Jev 归类为闲聊$/);
+    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^JeV 归类为闲聊$/);
     zh.unmount();
     showLine('en', chat);
     expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^Classified by Jev: Conversation$/);
@@ -197,7 +197,7 @@ describe('the line, in the language of the app', () => {
       'zh',
       jev({ title: 'JeV · research', rawOutput: { turnType: 'research', state: 'shadow' } })
     );
-    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('Jev 归类为调研（仅观察，没有生效）');
+    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('JeV 归类为调研（仅观察，没有生效）');
     unmount();
     const late = showLine('zh', jev({ title: 'JeV · chat', rawOutput: { turnType: 'chat', state: 'late' } }));
     expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('（来晚了，这一轮没用上）');
@@ -212,7 +212,7 @@ describe('the line, in the language of the app', () => {
     expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('No class from Jev this time');
     none.unmount();
     showLine('zh', jev({ title: 'JeV · Classifying', status: 'in_progress' }));
-    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('Jev 正在归类…');
+    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('JeV 正在归类…');
   });
 
   it('names a class it has no word for as "other", never by its raw id', () => {
@@ -223,7 +223,7 @@ describe('the line, in the language of the app', () => {
         rawOutput: { turnType, state: 'applied', preflight: 'verdict' },
       });
       const zh = showLine('zh', message);
-      expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^Jev 归类为其他$/);
+      expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^JeV 归类为其他$/);
       zh.unmount();
       const en = showLine('en', message);
       expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(/^Classified by Jev: Other$/);

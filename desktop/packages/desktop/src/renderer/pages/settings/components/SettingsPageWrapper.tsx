@@ -5,29 +5,24 @@ import {
   SettingsTabNavigateProvider,
   SettingsViewModeProvider,
 } from '@/renderer/components/settings/SettingsModal/settingsViewContext';
-import { isElectronDesktop, resolveExtensionAssetUrl } from '@/renderer/utils/platform';
-import { type IExtensionSettingsTab } from '@/common/adapter/ipcBridge';
-import { useExtensionSettingsTabs } from '@/renderer/hooks/system/useExtensionSettingsTabs';
-import {
-  Cat,
-  Communication,
-  Computer,
-  Earth,
-  Inbox,
-  Info,
-  Lightning,
-  LinkCloud,
-  Puzzle,
-  Robot,
-  System,
-  Toolkit,
-} from '@icon-park/react';
-import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useExtI18n } from '@/renderer/hooks/system/useExtI18n';
-import { MU_TABS, muTabPath } from '@/renderer/pages/settings/KyrnSettings/navigation';
-import { BUILTIN_TAB_IDS, LEGACY_ANCHOR_REMAP } from './SettingsSider';
+import { isSettingsRouteActive } from '../settingsNav';
+import { useSettingsNav } from './SettingsSider';
 import './settings.css';
+
+/**
+ * The one frame of a settings page: the side gutter, the column (880px, centred) and the space above the title. A page
+ * that keeps its header out of its scroll body (the assistants, the scheduled tasks) lays itself out with the same
+ * three, so every page has its title in the same place and the same width.
+ */
+export const SETTINGS_PAGE_GUTTER = 'px-16px md:px-32px';
+export const SETTINGS_PAGE_COLUMN = 'mx-auto w-full md:max-w-880px';
+export const SETTINGS_PAGE_TOP = 'pt-16px md:pt-24px';
+/**
+ * A sticky header takes back exactly the space above it, as margin, and returns it as padding: it then sits where a
+ * plain header would, and its title lands at the same height as every other page's.
+ */
+export const SETTINGS_PAGE_STICKY_TOP = '-mt-16px pt-16px md:-mt-24px md:pt-24px';
 
 interface SettingsPageWrapperProps {
   children: React.ReactNode;
@@ -35,153 +30,30 @@ interface SettingsPageWrapperProps {
   contentClassName?: string;
 }
 
-type NavItem = { label: string; icon: React.ReactElement; path: string; id: string };
-
-type TranslateFn = (key: string, options?: { defaultValue?: string }) => string;
-
-export function getBuiltinSettingsNavItems(isDesktop: boolean, t: TranslateFn): NavItem[] {
-  const builtinMap: Record<string, NavItem> = {
-    ...Object.fromEntries(
-      MU_TABS.map(({ id, section, Icon }) => [
-        id,
-        { id, label: t(`mu.sections.${section}`), icon: <Icon theme='outline' size='16' />, path: muTabPath(section) },
-      ])
-    ),
-    model: { id: 'model', label: t('settings.model'), icon: <LinkCloud theme='outline' size='16' />, path: 'model' },
-    assistants: {
-      id: 'assistants',
-      label: t('settings.assistants', { defaultValue: 'Assistants' }),
-      icon: <Robot theme='outline' size='16' />,
-      path: 'assistants',
-    },
-    agent: {
-      id: 'agent',
-      label: t('settings.agents', { defaultValue: 'Agents' }),
-      icon: <Robot theme='outline' size='16' />,
-      path: 'agent',
-    },
-    skills: {
-      id: 'skills',
-      label: t('settings.skills', { defaultValue: 'Skills' }),
-      icon: <Lightning theme='outline' size='16' />,
-      path: 'skills',
-    },
-    tools: {
-      id: 'tools',
-      label: t('settings.tools', { defaultValue: 'Tools' }),
-      icon: <Toolkit theme='outline' size='16' />,
-      path: 'tools',
-    },
-    appearance: {
-      id: 'appearance',
-      label: t('settings.appearancePanel'),
-      icon: <Computer theme='outline' size='16' />,
-      path: 'appearance',
-    },
-    webui: {
-      id: 'webui',
-      label: t('settings.webui'),
-      icon: isDesktop ? <Earth theme='outline' size='16' /> : <Communication theme='outline' size='16' />,
-      path: 'webui',
-    },
-    pet: { id: 'pet', label: t('pet.desktopPet'), icon: <Cat theme='outline' size='16' />, path: 'pet' },
-    system: { id: 'system', label: t('settings.system'), icon: <System theme='outline' size='16' />, path: 'system' },
-    archived: {
-      id: 'archived',
-      label: t('settings.archived.navLabel'),
-      icon: <Inbox theme='outline' size='16' />,
-      path: 'archived',
-    },
-    about: { id: 'about', label: t('settings.about'), icon: <Info theme='outline' size='16' />, path: 'about' },
-  };
-
-  return BUILTIN_TAB_IDS.map((id) => builtinMap[id]);
-}
-
 const SettingsPageWrapper: React.FC<SettingsPageWrapperProps> = ({ children, className, contentClassName }) => {
   const layout = useLayoutContext();
   const isMobile = layout?.isMobile ?? false;
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { t } = useTranslation();
-  const isDesktop = isElectronDesktop();
-
-  const extensionTabs = useExtensionSettingsTabs();
-
-  const { resolveExtTabName } = useExtI18n();
-
-  const menuItems = React.useMemo(() => {
-    const builtins = getBuiltinSettingsNavItems(isDesktop, t);
-
-    // Insert extension tabs before system (unanchored default) or at anchor position
-    const result = [...builtins];
-    const unanchored: IExtensionSettingsTab[] = [];
-    const beforeMap = new Map<string, IExtensionSettingsTab[]>();
-    const afterMap = new Map<string, IExtensionSettingsTab[]>();
-
-    for (const tab of extensionTabs) {
-      if (!tab.position) {
-        unanchored.push(tab);
-        continue;
-      }
-      const { relativeTo: rawAnchor, placement } = tab.position;
-      const anchor = LEGACY_ANCHOR_REMAP[rawAnchor] ?? rawAnchor;
-      if (!result.some((item) => item.id === anchor)) {
-        unanchored.push(tab);
-        continue;
-      }
-      const map = placement === 'before' ? beforeMap : afterMap;
-      let list = map.get(anchor);
-      if (!list) {
-        list = [];
-        map.set(anchor, list);
-      }
-      list.push(tab);
-    }
-
-    const toNavItem = (tab: IExtensionSettingsTab): NavItem => {
-      const resolvedIcon = resolveExtensionAssetUrl(tab.icon) || tab.icon;
-      return {
-        id: tab.id,
-        label: resolveExtTabName(tab),
-        icon: resolvedIcon ? (
-          <img src={resolvedIcon} alt='' className='w-16px h-16px object-contain' />
-        ) : (
-          <Puzzle theme='outline' size='16' />
-        ),
-        path: `ext/${tab.id}`,
-      };
-    };
-
-    for (let i = result.length - 1; i >= 0; i--) {
-      const id = result[i].id;
-      const afters = afterMap.get(id);
-      if (afters) result.splice(i + 1, 0, ...afters.map(toNavItem));
-      const befores = beforeMap.get(id);
-      if (befores) result.splice(i, 0, ...befores.map(toNavItem));
-    }
-
-    if (unanchored.length > 0) {
-      const sysIdx = result.findIndex((item) => item.id === 'system');
-      const idx = sysIdx >= 0 ? sysIdx : result.length;
-      result.splice(idx, 0, ...unanchored.map(toNavItem));
-    }
-
-    return result;
-  }, [isDesktop, t, extensionTabs, resolveExtTabName]);
+  // On a phone the rail is folded away: the same entries, in the same order, as a row of chips on top.
+  const groups = useSettingsNav();
+  const menuItems = React.useMemo(() => groups.flatMap((group) => group.items), [groups]);
 
   // Keep only horizontal padding on the scroll container — vertical padding is
   // moved to the content layer below. A sticky header inside a scroll container
-  // with top padding would otherwise stick 32px down, letting content peek
+  // with top padding would otherwise stick that far down, letting content peek
   // through the gap above it.
   const containerClass = classNames(
     'settings-page-wrapper w-full min-h-full box-border overflow-y-auto',
-    isMobile ? 'px-16px' : 'px-12px md:px-40px',
+    isMobile ? 'px-16px' : SETTINGS_PAGE_GUTTER,
     className
   );
 
   const contentClass = classNames(
-    'settings-page-content mx-auto w-full md:max-w-1024px py-14px md:py-32px',
+    'settings-page-content',
+    SETTINGS_PAGE_COLUMN,
+    SETTINGS_PAGE_TOP,
+    'pb-16px md:pb-24px',
     contentClassName
   );
 
@@ -199,7 +71,7 @@ const SettingsPageWrapper: React.FC<SettingsPageWrapperProps> = ({ children, cla
           {isMobile && (
             <div className='settings-mobile-top-nav'>
               {menuItems.map((item) => {
-                const active = pathname.includes(`/settings/${item.path}`);
+                const active = isSettingsRouteActive(pathname, `/settings/${item.path}`);
                 return (
                   <button
                     key={item.path}
@@ -211,7 +83,16 @@ const SettingsPageWrapper: React.FC<SettingsPageWrapperProps> = ({ children, cla
                       void navigate(`/settings/${item.path}`, { replace: true });
                     }}
                   >
-                    <span className='settings-mobile-top-nav__icon'>{item.icon}</span>
+                    <span className='settings-mobile-top-nav__icon'>
+                      {item.isImageIcon ? (
+                        <span className='w-16px h-16px flex items-center justify-center'>{item.icon}</span>
+                      ) : (
+                        React.cloneElement(item.icon as React.ReactElement<{ theme?: string; size?: string }>, {
+                          theme: 'outline',
+                          size: '16',
+                        })
+                      )}
+                    </span>
                     <span className='settings-mobile-top-nav__label'>{item.label}</span>
                   </button>
                 );

@@ -1,5 +1,28 @@
 /* Sendbox component styles */
 
+/* The composer: one floating pill, white on a light page and a shade above the page on a dark one (the same
+   surface as the new-conversation card), a hairline around it and a soft neutral shadow under it. Focus darkens
+   the hairline and lifts the shadow; nothing in the box is tinted. The send button is the only colour in it. */
+.sendbox-panel {
+  background-color: var(--mu-composer-bg, var(--fill-white-to-black));
+  border: 1px solid var(--mu-input-border, var(--color-border-2));
+  box-shadow: var(--mu-shadow-1, none);
+  transition:
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+
+.sendbox-panel--active {
+  border-color: var(--color-border-3);
+  box-shadow: var(--mu-shadow-2, none);
+}
+
+/* A file held over the box: the outline turns dashed; the surface stays as it is. */
+.sendbox-panel--dragging {
+  border-style: dashed;
+  border-color: var(--color-border-4);
+}
+
 /* Send button layout - keep Arco primary states from drawing a square block */
 .send-button-custom,
 .send-button-custom.arco-btn,
@@ -128,12 +151,14 @@
   height: 20px;
 }
 
+/* The draft action is a second way to send, not the send button: it stays monochrome, so the send button is
+   the only colour in the box. */
 .sendbox-draft-tool-action--enabled,
 .sendbox-draft-tool-action--enabled.arco-btn,
 .sendbox-draft-tool-action--enabled.arco-btn-secondary {
-  background-color: rgb(var(--primary-6)) !important;
-  border-color: rgb(var(--primary-6)) !important;
-  color: var(--text-white) !important;
+  background-color: var(--color-fill-2) !important;
+  border-color: var(--color-fill-2) !important;
+  color: var(--color-text-1) !important;
 }
 
 .sendbox-draft-tool-action--enabled:not(:disabled):hover,
@@ -144,9 +169,9 @@
 .sendbox-draft-tool-action--enabled.arco-btn:not(:disabled):focus,
 .sendbox-draft-tool-action--enabled:not(:disabled):focus-visible,
 .sendbox-draft-tool-action--enabled.arco-btn:not(:disabled):focus-visible {
-  background-color: rgb(var(--primary-7)) !important;
-  border-color: rgb(var(--primary-7)) !important;
-  color: var(--text-white) !important;
+  background-color: var(--color-fill-3) !important;
+  border-color: var(--color-fill-3) !important;
+  color: var(--color-text-1) !important;
 }
 
 .sendbox-draft-tool-action--disabled,
@@ -277,7 +302,8 @@ body[arco-theme='dark'] .sendbox-panel .send-button-custom--disabled svg * {
   transform: none !important;
 }
 
-/* Conversation sendbox model/permission pills: blend into background */
+/* Conversation sendbox chips (mode, model, permission): monochrome text in a hairline
+   outline. No fill of their own — the send button is the only colour in the box. */
 .sendbox-tools .sendbox-model-btn,
 .sendbox-tools .sendbox-model-btn:hover,
 .sendbox-tools .sendbox-model-btn:active,
@@ -289,7 +315,7 @@ body[arco-theme='dark'] .sendbox-panel .send-button-custom--disabled svg * {
 .sendbox-actions .sendbox-model-btn:focus,
 .sendbox-actions .sendbox-model-btn:focus-visible {
   background: transparent !important;
-  border: none !important;
+  border: 1px solid var(--color-border-2) !important;
   box-shadow: none !important;
   color: var(--text-secondary) !important;
 }
@@ -302,7 +328,14 @@ body[arco-theme='dark'] .sendbox-panel .send-button-custom--disabled svg * {
 .sendbox-actions .sendbox-model-btn:active,
 .sendbox-actions .sendbox-model-btn:focus,
 .sendbox-actions .sendbox-model-btn:focus-visible {
+  border-color: var(--color-border-3) !important;
   color: var(--text-primary) !important;
+}
+
+/* A read-only pill states a fact; it is not a target, so it keeps no outline. */
+.sendbox-tools .agent-mode-compact-pill--readonly,
+.sendbox-actions .agent-mode-compact-pill--readonly {
+  border-color: transparent !important;
 }
 
 .speech-input-control {
@@ -524,6 +557,45 @@ body[arco-theme='dark'] .sendbox-panel .send-button-custom--disabled svg * {
   overflow: hidden !important;
 }
 
+/*
+ * The desktop toolbar in a narrow composer (a window beside the work panel): the model chip and the send button wrap
+ * to a line of their own, flush right, before anything overlaps, and a chip that does not fit beside the others
+ * wraps to the next line whole, so no label is cut at rest. Only a chip wider than the whole composer is clipped
+ * (its marquee shows the rest). A composer wide enough for one line looks exactly as before.
+ */
+.sendbox-toolbar {
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.sendbox-toolbar > .sendbox-tools {
+  display: flex;
+  max-width: 100%;
+}
+
+.sendbox-toolbar > .sendbox-actions {
+  min-width: 0;
+  max-width: 100%;
+  margin-inline-start: auto;
+}
+
+.sendbox-toolbar .sendbox-left-tool-group {
+  flex: 0 1 auto !important;
+  flex-wrap: wrap !important;
+  row-gap: 8px !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.sendbox-toolbar .sendbox-left-tool-group > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sendbox-toolbar .sendbox-left-tool-group > :has(.agent-mode-compact-pill) {
+  flex: 0 1 auto;
+}
+
 /* Pill marquee animation for overflowing text */
 @keyframes pill-marquee {
   0% {
@@ -565,8 +637,15 @@ body[arco-theme='dark'] .sendbox-panel .send-button-custom--disabled svg * {
   color: var(--text-primary);
 }
 
+/*
+ * An attached `@` or `@@` reference: the text colour on a grey chip, the same for both lanes (the person needs to
+ * know a token is a live reference, not which kind it is). No padding and no weight change: the layer sits under
+ * the transparent textarea and must keep every glyph exactly where the caret expects it.
+ */
 .sendbox-highlight-mention {
-  color: rgb(var(--primary-6));
+  color: var(--text-primary);
+  background: var(--color-fill-2);
+  border-radius: 4px;
 }
 
 .sendbox-highlight-textarea {

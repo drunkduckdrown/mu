@@ -16,7 +16,7 @@ import { usePresetAssistantInfo } from '@/renderer/hooks/agent/usePresetAssistan
 import { iconColors } from '@/renderer/styles/colors';
 import { Button, Dropdown, Menu, Message, Tooltip, Typography } from '@arco-design/web-react';
 import { History } from '@icon-park/react';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
@@ -24,11 +24,9 @@ import { emitter } from '../../../utils/emitter';
 import AcpChat from '../platforms/acp/AcpChat';
 import ChatLayout from './ChatLayout';
 import ChatSlider from './ChatSlider.tsx';
-import AcpModelSelector from '@/renderer/components/agent/AcpModelSelector';
 import AcpRuntimeRestartButton from '@/renderer/components/agent/AcpRuntimeRestartButton';
 import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conversationCache';
 import { getConversationCreateErrorMessage } from '@/renderer/pages/conversation/utils/conversationCreateError';
-import GoogleModelSelector from '../platforms/gemini/GoogleModelSelector';
 import AionrsChat from '../platforms/aionrs/AionrsChat';
 import AionrsModelSelector from '../platforms/aionrs/AionrsModelSelector';
 import { useAionrsModelSelection } from '../platforms/aionrs/useAionrsModelSelection';
@@ -226,10 +224,10 @@ const AionrsConversationPanel: React.FC<{ conversation: AionrsConversation; slid
       </div>
     ),
     workspaceEnabled,
-    // For project conversations the preview panel is hoisted to the Layout-level
-    // project host (structurally persistent across same-project conversation
-    // switches — no remount). ChatLayout then renders chat only.
-    previewHosted: Boolean(conversation.project_id),
+    // The Layout's work panel holds preview, files and the kernel tabs for every
+    // conversation (structurally persistent across conversation switches — no
+    // remount). ChatLayout then renders chat only.
+    panelHosted: true,
     workspacePath: conversation.extra?.workspace,
     // Key the workspace-panel collapse preference per-project (falls back to
     // conversation_id inside ChatLayout when there is no project) so the panel's
@@ -271,18 +269,26 @@ const AionrsConversationPanel: React.FC<{ conversation: AionrsConversation; slid
   );
 };
 
+/**
+ * The header's restart button for an ACP conversation. It waits, disabled, until the runtime has answered for its
+ * options once: restarting a runtime that is still starting would only start it twice. The model and thinking level
+ * live in the composer's chip, so the header carries no picker of its own.
+ */
+const AcpHeaderRestartButton: React.FC<{ conversation_id: string }> = ({ conversation_id }) => {
+  const { isRuntimeReady } = useAcpConfigOptions({ conversation_id });
+  return (
+    <AcpRuntimeRestartButton
+      conversation_id={conversation_id}
+      availability={isRuntimeReady ? 'ready' : 'initializing'}
+    />
+  );
+};
+
 const ChatConversation: React.FC<{
   conversation?: TChatConversation;
   hideSendBox?: boolean;
 }> = ({ conversation, hideSendBox }) => {
-  const [runtimeReadyConversationId, setRuntimeReadyConversationId] = useState<string | null>(null);
   const { t } = useTranslation();
-  // Stable identity: the selector reports readiness from an effect keyed on this
-  // callback, so an inline arrow would re-run it on every render.
-  const handleRuntimeReadyChange = useCallback(
-    (ready: boolean) => setRuntimeReadyConversationId(ready ? (conversation?.id ?? null) : null),
-    [conversation?.id]
-  );
   useActiveLease({ type: 'conversation', id: conversation?.id });
   const workspaceEnabled = Boolean(conversation?.extra?.workspace) && !conversation?.project_id;
   const cronJobId = resolveCronJobId(conversation?.extra);
@@ -368,32 +374,6 @@ const ChatConversation: React.FC<{
     );
   }, [t]);
 
-  // For ACP/Codex conversations, use AcpModelSelector that can show/switch models.
-  // For other conversations, show disabled model selector.
-  // Mobile: model selection moves into the sendbox `+` action sheet, so the
-  // header selector is suppressed to free up vertical space.
-  const modelSelector = useMemo(() => {
-    if (!conversation || isAionrsConversation) return undefined;
-    if (isMobile) return undefined;
-    if (isLegacyReadOnlyConversation) return undefined;
-    // Antigravity included: the backend discovers agy's model list and writes it
-    // into the same catalog the ACP picker reads, so it must not fall through to
-    // the disabled selector below.
-    if (conversation.type === 'acp' || conversation.type === 'antigravity') {
-      const extra = conversation.extra as { current_model_id?: string };
-      return (
-        <AcpModelSelector
-          conversation_id={conversation.id}
-          backend={resolvedConversationBackend}
-          initialModelId={extra.current_model_id}
-          onRuntimeReadyChange={handleRuntimeReadyChange}
-          waitForWarmup
-        />
-      );
-    }
-    return <GoogleModelSelector disabled={true} />;
-  }, [conversation, isAionrsConversation, isMobile, isLegacyReadOnlyConversation, resolvedConversationBackend]);
-
   if (conversation && conversation.type === 'aionrs') {
     return <AionrsConversationPanel key={conversation.id} conversation={conversation} sliderTitle={sliderTitle} />;
   }
@@ -418,13 +398,9 @@ const ChatConversation: React.FC<{
           <CronJobManager conversation_id={conversation.id} cron_job_id={cronJobId} />
         </div>
       )}
-      {modelSelector && <div className='shrink-0'>{modelSelector}</div>}
       {conversation && conversation.type === 'acp' && !isMobile && !isLegacyReadOnlyConversation && (
         <div className='shrink-0'>
-          <AcpRuntimeRestartButton
-            conversation_id={conversation.id}
-            availability={runtimeReadyConversationId === conversation.id ? 'ready' : 'initializing'}
-          />
+          <AcpHeaderRestartButton key={conversation.id} conversation_id={conversation.id} />
         </div>
       )}
     </div>
@@ -438,7 +414,7 @@ const ChatConversation: React.FC<{
       siderTitle={sliderTitle}
       sider={<ChatSlider conversation={conversation} />}
       workspaceEnabled={workspaceEnabled}
-      previewHosted={Boolean(conversation?.project_id)}
+      panelHosted
       workspacePath={conversation?.extra?.workspace}
       workspacePreferenceKey={conversation?.project_id}
       isTemporaryWorkspace={

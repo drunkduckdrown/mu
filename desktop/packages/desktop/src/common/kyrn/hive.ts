@@ -106,7 +106,7 @@ export type HiveSnapshot = SwarmTitle & {
   endedAt: number;
   now: number;
 };
-export type HiveToolData = { goal: string; names: string[]; snapshot?: HiveSnapshot };
+export type HiveToolData = { kind: SwarmKind; goal: string; names: string[]; snapshot?: HiveSnapshot };
 
 export function parseSwarmTitle(value: unknown): SwarmTitle {
   const row = record(value);
@@ -163,17 +163,29 @@ export function parseHiveSnapshot(value: unknown): HiveSnapshot | undefined {
   return record(value).kind === 'hive' ? parseSwarmSnapshot(value) : undefined;
 }
 
-/** Keep structured Hive data alongside the unchanged generic input/output evidence. */
+/** The tools that run sub-agents. Both are shown as a list of their sub-agents, never as their raw payload. */
+const SWARM_TOOLS: ReadonlyMap<string, SwarmKind> = new Map<string, SwarmKind>([
+  ['hive', 'hive'],
+  ['delegate', 'delegate'],
+]);
+
+/** The sub-agents a call asked for, before its first snapshot: a hive names its bees, a delegate titles its tasks. */
+function askedNames(args: Record<string, unknown>): string[] {
+  const listed = Array.isArray(args.bees) ? args.bees : Array.isArray(args.tasks) ? args.tasks : [];
+  return listed.map((item) => text(record(item).name) || text(record(item).title)).filter(Boolean);
+}
+
+/** Keep structured swarm data alongside the unchanged generic input/output evidence. */
 export function parseHiveTool(title: string, input: unknown, output: unknown): HiveToolData | undefined {
-  const snapshot = parseHiveSnapshot(record(record(output).details).snapshot);
-  if (!snapshot && title !== 'hive') return undefined;
+  const snapshot = parseSwarmSnapshot(record(record(output).details).snapshot);
+  const asked = SWARM_TOOLS.get(title);
+  if (!snapshot && !asked) return undefined;
   const args = record(input);
   return {
+    kind: snapshot?.kind ?? asked ?? 'hive',
     snapshot,
     goal: text(args.goal) || snapshot?.title || '',
-    names:
-      snapshot?.bees.map((bee) => bee.name) ??
-      (Array.isArray(args.bees) ? args.bees.map((bee) => text(record(bee).name)).filter(Boolean) : []),
+    names: snapshot?.bees.map((bee) => bee.name) ?? askedNames(args),
   };
 }
 

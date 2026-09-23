@@ -55,6 +55,8 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
     getJobStatus,
   } = props;
   const { t } = useTranslation();
+  // A conversation nothing has named yet goes by the name the command palette gives it, never a blank row.
+  const displayName = conversation.name?.trim() || t('conversation.welcome.newConversation');
   const { info: assistantInfo } = usePresetAssistantInfo(conversation);
   const isPinned = isConversationPinned(conversation);
   // Fork-lineage badge: present only on forked conversations (extra.fork is
@@ -138,7 +140,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
       );
     }
     // Collapsed, the title is hidden, so its first character stands in for it.
-    const initial = Array.from(conversation.name?.trim() ?? '')[0]?.toUpperCase() ?? '·';
+    const initial = Array.from(displayName)[0]?.toUpperCase() ?? '·';
     return (
       <span
         className={classNames(
@@ -187,7 +189,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
     <Tooltip
       key={conversation.id}
       {...siderTooltipProps}
-      content={conversation.name || t('conversation.welcome.newConversation')}
+      content={displayName}
       position='right'
     >
       <div
@@ -253,7 +255,7 @@ const ConversationRow: React.FC<ConversationRowProps> = (props) => {
             position='top'
           >
             <div className='chat-history__item-name overflow-hidden text-ellipsis flex items-center gap-4px w-full text-14px font-[500] lh-24px whitespace-nowrap min-w-0 text-t-primary'>
-              <span className='block overflow-hidden text-ellipsis whitespace-nowrap min-w-0'>{conversation.name}</span>
+              <span className='block overflow-hidden text-ellipsis whitespace-nowrap min-w-0'>{displayName}</span>
               {forkLineage && (
                 <Tooltip
                   content={

@@ -1,7 +1,18 @@
-import { appendFileSync, closeSync, openSync, readSync, realpathSync, statSync } from 'node:fs';
+import {
+  appendFileSync,
+  closeSync,
+  openSync,
+  readFileSync,
+  readSync,
+  realpathSync,
+  renameSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { randomUUID } from 'node:crypto';
+import { THINKING_LEVELS, type ModelThinkingLevels, type ThinkingLevel } from '../../../common/kyrn/models';
 import type { Activity, ActivityPage } from '../../../common/kyrn/types';
 import { array, asRecord, text, type JsonRecord } from './piRpc';
 
@@ -39,20 +50,73 @@ export function readPage(path: string, cursor: number): { rows: JsonRecord[]; cu
   }
 }
 
-export function activityPage(store: string, sessionId: string, cursor: number): ActivityPage {
-  if (!/^[a-f\d-]{36}$/.test(sessionId) || !Number.isSafeInteger(cursor) || cursor < 0)
+const SESSION_ID = /^[a-f\d-]{36}$/;
+
+/**
+ * One page of a session's activity. With `kinds`, only events of those kinds come back; the cursor still moves past
+ * every row, so a reader that follows one kind (the send box and `goal.state`) never ships the rest to the renderer.
+ */
+export function activityPage(
+  store: string,
+  sessionId: string,
+  cursor: number,
+  kinds?: readonly string[]
+): ActivityPage {
+  if (!SESSION_ID.test(sessionId) || !Number.isSafeInteger(cursor) || cursor < 0)
     throw new Error('Invalid activity cursor');
   const page = readPage(join(store, `${sessionId}.events.jsonl`), cursor);
-  return { sessionId, cursor: page.cursor, more: page.more, events: page.rows as Activity[] };
+  const rows = page.rows as Activity[];
+  const events = kinds ? rows.filter((event) => kinds.includes(event.kind)) : rows;
+  return { sessionId, cursor: page.cursor, more: page.more, events };
+}
+
+const LEVELS: ReadonlySet<string> = new Set(THINKING_LEVELS);
+const modelsPath = (store: string, sessionId: string): string => join(store, `${sessionId}.models.json`);
+
+/**
+ * The thinking levels each model of a session takes, as the adapter last recorded them (`Telemetry.levels`), keyed
+ * `provider/model-id`. Empty when nothing was recorded: another agent, or a session from before the record.
+ */
+export function modelLevels(store: string, sessionId: string): ModelThinkingLevels {
+  if (!SESSION_ID.test(sessionId)) throw new Error('Invalid session');
+  let raw: string;
+  try {
+    raw = readFileSync(modelsPath(store, sessionId), 'utf8');
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return {};
+    throw e;
+  }
+  let stored: JsonRecord;
+  try {
+    stored = asRecord(JSON.parse(raw));
+  } catch {
+    return {};
+  }
+  const levels: ModelThinkingLevels = {};
+  for (const [model, value] of Object.entries(asRecord(stored.levels))) {
+    const known = array(value).filter(
+      (level): level is ThinkingLevel => typeof level === 'string' && LEVELS.has(level)
+    );
+    if (model.includes('/') && known.length) levels[model] = known;
+  }
+  return levels;
 }
 
 /** One durable, presentation-only stream. It is never appended to the model context. */
 export class Telemetry {
   private path: string;
+  private modelsPath: string;
   private offsets = new Map<string, number>();
   private lastContext = '';
+  private lastLevels = '';
+  /**
+   * The harness said itself which lessons it brought into a turn (a `memory.recalled` frame, sent before the message
+   * that carries them). From then on the record is not made again from that message, which would repeat it.
+   */
+  private presentsRecall = false;
   constructor(store: string, sessionId: string) {
     this.path = join(store, `${sessionId}.events.jsonl`);
+    this.modelsPath = modelsPath(store, sessionId);
   }
   private append(
     kind: string,
@@ -82,6 +146,40 @@ export class Telemetry {
     } catch {
       /* Observability cannot fail a turn. */
     }
+  }
+  /**
+   * The thinking levels each model the session can switch to takes, for the send box's picker (`modelLevels`). A
+   * record beside the activity, not an event in it: it is replaced, never appended, and written only when it changed.
+   */
+  levels(levels: ModelThinkingLevels): void {
+    const key = JSON.stringify(levels);
+    if (key === this.lastLevels) return;
+    try {
+      writeFileSync(`${this.modelsPath}.tmp`, JSON.stringify({ version: 1, levels }), { mode: 0o600 });
+      renameSync(`${this.modelsPath}.tmp`, this.modelsPath);
+      this.lastLevels = key;
+    } catch {
+      /* The picker then offers models without their levels; a turn never fails over it. */
+    }
+  }
+  /**
+   * What one reply of the model read and wrote, as pi counts it (`input` is what the cache did not hold): the board's
+   * cache ring shows the hit rate of the latest one. Counts only, never content. A reply that failed before the model
+   * read anything has nothing to count.
+   */
+  private turnUsage(value: unknown): void {
+    const usage = asRecord(value);
+    const count = (name: string): number | undefined => {
+      const n = usage[name];
+      return typeof n === 'number' && Number.isFinite(n) && n >= 0 ? n : undefined;
+    };
+    const input = count('input');
+    const output = count('output');
+    const cacheRead = count('cacheRead');
+    const cacheWrite = count('cacheWrite');
+    if (input === undefined || output === undefined || cacheRead === undefined || cacheWrite === undefined) return;
+    if (input + cacheRead + cacheWrite <= 0) return;
+    this.append('turn.usage', { input, output, cacheRead, cacheWrite });
   }
   private ingest(path: string, kind: string, run: string, bee?: string): void {
     try {
@@ -136,6 +234,7 @@ export class Telemetry {
               ? { runtimeId: frame.runtimeId, turnId: Number(frame.turnId), sequence: Number(frame.sequence) }
               : undefined;
           this.append(frame.kind, asRecord(frame.payload), undefined, undefined, correlation);
+          if (frame.kind === 'memory.recalled') this.presentsRecall = true;
         }
       }
       if (['agent_start', 'agent_settled', 'kyrn_rpc_closed'].includes(text(event.type)))
@@ -156,7 +255,9 @@ export class Telemetry {
       }
       if (event.type === 'message_end') {
         const message = asRecord(event.message);
-        if (message.customType === 'kyrn.lessons') this.append('memory.recalled', { content: message.content });
+        if (message.role === 'assistant') this.turnUsage(message.usage);
+        if (message.customType === 'kyrn.lessons' && !this.presentsRecall)
+          this.append('memory.recalled', { content: message.content });
       }
       if (event.type === 'tool_execution_start' && event.toolName === 'hive') {
         const run = text(event.toolCallId);

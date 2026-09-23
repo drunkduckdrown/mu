@@ -41,7 +41,19 @@ const recorded = (events: Activity[]): string =>
     2
   );
 
-export default function JudgeCardView({ card }: { card: JudgeCard }) {
+/**
+ * One judgment as question, verdict and effect. `plain` is the judge log's opened line: no frame of its own and no
+ * state colours, since the line above it already says what it is. `lessonText` names the lessons a result is about.
+ */
+export default function JudgeCardView({
+  card,
+  plain = false,
+  lessonText,
+}: {
+  card: JudgeCard;
+  plain?: boolean;
+  lessonText?: (id: string) => string;
+}) {
   const { t, i18n } = useTranslation();
   const language = i18n.language;
   const clock = useClock();
@@ -64,7 +76,7 @@ export default function JudgeCardView({ card }: { card: JudgeCard }) {
   // "error:timeout" keeps its cause: a fallback after a timeout is not one after an abstention.
   const reason = reasonText(t, language, card.reason, card.reasonParams, card.reasonFallback);
   const hints = hintLines(t, card.hints, card.hintIds);
-  const facts = resultFacts(card);
+  const facts = resultFacts(card, lessonText);
   const answers = answerRows(card);
 
   const fact = (item: JudgeFact, index: number) => (
@@ -82,7 +94,7 @@ export default function JudgeCardView({ card }: { card: JudgeCard }) {
         <>
           <span className={styles.factName}>{label(item.tally ? 'values' : 'fields', item.name)}</span>
           {formatNameList(
-            item.values.map((value) => label('values', value)),
+            item.values.map((value) => (item.text ? value : label('values', value))),
             language
           )}
         </>
@@ -114,9 +126,9 @@ export default function JudgeCardView({ card }: { card: JudgeCard }) {
   );
 
   return (
-    <article className={styles.card} data-state={card.state} data-testid='judge-card'>
+    <article className={plain ? styles.plainCard : styles.card} data-state={card.state} data-testid='judge-card'>
       <div className={styles.cardHead}>
-        <Tag size='small' color={STATE_COLOR[card.state]}>
+        <Tag size='small' color={plain ? undefined : STATE_COLOR[card.state]}>
           {t(`${KEY}.state.${card.state}`)}
         </Tag>
         {card.unlinked && (

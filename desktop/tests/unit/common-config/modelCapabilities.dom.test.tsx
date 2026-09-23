@@ -13,7 +13,6 @@ const mocks = vi.hoisted(() => ({
   close: vi.fn(),
   createProvider: vi.fn(),
   deleteProvider: vi.fn(),
-  editModeOpen: vi.fn(),
   availableModels: [
     { label: 'GPT 5.6 Sol', value: 'gpt-5.6-sol' },
     { label: 'Claude Sonnet 4', value: 'claude-sonnet-4' },
@@ -22,10 +21,6 @@ const mocks = vi.hoisted(() => ({
   modelListUnavailable: false,
   mutate: vi.fn(),
   onSubmit: vi.fn(),
-  providerMutate: vi.fn(),
-  providers: [] as IProvider[],
-  protocolReset: vi.fn(),
-  singleModelValue: false,
   updateProvider: vi.fn(),
 }));
 
@@ -97,10 +92,6 @@ vi.mock('@/common', () => ({
   },
 }));
 
-vi.mock('@/common/utils', () => ({
-  uuid: () => 'provider-id',
-}));
-
 vi.mock('@renderer/hooks/agent/useModeModeList', () => ({
   default: () => ({
     data: mocks.modelListUnavailable
@@ -111,36 +102,6 @@ vi.mock('@renderer/hooks/agent/useModeModeList', () => ({
     error: null,
     isLoading: false,
     mutate: mocks.mutate,
-  }),
-}));
-
-vi.mock('@/renderer/hooks/agent/useModelProviderList', () => ({
-  useProvidersQuery: () => ({ data: mocks.providers, mutate: mocks.providerMutate }),
-}));
-
-vi.mock('@/renderer/components/settings/SettingsModal/settingsViewContext', () => ({
-  useSettingsViewMode: () => 'modal',
-}));
-
-vi.mock('@/renderer/hooks/system/useDeepLink', () => ({
-  consumePendingDeepLink: () => null,
-}));
-
-vi.mock('@/renderer/components/base/TalkToButlerButton', () => ({
-  default: ({ label }: { label: React.ReactNode }) => <span>{label}</span>,
-}));
-
-vi.mock('@/renderer/pages/settings/components/EditModeModal', () => {
-  const EditModeModal = () => null;
-  EditModeModal.useModal = () => [{ close: mocks.close, open: mocks.editModeOpen }, null];
-  return { default: EditModeModal };
-});
-
-vi.mock('@renderer/hooks/system/useProtocolDetection', () => ({
-  default: () => ({
-    isDetecting: false,
-    reset: mocks.protocolReset,
-    result: null,
   }),
 }));
 
@@ -189,7 +150,7 @@ vi.mock('@arco-design/web-react', async (importOriginal) => {
         onChange={(event) => {
           if (mode === 'multiple') {
             const selected = Array.from(event.currentTarget.selectedOptions, (option) => option.value);
-            onChange?.(mocks.singleModelValue ? (selected[0] ?? '') : selected);
+            onChange?.(selected);
             return;
           }
           onChange?.(event.currentTarget.value);
@@ -267,8 +228,6 @@ vi.mock('@arco-design/web-react', async (importOriginal) => {
 
 import { supportsOpenAiApiMode, updateModelSettings } from '@/common/utils/modelCapabilities';
 import AddModelModal from '@/renderer/pages/settings/components/AddModelModal';
-import AddPlatformModal from '@/renderer/pages/settings/components/AddPlatformModal';
-import ModelModalContent from '@/renderer/components/settings/SettingsModal/contents/ModelModalContent';
 
 const provider = (overrides: Partial<IProvider> = {}): IProvider => ({
   api_key: 'test-key',
@@ -357,7 +316,6 @@ describe('model capability selectors', () => {
     vi.clearAllMocks();
     mocks.modelListAsArray = false;
     mocks.modelListUnavailable = false;
-    mocks.singleModelValue = false;
     Object.defineProperty(window, 'matchMedia', {
       configurable: true,
       value: vi.fn().mockImplementation((query: string) => ({
@@ -501,159 +459,5 @@ describe('model capability selectors', () => {
         models: ['gpt-4o', 'gpt-5.6-sol', 'claude-sonnet-4'],
       })
     );
-  });
-
-  it('shows dropdowns for the new OpenAI-compatible provider form', async () => {
-    render(
-      <AddPlatformModal
-        deepLinkData={{ api_key: 'test-key', base_url: 'https://api.example.com/v1', platform: 'OpenAI' }}
-        modalProps={{ visible: true }}
-        modalCtrl={{ close: mocks.close }}
-        onSubmit={mocks.onSubmit}
-      />
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId('vision-select')).toHaveValue('auto');
-      expect(screen.getByTestId('api-mode-select')).toHaveValue('auto');
-    });
-
-    fireEvent.change(screen.getByTestId('vision-select'), { target: { value: 'supported' } });
-    fireEvent.change(screen.getByTestId('api-mode-select'), { target: { value: 'responses' } });
-    const modelSelect = screen.getByTestId('model-select') as HTMLSelectElement;
-    Array.from(modelSelect.options).forEach((option) => {
-      option.selected = option.value === 'gpt-5.6-sol';
-    });
-    fireEvent.change(modelSelect);
-    fireEvent.click(screen.getByRole('button', { name: 'common.confirm' }));
-
-    await waitFor(() => {
-      expect(mocks.onSubmit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          model_settings: {
-            'gpt-5.6-sol': { image_input: 'supported', openai_api_mode: 'responses' },
-          },
-          models: ['gpt-5.6-sol'],
-        })
-      );
-    });
-  });
-
-  it('keeps API mode hidden on the Gemini provider form', async () => {
-    mocks.singleModelValue = true;
-    render(
-      <AddPlatformModal
-        deepLinkData={{ api_key: 'test-key', platform: 'gemini' }}
-        modalProps={{ visible: true }}
-        modalCtrl={{ close: mocks.close }}
-        onSubmit={mocks.onSubmit}
-      />
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId('vision-select')).toHaveValue('auto');
-    });
-    expect(screen.queryByTestId('api-mode-select')).not.toBeInTheDocument();
-
-    const modelSelect = screen.getByTestId('model-select') as HTMLSelectElement;
-    Array.from(modelSelect.options).forEach((option) => {
-      option.selected = option.value === 'gpt-5.6-sol';
-    });
-    fireEvent.change(modelSelect);
-    fireEvent.click(screen.getByRole('button', { name: 'common.confirm' }));
-
-    await waitFor(() => {
-      expect(mocks.onSubmit).toHaveBeenCalledWith(expect.objectContaining({ model_settings: {} }));
-    });
-  });
-});
-
-describe('configured model list', () => {
-  const configuredProvider = provider({
-    model_enabled: {
-      'claude-direct': true,
-      'gpt-auto': true,
-      'gpt-chat': true,
-      'gpt-responses': true,
-    },
-    model_health: {
-      'claude-direct': { status: 'healthy' },
-      'gpt-auto': { status: 'healthy' },
-      'gpt-chat': { status: 'unhealthy' },
-      'gpt-responses': { status: 'healthy' },
-    },
-    model_protocols: {
-      'claude-direct': 'anthropic',
-      'gpt-chat': 'openai',
-      'gpt-responses': 'openai',
-    },
-    model_settings: {
-      'claude-direct': { image_input: 'supported' },
-      'gpt-chat': { image_input: 'unsupported', openai_api_mode: 'chat_completions' },
-      'gpt-responses': { image_input: 'supported', openai_api_mode: 'responses' },
-    },
-    models: ['gpt-responses', 'gpt-chat', 'gpt-auto', 'claude-direct'],
-    platform: 'new-api',
-  });
-
-  beforeEach(() => {
-    mocks.providers.splice(0, mocks.providers.length, configuredProvider);
-    mocks.updateProvider.mockResolvedValue(configuredProvider);
-  });
-
-  it('shows explicit and automatic Vision and API mode states', () => {
-    render(<ModelModalContent />);
-
-    expect(screen.getAllByTitle('settings.imageInputSupported')).toHaveLength(2);
-    expect(screen.getByTitle('settings.imageInputUnsupported')).toBeInTheDocument();
-    expect(screen.getByTitle('settings.imageInputAuto')).toBeInTheDocument();
-    expect(screen.getByText('settings.openAiApiModeResponses')).toBeInTheDocument();
-    expect(screen.getByText('settings.openAiApiModeChatCompletions')).toBeInTheDocument();
-    expect(screen.getByText('settings.openAiApiModeAuto')).toBeInTheDocument();
-  });
-
-  it('opens the selected model in the configuration dialog', async () => {
-    render(<ModelModalContent />);
-
-    fireEvent.click(screen.getAllByRole('button', { name: 'configure' })[1]);
-
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-      expect(screen.getByTestId('vision-select')).toHaveValue('unsupported');
-      expect(screen.getByTestId('api-mode-select')).toHaveValue('chat_completions');
-    });
-  });
-
-  it('removes all per-model state when deleting a model', async () => {
-    render(<ModelModalContent />);
-
-    fireEvent.click(screen.getAllByRole('button', { name: 'delete' })[0]);
-
-    await waitFor(() => {
-      expect(mocks.updateProvider).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: 'provider-1',
-          model_enabled: {
-            'claude-direct': true,
-            'gpt-auto': true,
-            'gpt-chat': true,
-          },
-          model_health: {
-            'claude-direct': { status: 'healthy' },
-            'gpt-auto': { status: 'healthy' },
-            'gpt-chat': { status: 'unhealthy' },
-          },
-          model_protocols: {
-            'claude-direct': 'anthropic',
-            'gpt-chat': 'openai',
-          },
-          model_settings: {
-            'claude-direct': { image_input: 'supported' },
-            'gpt-chat': { image_input: 'unsupported', openai_api_mode: 'chat_completions' },
-          },
-          models: ['gpt-chat', 'gpt-auto', 'claude-direct'],
-        })
-      );
-    });
   });
 });

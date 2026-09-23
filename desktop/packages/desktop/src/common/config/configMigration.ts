@@ -1,6 +1,5 @@
 import { ipcBridge } from '@/common';
 import { httpRequest } from '@/common/adapter/httpBridge';
-import { assistantRuntimeKey, type AssistantAgent } from '@/common/types/agent/assistantTypes';
 import type { CreateProviderRequest } from '@/common/types/provider/providerApi';
 
 import type { ConfigKey } from './configKeys';
@@ -13,23 +12,7 @@ export type ConfigFile = {
 };
 
 const LEGACY_MCP_CONFIG_KEY = 'mcp.config' as const;
-const LEGACY_CHANNEL_KEYS = [
-  'assistant.telegram.defaultModel',
-  'assistant.telegram.agent',
-  'assistant.lark.defaultModel',
-  'assistant.lark.agent',
-  'assistant.dingtalk.defaultModel',
-  'assistant.dingtalk.agent',
-  'assistant.weixin.defaultModel',
-  'assistant.weixin.agent',
-  'assistant.wecom.defaultModel',
-  'assistant.wecom.agent',
-] as const;
 
-const LEGACY_CHANNEL_PLATFORMS = ['telegram', 'lark', 'dingtalk', 'weixin', 'wecom'] as const;
-
-type LegacyChannelConfigKey = (typeof LEGACY_CHANNEL_KEYS)[number];
-type LegacyChannelPlatform = (typeof LEGACY_CHANNEL_PLATFORMS)[number];
 type LegacyBusinessConfigKey =
   | 'google.config'
   | 'acp.promptTimeout'
@@ -37,22 +20,15 @@ type LegacyBusinessConfigKey =
   | 'mcp.config'
   | 'tools.imageGenerationModel'
   | 'tools.speechToText';
-type LegacyConfigKey = ConfigKey | LegacyBusinessConfigKey | LegacyChannelConfigKey;
+type LegacyConfigKey = ConfigKey | LegacyBusinessConfigKey;
 
 type LegacyMcpConfigFile = ConfigFile & {
   get(key: typeof LEGACY_MCP_CONFIG_KEY): Promise<unknown>;
   set(key: typeof LEGACY_MCP_CONFIG_KEY, value: unknown): Promise<unknown>;
 };
 
-type LegacyChannelConfigFile = ConfigFile & {
+type LegacyConfigFile = ConfigFile & {
   get(key: LegacyConfigKey): Promise<unknown>;
-};
-
-type ChannelAssistantCandidate = {
-  id: string;
-  source: string;
-  agent_id: string;
-  agent?: AssistantAgent;
 };
 
 const ALL_LEGACY_KEYS: LegacyConfigKey[] = [
@@ -63,9 +39,6 @@ const ALL_LEGACY_KEYS: LegacyConfigKey[] = [
   'ui.fontSize.chat',
   'ui.fontSize.markdown',
   'ui.fontSize.code',
-  'webui.desktop.enabled',
-  'webui.desktop.allowRemote',
-  'webui.desktop.port',
   'tools.imageGenerationModel',
   'tools.speechToText',
   'workspace.pasteConfirm',
@@ -81,16 +54,19 @@ const ALL_LEGACY_KEYS: LegacyConfigKey[] = [
   'system.keepAwake',
 ];
 
+/**
+ * Copy the legacy config file's settings into the backend. The chat-channel settings of the old app (Telegram, Lark,
+ * DingTalk, Weixin, WeCom) are left behind: mu has no channels, and asking the backend about them only produced a
+ * request per platform on every start, one of which it rejects ("Invalid platform: wecom").
+ */
 export async function migrateConfigStorage(configFile: ConfigFile): Promise<void> {
-  const legacyConfigFile = configFile as LegacyChannelConfigFile;
+  const legacyConfigFile = configFile as LegacyConfigFile;
   const entries: Record<string, unknown> = {};
 
   const legacyEntries = await Promise.all(
     ALL_LEGACY_KEYS.map(async (key) => {
       try {
-        const value = LEGACY_CHANNEL_KEYS.includes(key as LegacyChannelConfigKey)
-          ? await legacyConfigFile.get(key as LegacyChannelConfigKey)
-          : await legacyConfigFile.get(key as LegacyConfigKey);
+        const value = await legacyConfigFile.get(key);
         return [key, value] as const;
       } catch {
         return [key, undefined] as const;
@@ -132,8 +108,6 @@ export async function migrateConfigStorage(configFile: ConfigFile): Promise<void
       );
     }
   }
-
-  await migrateLegacyChannelSettings(legacyConfigFile);
 }
 
 export async function migrateLegacyMcpConfigToDb(configFile: ConfigFile): Promise<void> {
@@ -192,108 +166,6 @@ function normalizeLegacyMcpServer(
     name: BUILTIN_IMAGE_GEN_NAME,
     builtin: true,
   };
-}
-
-async function migrateLegacyChannelSettings(configFile: LegacyChannelConfigFile): Promise<void> {
-  const assistants: ChannelAssistantCandidate[] = await ipcBridge.assistants.list
-    .invoke()
-    .catch((): ChannelAssistantCandidate[] => []);
-  if (!Array.isArray(assistants) || assistants.length === 0) {
-    console.info('[Migration] channel settings migration skipped — no assistants available');
-    return;
-  }
-
-  for (const platform of LEGACY_CHANNEL_PLATFORMS) {
-    const assistantKey = `assistant.${platform}.agent` as const;
-    const defaultModelKey = `assistant.${platform}.defaultModel` as const;
-
-    const [legacyAssistant, legacyDefaultModel, currentSettings] = await Promise.all([
-      configFile.get(assistantKey).catch((): undefined => undefined),
-      configFile.get(defaultModelKey).catch((): undefined => undefined),
-      ipcBridge.channel.getPlatformSettings.invoke({ platform }).catch((): null => null),
-    ]);
-
-    const nextAssistantId =
-      currentSettings?.assistant?.assistant_id ?? resolveLegacyChannelAssistantId(legacyAssistant, assistants);
-
-    let changed = false;
-
-    if (!currentSettings?.assistant?.assistant_id && nextAssistantId) {
-      await ipcBridge.channel.setAssistantSetting.invoke({
-        platform,
-        assistant: { assistant_id: nextAssistantId },
-      });
-      changed = true;
-    }
-
-    const nextDefaultModel =
-      currentSettings?.default_model ?? normalizeLegacyChannelDefaultModelSetting(legacyDefaultModel);
-
-    if (!currentSettings?.default_model && nextDefaultModel) {
-      await ipcBridge.channel.setDefaultModelSetting.invoke({
-        platform,
-        default_model: nextDefaultModel,
-      });
-      changed = true;
-    }
-
-    if (changed) {
-      await ipcBridge.channel.syncChannelSettings.invoke({ platform });
-    }
-  }
-}
-
-function normalizeLegacyChannelDefaultModelSetting(value: unknown):
-  | {
-      id: string;
-      use_model: string;
-    }
-  | undefined {
-  if (!value || typeof value !== 'object') return undefined;
-  const candidate = value as Record<string, unknown>;
-  return typeof candidate.id === 'string' && typeof candidate.use_model === 'string'
-    ? {
-        id: candidate.id,
-        use_model: candidate.use_model,
-      }
-    : undefined;
-}
-
-function resolveLegacyChannelAssistantId(saved: unknown, assistants: ChannelAssistantCandidate[]): string | undefined {
-  if (!saved) return undefined;
-
-  if (typeof saved === 'string') {
-    return findAssistantIdByBackend(saved, assistants);
-  }
-
-  if (typeof saved !== 'object') return undefined;
-
-  const record = saved as Record<string, unknown>;
-  const explicitAssistantId =
-    (typeof record.assistant_id === 'string' ? record.assistant_id : undefined) ||
-    (typeof record.custom_agent_id === 'string' ? record.custom_agent_id : undefined);
-
-  if (explicitAssistantId && assistants.some((assistant) => assistant.id === explicitAssistantId)) {
-    return explicitAssistantId;
-  }
-
-  const backend =
-    (typeof record.backend === 'string' ? record.backend : undefined) ||
-    (typeof record.agent_type === 'string' ? record.agent_type : undefined);
-
-  return findAssistantIdByBackend(backend, assistants);
-}
-
-function findAssistantIdByBackend(
-  backend: string | undefined,
-  assistants: ChannelAssistantCandidate[]
-): string | undefined {
-  if (!backend) return undefined;
-
-  return (
-    assistants.find((assistant) => assistant.source === 'generated' && assistantRuntimeKey(assistant) === backend)
-      ?.id || assistants.find((assistant) => assistantRuntimeKey(assistant) === backend)?.id
-  );
 }
 
 // ---------------------------------------------------------------------------

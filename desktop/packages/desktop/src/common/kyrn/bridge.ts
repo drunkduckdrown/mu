@@ -1,8 +1,9 @@
 import { bridge } from '../platform/bridge';
 import { KyrnError, type KyrnResult } from './errors';
+import type { LessonChange, LessonsView } from './lessons';
 import type { LocalJudgeAction, LocalJudgeState } from './localJudge';
 import type { LoginState, LoginStatus, SubscriptionProvider } from './login';
-import type { AvailableModels, ProviderTestInput, ProviderTestResult } from './models';
+import type { AvailableModels, ModelThinkingLevels, ProviderTestInput, ProviderTestResult } from './models';
 import type { ActivityPage, KyrnCatalog, KyrnSettings, SaveSettings } from './types';
 
 export const kyrnBridge = {
@@ -13,10 +14,17 @@ export const kyrnBridge = {
   availableModels: bridge.buildProvider<KyrnResult<AvailableModels>, void>('kyrn.availableModels'),
   /** One minimal request to a provider's endpoint, made by the main process. */
   testProvider: bridge.buildProvider<KyrnResult<ProviderTestResult>, ProviderTestInput>('kyrn.testProvider'),
+  /** A page of a conversation's activity; with `kinds`, only events of those kinds (the cursor still covers all). */
   activity: bridge.buildProvider<
     KyrnResult<ActivityPage>,
-    { conversationId: string; sessionId?: string; cursor: number }
+    { conversationId: string; sessionId?: string; cursor: number; kinds?: string[] }
   >('kyrn.activity'),
+  /** The thinking levels each model of a conversation's session takes; empty for a conversation mu does not run. */
+  modelLevels: bridge.buildProvider<KyrnResult<ModelThinkingLevels>, { conversationId: string }>('kyrn.modelLevels'),
+  /** A conversation's lessons: its project's and those for everywhere, read from mu's file (common/kyrn/lessons.ts). */
+  lessons: bridge.buildProvider<KyrnResult<LessonsView>, { conversationId: string }>('kyrn.lessons'),
+  /** A new text or the retirement of one lesson, appended to the file as a line; answers with the lessons after it. */
+  lessonsChange: bridge.buildProvider<KyrnResult<LessonsView>, LessonChange>('kyrn.lessons.change'),
   /** Signing in to a subscription with pi's OAuth flow; see common/kyrn/login.ts. */
   loginStart: bridge.buildProvider<KyrnResult<LoginState>, { provider: SubscriptionProvider }>('kyrn.login.start'),
   loginState: bridge.buildProvider<KyrnResult<LoginState>, void>('kyrn.login.state'),

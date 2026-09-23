@@ -65,10 +65,10 @@
   "more": "Daha Fazla",
   "refresh": "Yenile",
   "readOnly": "Salt okunur",
-  "tray.showWindow": "AionUi'yi Göster",
+  "tray.showWindow": "mu'yu Göster",
   "tray.newChat": "Yeni Sohbet",
   "tray.closeToTray": "Tepsiye Gizle",
-  "tray.about": "AionUi Hakkında",
+  "tray.about": "mu Hakkında",
   "tray.restart": "Uygulamayı Yeniden Başlat",
   "tray.quit": "Çıkış",
   "tray.pauseAll": "Tüm Görevleri Duraklat",
@@ -78,61 +78,40 @@
   "backendStartup": {
     "incompatibleRuntime": {
       "title": "Bu sistem paketlenmiş backend tarafından desteklenmiyor",
-      "description": "AionUi açıldı, ancak yerel AionCore backend bu Linux sürümünde çalışamaz. Desteklenen bir Linux dağıtımına yükseltip AionUi'yi yeniden başlatın.",
+      "description": "mu açıldı, ancak yerel hizmet bu Linux sürümünde çalışamaz. Desteklenen bir Linux dağıtımına yükseltip mu'yu yeniden başlatın.",
       "requiredVersions": "Gerekli çalışma zamanı sembolleri: {{versions}}"
     },
     "incompleteInstallation": {
-      "title": "AionUi kurulumu eksik",
-      "description": "Bu kurulumda gerekli yerel kaynaklar eksik, bu yüzden AionCore başlatılamıyor. Lütfen en son AionUi sürümünü indirip yeniden kurun. Yeniden kurulumdan sonra sorun tekrarlarsa güvenlik veya antivirüs yazılımının AionCore'u karantinaya alıp almadığını kontrol edin.",
+      "title": "mu kurulumu eksik",
+      "description": "Bu kurulumda gerekli yerel kaynaklar eksik, bu yüzden mu'nun yerel hizmeti başlatılamıyor. Lütfen en son mu sürümünü indirip yeniden kurun. Yeniden kurulumdan sonra sorun tekrarlarsa güvenlik veya antivirüs yazılımının mu dosyalarını karantinaya alıp almadığını kontrol edin.",
       "downloadLatest": "Son sürümü indir",
-      "sendDiagnostics": "Tanı raporu gönder",
-      "diagnosticsSent": "Tanı raporu gönderildi",
-      "diagnosticsReportSuccess": "Tanı raporu gönderildi",
-      "diagnosticsReportFailed": "Tanı raporu gönderilemedi",
-      "runtimeComponentDescription": "Bu kurulumda gerekli yerleşik çalışma zamanı bileşenleri eksik olduğu için {{resource}} başlatılamıyor. En son AionUi paketini yeniden yükleyin. Yeniden yükledikten sonra da devam ederse güvenlik veya antivirüs yazılımının AionUi bileşenlerini karantinaya alıp almadığını kontrol edin."
+      "runtimeComponentDescription": "Bu kurulumda gerekli yerleşik çalışma zamanı bileşenleri eksik olduğu için {{resource}} başlatılamıyor. En son mu paketini yeniden yükleyin. Yeniden yükledikten sonra da devam ederse güvenlik veya antivirüs yazılımının mu bileşenlerini karantinaya alıp almadığını kontrol edin."
     },
     "packageArchitectureMismatch": {
-      "title": "AionUi paket mimarisi uyuşmuyor",
-      "description": "Bu AionUi paketi {{packageArch}} içindir, ancak bu Mac {{deviceArch}} mimarisinde. Yanlış paketi indirmiş olabilirsiniz. Lütfen {{expectedArch}} paketini indirip kurun."
+      "title": "mu paket mimarisi uyuşmuyor",
+      "description": "Bu mu paketi {{packageArch}} içindir, ancak bu Mac {{deviceArch}} mimarisinde. Yanlış paketi indirmiş olabilirsiniz. Lütfen {{expectedArch}} paketini indirip kurun."
     },
     "dataMigration": {
       "title": "Yerel veriler taşınamadı",
-      "description": "AionUi açıldı, ancak AionCore yerel verileri başlatırken durdu. AionUi'yi yeniden yüklemek bu sorunu çözmeyebilir. Yerel veritabanı taşımasının incelenebilmesi için tanılama raporu gönderin veya destek ekibiyle iletişime geçin.",
-      "sendDiagnostics": "Tanılama gönder",
-      "diagnosticsSent": "Tanılama gönderildi",
-      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
-      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi"
+      "description": "mu açıldı, ancak yerel hizmet yerel verileri başlatırken durdu. mu'yu yeniden yüklemek bu sorunu çözmeyebilir. Uygulama günlüğü, yerel veritabanı taşımasının nerede durduğunu gösterir."
     },
     "databaseNewerThanApp": {
-      "title": "Daha yeni bir AionUi sürümü gerekli",
-      "description": "Yerel verileriniz AionUi'nin daha yeni bir sürümü tarafından oluşturuldu ve bu sürüm bunları açamıyor. Devam etmek için AionUi'yi en son sürüme güncelleyin; verileriniz sağlam, yeniden yükleme veya sıfırlama gerekmez.",
-      "descriptionWithVersion": "Yerel verileriniz şu an yüklü olandan (v{{currentVersion}}) daha yeni bir AionUi sürümü tarafından oluşturuldu; bu sürüm bunları açamıyor. Devam etmek için AionUi'yi en son sürüme güncelleyin; verileriniz sağlam, yeniden yükleme veya sıfırlama gerekmez."
+      "title": "Daha yeni bir mu sürümü gerekli",
+      "description": "Yerel verileriniz mu'nun daha yeni bir sürümü tarafından oluşturuldu ve bu sürüm bunları açamıyor. Devam etmek için mu'yu en son sürüme güncelleyin; verileriniz sağlam, yeniden yükleme veya sıfırlama gerekmez.",
+      "descriptionWithVersion": "Yerel verileriniz şu an yüklü olandan (v{{currentVersion}}) daha yeni bir mu sürümü tarafından oluşturuldu; bu sürüm bunları açamıyor. Devam etmek için mu'yu en son sürüme güncelleyin; verileriniz sağlam, yeniden yükleme veya sıfırlama gerekmez."
     },
     "localDataRepair": {
       "title": "Yerel veriler onarılamadı",
-      "description": "AionUi açıldı, ancak AionCore assistant veya agent kayıtları gibi yerel başlangıç verilerini hazırlarken durdu. AionUi'yi yeniden yüklemek bu sorunu çözmeyebilir. Yerel veritabanının incelenebilmesi için tanılama raporu gönderin veya destek ekibiyle iletişime geçin.",
-      "sendDiagnostics": "Tanılama gönder",
-      "diagnosticsSent": "Tanılama gönderildi",
-      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
-      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi"
+      "description": "mu açıldı, ancak yerel hizmet assistant veya agent kayıtları gibi yerel başlangıç verilerini hazırlarken durdu. mu'yu yeniden yüklemek bu sorunu çözmeyebilir. Uygulama günlüğü, hangi yerel verilerin hazırlanamadığını gösterir."
     },
     "startupDirectory": {
       "title": "Başlangıç dizini kullanılamıyor",
-      "description": "AionUi açıldı, ancak yapılandırılan çalışma veya günlük dizini eksik, erişilemez ya da izinler nedeniyle engellendiği için AionCore başlatılamadı. Yapılandırılan dizinlerin var olduğunu ve yazılabilir olduğunu kontrol edin, ardından AionUi'yi yeniden başlatın.",
-      "sendDiagnostics": "Tanılama gönder",
-      "diagnosticsSent": "Tanılama gönderildi",
-      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
-      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi"
+      "description": "mu açıldı, ancak yapılandırılan çalışma veya günlük dizini eksik, erişilemez ya da izinler nedeniyle engellendiği için yerel hizmet başlatılamadı. Yapılandırılan dizinlerin var olduğunu ve yazılabilir olduğunu kontrol edin, ardından mu'yu yeniden başlatın."
     },
     "recoverableDatabaseCorruption": {
       "title": "Yerel veriler bozulmuş",
-      "description": "AionUi yerel veritabanının bozulduğunu algıladı ve başlatmaya devam edemiyor. Onaydan sonra eski veritabanı yedeklenecek ve başlatmaya devam etmek için yeni bir yerel veritabanı oluşturulacak. Geçmiş sohbetler artık gösterilmeyecek ve eski veritabanı yedek dosyası olarak saklanacak.",
+      "description": "mu yerel veritabanının bozulduğunu algıladı ve başlatmaya devam edemiyor. Onaydan sonra eski veritabanı yedeklenecek ve başlatmaya devam etmek için yeni bir yerel veritabanı oluşturulacak. Geçmiş sohbetler artık gösterilmeyecek ve eski veritabanı yedek dosyası olarak saklanacak.",
       "confirmRebuild": "Eski DB'yi yedekle ve yeni DB oluştur",
-      "sendDiagnostics": "Tanılama gönder",
-      "diagnosticsHint": "Tanılama göndermek yerel veritabanını değiştirmez.",
-      "diagnosticsSent": "Tanılama gönderildi",
-      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
-      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi",
       "rebuildFailed": "Eski DB yedeklenip yeni DB oluşturulamadı",
       "confirmDialog": {
         "title": "Veritabanı yeniden oluşturulsun mu?",
@@ -142,42 +121,27 @@
       }
     },
     "transientConcurrentStartup": {
-      "title": "AionUi başlatılıyor",
-      "description": "Bu pencere açıldığında başka bir AionUi başlatma işlemi yerel verileri hâlâ kullanıyordu. Bu geçicidir ve verileriniz güvende — yeniden yükleme gerekmez. Lütfen biraz bekleyip tekrar deneyin veya AionUi'yi yeniden başlatın.",
-      "sendDiagnostics": "Tanılama gönder",
-      "diagnosticsSent": "Tanılama gönderildi",
-      "diagnosticsReportSuccess": "Tanılama raporu gönderildi",
-      "diagnosticsReportFailed": "Tanılama raporu gönderilemedi",
-      "diagnosticsHint": "Bu durum tekrar ederse bir tanılama raporu gönderebilirsiniz."
+      "title": "mu başlatılıyor",
+      "description": "Bu pencere açıldığında başka bir mu başlatma işlemi yerel verileri hâlâ kullanıyordu. Bu geçicidir ve verileriniz güvende — yeniden yükleme gerekmez. Lütfen biraz bekleyip tekrar deneyin veya mu'yu yeniden başlatın."
     },
     "pendingSlow": {
       "title": "Başlatılıyor",
-      "description": "AionCore başlatılıyor, lütfen bekleyin. Bir süre yanıt vermezse uygulamadan çıkıp yeniden açabilirsiniz."
+      "description": "Yerel hizmet başlatılıyor, lütfen bekleyin. Bir süre yanıt vermezse uygulamadan çıkıp yeniden açabilirsiniz."
     },
     "exited": {
       "title": "Başlatma tamamlanmadı",
-      "description": "AionCore başlatmayı tamamlayamadı ve kapandı. Lütfen uygulamayı yeniden başlatın; sorun devam ederse tanılama gönderin.",
-      "sendDiagnostics": "Tanılama gönder",
-      "diagnosticsSent": "Tanılama gönderildi",
-      "diagnosticsReportSuccess": "Tanılama bildirildi",
-      "diagnosticsReportFailed": "Tanılama gönderilemedi, lütfen tekrar deneyin"
+      "description": "Yerel hizmet başlatmayı tamamlayamadı ve kapandı. Lütfen uygulamayı yeniden başlatın; sorun devam ederse uygulama günlüğünü kontrol edin."
     },
     "portReportTimeout": {
       "title": "Başlatma zaman aşımına uğradı",
-      "description": "AionCore beklenen süre içinde başlatmayı tamamlayamadı. Lütfen uygulamayı yeniden başlatın; sorun devam ederse tanılama gönderin.",
-      "sendDiagnostics": "Tanılama gönder",
-      "diagnosticsSent": "Tanılama gönderildi",
-      "diagnosticsReportSuccess": "Tanılama bildirildi",
-      "diagnosticsReportFailed": "Tanılama gönderilemedi, lütfen tekrar deneyin"
+      "description": "Yerel hizmet beklenen süre içinde başlatmayı tamamlayamadı. Lütfen uygulamayı yeniden başlatın; sorun devam ederse uygulama günlüğünü kontrol edin."
     },
     "startupFailed": {
       "title": "Başlatma başarısız oldu",
-      "description": "AionCore başlatılamadı. Lütfen uygulamayı yeniden başlatın; sorun devam ederse tanılama gönderin.",
-      "sendDiagnostics": "Tanılama gönder",
-      "diagnosticsSent": "Tanılama gönderildi",
-      "diagnosticsReportSuccess": "Tanılama bildirildi",
-      "diagnosticsReportFailed": "Tanılama gönderilemedi, lütfen tekrar deneyin"
-    }
+      "description": "Yerel hizmet başlatılamadı. Lütfen uygulamayı yeniden başlatın; sorun devam ederse uygulama günlüğünü kontrol edin."
+    },
+    "openLogs": "Günlük klasörünü aç",
+    "openLogsFailed": "Günlük klasörü açılamadı"
   },
   "fileAttach.addFiles": "Dosya ekle",
   "fileAttach.myDevice": "Cihazım",
@@ -205,14 +169,15 @@
     "starting": "mu başlatılıyor…",
     "startingHint": "Yerel mu çekirdeğine bağlanılıyor, model ve hakem yapılandırması okunuyor.",
     "startupError": "mu başlatılamadı",
-    "activity": "İş birliği",
-    "files": "Dosyalar",
-    "hive": "Hive",
     "hiveView": {
       "title": "Hive",
+      "agents": "Alt ajanlar",
       "open": "Hive'ı aç",
       "inspect": "{{name}} öğesini incele",
       "summary": "{{active}} etkin · {{done}} tamamlandı / {{total}}",
+      "counts": "{{running}} çalışıyor · {{done}} bitti · {{failed}} başarısız",
+      "none": "Bu konuşmada henüz alt ajan yok.",
+      "details": "Harita ve kayıtlar",
       "pending": "Arı durumu bekleniyor",
       "unknown": "Durum kullanılamıyor",
       "runs": "Hive çalışmaları",
@@ -295,8 +260,6 @@
       }
     },
     "judgeView": {
-      "title": "Kararlar ve etkileri",
-      "description": "Hakemin neyi değerlendirdiğini ve gerçekte ne olduğunu görün. Öneriler ile onaylanmış eylemler ayrı gösterilir.",
       "empty": "Bu oturumda henüz kaydedilmiş bir karar yok.",
       "question": "Neye karar verildi",
       "result": "Karar sonucu",
@@ -306,12 +269,6 @@
       "answers": "Model yanıtları",
       "noResult": "Okunabilir bir sonuç kaydedilmedi",
       "unreported": "Kaydedilmedi",
-      "records": "Kayıtlar",
-      "returnedCount": "Yürütme katmanına iletildi",
-      "receiptCount": "Onaylanmış teslimler",
-      "runtimeEvents": "Diğer çalışma zamanı olayları",
-      "filter": "Soruya göre filtrele",
-      "allQuestions": "Tüm sorular",
       "scoreValue": "Puan: {{value}}",
       "latency": "{{ms}} ms",
       "more": "+{{count}} tane daha",
@@ -361,6 +318,10 @@
         "browser": "Tarayıcı bundan sonra ne yapmalı?",
         "recall": "Geçmiş deneyimlerden hangileri şu anda geçerli?",
         "capture": "Bu kalıcı bir düzeltme veya tercih mi?",
+        "outcome": "Bu tur saklanmaya değer bir çıkış yolu buldu mu?",
+        "worth": "Bu ders saklanmaya değer mi?",
+        "merge": "Yeni ders saklanan bir dersle birleşmeli mi?",
+        "applied": "Derslere uyuldu mu?",
         "risk": "Bu işlem kullanıcı onayı gerektiriyor mu?",
         "drift": "Çalışma hâlâ doğru yolda mı?",
         "completion": "Bu değişikliğin hâlâ doğrulanması gerekiyor mu?",
@@ -376,7 +337,9 @@
         "diagnostics": "Bu tanılama modele ne zaman ulaşmalı?",
         "patch": "Alt ajanın yaması görev kapsamında kalıyor mu?",
         "review": "Her inceleme bulgusu ne kadar ciddi?",
-        "board": "İş ne durumda?"
+        "board": "İş ne durumda?",
+        "relate": "Bu bulgu önceki bir bulgu için ne anlama geliyor?",
+        "approval": "Bu, görevin ihtiyaç duyduğu ve beklediğiniz şekilde yapılan bir adım mı?"
       },
       "fields": {
         "turnType": "Görev türü",
@@ -391,6 +354,8 @@
         "hide": "Gizlenmesi önerilen beceriler",
         "relevant": "İlgili beceriler",
         "apply": "Önerilen deneyimler",
+        "applied": "Uyuldu",
+        "notApplied": "Uyulmadı",
         "publish": "Yayımlamaya izin",
         "deliver": "Teslime izin",
         "path": "Aday dosya",
@@ -409,7 +374,8 @@
         "phase": "Aşama",
         "focus": "Üzerinde çalışılan öğe",
         "needsUser": "Kullanıcı gerekiyor",
-        "update": "Panoyu yeniden yaz"
+        "update": "Panoyu yeniden yaz",
+        "relation": "İlişki"
       },
       "values": {
         "true": "Evet",
@@ -489,7 +455,20 @@
         "bad_request": "Hakem isteği reddetti",
         "server": "Hakem sunucusu hatası",
         "invalid_response": "Hakem yanıtı okunamadı",
-        "verdict": "Hakem yanıt verdi"
+        "verdict": "Hakem yanıt verdi",
+        "learn": "Çıkış yolunu sakla",
+        "reusable": "Yine işe yarar",
+        "one_off": "Yalnızca bu seferlik",
+        "already_known": "Zaten biliniyor",
+        "same": "Aynı ders",
+        "refines": "Daha kesin",
+        "contradicts": "Çelişiyor",
+        "supersedes": "Yerini alıyor",
+        "supports": "Destekliyor",
+        "unrelated": "İlgisiz",
+        "preference": "Kalıcı kural",
+        "approve": "Çalışmasına izin ver",
+        "beyond": "İstediğinizden fazlası"
       },
       "probabilityValue": "Evet olasılığı: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -498,11 +477,22 @@
       "errorValue": "Hata · {{kind}}",
       "noAnswerAfter": "{{duration}} içinde yanıt gelmedi",
       "hints": {
+        "answered": "Bu mesaj ajanın kendi sorusuna verilen yanıt: buna göre ilerleyin ve yeniden sormayın.",
+        "resolve": "İstek gevşek ifade edilmiş ve dosyaları değiştirebilir: projeye bakın, varsayımı söyleyin ve yalnızca burada bulunamayanı sorun.",
         "clarify": "İstek yeterince net görünmüyor: önce odaklı tek bir soru sorun.",
         "side_question": "Bu bir yan soru: kısaca yanıtlayın, ardından ana göreve devam edin.",
-        "plan_first": "Bu iş büyük veya riskli görünüyor: düzenlemeden önce kısa bir plan yazın ve onaylatın.",
+        "plan_first": "Bu iş büyük veya riskli görünüyor: kısa bir plan yazıp uygulayın; yalnızca geri alınamayan bir adımdan önce onay bekleyin.",
         "try_hive": "Bu iş zor görünüyor: neden bilinmiyorsa ya da doğrudan deneme başarısız olursa Hive'ı kullanın.",
         "try_delegate": "Bu iş bağımsız parçalara ayrılabiliyor: parçaları paralel çalışacak alt ajanlara vermeyi düşünün."
+      },
+      "hintChips": {
+        "answered": "Ajana yanıt",
+        "resolve": "Önce bak",
+        "clarify": "Önce sor",
+        "side_question": "Yan soru",
+        "plan_first": "Önce plan",
+        "try_hive": "Takılırsa Hive",
+        "try_delegate": "Parçaları devret"
       },
       "answerIds": {
         "turn_type": "Görev türü",
@@ -515,11 +505,13 @@
         "task_complexity": "Kapsam",
         "reasoning_depth": "Akıl yürütme derinliği",
         "tool_complexity": "Araç kullanımı"
+      },
+      "log": {
+        "thisTurn": "Bu tur",
+        "earlier": "Önceki satırları göster",
+        "latest": "En yeniye git"
       }
     },
-    "decisions": "Jev",
-    "memory": "Deneyim",
-    "images": "Görseller",
     "empty": "Bu oturumda henüz kaydedilmiş bir olay yok.",
     "quiet": "{{duration}} süredir etkinlik yok",
     "passed": "Geçti",
@@ -556,6 +548,9 @@
       "memory.recalled": "Hatırlanan deneyim",
       "artifact.image": "Görsel",
       "memory.stored": "Deneyim kaydedildi",
+      "memory.applied": "Derslere uyuldu",
+      "memory.retired": "Ders devre dışı bırakıldı",
+      "memory.merged": "Dersler birleştirildi",
       "compaction_start": "Bağlam sıkıştırılıyor…",
       "compaction_end": "Sıkıştırma sona erdi",
       "context.usage": "Bağlam kullanımı",
@@ -567,6 +562,9 @@
       "board": {
         "update": "Pano güncellendi",
         "switched": "Pano açıldı veya kapatıldı"
+      },
+      "permissions": {
+        "mode": "İzin modu"
       },
       "checkpoint": {
         "taken": "Kontrol noktası kaydedildi"
@@ -681,7 +679,6 @@
       "failed": "Başarısız"
     },
     "boardView": {
-      "tab": "Pano",
       "title": "Sade dilde pano",
       "switch": "Bu projenin sade dildeki panosu",
       "switching": "Değiştiriliyor…",
@@ -689,7 +686,6 @@
       "unknown": "Bu konuşmada henüz pano yok. Özellikler bölümünde sade dildeki pano açıkken mu konuşmalarında görünür.",
       "off": "Açıldığında işin nasıl gittiğini, ajanın şu an ne yaptığını ve sizden neyin beklendiğini sade bir dille anlatır.",
       "cost": "Yalnızca bu proje için. Her güncelleme bir model çağrısına mal olur.",
-      "open": "Panoyu aç",
       "empty": "Ajana biraz zaman tanıyın; nasıl gittiği burada sade bir dille yazacak.",
       "checks": "{{total}} kontrolden {{done}} tanesi tamam",
       "ended": "Durdu",
@@ -699,6 +695,7 @@
       "needsYouText": "Ajan konuşmada yanıtınızı bekliyor.",
       "quote": "Yanıtınızda alıntıla",
       "quoteHint": "Yanıtınızda alıntılamak için birine tıklayın; siz göndermeden hiçbir şey gönderilmez.",
+      "earlier": "Önceki",
       "phases": {
         "understanding": "Görevi anlıyor",
         "planning": "Plan yapıyor",
@@ -736,6 +733,66 @@
           "focus": "{{now}} (Şu anki iş: {{focus}})",
           "planning": "Nasıl yapacağını düşünüyor; henüz hiçbir şeyi değiştirmedi."
         }
+      }
+    },
+    "lessonsView": {
+      "filterLabel": "Hangi dersler gösterilsin",
+      "active": "Kullanımda",
+      "all": "Tümü",
+      "count": "{{count}} ders",
+      "count_one": "{{count}} ders",
+      "count_other": "{{count}} ders",
+      "search": "Derslerde ara",
+      "kinds": {
+        "correction": "Düzeltme",
+        "preference": "Kural",
+        "pitfall": "Tuzak",
+        "workaround": "Çözüm yolu",
+        "fact": "Bilgi"
+      },
+      "everywhere": "Tüm projeler",
+      "status": {
+        "retired": "Devre dışı",
+        "superseded": "Yenisiyle değişti"
+      },
+      "uses": "Hatırlatma {{recalled}} · Uyulan {{applied}}",
+      "origins": {
+        "user": "Düzeltmenizden veya kuralınızdan",
+        "outcome": "Ajanın kendi bulduğu çıkış yolundan",
+        "model": "Model tarafından kaydedildi",
+        "subagent": "Bir alt ajanın raporundan",
+        "command": "/remember ile kaydedildi"
+      },
+      "updated": "Güncellendi: {{date}}",
+      "editLabel": "Ders metni",
+      "retire": "Devre dışı bırak",
+      "retireConfirm": "Bu ders devre dışı bırakılsın mı? Artık hiçbir tura getirilmeyecek.",
+      "loadFailed": "Dersler okunamadı",
+      "saveFailed": "Ders değiştirilemedi",
+      "empty": "Bu projede henüz ders yok. mu dersleri düzeltmelerinizden, kendi bulduğu çıkış yollarından ve /remember'dan öğrenir.",
+      "noneActive": "Kullanımda ders yok. Tümü, devre dışı ve yenisiyle değişen dersleri de gösterir.",
+      "noMatch": "Eşleşen ders yok.",
+      "noProject": "Bu konuşmanın proje klasörü yok; yalnızca tüm projelerde geçerli dersler listeleniyor.",
+      "notes": {
+        "label": "Derslerin bu oturumda yaptıkları",
+        "recalled": "Bu tur {{count}} ders getirdi",
+        "recalled_one": "Bu tur {{count}} ders getirdi",
+        "recalled_other": "Bu tur {{count}} ders getirdi",
+        "briefed": "Bir alt ajanın görev tanımı {{count}} ders taşıdı: {{task}}",
+        "briefed_one": "Bir alt ajanın görev tanımı {{count}} ders taşıdı: {{task}}",
+        "briefed_other": "Bir alt ajanın görev tanımı {{count}} ders taşıdı: {{task}}",
+        "applied": "{{count}} derse uyuldu",
+        "applied_one": "{{count}} derse uyuldu",
+        "applied_other": "{{count}} derse uyuldu",
+        "retired": "Devre dışı: {{lesson}}",
+        "retiredUnused": "Devre dışı: {{lesson}} ({{count}} kez hatırlatıldı, hiç uyulmadı)",
+        "retiredUnused_one": "Devre dışı: {{lesson}} ({{count}} kez hatırlatıldı, hiç uyulmadı)",
+        "retiredUnused_other": "Devre dışı: {{lesson}} ({{count}} kez hatırlatıldı, hiç uyulmadı)",
+        "retiredContradicted": "Devre dışı: {{lesson}} (yeni sözünüzle çelişiyor)",
+        "retiredForgotten": "Devre dışı: {{lesson}} (isteğiniz üzerine)",
+        "mergedSame": "Şununla birleştirildi: {{lesson}}",
+        "mergedRefines": "Daha kesin ifadesi saklandı: {{lesson}}",
+        "mergedContradicts": "Saklanmadı, şununla çelişiyor: {{lesson}}"
       }
     },
     "activityLoadFailed": "İş birliği etkinliği yüklenemedi. Yeniden deneniyor…",
@@ -779,6 +836,7 @@
         "lessons": "Önceki oturumlardaki deneyimler kontrol ediliyor",
         "skills": "Bu oturum için gereken beceriler seçiliyor",
         "capabilities": "Bu görev için gereken yetenekler seçiliyor",
+        "goal_check": "Hedefe ulaşılıp ulaşılmadığı kontrol ediliyor",
         "permissionReview": "JeV inceliyor: {{summary}}"
       },
       "goal": {
@@ -864,7 +922,21 @@
           "cdpConnectFailed": "Tarayıcıya bağlanılamadı.",
           "browserSpawnFailed": "{{command}} başlatılamadı."
         }
+      },
+      "permissions": {
+        "mode": "İzin modu: {{mode}}"
+      },
+      "board": {
+        "on": "Pano: açık",
+        "off": "Pano: kapalı"
       }
+    },
+    "gauges": {
+      "context": "Bağlam",
+      "contextHint": "Modelin sıradaki okuyacağı içerik bağlamının {{percent}} kadarını kaplıyor",
+      "cache": "Önbellek isabeti",
+      "cacheHint": "Önbellek isabeti: son turda {{turn}}, tüm konuşmada {{session}}",
+      "pending": "mu’nun bir sonraki yanıtından sonra gösterilir"
     }
   },
   "menu": {
@@ -900,11 +972,57 @@
   "noData": "Veri yok",
   "labelWithSelectedCount": "{{label}} ({{selected}}/{{total}})",
   "selectedSkillsWithCount": "Seçili beceriler · {{count}}",
+  "commandPalette": {
+    "title": "Komut paleti",
+    "placeholder": "Sohbetlerde, ayarlarda ve komutlarda ara",
+    "groups": {
+      "conversations": "Sohbetler",
+      "settings": "Ayarlar",
+      "commands": "Komutlar"
+    },
+    "searchMessages": "Mesajlarda “{{query}}” ara",
+    "empty": "Eşleşme yok",
+    "noConversations": "Henüz sohbet yok. Ayarları ve komutları bulmak için yazın.",
+    "openSettings": "Ayarları aç",
+    "actions": {
+      "newConversation": "Yeni sohbet başlat",
+      "scheduledTasks": "Zamanlanmış görevleri aç"
+    },
+    "commandWaits": "Bu yanıt bitince çalışır"
+  },
   "window": {
     "minimize": "Küçült",
     "maximize": "Büyüt",
     "restore": "Geri yükle"
   },
   "collapseSidebar": "Kenar çubuğunu daralt",
-  "expandSidebar": "Kenar çubuğunu genişlet"
+  "expandSidebar": "Kenar çubuğunu genişlet",
+  "workPanel": {
+    "label": "Çalışma paneli",
+    "tabsLabel": "Çalışma paneli sekmeleri",
+    "tabs": {
+      "board": "Pano",
+      "judge": "Kararlar",
+      "hive": "Hive",
+      "lessons": "Dersler",
+      "files": "Dosyalar",
+      "preview": "Önizleme",
+      "source": "Kaynak"
+    },
+    "close": "Çalışma panelini kapat",
+    "resize": "Çalışma panelinin genişliğini değiştir",
+    "unread": "{{tab}}, yeni",
+    "noProject": "Bu konuşmanın proje klasörü yok; gösterilecek dosya veya değişiklik de yok.",
+    "previewEmpty": "Henüz önizlenecek bir şey yok. Konuşmadan açılan dosyalar ve sayfalar burada görünür.",
+    "previewHidden": "Önizleme gizli."
+  },
+  "nodeRuntime": {
+    "title": "Node.js indirilsin mi?",
+    "message": "mu, ajanları ve araçları kendi Node.js kopyasıyla çalıştırır; bu kopya henüz indirilmedi.",
+    "detail": "Node.js {{version}} (yaklaşık {{size}} MB) nodejs.org adresinden indirilip şuraya açılacak:\n{{folder}}\n\n\"Sonra\" hiçbir şey indirmez: mu her zamanki gibi açılır, Node.js gereken yerde bunu belirtir ve bir sonraki başlatmada yeniden sorar.",
+    "download": "İndir",
+    "later": "Sonra",
+    "note": "Node.js indirilmediği için bu ajan çalışamıyor. mu bir sonraki başlatmada yeniden sorar.",
+    "toolNote": "Node.js indirilmediği için ona ihtiyaç duyan araçlar çalışamıyor. mu bir sonraki başlatmada yeniden sorar."
+  }
 }

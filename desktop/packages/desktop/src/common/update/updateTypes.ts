@@ -37,7 +37,7 @@ export interface UpdateCheckResult {
 
 export interface UpdateCheckRequest {
   includePrerelease?: boolean;
-  /** Defaults to mu's own repository, qybaihe/MU, when omitted. */
+  /** Defaults to mu's own repository, qybaihe/mu, when omitted. */
   repo?: string;
 }
 
