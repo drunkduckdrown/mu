@@ -659,11 +659,33 @@
 			"feature": "permissions",
 			"title": {
 				"zh": "Jev 替你审批",
-				"en": "Jev approves for you"
+				"en": "Jev approves for you",
+				"zh-TW": "Jev 替你審批",
+				"ja-JP": "Jev があなたに代わって承認",
+				"ko-KR": "Jev가 대신 승인",
+				"de-DE": "Jev gibt für dich frei",
+				"fr-FR": "Jev approuve pour vous",
+				"es-ES": "Jev aprueba por ti",
+				"pt-BR": "O Jev aprova por você",
+				"ru-RU": "Jev одобряет за вас",
+				"uk-UA": "Jev схвалює за вас",
+				"tr-TR": "Jev sizin yerinize onaylar",
+				"fa-IR": "Jev به‌جای شما تأیید می‌کند"
 			},
 			"summary": {
 				"zh": "在「Jev 审批」模式下，命令、项目外的改动、对外操作和子代理先交给 Jev：它确信这是任务需要、也是你会预期的做法才放行，否则在状态栏问你。",
-				"en": "In Jev-approves mode, commands, changes outside the project, outside actions and sub-agents go to Jev first: only what it is sure the task needs, done as you would expect, runs without you; anything else asks you in the status bar."
+				"en": "In Jev-approves mode, commands, changes outside the project, outside actions and sub-agents go to Jev first: only what it is sure the task needs, done as you would expect, runs without you; anything else asks you in the status bar.",
+				"zh-TW": "在「Jev 審批」模式下，指令、專案外的改動、對外操作和子代理都先交給 Jev：它確信是任務需要、做法也符合你預期的，才不問你直接執行；其餘都會在狀態列問你。",
+				"ja-JP": "「Jev が承認」モードでは、コマンド、プロジェクト外の変更、外部への操作、サブエージェントをまず Jev が審査します。タスクに必要で、あなたが期待するやり方だと確信できるものだけをそのまま実行し、それ以外はステータスバーであなたに確認します。",
+				"ko-KR": "Jev 승인 모드에서는 명령, 프로젝트 밖의 변경, 외부 작업, 하위 에이전트 실행이 먼저 Jev를 거칩니다. 작업에 필요하고 사용자가 예상하는 방식이라고 Jev가 확신하는 것만 사용자 확인 없이 실행되며, 그 밖의 것은 상태 표시줄에서 사용자에게 묻습니다.",
+				"de-DE": "Im Modus „Jev gibt frei“ gehen Befehle, Änderungen außerhalb des Projekts, Aktionen nach außen und Unteragenten zuerst an Jev: Nur was Jev sicher für die Aufgabe nötig hält und so ausgeführt wird, wie du es erwarten würdest, läuft ohne dich; bei allem anderen wirst du in der Statusleiste gefragt.",
+				"fr-FR": "En mode « Jev approuve », les commandes, les modifications hors du projet, les actions extérieures et les sous-agents passent d’abord par Jev : seul ce dont il est sûr que la tâche a besoin, fait comme vous l’attendez, s’exécute sans vous ; pour tout le reste, la barre d’état vous le demande.",
+				"es-ES": "En el modo «Jev aprueba», los comandos, los cambios fuera del proyecto, las acciones externas y los subagentes pasan primero por Jev: solo se ejecuta sin ti lo que Jev tiene claro que la tarea necesita, hecho como tú lo esperarías; todo lo demás te lo pregunta en la barra de estado.",
+				"pt-BR": "No modo “O Jev aprova”, comandos, alterações fora do projeto, ações externas e subagentes passam primeiro pelo Jev: só o que ele tem certeza de que a tarefa exige, feito como você esperaria, segue sem você; para todo o resto, a barra de status pergunta a você.",
+				"ru-RU": "В режиме «Одобряет Jev» команды, изменения за пределами проекта, внешние действия и субагенты сначала проходят через Jev. Без вас он пропускает только то, что точно нужно задаче и делается так, как вы ожидаете; обо всём остальном mu спрашивает вас в строке состояния.",
+				"uk-UA": "У режимі «Схвалює Jev» команди, зміни поза проєктом, зовнішні дії та субагенти спершу потрапляють до Jev: без вас виконується лише те, у чому він упевнений — воно потрібне завданню й робиться так, як ви очікуєте; щодо всього іншого вас запитують у рядку стану.",
+				"tr-TR": "“Jev onaylar” modunda komutlar, proje dışındaki değişiklikler, dış işlemler ve alt ajanlar önce Jev'e gider: yalnızca görevin gerektirdiğinden emin olduğu ve sizin beklediğiniz şekilde yapılan şeyler size sorulmadan çalışır; geri kalan her şey için durum çubuğunda size sorulur.",
+				"fa-IR": "در حالت «تأیید با Jev»، دستورها، تغییرات بیرون از پروژه، اقدام‌های بیرونی و عامل‌های فرعی اول به Jev می‌رسند: فقط آنچه Jev مطمئن است وظیفه به آن نیاز دارد و همان‌طور که انتظار دارید انجام می‌شود، بدون شما اجرا می‌شود؛ برای هر چیز دیگر در نوار وضعیت از شما پرسیده می‌شود."
 			}
 		},
 		{
@@ -2012,7 +2034,18 @@
 			},
 			"summary": {
 				"zh": "完全访问、Jev 审批、最小权限三种模式，用 /permissions 随时切换；需要授权时在状态栏提示你，可以只允许这一次，或这次对话都允许。开着它时，危险命令的把关也归它管。",
-				"en": "Full access, Jev approves, or minimal permissions, switched any time with /permissions. When a step needs your permission the status bar asks; allow it once or for the whole conversation. While it is on, it also handles the risky command guard."
+				"en": "Full access, Jev approves, or minimal permissions, switched any time with /permissions. When a step needs your permission the status bar asks; allow it once or for the whole conversation. While it is on, it also handles the risky command guard.",
+				"zh-TW": "完全存取、Jev 審批、最小權限三種模式，隨時可用 /permissions 切換。需要你授權時會在狀態列詢問，可以只允許這一次，或這次對話都允許。開啟時，危險指令的把關也由它負責。",
+				"ja-JP": "フルアクセス、Jev が承認、最小権限の 3 つのモードを、/permissions でいつでも切り替えられます。許可が必要なステップではステータスバーでお知らせし、「今回のみ許可」か「この会話中は許可」を選べます。オンの間は、危険なコマンドのチェックもこの機能が担当します。",
+				"ko-KR": "전체 접근, Jev 승인, 최소 권한 중 하나를 쓰며 /permissions로 언제든 전환합니다. 단계에 권한이 필요하면 상태 표시줄에서 묻고, 한 번만 허용하거나 대화 전체에 허용할 수 있습니다. 켜져 있는 동안에는 위험한 명령 차단도 이 기능이 맡습니다.",
+				"de-DE": "Vollzugriff, Jev gibt frei oder minimale Berechtigungen, jederzeit umschaltbar mit /permissions. Braucht ein Schritt deine Erlaubnis, fragt die Statusleiste; erlaube ihn einmal oder für die ganze Unterhaltung. Solange die Funktion eingeschaltet ist, übernimmt sie auch den Schutz vor riskanten Befehlen.",
+				"fr-FR": "Accès complet, Jev approuve ou autorisations minimales, à changer à tout moment avec /permissions. Quand une étape a besoin de votre autorisation, la barre d’état vous la demande : autorisez-la une fois, ou pour toute la conversation. Tant que cette fonction est activée, elle gère aussi la protection contre les commandes risquées.",
+				"es-ES": "Acceso completo, Jev aprueba o permisos mínimos; se cambia en cualquier momento con /permissions. Cuando un paso necesita tu permiso, te lo pide la barra de estado: permítelo una vez o para toda la conversación. Mientras esta función está activada, también se encarga de la protección contra comandos arriesgados.",
+				"pt-BR": "“Acesso total”, “O Jev aprova” ou “Permissões mínimas”, alternáveis a qualquer momento com /permissions. Quando um passo precisa da sua permissão, a barra de status pergunta; permita uma vez ou para a conversa inteira. Enquanto este recurso está ativado, ele também cuida da proteção contra comandos arriscados.",
+				"ru-RU": "Полный доступ, «Одобряет Jev» или минимальные разрешения; режим можно сменить в любой момент командой /permissions. Когда шагу нужно ваше разрешение, вопрос появляется в строке состояния: разрешите один раз или на весь диалог. Пока функция включена, защитой от опасных команд тоже занимается она.",
+				"uk-UA": "Повний доступ, «Схвалює Jev» або мінімальні дозволи; режим можна будь-коли змінити командою /permissions. Коли крок потребує вашого дозволу, запит з’являється в рядку стану: дозвольте один раз або на всю розмову. Поки функцію ввімкнено, вона також виконує роль захисту від ризикованих команд.",
+				"tr-TR": "Tam erişim, Jev onaylar ya da en az izin; /permissions ile istediğiniz zaman değiştirilebilir. Bir adım izninizi gerektirdiğinde durum çubuğunda size sorulur; bir kez ya da tüm konuşma için izin verebilirsiniz. Açıkken riskli komut korumasını da bu özellik üstlenir.",
+				"fa-IR": "سه حالتِ دسترسی کامل، تأیید با Jev و حداقل مجوز، که هر زمان با /permissions عوض می‌شوند. وقتی گامی به اجازهٔ شما نیاز دارد، نوار وضعیت از شما می‌پرسد؛ می‌توانید یک بار یا برای کل گفتگو اجازه دهید. تا وقتی روشن است، کار محافظ دستورهای پرخطر را هم انجام می‌دهد."
 			},
 			"defaultEnabled": true,
 			"options": [
@@ -2043,7 +2076,18 @@
 							"value": "jev",
 							"label": {
 								"zh": "Jev 审批",
-								"en": "Jev approves"
+								"en": "Jev approves",
+								"zh-TW": "Jev 審批",
+								"ja-JP": "Jev が承認",
+								"ko-KR": "Jev 승인",
+								"de-DE": "Jev gibt frei",
+								"fr-FR": "Jev approuve",
+								"es-ES": "Jev aprueba",
+								"pt-BR": "O Jev aprova",
+								"ru-RU": "Одобряет Jev",
+								"uk-UA": "Схвалює Jev",
+								"tr-TR": "Jev onaylar",
+								"fa-IR": "تأیید با Jev"
 							}
 						},
 						{
