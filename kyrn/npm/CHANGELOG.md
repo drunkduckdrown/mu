@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3] - 2026-09-23
+
+### Fixed
+
+- `judge/manifest.json` carries the settings texts in all eleven extra languages again (0.1.2 was packed from a checkout without the translations), and every text of the newer decision points and options is translated.
+- The judge is spelled Jev everywhere.
+
 ## [0.1.2] - 2026-09-23
 
 0.1.1 was prepared on 2026-09-22 but never published; its changes are in this release.
