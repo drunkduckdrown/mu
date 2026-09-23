@@ -131,6 +131,10 @@ export default function kyrnJudgeExtension(pi: ExtensionAPI): void {
 }
 
 function registerKyrn(pi: ExtensionAPI, options: KyrnJudgeExtensionOptions): void {
+	// The desktop app runs mu on its own Electron as Node, which only ELECTRON_RUN_AS_NODE makes it do, and every child
+	// inherits that variable: an Electron app the agent starts would run as a script. Only mu's own sub-agents, which
+	// run on this same binary, get it back (swarm.ts).
+	delete process.env.ELECTRON_RUN_AS_NODE;
 	// An injected provider or config means the caller owns the setup: do not read the user's files.
 	const loaded =
 		options.config || options.provider

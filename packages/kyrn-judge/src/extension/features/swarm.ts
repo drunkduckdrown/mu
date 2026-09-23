@@ -208,7 +208,13 @@ export const spawnRunner: SwarmRunner = async (task, assignment, signal, env, ob
 				cwd: assignment.cwd,
 				// No stdin: print mode would otherwise wait for it when it is not a terminal.
 				stdio: ["ignore", "pipe", "pipe"],
-				env: { ...process.env, KYRN_SWARM_DEPTH: "1", ...env },
+				// On the desktop app's Electron a sub-agent needs the variable its parent dropped (kyrn-judge.ts) to run as Node.
+				env: {
+					...process.env,
+					...(process.versions.electron ? { ELECTRON_RUN_AS_NODE: "1" } : {}),
+					KYRN_SWARM_DEPTH: "1",
+					...env,
+				},
 			});
 			let buffer = "";
 			let stderr = "";
