@@ -9,7 +9,7 @@
   "apiKey": "Clé API",
   "keyHelp": "Une fois enregistrée, la clé n’est plus jamais affichée. Elle reste sur cet ordinateur, lisible uniquement par votre compte.",
   "keyKeep": "Laisser vide pour conserver la clé enregistrée",
-  "endpointRule": "Utilisez HTTPS, ou HTTP vers cette machine (127.0.0.1, localhost) ou une adresse de réseau privé (par ex. 192.168.x.x, 10.x.x.x, 172.16–31.x.x). Pas de nom d’utilisateur, de mot de passe, de requête ni de fragment dans l’adresse.",
+  "endpointRule": "Utilisez HTTPS, ou HTTP uniquement vers cette machine (127.0.0.1, localhost). Pas de nom d’utilisateur, de mot de passe, de requête ni de fragment dans l’adresse.",
   "sections": {
     "judges": "Juges",
     "judgeTiers": "Paliers de juges",
@@ -120,7 +120,7 @@
     },
     "model": "Modèle juge",
     "baseUrl": "URL de base",
-    "baseUrlHelp": "L’adresse System One. Laissez vide pour celle de TypeSafe. HTTP est permis pour cette machine et pour une adresse de réseau privé.",
+    "baseUrlHelp": "Laissez vide pour utiliser l’adresse de TypeSafe.",
     "customTier": "Un juge que vous avez ajouté vous-même. Modifiez-le dans le fichier de réglages de mu.",
     "endpointDefault": "Adresse par défaut du service",
     "types": {

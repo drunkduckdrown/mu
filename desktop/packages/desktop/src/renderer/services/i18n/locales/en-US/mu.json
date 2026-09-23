@@ -9,7 +9,7 @@
   "apiKey": "API key",
   "keyHelp": "Once saved it is never shown again. It stays on this computer, readable only by your account.",
   "keyKeep": "Leave empty to keep the saved key",
-  "endpointRule": "Use HTTPS, or HTTP to this machine (127.0.0.1, localhost) or a private-network address (for example 192.168.x.x, 10.x.x.x, 172.16–31.x.x). No user name, password, query or fragment in the address.",
+  "endpointRule": "Use HTTPS, or HTTP to this machine only (127.0.0.1, localhost). No user name, password, query or fragment in the address.",
   "sections": {
     "judges": "Judges",
     "judgeTiers": "Judge tiers",
@@ -120,7 +120,7 @@
     },
     "model": "Judge model",
     "baseUrl": "Base URL",
-    "baseUrlHelp": "The System One address. Leave empty for TypeSafe's own. HTTP is allowed for this machine and for a private-network address.",
+    "baseUrlHelp": "Leave empty to use TypeSafe's own address.",
     "customTier": "A judge you added yourself. Change it in mu's settings file.",
     "endpointDefault": "Default address of the service",
     "types": {
