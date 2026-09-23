@@ -564,7 +564,7 @@
 				"en": "Worth keeping"
 			},
 			"summary": {
-				"zh": "模型用 remember 工具记的、子代理报告里 Lesson: 开头的经验，判断是以后还用得上、只关这一次，还是提示词或项目文件里早就有。只存以后用得上的。",
+				"zh": "模型自己想记下的经验、子代理报告里标出的经验，判断是以后还用得上、只关这一次，还是提示词或项目文件里早就有。只存以后用得上的。",
 				"en": "For a lesson the model keeps with the remember tool, or a Lesson: line in a sub-agent's report: useful again later, a one-off, or known already from the prompt or the project files. Only the first kind is kept."
 			}
 		},
@@ -754,7 +754,7 @@
 				"fa-IR": "مکان‌یابی فایل"
 			},
 			"summary": {
-				"zh": "用一句话描述要找什么，判定器给候选文件排序，省去一连串 grep。",
+				"zh": "用一句话描述要找什么，判定器给候选文件排序，省去一次次搜索。",
 				"en": "Describe what you are looking for; the judge ranks candidate files instead of a string of greps.",
 				"zh-TW": "用一句話描述要找什麼，由判定器為候選檔案排序，省去一連串 grep。",
 				"ja-JP": "探しているものを説明すると、grep を何度も繰り返す代わりに、判定器が候補ファイルを順位付けします。",
@@ -929,7 +929,7 @@
 				"fa-IR": "اولویت‌بندی یافته‌های بازبینی"
 			},
 			"summary": {
-				"zh": "/review 的评审子代理交回发现之后，逐条判断两件事：会不会改变程序行为，是不是这次改动引起的；再结合评审自己标的轻重，排成 P0–P3。一条都不丢，P3 折叠显示；评审坚持必须改的永远不会落到 P3。",
+				"zh": "评审子代理交回发现之后，逐条判断两件事：会不会改变程序行为，是不是这次改动引起的；再结合评审自己标的轻重，按严重程度排成四级。一条都不丢，最轻的一级折叠显示；评审坚持必须改的永远不会落到最轻一级。",
 				"en": "After the reviewer of /review reports, each finding gets two questions: does it change how the program behaves, and is it about this change; with the reviewer's own severity that orders them P0 to P3. None is dropped, P3 is collapsed, and a finding the reviewer insisted on never lands in P3.",
 				"zh-TW": "/review 的審查者回報後，每則發現都要回答兩個問題：會不會改變程式的行為，是不是這次改動造成的；再結合審查者自己標的嚴重程度，排成 P0 到 P3。一則都不丟，P3 摺疊顯示；審查者堅持要改的發現絕不會落到 P3。",
 				"ja-JP": "/review のレビュアーが報告すると、各指摘について「プログラムの動作を変えるか」「今回の変更に関するものか」の 2 点を判定し、レビュアー自身の重大度と合わせて P0〜P3 に並べます。指摘は 1 つも捨てず、P3 は折りたたんで表示します。レビュアーが修正必須とした指摘が P3 になることはありません。",
@@ -1808,7 +1808,7 @@
 				"fa-IR": "تجربه‌ها"
 			},
 			"summary": {
-				"zh": "从你的纠正、代理自己的脱困、模型和子代理的发现里学经验，存之前先和已有的合并，下次遇到相关任务时带上，没人照做的自动退役。/lessons 查看，/forget 退役一条。",
+				"zh": "从你的纠正、代理自己的脱困、模型和子代理的发现里学经验，存之前先和已有的合并，下次遇到相关任务时带上，没人照做的自动退役。随时可以查看、编辑或让一条退役。",
 				"en": "Learns from your corrections, from the agent getting itself unstuck, and from what the model and sub-agents found; merges each lesson with the kept ones before storing it, brings the relevant ones along next time, and retires those nobody follows. /lessons shows them, /forget retires one."
 			},
 			"defaultEnabled": true,
@@ -3435,7 +3435,7 @@
 						"fa-IR": "استفاده از جدول داخلی سرورهای شناخته‌شده"
 					},
 					"help": {
-						"zh": "TypeScript、Python、Go、Rust、C/C++ 的常见服务器，只在 PATH 上查找。自定义的写在 mu.json 的 features.lsp.servers。",
+						"zh": "TypeScript、Python、Go、Rust、C/C++ 的常见服务器，只在 PATH 上查找。自定义的服务器在设置文件里添加。",
 						"en": "Well-known servers for TypeScript, Python, Go, Rust and C/C++, looked up on PATH only. Your own go under features.lsp.servers in mu.json.",
 						"zh-TW": "TypeScript、Python、Go、Rust 和 C/C++ 的常見伺服器，只在 PATH 上尋找。自訂的伺服器寫在 mu.json 的 features.lsp.servers 下。",
 						"ja-JP": "TypeScript、Python、Go、Rust、C/C++ の主要なサーバーを PATH 上でのみ探します。独自のサーバーは mu.json の features.lsp.servers に書きます。",
@@ -3939,7 +3939,7 @@
 				"fa-IR": "حالت هدف"
 			},
 			"summary": {
-				"zh": "/goal <条件> 之后，代理会一直干到条件成立为止（只输入 /goal 会问你条件）。每次它想停，由大模型对照证据判断是否达成、下一步做什么。被你打断、模型调用失败、连续空转或原地打转、用完续跑次数或时间，都会自己停下；你再发一条消息就接着干。",
+				"zh": "定下一个完成条件后，代理会一直干到条件成立为止。每次它想停，由大模型对照证据判断是否达成、下一步做什么。被你打断、模型调用失败、连续空转或原地打转、用完续跑次数或时间，都会自己停下；你再发一条消息就接着干。",
 				"en": "After /goal <condition> the agent keeps working until the condition holds (/goal alone asks for it). Each time it wants to stop, a model reads the evidence: met, or the next step. It stops by itself when you interrupt, a model call fails, it idles or goes in circles, or its allowance runs out; your next message picks it up again.",
 				"zh-TW": "輸入 /goal <條件> 之後，代理會一直做到條件成立為止（只輸入 /goal 會問你條件）。每次它想停下，都由大模型讀取證據判斷：已經達成，還是下一步該做什麼。遇到你打斷、模型呼叫失敗、閒置空轉或原地打轉，或是次數和時間額度用完，它會自己停下；你再傳一則訊息，它就接著做。",
 				"ja-JP": "/goal <条件> を入力すると、エージェントは条件が満たされるまで作業を続けます（/goal だけを入力すると条件を尋ねます）。止まろうとするたびに、モデルが証拠を読んで、達成したか、次に何をするかを判断します。あなたが中断したとき、モデルの呼び出しが失敗したとき、何もしない状態や堂々巡りが続いたとき、または上限に達したときは自ら停止します。次にメッセージを送ると再開します。",
@@ -4362,7 +4362,7 @@
 				"fa-IR": "تابلوی ساده"
 			},
 			"summary": {
-				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。JeV 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关（/board on、/board off）；第一次打开时选一个模型来讲（/board model 可以换）。",
+				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。JeV 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关；第一次打开时选一个模型来讲，之后可以换。",
 				"en": "Tells you in plain words how far the work is, what is happening now and what waits on you. JeV picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it)."
 			},
 			"defaultEnabled": true,
@@ -4422,7 +4422,7 @@
 						"fa-IR": "مدلی که تابلو را می‌نویسد"
 					},
 					"help": {
-						"zh": "写成「提供商/模型」，填了就不再问。留空：第一次打开看板时让你挑一个（推荐 Claude Opus 4.6，其次 Gemini 3.8 Flash），挑好的记在 mu/board.json 里；没挑就用 writer 模型，再没有就用当前会话的模型。",
+						"zh": "写成「提供商/模型」，填了就不再问。留空：第一次打开看板时让你挑一个（推荐 Claude Opus 4.6，其次 Gemini 3.8 Flash），挑好的会记住。",
 						"en": "As provider/model; set here, nobody is asked. Empty: you pick one the first time the board is switched on (Claude Opus 4.6 recommended, then Gemini 3.8 Flash), kept in mu/board.json; none picked: the writer model, else the session's.",
 						"zh-TW": "格式為 provider/model；在這裡填了就不會再問。留空：第一次開啟看板時讓你挑一個（推薦 Claude Opus 4.6，其次 Gemini 3.8 Flash），記在 mu/board.json 裡；沒挑的話用 writer 模型，再沒有就用這個對話的模型。",
 						"ja-JP": "provider/model の形式で指定します。ここで指定すると、確認はしません。空欄の場合は、初めてボードをオンにしたときに選びます（おすすめは Claude Opus 4.6、次点は Gemini 3.8 Flash）。選んだモデルは mu/board.json に保存されます。選ばなかった場合は writer モデルを、それもなければセッションのモデルを使います。",
@@ -5636,7 +5636,7 @@
 				"fa-IR": "دستورهای پس‌زمینه"
 			},
 			"summary": {
-				"zh": "bg_start / bg_output / bg_stop：开发服务器、长时间构建不占用回合；结束时是否打断交给「通知分流」；会话结束时全部终止。",
+				"zh": "开发服务器、长时间构建放到后台跑，不占用回合；结束时是否打断交给「通知分流」；会话结束时全部终止。",
 				"en": "bg_start / bg_output / bg_stop: dev servers and long builds without blocking the turn. Whether the end of a job interrupts is decided by notification routing; every job stops with the session.",
 				"zh-TW": "bg_start / bg_output / bg_stop：開發伺服器和長時間的建置不會卡住這一輪。工作結束時要不要打斷，交給「通知分流」決定；對話結束時，所有工作一起停止。",
 				"ja-JP": "bg_start / bg_output / bg_stop: 開発サーバーや長いビルドを、ターンをブロックせずに実行します。ジョブの終了時に割り込むかどうかは「通知の振り分け」が決めます。すべてのジョブはセッションとともに停止します。",
@@ -5867,7 +5867,7 @@
 						"fa-IR": "استفاده از تنظیمات shell پیش‌زمینه"
 					},
 					"help": {
-						"zh": "读取 settings.json 的 shellPath 和 shellCommandPrefix，与 bash 工具一致。",
+						"zh": "和 bash 工具用同一套 shell 设置。",
 						"en": "Reads shellPath and shellCommandPrefix from settings.json, like the bash tool.",
 						"zh-TW": "和 bash 工具一樣，從 settings.json 讀取 shellPath 和 shellCommandPrefix。",
 						"ja-JP": "bash ツールと同じく、settings.json の shellPath と shellCommandPrefix を読み込みます。",
@@ -5937,7 +5937,7 @@
 				"fa-IR": "خواندن و جست‌وجوی وب"
 			},
 			"summary": {
-				"zh": "web_fetch 把网页读成文字（限时限量，拒绝内网地址，页面文字标为不可信）；web_search 用国内不需要密钥就能访问的搜索源。",
+				"zh": "把网页读成文字（限时限量，拒绝内网地址，页面文字标为不可信）；网页搜索用国内不需要密钥就能访问的搜索源。",
 				"en": "web_fetch reads a page as text (time and size limits, internal addresses refused, page text labelled untrusted); web_search uses a source that answers from mainland China without a key.",
 				"zh-TW": "web_fetch 把網頁讀成文字（有時間和大小限制，拒絕內部位址，頁面文字標為不可信）；web_search 使用在中國大陸不需金鑰也能回應的搜尋來源。",
 				"ja-JP": "web_fetch はページをテキストとして読み取ります（時間とサイズに上限があり、内部アドレスは拒否し、ページのテキストは信頼できないものとして扱います）。web_search は、キーなしで中国本土から利用できる検索ソースを使います。",
@@ -6044,7 +6044,7 @@
 						"fa-IR": "نویسه"
 					},
 					"label": {
-						"zh": "web_fetch 单次返回上限",
+						"zh": "一次读取网页最多返回",
 						"en": "Most that one web_fetch returns",
 						"zh-TW": "單次 web_fetch 回傳上限",
 						"ja-JP": "web_fetch が 1 回で返す上限",
@@ -6399,7 +6399,7 @@
 						"fa-IR": "برگرفتن سرورهای MCP"
 					},
 					"help": {
-						"zh": "关掉后只用 mu.json 里 mcp.servers 自己定义的服务器。",
+						"zh": "关掉后只用你自己在设置文件里定义的服务器。",
 						"en": "When off, only the servers under mcp.servers in mu.json are used.",
 						"zh-TW": "關閉後只使用 mu.json 裡 mcp.servers 下的伺服器。",
 						"ja-JP": "オフの場合は、mu.json の mcp.servers にあるサーバーだけを使います。",
@@ -6538,7 +6538,7 @@
 				"fa-IR": "سرورهای MCP"
 			},
 			"summary": {
-				"zh": "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：JeV 认定任务需要，或模型用 find_capability 要，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 JeV 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在 mu.json 的 mcp.servers 里给服务器写 \"exposure\": \"always\" 可以让它常开。",
+				"zh": "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：JeV 认定任务需要，或模型主动申请，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 JeV 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在设置文件里可以把某个服务器设为常开。",
 				"en": "A built-in MCP client (stdio and Streamable HTTP). Each server is a catalog entry that stays hidden: its process starts and its tools register only when the judge finds the task needs it or the model asks through find_capability. Tool lists are cached, so the judge has a description before a server ever ran. A server defined by a project asks before its first start, and again when its definition changes. \"exposure\": \"always\" under mcp.servers in mu.json keeps a server open.",
 				"zh-TW": "內建的 MCP 用戶端（stdio 與 Streamable HTTP）。每個伺服器都是能力目錄裡的一項，預設隱藏：判定器認定任務需要它，或模型透過 find_capability 要求時，才啟動它的程序並註冊它的工具。工具清單會快取，所以伺服器即使從未執行過，判定器也有描述可以判斷。專案定義的伺服器第一次啟動前會先問你，定義變了也會再問。在 mu.json 的 mcp.servers 下為伺服器加上 \"exposure\": \"always\"，就能讓它常駐開啟。",
 				"ja-JP": "組み込みの MCP クライアントです（stdio と Streamable HTTP）。各サーバーはカタログの項目として非表示になっており、タスクに必要だと判定器が判定したとき、またはモデルが find_capability で求めたときにだけ、プロセスが起動してツールが登録されます。ツール一覧はキャッシュされるため、サーバーを一度も起動していなくても判定器は説明を参照できます。プロジェクトで定義されたサーバーは、初回の起動前と、定義が変わったときに確認します。mu.json の mcp.servers で \"exposure\": \"always\" を指定すると、そのサーバーは常に開いたままになります。",
@@ -7029,7 +7029,7 @@
 					"kind": "boolean",
 					"default": true,
 					"label": {
-						"zh": "/review：评审并按 P0–P3 分级",
+						"zh": "评审并按严重程度分级",
 						"en": "/review, with findings sorted P0 to P3",
 						"zh-TW": "/review：審查並依 P0 到 P3 分級",
 						"ja-JP": "/review（指摘を P0〜P3 で優先度付け）",
@@ -7180,7 +7180,7 @@
 						"fa-IR": "اشکال‌زدا: نقطه‌های توقف، اجرای گام‌به‌گام، متغیرها"
 					},
 					"help": {
-						"zh": "在调试器里运行程序，停在断点或未捕获的异常处，看调用栈和变量。Python 用 debugpy，Go 用 delve，编译型程序用 lldb-dap，都要本机已装；也可以在 mu.json 的 debugAdapters 里加自己的。一次只跑一个，随会话结束。",
+						"zh": "在调试器里运行程序，停在断点或未捕获的异常处，看调用栈和变量。Python 用 debugpy，Go 用 delve，编译型程序用 lldb-dap，都要本机已装；也可以在设置文件里加自己的。一次只跑一个，随会话结束。",
 						"en": "Runs a program under a debugger, stopped at breakpoints or an uncaught exception, with the call stack and variables. debugpy for Python, delve for Go, lldb-dap for compiled programs, each if installed; add your own under debugAdapters in mu.json. One run at a time, ended with the session.",
 						"zh-TW": "在偵錯工具下執行程式，停在中斷點或未攔截的例外處，查看呼叫堆疊和變數。Python 用 debugpy、Go 用 delve、編譯型程式用 lldb-dap，都需要本機已安裝；也可以在 mu.json 的 debugAdapters 下加入自己的。一次只執行一個，隨對話結束。",
 						"ja-JP": "デバッガーでプログラムを実行し、ブレークポイントや捕捉されていない例外で停止して、コールスタックと変数を確認します。Python には debugpy、Go には delve、コンパイル型のプログラムには lldb-dap を、それぞれインストールされていれば使います。独自のものは mu.json の debugAdapters に追加します。同時に実行できるのは 1 つだけで、セッションとともに終了します。",

@@ -236,7 +236,7 @@ export const MANIFEST: HarnessManifest = {
 			feature: "memory",
 			title: { zh: "值不值得记", en: "Worth keeping" },
 			summary: {
-				zh: "模型用 remember 工具记的、子代理报告里 Lesson: 开头的经验，判断是以后还用得上、只关这一次，还是提示词或项目文件里早就有。只存以后用得上的。",
+				zh: "模型自己想记下的经验、子代理报告里标出的经验，判断是以后还用得上、只关这一次，还是提示词或项目文件里早就有。只存以后用得上的。",
 				en: "For a lesson the model keeps with the remember tool, or a Lesson: line in a sub-agent's report: useful again later, a one-off, or known already from the prompt or the project files. Only the first kind is kept.",
 			},
 		},
@@ -306,7 +306,7 @@ export const MANIFEST: HarnessManifest = {
 			feature: "locate",
 			title: { zh: "文件定位", en: "File location" },
 			summary: {
-				zh: "用一句话描述要找什么，判定器给候选文件排序，省去一连串 grep。",
+				zh: "用一句话描述要找什么，判定器给候选文件排序，省去一次次搜索。",
 				en: "Describe what you are looking for; the judge ranks candidate files instead of a string of greps.",
 			},
 		},
@@ -356,7 +356,7 @@ export const MANIFEST: HarnessManifest = {
 			feature: "packs",
 			title: { zh: "评审发现分级", en: "Review triage" },
 			summary: {
-				zh: "/review 的评审子代理交回发现之后，逐条判断两件事：会不会改变程序行为，是不是这次改动引起的；再结合评审自己标的轻重，排成 P0–P3。一条都不丢，P3 折叠显示；评审坚持必须改的永远不会落到 P3。",
+				zh: "评审子代理交回发现之后，逐条判断两件事：会不会改变程序行为，是不是这次改动引起的；再结合评审自己标的轻重，按严重程度排成四级。一条都不丢，最轻的一级折叠显示；评审坚持必须改的永远不会落到最轻一级。",
 				en: "After the reviewer of /review reports, each finding gets two questions: does it change how the program behaves, and is it about this change; with the reviewer's own severity that orders them P0 to P3. None is dropped, P3 is collapsed, and a finding the reviewer insisted on never lands in P3.",
 			},
 		},
@@ -616,7 +616,7 @@ export const MANIFEST: HarnessManifest = {
 			name: "memory",
 			title: { zh: "经验库", en: "Lessons" },
 			summary: {
-				zh: "从你的纠正、代理自己的脱困、模型和子代理的发现里学经验，存之前先和已有的合并，下次遇到相关任务时带上，没人照做的自动退役。/lessons 查看，/forget 退役一条。",
+				zh: "从你的纠正、代理自己的脱困、模型和子代理的发现里学经验，存之前先和已有的合并，下次遇到相关任务时带上，没人照做的自动退役。随时可以查看、编辑或让一条退役。",
 				en: "Learns from your corrections, from the agent getting itself unstuck, and from what the model and sub-agents found; merges each lesson with the kept ones before storing it, brings the relevant ones along next time, and retires those nobody follows. /lessons shows them, /forget retires one.",
 			},
 			defaultEnabled: true,
@@ -1119,7 +1119,7 @@ export const MANIFEST: HarnessManifest = {
 					default: true,
 					label: { zh: "使用内置的常见服务器表", en: "Use the built-in table of well-known servers" },
 					help: {
-						zh: "TypeScript、Python、Go、Rust、C/C++ 的常见服务器，只在 PATH 上查找。自定义的写在 mu.json 的 features.lsp.servers。",
+						zh: "TypeScript、Python、Go、Rust、C/C++ 的常见服务器，只在 PATH 上查找。自定义的服务器在设置文件里添加。",
 						en: "Well-known servers for TypeScript, Python, Go, Rust and C/C++, looked up on PATH only. Your own go under features.lsp.servers in mu.json.",
 					},
 				},
@@ -1260,7 +1260,7 @@ export const MANIFEST: HarnessManifest = {
 			name: "goal",
 			title: { zh: "目标模式", en: "Goal mode" },
 			summary: {
-				zh: "/goal <条件> 之后，代理会一直干到条件成立为止（只输入 /goal 会问你条件）。每次它想停，由大模型对照证据判断是否达成、下一步做什么。被你打断、模型调用失败、连续空转或原地打转、用完续跑次数或时间，都会自己停下；你再发一条消息就接着干。",
+				zh: "定下一个完成条件后，代理会一直干到条件成立为止。每次它想停，由大模型对照证据判断是否达成、下一步做什么。被你打断、模型调用失败、连续空转或原地打转、用完续跑次数或时间，都会自己停下；你再发一条消息就接着干。",
 				en: "After /goal <condition> the agent keeps working until the condition holds (/goal alone asks for it). Each time it wants to stop, a model reads the evidence: met, or the next step. It stops by itself when you interrupt, a model call fails, it idles or goes in circles, or its allowance runs out; your next message picks it up again.",
 			},
 			defaultEnabled: true,
@@ -1363,7 +1363,7 @@ export const MANIFEST: HarnessManifest = {
 			name: "board",
 			title: { zh: "人话看板", en: "Plain-language board" },
 			summary: {
-				zh: "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。JeV 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关（/board on、/board off）；第一次打开时选一个模型来讲（/board model 可以换）。",
+				zh: "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。JeV 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关；第一次打开时选一个模型来讲，之后可以换。",
 				en: "Tells you in plain words how far the work is, what is happening now and what waits on you. JeV picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it).",
 			},
 			defaultEnabled: true,
@@ -1384,7 +1384,7 @@ export const MANIFEST: HarnessManifest = {
 					default: "",
 					label: { zh: "写看板的模型", en: "Model that writes the board" },
 					help: {
-						zh: "写成「提供商/模型」，填了就不再问。留空：第一次打开看板时让你挑一个（推荐 Claude Opus 4.6，其次 Gemini 3.8 Flash），挑好的记在 mu/board.json 里；没挑就用 writer 模型，再没有就用当前会话的模型。",
+						zh: "写成「提供商/模型」，填了就不再问。留空：第一次打开看板时让你挑一个（推荐 Claude Opus 4.6，其次 Gemini 3.8 Flash），挑好的会记住。",
 						en: "As provider/model; set here, nobody is asked. Empty: you pick one the first time the board is switched on (Claude Opus 4.6 recommended, then Gemini 3.8 Flash), kept in mu/board.json; none picked: the writer model, else the session's.",
 					},
 				},
@@ -1756,7 +1756,7 @@ export const MANIFEST: HarnessManifest = {
 			name: "background",
 			title: { zh: "后台命令", en: "Background commands" },
 			summary: {
-				zh: "bg_start / bg_output / bg_stop：开发服务器、长时间构建不占用回合；结束时是否打断交给「通知分流」；会话结束时全部终止。",
+				zh: "开发服务器、长时间构建放到后台跑，不占用回合；结束时是否打断交给「通知分流」；会话结束时全部终止。",
 				en: "bg_start / bg_output / bg_stop: dev servers and long builds without blocking the turn. Whether the end of a job interrupts is decided by notification routing; every job stops with the session.",
 			},
 			defaultEnabled: true,
@@ -1817,7 +1817,7 @@ export const MANIFEST: HarnessManifest = {
 					default: true,
 					label: { zh: "沿用前台 shell 设置", en: "Use the foreground shell settings" },
 					help: {
-						zh: "读取 settings.json 的 shellPath 和 shellCommandPrefix，与 bash 工具一致。",
+						zh: "和 bash 工具用同一套 shell 设置。",
 						en: "Reads shellPath and shellCommandPrefix from settings.json, like the bash tool.",
 					},
 				},
@@ -1837,7 +1837,7 @@ export const MANIFEST: HarnessManifest = {
 			name: "web",
 			title: { zh: "网页读取与搜索", en: "Web reading and search" },
 			summary: {
-				zh: "web_fetch 把网页读成文字（限时限量，拒绝内网地址，页面文字标为不可信）；web_search 用国内不需要密钥就能访问的搜索源。",
+				zh: "把网页读成文字（限时限量，拒绝内网地址，页面文字标为不可信）；网页搜索用国内不需要密钥就能访问的搜索源。",
 				en: "web_fetch reads a page as text (time and size limits, internal addresses refused, page text labelled untrusted); web_search uses a source that answers from mainland China without a key.",
 			},
 			defaultEnabled: true,
@@ -1868,7 +1868,7 @@ export const MANIFEST: HarnessManifest = {
 					default: 20000,
 					min: 500,
 					unit: chars,
-					label: { zh: "web_fetch 单次返回上限", en: "Most that one web_fetch returns" },
+					label: { zh: "一次读取网页最多返回", en: "Most that one web_fetch returns" },
 				},
 				{
 					key: "timeoutMs",
@@ -1947,7 +1947,7 @@ export const MANIFEST: HarnessManifest = {
 					default: true,
 					label: { zh: "沿用 MCP 服务器", en: "Inherit MCP servers" },
 					help: {
-						zh: "关掉后只用 mu.json 里 mcp.servers 自己定义的服务器。",
+						zh: "关掉后只用你自己在设置文件里定义的服务器。",
 						en: "When off, only the servers under mcp.servers in mu.json are used.",
 					},
 				},
@@ -1983,7 +1983,7 @@ export const MANIFEST: HarnessManifest = {
 			name: "mcp",
 			title: { zh: "MCP 服务器", en: "MCP servers" },
 			summary: {
-				zh: '内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：JeV 认定任务需要，或模型用 find_capability 要，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 JeV 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在 mu.json 的 mcp.servers 里给服务器写 "exposure": "always" 可以让它常开。',
+				zh: "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：JeV 认定任务需要，或模型主动申请，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 JeV 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在设置文件里可以把某个服务器设为常开。",
 				en: 'A built-in MCP client (stdio and Streamable HTTP). Each server is a catalog entry that stays hidden: its process starts and its tools register only when the judge finds the task needs it or the model asks through find_capability. Tool lists are cached, so the judge has a description before a server ever ran. A server defined by a project asks before its first start, and again when its definition changes. "exposure": "always" under mcp.servers in mu.json keeps a server open.',
 			},
 			defaultEnabled: true,
@@ -2116,7 +2116,7 @@ export const MANIFEST: HarnessManifest = {
 					key: "review",
 					kind: "boolean",
 					default: true,
-					label: { zh: "/review：评审并按 P0–P3 分级", en: "/review, with findings sorted P0 to P3" },
+					label: { zh: "评审并按严重程度分级", en: "/review, with findings sorted P0 to P3" },
 				},
 				{
 					key: "conflicts",
@@ -2162,7 +2162,7 @@ export const MANIFEST: HarnessManifest = {
 					default: true,
 					label: { zh: "调试器（断点、单步、变量）", en: "Debugger: breakpoints, stepping, variables" },
 					help: {
-						zh: "在调试器里运行程序，停在断点或未捕获的异常处，看调用栈和变量。Python 用 debugpy，Go 用 delve，编译型程序用 lldb-dap，都要本机已装；也可以在 mu.json 的 debugAdapters 里加自己的。一次只跑一个，随会话结束。",
+						zh: "在调试器里运行程序，停在断点或未捕获的异常处，看调用栈和变量。Python 用 debugpy，Go 用 delve，编译型程序用 lldb-dap，都要本机已装；也可以在设置文件里加自己的。一次只跑一个，随会话结束。",
 						en: "Runs a program under a debugger, stopped at breakpoints or an uncaught exception, with the call stack and variables. debugpy for Python, delve for Go, lldb-dap for compiled programs, each if installed; add your own under debugAdapters in mu.json. One run at a time, ended with the session.",
 					},
 				},
