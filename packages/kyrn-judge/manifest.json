@@ -163,7 +163,18 @@
 			},
 			"help": {
 				"zh": "不提问，这个判定点关闭。",
-				"en": "Not asked; this decision is off."
+				"en": "Not asked; this decision is off.",
+				"zh-TW": "不提問，這個判定點關閉。",
+				"ja-JP": "問い合わせません。この判定ポイントはオフです。",
+				"ko-KR": "질문하지 않습니다. 이 판정 지점은 꺼져 있습니다.",
+				"de-DE": "Wird nicht gefragt; dieser Entscheidungspunkt ist aus.",
+				"fr-FR": "Non consulté ; ce point de décision est désactivé.",
+				"es-ES": "No se consulta; este punto de decisión está desactivado.",
+				"pt-BR": "Não é consultado; este ponto de decisão fica desligado.",
+				"ru-RU": "Судья не опрашивается; эта точка решения выключена.",
+				"uk-UA": "Суддю не запитують; ця точка рішення вимкнена.",
+				"tr-TR": "Soru sorulmaz; bu karar noktası kapalıdır.",
+				"fa-IR": "پرسیده نمی‌شود؛ این نقطهٔ تصمیم خاموش است."
 			}
 		}
 	],
@@ -189,7 +200,18 @@
 			},
 			"summary": {
 				"zh": "每条消息先判断是什么类型、要多深的思考，据此给出一行提示；可选按判定设定本回合的思考等级。",
-				"en": "Classifies each message and how much thinking it needs, then gives a one-line hint; optionally sets the turn's thinking level."
+				"en": "Classifies each message and how much thinking it needs, then gives a one-line hint; optionally sets the turn's thinking level.",
+				"zh-TW": "為每則訊息分類，並判斷它需要多深的思考，據此給出一行提示；也可以依判定結果設定這一輪的思考強度。",
+				"ja-JP": "各メッセージの種類と必要な思考の深さを分類し、1 行のヒントを渡します。オプションで、そのターンの思考レベルも設定できます。",
+				"ko-KR": "각 메시지의 유형과 필요한 사고의 깊이를 분류한 뒤 한 줄 힌트를 줍니다. 옵션을 켜면 해당 턴의 사고 수준도 정합니다.",
+				"de-DE": "Ordnet jede Nachricht ein und schätzt, wie viel Nachdenken sie braucht; daraus ergibt sich ein einzeiliger Hinweis. Auf Wunsch wird auch die Denkstufe der Runde festgelegt.",
+				"fr-FR": "Classe chaque message et estime la réflexion qu’il demande, puis donne une indication d’une ligne ; en option, règle aussi le niveau de réflexion du tour.",
+				"es-ES": "Clasifica cada mensaje y estima cuánto razonamiento necesita; con eso da una indicación de una línea y, si se activa, también fija el nivel de razonamiento del turno.",
+				"pt-BR": "Classifica cada mensagem e quanto raciocínio ela exige; depois dá uma dica de uma linha e, opcionalmente, também define o nível de raciocínio do turno.",
+				"ru-RU": "Определяет тип каждого сообщения и то, сколько размышлений ему нужно, а затем даёт подсказку в одну строку; по желанию задаёт и уровень размышлений для хода.",
+				"uk-UA": "Визначає тип кожного повідомлення й те, скільки міркування воно потребує, а потім додає однорядкову підказку; за бажанням також задає рівень міркування для ходу.",
+				"tr-TR": "Her mesajı ve ne kadar düşünme gerektirdiğini sınıflandırır, ardından tek satırlık bir ipucu verir; isteğe bağlı olarak turun düşünme düzeyini de belirler.",
+				"fa-IR": "هر پیام را دسته‌بندی می‌کند و می‌سنجد چقدر به تفکر نیاز دارد، سپس یک راهنمایی یک‌خطی می‌دهد؛ در صورت تمایل، سطح تفکر نوبت را هم تعیین می‌کند."
 			}
 		},
 		{
@@ -481,7 +503,7 @@
 				"en": "Lesson recall",
 				"zh-TW": "經驗引用",
 				"ja-JP": "教訓の参照",
-				"ko-KR": "경험 불러오기",
+				"ko-KR": "교훈 불러오기",
 				"de-DE": "Erfahrungen abrufen",
 				"fr-FR": "Rappel des leçons",
 				"es-ES": "Recuperación de lecciones",
@@ -496,7 +518,7 @@
 				"en": "Picks the lessons relevant to the current task and brings them into the turn.",
 				"zh-TW": "挑出與目前任務有關的經驗，帶進這一輪。",
 				"ja-JP": "現在のタスクに関係する教訓を選び、そのターンに取り込みます。",
-				"ko-KR": "현재 작업과 관련된 경험을 골라 이번 턴에 가져옵니다.",
+				"ko-KR": "현재 작업과 관련된 교훈을 골라 이번 턴에 가져옵니다.",
 				"de-DE": "Wählt die Erfahrungen aus, die für die aktuelle Aufgabe relevant sind, und bringt sie in die Runde ein.",
 				"fr-FR": "Choisit les leçons utiles à la tâche en cours et les apporte dans le tour.",
 				"es-ES": "Elige las lecciones relevantes para la tarea actual y las incorpora al turno.",
@@ -516,7 +538,7 @@
 				"en": "Lesson capture",
 				"zh-TW": "經驗記錄",
 				"ja-JP": "教訓の記録",
-				"ko-KR": "경험 기록",
+				"ko-KR": "교훈 기록",
 				"de-DE": "Erfahrungen festhalten",
 				"fr-FR": "Enregistrement des leçons",
 				"es-ES": "Registro de lecciones",
@@ -528,7 +550,18 @@
 			},
 			"summary": {
 				"zh": "判断你的一句话是不是在纠正代理、或立下以后都要守的规矩；是就记成一条经验。",
-				"en": "Decides whether a message of yours corrects the agent or sets a rule for later; if so, it becomes a lesson."
+				"en": "Decides whether a message of yours corrects the agent or sets a rule for later; if so, it becomes a lesson.",
+				"zh-TW": "判斷你的一句話是不是在糾正代理，或是立下以後都要守的規矩；是的話就記成一條經驗。",
+				"ja-JP": "あなたのメッセージが、エージェントへの訂正か、今後守るルールの設定かを判定します。そうであれば教訓として記録します。",
+				"ko-KR": "사용자의 메시지가 에이전트를 바로잡는 것인지, 앞으로 지킬 규칙을 정하는 것인지 판정하고, 그렇다면 교훈으로 남깁니다.",
+				"de-DE": "Entscheidet, ob eine Nachricht von dir den Agenten korrigiert oder eine Regel für später aufstellt; wenn ja, wird sie als Erfahrung festgehalten.",
+				"fr-FR": "Décide si un de vos messages corrige l’agent ou fixe une règle pour la suite ; si oui, il devient une leçon.",
+				"es-ES": "Decide si un mensaje tuyo corrige al agente o fija una regla para más adelante; si es así, se convierte en una lección.",
+				"pt-BR": "Decide se uma mensagem sua corrige o agente ou define uma regra para depois; se sim, ela vira uma lição.",
+				"ru-RU": "Решает, исправляет ли ваше сообщение агента или задаёт правило на будущее; если да, оно становится уроком.",
+				"uk-UA": "Вирішує, чи ваше повідомлення виправляє агента або задає правило на майбутнє; якщо так, воно стає уроком.",
+				"tr-TR": "Bir mesajınızın ajanı düzeltip düzeltmediğine ya da ileriye dönük bir kural koyup koymadığına karar verir; öyleyse bir deneyim olarak kaydedilir.",
+				"fa-IR": "می‌سنجد که آیا پیامی از شما عامل را اصلاح می‌کند یا قاعده‌ای برای بعد می‌گذارد؛ اگر چنین باشد، به یک تجربه تبدیل می‌شود."
 			}
 		},
 		{
@@ -537,11 +570,33 @@
 			"feature": "memory",
 			"title": {
 				"zh": "从脱困中学",
-				"en": "Learning from a way out"
+				"en": "Learning from a way out",
+				"zh-TW": "從脫困中學",
+				"ja-JP": "抜け道から学ぶ",
+				"ko-KR": "탈출구에서 배우기",
+				"de-DE": "Aus einem Ausweg lernen",
+				"fr-FR": "Leçons tirées d’une issue",
+				"es-ES": "Aprender de una salida",
+				"pt-BR": "Aprender com uma saída",
+				"ru-RU": "Уроки из обходного пути",
+				"uk-UA": "Уроки з обхідного шляху",
+				"tr-TR": "Çıkış yolundan öğrenme",
+				"fa-IR": "آموختن از راه گریز"
 			},
 			"summary": {
 				"zh": "代理原地打转或跑偏过、这一回合却以通过的检查或达成的目标收尾时，判断最后奏效的办法是不是换了一种；是就记下这个坑和绕过办法。每回合最多问一次。",
-				"en": "When the agent went in circles or off course and the turn still ended with a passing check or the goal met, judges whether what finally worked was a different approach; if so, keeps the trap and the way around it. Asked at most once a turn."
+				"en": "When the agent went in circles or off course and the turn still ended with a passing check or the goal met, judges whether what finally worked was a different approach; if so, keeps the trap and the way around it. Asked at most once a turn.",
+				"zh-TW": "代理曾原地打轉或偏離方向，這一輪卻以通過的檢查或達成的目標收尾時，判斷最後奏效的辦法是不是換了一種；是的話就記下這個坑和繞過辦法。每輪最多問一次。",
+				"ja-JP": "エージェントが堂々巡りしたり目標からそれたりしたのに、ターンがチェックの通過や目標の達成で終わったとき、最後にうまくいったのが別のやり方だったかを判定します。そうであれば、その落とし穴と回避策を記録します。1 ターンに最大 1 回だけ問い合わせます。",
+				"ko-KR": "에이전트가 제자리를 맴돌거나 옆길로 샜는데도 턴이 통과한 검사나 달성한 목표로 끝났을 때, 마지막에 통한 방법이 다른 접근이었는지 판정합니다. 그렇다면 그 함정과 우회 방법을 기록합니다. 턴마다 최대 한 번만 묻습니다.",
+				"de-DE": "Hat sich der Agent im Kreis gedreht oder ist er vom Kurs abgekommen und endet die Runde trotzdem mit einer bestandenen Prüfung oder dem erreichten Ziel, wird beurteilt, ob am Ende ein anderer Ansatz zum Erfolg geführt hat; wenn ja, wird festgehalten, worin die Stolperfalle bestand und wie man sie umgeht. Höchstens einmal pro Runde gefragt.",
+				"fr-FR": "Quand l’agent a tourné en rond ou s’est écarté de sa route, et que le tour s’est pourtant terminé par une vérification réussie ou l’objectif atteint, juge si ce qui a fini par marcher était une autre approche ; si oui, garde le piège et la façon de le contourner. Au plus une fois par tour.",
+				"es-ES": "Cuando el agente dio vueltas en círculos o se desvió y, aun así, el turno terminó con una comprobación superada o con el objetivo cumplido, evalúa si lo que al final funcionó fue un enfoque distinto; si es así, guarda la trampa y la forma de sortearla. Se pregunta como mucho una vez por turno.",
+				"pt-BR": "Quando o agente andou em círculos ou saiu do rumo e, mesmo assim, o turno terminou com uma verificação aprovada ou o objetivo alcançado, avalia se o que funcionou no fim foi uma abordagem diferente; se foi, guarda a armadilha e o jeito de contorná-la. É perguntado no máximo uma vez por turno.",
+				"ru-RU": "Если агент ходил по кругу или сбивался с курса, а ход всё же закончился пройденной проверкой или достигнутой целью, судья решает, сработал ли в итоге другой подход; если да, запоминает ловушку и способ её обойти. Спрашивается не чаще одного раза за ход.",
+				"uk-UA": "Якщо агент ходив по колу чи збивався з курсу, а хід усе ж завершився пройденою перевіркою або досягнутою метою, оцінює, чи зрештою спрацював інший підхід; якщо так, зберігає пастку й спосіб її обійти. Запитується не частіше ніж раз за хід.",
+				"tr-TR": "Ajan döngüye girmiş ya da rotadan çıkmış ama tur yine de geçen bir kontrolle veya ulaşılan hedefle bitmişse, sonunda işe yarayanın farklı bir yaklaşım olup olmadığına karar verir; öyleyse tuzağı ve onu aşmanın yolunu saklar. Tur başına en fazla bir kez sorulur.",
+				"fa-IR": "وقتی عامل دور خود چرخیده یا از مسیر خارج شده اما نوبت باز هم با یک بررسی موفق یا رسیدن به هدف تمام شده، داوری می‌کند که آیا آنچه سرانجام جواب داد رویکرد دیگری بود؛ اگر چنین باشد، آن دام و راه دور زدنش را نگه می‌دارد. در هر نوبت حداکثر یک بار پرسیده می‌شود."
 			}
 		},
 		{
@@ -550,11 +605,33 @@
 			"feature": "memory",
 			"title": {
 				"zh": "值不值得记",
-				"en": "Worth keeping"
+				"en": "Worth keeping",
+				"zh-TW": "值不值得記",
+				"ja-JP": "残す価値があるか",
+				"ko-KR": "남길 가치가 있는지",
+				"de-DE": "Behaltenswert",
+				"fr-FR": "Leçon à garder",
+				"es-ES": "Merece guardarse",
+				"pt-BR": "Vale guardar",
+				"ru-RU": "Стоит ли сохранять",
+				"uk-UA": "Чи варто зберігати",
+				"tr-TR": "Saklamaya değer mi",
+				"fa-IR": "ارزش نگه‌داشتن"
 			},
 			"summary": {
 				"zh": "模型自己想记下的经验、子代理报告里标出的经验，判断是以后还用得上、只关这一次，还是提示词或项目文件里早就有。只存以后用得上的。",
-				"en": "For a lesson the model keeps with the remember tool, or a Lesson: line in a sub-agent's report: useful again later, a one-off, or known already from the prompt or the project files. Only the first kind is kept."
+				"en": "For a lesson the model keeps with the remember tool, or a Lesson: line in a sub-agent's report: useful again later, a one-off, or known already from the prompt or the project files. Only the first kind is kept.",
+				"zh-TW": "模型用 remember 工具想記下的經驗，或子代理報告裡以 Lesson: 標出的經驗：判斷它以後還用得上、只跟這一次有關，還是提示詞或專案檔案裡早就有了。只存以後用得上的。",
+				"ja-JP": "モデルが remember ツールで残そうとする教訓や、サブエージェントの報告にある Lesson: 行について、今後も役立つか、その場限りか、プロンプトやプロジェクトのファイルからすでにわかることかを判定します。残すのは今後も役立つものだけです。",
+				"ko-KR": "모델이 remember 도구로 남기려는 교훈이나 하위 에이전트 보고의 Lesson: 줄을 두고, 나중에 다시 쓸모 있는지, 이번 한 번뿐인지, 프롬프트나 프로젝트 파일로 이미 아는 것인지 판정합니다. 나중에 쓸모 있는 것만 남깁니다.",
+				"de-DE": "Für eine Erfahrung, die das Modell mit dem remember-Tool festhält, oder eine Lesson:-Zeile im Bericht eines Unteragenten: später wieder nützlich, ein Einzelfall oder schon aus dem Prompt oder den Projektdateien bekannt. Nur die erste Art wird behalten.",
+				"fr-FR": "Pour une leçon que le modèle garde avec l’outil remember, ou une ligne Lesson: du rapport d’un sous-agent : utile plus tard, ponctuelle, ou déjà connue par le prompt ou les fichiers du projet. Seule la première sorte est gardée.",
+				"es-ES": "Para una lección que el modelo guarda con la herramienta remember, o una línea Lesson: en el informe de un subagente: útil más adelante, algo puntual o ya sabido por el prompt o los archivos del proyecto. Solo se guarda la primera clase.",
+				"pt-BR": "Para uma lição que o modelo guarda com a ferramenta remember, ou uma linha Lesson: no relatório de um subagente: útil de novo mais tarde, algo pontual ou já conhecido pelo prompt ou pelos arquivos do projeto. Só o primeiro tipo é guardado.",
+				"ru-RU": "Для урока, который модель сохраняет инструментом remember, или строки Lesson: в отчёте субагента: пригодится ли он потом, нужен ли только в этот раз или уже известен из промпта либо файлов проекта. Сохраняются только уроки первого рода.",
+				"uk-UA": "Для уроку, який модель зберігає інструментом remember, або рядка Lesson: у звіті субагента: чи знадобиться він згодом, чи потрібен лише цього разу, чи вже відомий із промпту або файлів проєкту. Зберігаються лише уроки першого роду.",
+				"tr-TR": "Modelin remember aracıyla sakladığı bir deneyim ya da bir alt ajanın raporundaki bir Lesson: satırı için: ileride yine işe yarar mı, tek seferlik mi, yoksa istemden veya proje dosyalarından zaten biliniyor mu. Yalnızca ilk türden olanlar saklanır.",
+				"fa-IR": "برای تجربه‌ای که مدل با ابزار remember نگه می‌دارد، یا یک خط Lesson: در گزارش یک عامل فرعی: بعدها باز به کار می‌آید، یک‌باره است، یا از پرامپت یا فایل‌های پروژه از قبل معلوم است. فقط نوع اول نگه داشته می‌شود."
 			}
 		},
 		{
@@ -563,11 +640,33 @@
 			"feature": "memory",
 			"title": {
 				"zh": "经验整理",
-				"en": "Lesson merging"
+				"en": "Lesson merging",
+				"zh-TW": "經驗整理",
+				"ja-JP": "教訓をまとめる",
+				"ko-KR": "교훈 병합",
+				"de-DE": "Erfahrungen zusammenführen",
+				"fr-FR": "Fusion des leçons",
+				"es-ES": "Fusión de lecciones",
+				"pt-BR": "Junção de lições",
+				"ru-RU": "Объединение уроков",
+				"uk-UA": "Об’єднання уроків",
+				"tr-TR": "Deneyim birleştirme",
+				"fa-IR": "ادغام تجربه‌ها"
 			},
 			"summary": {
 				"zh": "新经验落盘前，和最像的几条已有经验逐一比：同一条就不重复存，说得更准的替代旧的，互相矛盾时以你最新的说法为准。",
-				"en": "Before a new lesson is stored, compares it with the most similar kept ones: the same lesson is not kept twice, a more precise one replaces the old, and on a contradiction your latest word wins."
+				"en": "Before a new lesson is stored, compares it with the most similar kept ones: the same lesson is not kept twice, a more precise one replaces the old, and on a contradiction your latest word wins.",
+				"zh-TW": "新經驗存下之前，先和最像的幾條已有經驗逐一比對：同一條就不重複存，說得更準的取代舊的，互相矛盾時以你最新的說法為準。",
+				"ja-JP": "新しい教訓を保存する前に、最も似ている既存の教訓と 1 つずつ比べます。同じ教訓は二重に残さず、より正確なものが古いものを置き換え、矛盾する場合はあなたの最新の言葉を優先します。",
+				"ko-KR": "새 교훈을 저장하기 전에 가장 비슷한 기존 교훈들과 하나씩 비교합니다. 같은 교훈은 두 번 저장하지 않고, 더 정확한 것이 옛것을 대체하며, 서로 모순되면 사용자의 가장 최근 말을 따릅니다.",
+				"de-DE": "Bevor eine neue Erfahrung gespeichert wird, wird sie mit den ähnlichsten vorhandenen verglichen: Dieselbe Erfahrung wird nicht doppelt behalten, eine genauere ersetzt die alte, und bei einem Widerspruch gilt dein neuestes Wort.",
+				"fr-FR": "Avant d’enregistrer une nouvelle leçon, la compare aux leçons gardées les plus proches : une même leçon n’est pas gardée deux fois, une plus précise remplace l’ancienne, et en cas de contradiction, votre dernière parole l’emporte.",
+				"es-ES": "Antes de guardar una lección nueva, la compara con las guardadas más parecidas: la misma lección no se guarda dos veces, una más precisa sustituye a la antigua y, si se contradicen, vale lo último que dijiste.",
+				"pt-BR": "Antes de guardar uma lição nova, compara-a com as já guardadas mais parecidas: a mesma lição não é guardada duas vezes, uma mais precisa substitui a antiga e, numa contradição, vale o que você disse por último.",
+				"ru-RU": "Перед сохранением нового урока сравнивает его с самыми похожими из сохранённых: тот же урок не сохраняется дважды, более точный заменяет старый, а при противоречии действует ваше последнее слово.",
+				"uk-UA": "Перед збереженням нового уроку порівнює його з найподібнішими зі збережених: той самий урок не зберігається двічі, точніший замінює старий, а в разі суперечності діє ваше останнє слово.",
+				"tr-TR": "Yeni bir deneyim kaydedilmeden önce saklanan en benzer deneyimlerle karşılaştırılır: aynı deneyim iki kez saklanmaz, daha kesin olanı eskisinin yerini alır, çelişki olduğunda da sizin en son söylediğiniz geçerli olur.",
+				"fa-IR": "پیش از ذخیرهٔ یک تجربهٔ تازه، آن را با شبیه‌ترین تجربه‌های نگه‌داشته مقایسه می‌کند: یک تجربه دو بار نگه داشته نمی‌شود، تجربهٔ دقیق‌تر جای قدیمی را می‌گیرد، و در صورت تناقض، آخرین حرف شما ملاک است."
 			}
 		},
 		{
@@ -576,11 +675,33 @@
 			"feature": "memory",
 			"title": {
 				"zh": "经验有没有用",
-				"en": "Lesson followed"
+				"en": "Lesson followed",
+				"zh-TW": "經驗有沒有照做",
+				"ja-JP": "教訓が守られたか",
+				"ko-KR": "교훈을 따랐는지",
+				"de-DE": "Erfahrung beherzigt",
+				"fr-FR": "Leçon suivie",
+				"es-ES": "Lección seguida",
+				"pt-BR": "Lição seguida",
+				"ru-RU": "Учтён ли урок",
+				"uk-UA": "Чи враховано урок",
+				"tr-TR": "Deneyim dikkate alındı mı",
+				"fa-IR": "عمل به تجربه"
 			},
 			"summary": {
 				"zh": "回合结束时，判断带进这一回合的经验有没有被照做。召回多次却从没照做过的经验会自动退役。",
-				"en": "At the end of a turn, judges whether the lessons brought into it were followed. A lesson recalled many times and never followed is retired."
+				"en": "At the end of a turn, judges whether the lessons brought into it were followed. A lesson recalled many times and never followed is retired.",
+				"zh-TW": "一輪結束時，判斷帶進這一輪的經驗有沒有被照做。召回多次卻從沒照做過的經驗會自動退役。",
+				"ja-JP": "ターンの終わりに、そのターンに取り込んだ教訓が守られたかを判定します。何度も呼び出されたのに一度も守られない教訓は廃止されます。",
+				"ko-KR": "턴이 끝날 때 이번 턴에 가져온 교훈을 따랐는지 판정합니다. 여러 번 불러왔지만 한 번도 따르지 않은 교훈은 사용 중지됩니다.",
+				"de-DE": "Am Ende einer Runde wird beurteilt, ob die eingebrachten Erfahrungen beherzigt wurden. Eine Erfahrung, die oft abgerufen und nie beherzigt wurde, wird ausgemustert.",
+				"fr-FR": "À la fin d’un tour, juge si les leçons apportées ont été suivies. Une leçon rappelée de nombreuses fois et jamais suivie est retirée.",
+				"es-ES": "Al final de un turno, evalúa si se siguieron las lecciones incorporadas. Una lección recuperada muchas veces y nunca seguida se retira.",
+				"pt-BR": "No fim de um turno, avalia se as lições trazidas foram seguidas. Uma lição recuperada muitas vezes e nunca seguida é aposentada.",
+				"ru-RU": "В конце хода судья решает, учтены ли уроки, добавленные в этот ход. Урок, который много раз подбирался, но ни разу не был учтён, отправляется в архив.",
+				"uk-UA": "Наприкінці ходу оцінює, чи враховано уроки, додані в цей хід. Урок, який багато разів пригадували, але жодного разу не врахували, переміщується в архів.",
+				"tr-TR": "Bir turun sonunda, tura getirilen deneyimlerin dikkate alınıp alınmadığına karar verir. Birçok kez hatırlanıp hiç dikkate alınmayan bir deneyim devre dışı bırakılır.",
+				"fa-IR": "در پایان هر نوبت داوری می‌کند که آیا به تجربه‌هایی که به آن نوبت آورده شده عمل شده است یا نه. تجربه‌ای که بارها فراخوانی شده و هرگز به آن عمل نشده کنار گذاشته می‌شود."
 			}
 		},
 		{
@@ -605,7 +726,7 @@
 			"summary": {
 				"zh": "判断你是否很快会回来，以决定要不要在提示词缓存过期前续一下。",
 				"en": "Guesses whether you will be back soon, to decide on refreshing the prompt cache before it expires.",
-				"zh-TW": "判斷你是否很快會回來，以決定要不要在提示詞快取過期前先續上。",
+				"zh-TW": "判斷你是否很快會回來，以決定要不要在提示快取過期前先續上。",
 				"ja-JP": "あなたがすぐに戻ってくるかを予測し、期限が切れる前にプロンプトキャッシュを更新するかを決めます。",
 				"ko-KR": "사용자가 곧 돌아올지 추측해, 프롬프트 캐시가 만료되기 전에 갱신할지 정합니다.",
 				"de-DE": "Schätzt, ob du bald zurückkommst, um zu entscheiden, ob der Prompt-Cache vor dem Ablaufen aufgefrischt wird.",
@@ -1186,8 +1307,8 @@
 				"zh": "蜂群：发布发现",
 				"en": "Hive: publishing findings",
 				"zh-TW": "蜂群：發布發現",
-				"ja-JP": "Hive: 発見の公開",
-				"ko-KR": "Hive: 발견 게시",
+				"ja-JP": "ハイブ：発見の公開",
+				"ko-KR": "하이브: 발견 게시",
 				"de-DE": "Hive: Erkenntnisse veröffentlichen",
 				"fr-FR": "Ruche : publication des découvertes",
 				"es-ES": "Hive: publicar hallazgos",
@@ -1202,7 +1323,7 @@
 				"en": "Whether a bee's finding is worth putting on the board for the others.",
 				"zh-TW": "一個蜂群成員的發現，值不值得放到共享看板上給其他成員看。",
 				"ja-JP": "ビーの発見を、ほかのビーのために共有ボードへ載せる価値があるかを判定します。",
-				"ko-KR": "벌의 발견이 다른 벌들을 위해 공유 보드에 올릴 가치가 있는지 판정합니다.",
+				"ko-KR": "비(bee)의 발견이 다른 비들을 위해 공유 보드에 올릴 가치가 있는지 판정합니다.",
 				"de-DE": "Ob die Erkenntnis einer Biene es wert ist, für die anderen aufs gemeinsame Board zu kommen.",
 				"fr-FR": "Décide si la découverte d’une abeille mérite d’être placée sur le tableau partagé pour les autres.",
 				"es-ES": "Si merece la pena poner el hallazgo de una abeja en el tablero compartido para las demás.",
@@ -1221,8 +1342,8 @@
 				"zh": "蜂群：投递",
 				"en": "Hive: delivery",
 				"zh-TW": "蜂群：投遞",
-				"ja-JP": "Hive: 配信",
-				"ko-KR": "Hive: 전달",
+				"ja-JP": "ハイブ：配信",
+				"ko-KR": "하이브: 전달",
 				"de-DE": "Hive: Übergabe",
 				"fr-FR": "Ruche : transmission",
 				"es-ES": "Hive: entregar hallazgos",
@@ -1237,7 +1358,7 @@
 				"en": "Whether a finding on the board matters to a bee's current work; only then is it delivered.",
 				"zh-TW": "共享看板上的一則發現和某個蜂群成員手上的工作有沒有關係；有關係才送達。",
 				"ja-JP": "共有ボード上の発見が、あるビーの現在の作業に関係するかを判定し、関係する場合にだけ配信します。",
-				"ko-KR": "공유 보드의 발견이 어떤 벌의 현재 작업에 중요한지 판정하고, 중요할 때만 전달합니다.",
+				"ko-KR": "공유 보드의 발견이 어떤 비의 현재 작업에 중요한지 판정하고, 중요할 때만 전달합니다.",
 				"de-DE": "Ob eine Erkenntnis auf dem Board für die aktuelle Arbeit einer Biene wichtig ist; nur dann wird sie übergeben.",
 				"fr-FR": "Décide si une découverte du tableau partagé compte pour le travail en cours d’une abeille ; elle ne lui est transmise que dans ce cas.",
 				"es-ES": "Si un hallazgo del tablero compartido importa para el trabajo actual de una abeja; solo entonces se le entrega.",
@@ -1254,11 +1375,33 @@
 			"feature": "hive",
 			"title": {
 				"zh": "蜂群：纠正",
-				"en": "Hive: corrections"
+				"en": "Hive: corrections",
+				"zh-TW": "蜂群：更正",
+				"ja-JP": "ハイブ：訂正",
+				"ko-KR": "하이브: 정정",
+				"de-DE": "Hive: Korrekturen",
+				"fr-FR": "Ruche : corrections",
+				"es-ES": "Hive: correcciones",
+				"pt-BR": "Hive: correções",
+				"ru-RU": "Hive: исправления",
+				"uk-UA": "Hive: виправлення",
+				"tr-TR": "Hive: düzeltmeler",
+				"fa-IR": "Hive: اصلاح‌ها"
 			},
 			"summary": {
 				"zh": "一条新发现对公告板上的旧发现意味着什么：更新了它、和它冲突、佐证它，还是无关。被更新的下线，听过它的蜂收到纠正；冲突两边都留着，交给蜂去核实。",
-				"en": "What a new finding does to an earlier one on the board: replaces it, contradicts it, supports it, or nothing. A replaced finding goes down and whoever heard it is told; a contradiction keeps both sides for a bee to settle."
+				"en": "What a new finding does to an earlier one on the board: replaces it, contradicts it, supports it, or nothing. A replaced finding goes down and whoever heard it is told; a contradiction keeps both sides for a bee to settle.",
+				"zh-TW": "一則新發現對共享看板上較早的發現意味著什麼：取代它、和它矛盾、佐證它，還是無關。被取代的發現會撤下，聽過它的蜂群成員會收到更正；互相矛盾時兩邊都留著，交給蜂群成員去核實。",
+				"ja-JP": "新しい発見が、共有ボード上の以前の発見にとって何を意味するかを判定します。置き換えるのか、矛盾するのか、裏付けるのか、どれでもないのかです。置き換えられた発見は取り下げられ、それを受け取ったビーに訂正が届きます。矛盾する場合は両方を残し、ビーに決着をつけさせます。",
+				"ko-KR": "새 발견이 공유 보드의 이전 발견에 어떤 의미인지 판정합니다. 대체하는지, 모순되는지, 뒷받침하는지, 아무 관계가 없는지입니다. 대체된 발견은 내려지고 그것을 받은 비에게 정정이 전달됩니다. 모순되면 양쪽을 모두 남겨 두고 비가 가리게 합니다.",
+				"de-DE": "Was eine neue Erkenntnis für eine frühere auf dem Board bedeutet: Sie ersetzt sie, widerspricht ihr, stützt sie oder nichts davon. Eine ersetzte Erkenntnis wird zurückgezogen, und wer sie erhalten hat, bekommt eine Korrektur; bei einem Widerspruch bleiben beide Seiten stehen, bis eine Biene ihn klärt.",
+				"fr-FR": "Ce qu’une nouvelle découverte change pour une découverte antérieure du tableau partagé : elle la remplace, la contredit, la confirme, ou rien de tout cela. Une découverte remplacée est retirée et les abeilles qui l’ont reçue reçoivent une correction ; en cas de contradiction, les deux versions restent jusqu’à ce qu’une abeille tranche.",
+				"es-ES": "Qué supone un hallazgo nuevo para uno anterior del tablero compartido: lo sustituye, lo contradice, lo respalda o nada de eso. Un hallazgo sustituido se retira y a quien lo recibió le llega una corrección; ante una contradicción se conservan ambas partes para que una abeja la resuelva.",
+				"pt-BR": "O que uma descoberta nova significa para uma anterior do quadro compartilhado: substitui, contradiz, apoia ou nada disso. Uma descoberta substituída sai do quadro e quem a recebeu ganha uma correção; numa contradição, os dois lados ficam até uma abelha resolver.",
+				"ru-RU": "Что новая находка значит для более ранней на общей доске: заменяет её, противоречит ей, подтверждает её или ничего из этого. Заменённая находка снимается, а все, кто её получил, получают исправление; при противоречии обе стороны остаются, пока пчела не разберётся.",
+				"uk-UA": "Що нова знахідка означає для давнішої на спільній дошці: замінює її, суперечить їй, підтверджує її чи нічого з цього. Замінену знахідку знімають, а всі, хто її отримав, отримують виправлення; у разі суперечності обидві сторони лишаються, доки бджола не розбереться.",
+				"tr-TR": "Yeni bir bulgunun paylaşılan panodaki daha eski bir bulgu için anlamı: onun yerini alır, onunla çelişir, onu destekler ya da hiçbiri. Yerini yenisine bırakan bulgu kaldırılır ve onu almış olanlara bir düzeltme gider; çelişkide iki taraf da bir arı çözene kadar kalır.",
+				"fa-IR": "اینکه یک یافتهٔ تازه برای یافتهٔ قدیمی‌تری روی تختهٔ مشترک چه معنایی دارد: جای آن را می‌گیرد، با آن تناقض دارد، آن را تأیید می‌کند، یا هیچ‌کدام. یافتهٔ جایگزین‌شده برداشته می‌شود و به هر که آن را دریافت کرده یک اصلاح می‌رسد؛ در تناقض، هر دو طرف می‌مانند تا یک زنبور تکلیف را روشن کند."
 			}
 		}
 	],
@@ -1303,7 +1446,18 @@
 					"default": false,
 					"label": {
 						"zh": "按判定设置思考等级（切换会丢缓存）",
-						"en": "Set the thinking level from the verdict (a switch loses the cache)"
+						"en": "Set the thinking level from the verdict (a switch loses the cache)",
+						"zh-TW": "依判定結果設定思考強度（切換會丟掉提示快取）",
+						"ja-JP": "判定に応じて思考レベルを設定（切り替えるとプロンプトキャッシュが失われる）",
+						"ko-KR": "판정에 따라 사고 수준 설정(바꾸면 프롬프트 캐시가 사라짐)",
+						"de-DE": "Denkstufe nach dem Urteil festlegen (ein Wechsel verwirft den Prompt-Cache)",
+						"fr-FR": "Régler le niveau de réflexion selon le jugement (un changement fait perdre le cache du prompt)",
+						"es-ES": "Fijar el nivel de razonamiento según el veredicto (un cambio hace perder la caché del prompt)",
+						"pt-BR": "Definir o nível de raciocínio pelo veredito (uma troca perde o cache do prompt)",
+						"ru-RU": "Задавать уровень размышлений по решению (при смене теряется кэш промпта)",
+						"uk-UA": "Задавати рівень міркування за рішенням (у разі зміни втрачається кеш промпту)",
+						"tr-TR": "Düşünme düzeyini karara göre ayarla (değiştirmek istem önbelleğini kaybettirir)",
+						"fa-IR": "تعیین سطح تفکر بر اساس نتیجهٔ داوری (هر تغییر، حافظهٔ نهان پرامپت را از بین می‌برد)"
 					}
 				},
 				{
@@ -1808,7 +1962,7 @@
 				"en": "Lessons",
 				"zh-TW": "經驗庫",
 				"ja-JP": "教訓",
-				"ko-KR": "경험",
+				"ko-KR": "교훈",
 				"de-DE": "Erfahrungen",
 				"fr-FR": "Leçons",
 				"es-ES": "Experiencia",
@@ -1820,7 +1974,18 @@
 			},
 			"summary": {
 				"zh": "从你的纠正、代理自己的脱困、模型和子代理的发现里学经验，存之前先和已有的合并，下次遇到相关任务时带上，没人照做的自动退役。随时可以查看、编辑或让一条退役。",
-				"en": "Learns from your corrections, from the agent getting itself unstuck, and from what the model and sub-agents found; merges each lesson with the kept ones before storing it, brings the relevant ones along next time, and retires those nobody follows. /lessons shows them, /forget retires one."
+				"en": "Learns from your corrections, from the agent getting itself unstuck, and from what the model and sub-agents found; merges each lesson with the kept ones before storing it, brings the relevant ones along next time, and retires those nobody follows. /lessons shows them, /forget retires one.",
+				"zh-TW": "從你的糾正、代理自己的脫困、模型和子代理的發現裡學經驗；存之前先和已有的合併，下次遇到相關任務時帶上，沒人照做的自動退役。/lessons 列出經驗，/forget 讓一條退役。",
+				"ja-JP": "あなたの訂正、エージェントが自力で見つけた抜け道、モデルやサブエージェントの発見から教訓を学びます。保存する前に既存の教訓とまとめ、次からは関係するものを取り込み、誰も守らないものは廃止します。/lessons で一覧を表示し、/forget で 1 つを廃止します。",
+				"ko-KR": "사용자의 정정, 에이전트가 스스로 찾은 탈출구, 모델과 하위 에이전트가 알아낸 것에서 교훈을 배웁니다. 저장하기 전에 기존 교훈과 병합하고, 다음에 관련된 교훈을 함께 가져오며, 아무도 따르지 않는 교훈은 사용 중지합니다. /lessons로 목록을 보고, /forget으로 하나를 사용 중지합니다.",
+				"de-DE": "Lernt aus deinen Korrekturen, aus den Auswegen, die der Agent selbst findet, und aus dem, was das Modell und Unteragenten herausgefunden haben; führt jede Erfahrung vor dem Speichern mit den vorhandenen zusammen, bringt beim nächsten Mal die relevanten mit und mustert die aus, die niemand beherzigt. /lessons zeigt sie, /forget mustert eine aus.",
+				"fr-FR": "Apprend de vos corrections, des issues que l’agent trouve lui-même et de ce que le modèle et les sous-agents ont découvert ; fusionne chaque leçon avec celles déjà gardées avant de l’enregistrer, apporte les plus utiles la fois suivante et retire celles que personne ne suit. /lessons les affiche, /forget en retire une.",
+				"es-ES": "Aprende de tus correcciones, de las salidas que encuentra el propio agente y de lo que han descubierto el modelo y los subagentes; antes de guardar cada lección la fusiona con las ya guardadas, trae las relevantes la próxima vez y retira las que nadie sigue. /lessons las muestra, /forget retira una.",
+				"pt-BR": "Aprende com as suas correções, com as saídas que o próprio agente encontra e com o que o modelo e os subagentes descobriram; antes de guardar cada lição, junta-a às já guardadas, traz as relevantes da próxima vez e aposenta as que ninguém segue. /lessons mostra as lições, /forget aposenta uma.",
+				"ru-RU": "Учится на ваших исправлениях, на обходных путях, которые агент находит сам, и на находках модели и субагентов; перед сохранением объединяет каждый урок с уже сохранёнными, в следующий раз добавляет подходящие и отправляет в архив те, которые никто не учитывает. /lessons показывает уроки, /forget отправляет один в архив.",
+				"uk-UA": "Вчиться на ваших виправленнях, на обхідних шляхах, які агент знаходить сам, і на знахідках моделі та субагентів; перед збереженням об’єднує кожен урок із уже збереженими, наступного разу додає доречні й переміщує в архів ті, яких ніхто не враховує. /lessons показує уроки, /forget переміщує один в архів.",
+				"tr-TR": "Düzeltmelerinizden, ajanın kendi bulduğu çıkış yollarından ve modelle alt ajanların bulduklarından deneyim öğrenir; her deneyimi kaydetmeden önce saklananlarla birleştirir, sonraki seferde ilgili olanları getirir ve kimsenin dikkate almadıklarını devre dışı bırakır. /lessons onları gösterir, /forget birini devre dışı bırakır.",
+				"fa-IR": "از اصلاح‌های شما، از راه‌های گریزی که عامل خودش پیدا می‌کند و از یافته‌های مدل و عامل‌های فرعی تجربه می‌آموزد؛ هر تجربه را پیش از ذخیره با تجربه‌های نگه‌داشته ادغام می‌کند، دفعهٔ بعد موارد مرتبط را همراه می‌آورد و آن‌هایی را که کسی به آن‌ها عمل نمی‌کند کنار می‌گذارد. /lessons آن‌ها را نشان می‌دهد و /forget یکی را کنار می‌گذارد."
 			},
 			"defaultEnabled": true,
 			"options": [
@@ -1833,7 +1998,7 @@
 						"en": "Lessons file",
 						"zh-TW": "經驗庫檔案",
 						"ja-JP": "教訓ファイル",
-						"ko-KR": "경험 파일",
+						"ko-KR": "교훈 파일",
 						"de-DE": "Erfahrungsdatei",
 						"fr-FR": "Fichier des leçons",
 						"es-ES": "Archivo de lecciones",
@@ -1870,7 +2035,7 @@
 						"en": "Judge at most",
 						"zh-TW": "每次最多評估",
 						"ja-JP": "1 回に判定する教訓の最大数",
-						"ko-KR": "판정할 최대 경험 수",
+						"ko-KR": "판정할 최대 교훈 수",
 						"de-DE": "Höchstens beurteilen",
 						"fr-FR": "Juger au plus",
 						"es-ES": "Máximo de lecciones evaluadas",
@@ -1882,7 +2047,18 @@
 					},
 					"help": {
 						"zh": "照做次数多的、最近记下或确认过的排在前面。",
-						"en": "The most followed, then the most recently stored or confirmed, come first."
+						"en": "The most followed, then the most recently stored or confirmed, come first.",
+						"zh-TW": "照做次數多的排在前面，其次是最近記下或確認過的。",
+						"ja-JP": "守られた回数が多いものが先で、その次に最近保存または確認されたものが来ます。",
+						"ko-KR": "따른 횟수가 많은 교훈이 먼저이고, 그다음은 최근에 저장되거나 확인된 교훈입니다.",
+						"de-DE": "Zuerst die am häufigsten beherzigten, dann die zuletzt gespeicherten oder bestätigten.",
+						"fr-FR": "Les plus suivies d’abord, puis les plus récemment enregistrées ou confirmées.",
+						"es-ES": "Primero las más seguidas y después las guardadas o confirmadas más recientemente.",
+						"pt-BR": "Primeiro as mais seguidas, depois as guardadas ou confirmadas mais recentemente.",
+						"ru-RU": "Сначала те, что учитывались чаще всего, затем недавно сохранённые или подтверждённые.",
+						"uk-UA": "Спершу ті, що враховувалися найчастіше, потім нещодавно збережені чи підтверджені.",
+						"tr-TR": "Önce en çok dikkate alınanlar, ardından en son kaydedilen ya da onaylananlar gelir.",
+						"fa-IR": "اول آن‌هایی که بیشتر به آن‌ها عمل شده، سپس آن‌هایی که تازه‌تر ذخیره یا تأیید شده‌اند."
 					}
 				},
 				{
@@ -1896,7 +2072,7 @@
 						"en": "Bring in at most",
 						"zh-TW": "每輪最多帶入",
 						"ja-JP": "1 ターンに取り込む教訓の最大数",
-						"ko-KR": "가져올 최대 경험 수",
+						"ko-KR": "가져올 최대 교훈 수",
 						"de-DE": "Höchstens einbringen",
 						"fr-FR": "Apporter au plus",
 						"es-ES": "Máximo de lecciones incorporadas por turno",
@@ -1915,15 +2091,48 @@
 					"max": 30000,
 					"unit": {
 						"zh": "毫秒",
-						"en": "ms"
+						"en": "ms",
+						"zh-TW": "毫秒",
+						"ja-JP": "ミリ秒",
+						"ko-KR": "밀리초",
+						"de-DE": "ms",
+						"fr-FR": "ms",
+						"es-ES": "ms",
+						"pt-BR": "ms",
+						"ru-RU": "мс",
+						"uk-UA": "мс",
+						"tr-TR": "ms",
+						"fa-IR": "میلی‌ثانیه"
 					},
 					"label": {
 						"zh": "最多等召回结果",
-						"en": "Wait for the recall at most"
+						"en": "Wait for the recall at most",
+						"zh-TW": "最多等召回結果",
+						"ja-JP": "呼び出し結果を待つ最大時間",
+						"ko-KR": "불러오기 최대 대기 시간",
+						"de-DE": "Maximale Wartezeit auf den Abruf",
+						"fr-FR": "Attente du rappel, au plus",
+						"es-ES": "Espera máxima a la recuperación",
+						"pt-BR": "Esperar pela recuperação no máximo",
+						"ru-RU": "Ждать подбора уроков не дольше",
+						"uk-UA": "Чекати на пригадування щонайбільше",
+						"tr-TR": "Hatırlama için en fazla bekleme",
+						"fa-IR": "حداکثر انتظار برای فراخوانی"
 					},
 					"help": {
 						"zh": "从消息到达算起；给子代理挑经验也等这么久。",
-						"en": "Counted from the arrival of the message; picking lessons for sub-agents waits as long."
+						"en": "Counted from the arrival of the message; picking lessons for sub-agents waits as long.",
+						"zh-TW": "從訊息到達時算起；替子代理挑經驗也等這麼久。",
+						"ja-JP": "メッセージの到着から数えます。サブエージェント向けに教訓を選ぶときも同じだけ待ちます。",
+						"ko-KR": "메시지가 도착한 때부터 셉니다. 하위 에이전트에게 줄 교훈을 고를 때도 이만큼 기다립니다.",
+						"de-DE": "Gezählt ab dem Eintreffen der Nachricht; die Auswahl von Erfahrungen für Unteragenten wartet genauso lange.",
+						"fr-FR": "Compté à partir de l’arrivée du message ; le choix des leçons pour les sous-agents attend aussi longtemps.",
+						"es-ES": "Se cuenta desde que llega el mensaje; elegir lecciones para los subagentes espera lo mismo.",
+						"pt-BR": "Contado a partir da chegada da mensagem; escolher lições para subagentes espera o mesmo tempo.",
+						"ru-RU": "Отсчитывается с момента получения сообщения; подбор уроков для субагентов ждёт столько же.",
+						"uk-UA": "Відлік — від надходження повідомлення; добір уроків для субагентів чекає стільки ж.",
+						"tr-TR": "Mesajın gelişinden itibaren sayılır; alt ajanlar için deneyim seçmek de bu kadar bekler.",
+						"fa-IR": "از رسیدن پیام حساب می‌شود؛ انتخاب تجربه برای عامل‌های فرعی هم همین‌قدر صبر می‌کند."
 					}
 				},
 				{
@@ -1934,11 +2143,33 @@
 					"max": 100,
 					"label": {
 						"zh": "召回几次从没照做就退役",
-						"en": "Retire after this many recalls never followed"
+						"en": "Retire after this many recalls never followed",
+						"zh-TW": "召回幾次都沒照做就退役",
+						"ja-JP": "一度も守られずにこの回数呼び出されたら廃止",
+						"ko-KR": "한 번도 따르지 않은 채 이만큼 불러오면 사용 중지",
+						"de-DE": "Ausmustern, wenn so oft abgerufen und nie beherzigt",
+						"fr-FR": "Retirer après ce nombre de rappels jamais suivis",
+						"es-ES": "Retirar tras este número de recuperaciones nunca seguidas",
+						"pt-BR": "Aposentar após este número de recuperações nunca seguidas",
+						"ru-RU": "В архив после стольких подборов без учёта",
+						"uk-UA": "В архів після стількох пригадувань без урахування",
+						"tr-TR": "Hiç dikkate alınmadan bu kadar hatırlanınca devre dışı bırak",
+						"fa-IR": "کنار گذاشتن پس از این تعداد فراخوانی، اگر هرگز به آن عمل نشود"
 					},
 					"help": {
 						"zh": "0 表示从不自动退役。",
-						"en": "0 never retires a lesson by itself."
+						"en": "0 never retires a lesson by itself.",
+						"zh-TW": "0 表示從不自動退役。",
+						"ja-JP": "0 にすると自動では廃止しません。",
+						"ko-KR": "0이면 교훈을 자동으로 사용 중지하지 않습니다.",
+						"de-DE": "0 mustert nie von selbst eine Erfahrung aus.",
+						"fr-FR": "0 ne retire jamais une leçon de lui-même.",
+						"es-ES": "0 nunca retira una lección por sí solo.",
+						"pt-BR": "0 nunca aposenta uma lição sozinho.",
+						"ru-RU": "0 — никогда не отправлять урок в архив автоматически.",
+						"uk-UA": "0 — ніколи не переміщувати урок в архів автоматично.",
+						"tr-TR": "0 hiçbir deneyimi kendiliğinden devre dışı bırakmaz.",
+						"fa-IR": "0 هیچ تجربه‌ای را خودکار کنار نمی‌گذارد."
 					}
 				},
 				{
@@ -1949,11 +2180,33 @@
 					"max": 16,
 					"label": {
 						"zh": "存之前比较几条最像的",
-						"en": "Compare with this many similar lessons"
+						"en": "Compare with this many similar lessons",
+						"zh-TW": "存下之前比較幾條最像的經驗",
+						"ja-JP": "保存前に比べる似た教訓の数",
+						"ko-KR": "저장 전에 비교할 비슷한 교훈 수",
+						"de-DE": "Mit so vielen ähnlichen Erfahrungen vergleichen",
+						"fr-FR": "Comparer à ce nombre de leçons proches",
+						"es-ES": "Comparar con este número de lecciones parecidas",
+						"pt-BR": "Comparar com este número de lições parecidas",
+						"ru-RU": "Сравнивать с таким числом похожих уроков",
+						"uk-UA": "Порівнювати з такою кількістю подібних уроків",
+						"tr-TR": "Bu kadar benzer deneyimle karşılaştır",
+						"fa-IR": "مقایسه با این تعداد تجربهٔ مشابه"
 					},
 					"help": {
 						"zh": "按字面重合挑出来，一次请求问完；0 表示不整理，直接存。",
-						"en": "Picked by shared words, asked in one request; 0 stores without merging."
+						"en": "Picked by shared words, asked in one request; 0 stores without merging.",
+						"zh-TW": "依字面重合挑出來，一次請求問完；0 表示不整理，直接存。",
+						"ja-JP": "共通する語で選び、1 回のリクエストで問い合わせます。0 にすると、まとめずにそのまま保存します。",
+						"ko-KR": "겹치는 단어로 골라 한 번의 요청으로 묻습니다. 0이면 병합하지 않고 바로 저장합니다.",
+						"de-DE": "Nach gemeinsamen Wörtern ausgewählt und in einer Anfrage geprüft; 0 speichert ohne Zusammenführen.",
+						"fr-FR": "Choisies d’après les mots en commun, examinées en une seule requête ; 0 enregistre sans fusionner.",
+						"es-ES": "Se eligen por palabras en común y se consultan en una sola solicitud; 0 guarda sin fusionar.",
+						"pt-BR": "Escolhidas pelas palavras em comum e consultadas numa única solicitação; 0 guarda sem juntar.",
+						"ru-RU": "Отбираются по общим словам и проверяются одним запросом; 0 — сохранять без объединения.",
+						"uk-UA": "Добираються за спільними словами й перевіряються одним запитом; 0 — зберігати без об’єднання.",
+						"tr-TR": "Ortak kelimelere göre seçilir ve tek bir istekte sorulur; 0 birleştirmeden saklar.",
+						"fa-IR": "بر اساس واژه‌های مشترک انتخاب و در یک درخواست پرسیده می‌شوند؛ 0 بدون ادغام ذخیره می‌کند."
 					}
 				},
 				{
@@ -1962,11 +2215,33 @@
 					"default": true,
 					"label": {
 						"zh": "从代理的脱困中学",
-						"en": "Learn from the agent getting unstuck"
+						"en": "Learn from the agent getting unstuck",
+						"zh-TW": "從代理的脫困中學",
+						"ja-JP": "エージェントが見つけた抜け道から学ぶ",
+						"ko-KR": "에이전트가 찾은 탈출구에서 배우기",
+						"de-DE": "Aus den Auswegen des Agenten lernen",
+						"fr-FR": "Apprendre des issues trouvées par l’agent",
+						"es-ES": "Aprender de las salidas que encuentra el agente",
+						"pt-BR": "Aprender com as saídas que o agente encontra",
+						"ru-RU": "Учиться на том, как агент выбрался из тупика",
+						"uk-UA": "Вчитися на тому, як агент вибрався з глухого кута",
+						"tr-TR": "Ajanın bulduğu çıkış yollarından öğren",
+						"fa-IR": "آموختن از راه گریزی که عامل پیدا می‌کند"
 					},
 					"help": {
 						"zh": "需要写作模型或当前对话模型把经验写成一句话。",
-						"en": "Needs the writer model or the conversation's model to put the lesson into words."
+						"en": "Needs the writer model or the conversation's model to put the lesson into words.",
+						"zh-TW": "需要 writer 模型或目前對話的模型，把經驗寫成一句話。",
+						"ja-JP": "教訓を文章にするには、writer モデルか会話のモデルが必要です。",
+						"ko-KR": "교훈을 글로 옮기려면 writer 모델이나 대화의 모델이 필요합니다.",
+						"de-DE": "Braucht das writer-Modell oder das Modell der Unterhaltung, um die Erfahrung in Worte zu fassen.",
+						"fr-FR": "Il faut le modèle « writer » ou celui de la conversation pour formuler la leçon.",
+						"es-ES": "Necesita el modelo «writer» o el de la conversación para poner la lección en palabras.",
+						"pt-BR": "Precisa do modelo writer ou do modelo da conversa para pôr a lição em palavras.",
+						"ru-RU": "Чтобы сформулировать урок, нужна модель writer или модель диалога.",
+						"uk-UA": "Щоб сформулювати урок, потрібна модель writer або модель розмови.",
+						"tr-TR": "Deneyimi sözcüklere dökmek için writer modeli ya da konuşmanın modeli gerekir.",
+						"fa-IR": "برای بیان تجربه در قالب کلمات، به مدل writer یا مدل گفتگو نیاز دارد."
 					}
 				},
 				{
@@ -1975,7 +2250,18 @@
 					"default": true,
 					"label": {
 						"zh": "回合结束时检查经验有没有被照做",
-						"en": "Check at the end of a turn whether lessons were followed"
+						"en": "Check at the end of a turn whether lessons were followed",
+						"zh-TW": "一輪結束時檢查經驗有沒有被照做",
+						"ja-JP": "ターンの終わりに教訓が守られたかを確認",
+						"ko-KR": "턴이 끝날 때 교훈을 따랐는지 확인",
+						"de-DE": "Am Ende einer Runde prüfen, ob Erfahrungen beherzigt wurden",
+						"fr-FR": "Vérifier en fin de tour si les leçons ont été suivies",
+						"es-ES": "Comprobar al final del turno si se siguieron las lecciones",
+						"pt-BR": "Verificar no fim do turno se as lições foram seguidas",
+						"ru-RU": "Проверять в конце хода, учтены ли уроки",
+						"uk-UA": "Перевіряти наприкінці ходу, чи враховано уроки",
+						"tr-TR": "Tur sonunda deneyimlerin dikkate alınıp alınmadığını kontrol et",
+						"fa-IR": "بررسی در پایان نوبت که آیا به تجربه‌ها عمل شده است"
 					}
 				}
 			]
@@ -2390,11 +2676,33 @@
 					"max": 32,
 					"label": {
 						"zh": "一次请求判断几块",
-						"en": "Chunks per request"
+						"en": "Chunks per request",
+						"zh-TW": "一次請求判斷幾塊",
+						"ja-JP": "1 回のリクエストで判定するチャンク数",
+						"ko-KR": "요청당 청크 수",
+						"de-DE": "Abschnitte pro Anfrage",
+						"fr-FR": "Fragments par requête",
+						"es-ES": "Fragmentos por solicitud",
+						"pt-BR": "Blocos por solicitação",
+						"ru-RU": "Частей на запрос",
+						"uk-UA": "Частин на запит",
+						"tr-TR": "İstek başına parça",
+						"fa-IR": "تعداد تکه در هر درخواست"
 					},
 					"help": {
 						"zh": "托管判定器把多块放进一个请求，状态只计费一次；本地判定器始终一次一块。",
-						"en": "A hosted judge takes many chunks in one request, the state billed once; the local judge takes one at a time."
+						"en": "A hosted judge takes many chunks in one request, the state billed once; the local judge takes one at a time.",
+						"zh-TW": "託管判定器把多塊放進一個請求，狀態只計費一次；本機判定器一律一次一塊。",
+						"ja-JP": "ホスト型の判定器は多くのチャンクを 1 回のリクエストで受け取り、状態の課金は 1 回だけです。ローカルの判定器は 1 つずつ処理します。",
+						"ko-KR": "호스팅 판정기는 여러 청크를 한 번의 요청으로 받으며 상태는 한 번만 과금됩니다. 로컬 판정기는 한 번에 하나씩 처리합니다.",
+						"de-DE": "Ein gehosteter Judge nimmt viele Abschnitte in einer Anfrage, der Zustand wird nur einmal berechnet; der lokale Judge nimmt einen nach dem anderen.",
+						"fr-FR": "Un juge hébergé reçoit de nombreux fragments en une seule requête, l’état n’étant facturé qu’une fois ; le juge local les traite un par un.",
+						"es-ES": "Un juez alojado recibe muchos fragmentos en una sola solicitud y el estado se factura una vez; el juez local los procesa de uno en uno.",
+						"pt-BR": "Um juiz hospedado recebe muitos blocos numa só solicitação, com o estado cobrado uma vez; o juiz local recebe um de cada vez.",
+						"ru-RU": "Облачный судья принимает много частей одним запросом, и состояние оплачивается один раз; локальный судья берёт по одной.",
+						"uk-UA": "Хмарний суддя приймає багато частин одним запитом, і стан оплачується один раз; локальний суддя бере по одній.",
+						"tr-TR": "Barındırılan bir hakem birçok parçayı tek istekte alır ve durum bir kez ücretlendirilir; yerel hakem her seferinde bir parça alır.",
+						"fa-IR": "داور میزبانی‌شده چندین تکه را در یک درخواست می‌گیرد و هزینهٔ وضعیت فقط یک بار حساب می‌شود؛ داور محلی هر بار یک تکه می‌گیرد."
 					}
 				},
 				{
@@ -2405,15 +2713,48 @@
 					"max": 30000,
 					"unit": {
 						"zh": "毫秒",
-						"en": "ms"
+						"en": "ms",
+						"zh-TW": "毫秒",
+						"ja-JP": "ミリ秒",
+						"ko-KR": "밀리초",
+						"de-DE": "ms",
+						"fr-FR": "ms",
+						"es-ES": "ms",
+						"pt-BR": "ms",
+						"ru-RU": "мс",
+						"uk-UA": "мс",
+						"tr-TR": "ms",
+						"fa-IR": "میلی‌ثانیه"
 					},
 					"label": {
 						"zh": "最多等待",
-						"en": "Wait at most"
+						"en": "Wait at most",
+						"zh-TW": "最多等待",
+						"ja-JP": "最大待機時間",
+						"ko-KR": "최대 대기 시간",
+						"de-DE": "Maximale Wartezeit",
+						"fr-FR": "Attendre au plus",
+						"es-ES": "Espera máxima",
+						"pt-BR": "Esperar no máximo",
+						"ru-RU": "Ждать не дольше",
+						"uk-UA": "Чекати щонайбільше",
+						"tr-TR": "En fazla bekleme",
+						"fa-IR": "حداکثر انتظار"
 					},
 					"help": {
 						"zh": "超时就整段放行，判定只记账。",
-						"en": "After this the output goes in whole; the verdict is only recorded."
+						"en": "After this the output goes in whole; the verdict is only recorded.",
+						"zh-TW": "超過這個時間，輸出就整段放行，判定結果只記錄下來。",
+						"ja-JP": "これを過ぎると出力をそのまますべて取り込み、判定は記録だけします。",
+						"ko-KR": "이 시간이 지나면 출력을 통째로 넣고, 판정은 기록만 합니다.",
+						"de-DE": "Danach geht die Ausgabe vollständig hinein; das Urteil wird nur aufgezeichnet.",
+						"fr-FR": "Au-delà, la sortie entre en entier ; le jugement est seulement enregistré.",
+						"es-ES": "Pasado este tiempo, la salida entra entera; el veredicto solo se registra.",
+						"pt-BR": "Depois disso, a saída entra inteira; o veredito só é registrado.",
+						"ru-RU": "После этого вывод попадает целиком, а решение только записывается.",
+						"uk-UA": "Після цього вивід потрапляє повністю, а рішення лише записується.",
+						"tr-TR": "Bu süreden sonra çıktı olduğu gibi girer; karar yalnızca kaydedilir.",
+						"fa-IR": "پس از این مدت، خروجی به‌طور کامل وارد می‌شود؛ نتیجهٔ داوری فقط ثبت می‌شود."
 					}
 				},
 				{
@@ -2700,15 +3041,48 @@
 					"max": 30000,
 					"unit": {
 						"zh": "毫秒",
-						"en": "ms"
+						"en": "ms",
+						"zh-TW": "毫秒",
+						"ja-JP": "ミリ秒",
+						"ko-KR": "밀리초",
+						"de-DE": "ms",
+						"fr-FR": "ms",
+						"es-ES": "ms",
+						"pt-BR": "ms",
+						"ru-RU": "мс",
+						"uk-UA": "мс",
+						"tr-TR": "ms",
+						"fa-IR": "میلی‌ثانیه"
 					},
 					"label": {
 						"zh": "最多等待",
-						"en": "Wait at most"
+						"en": "Wait at most",
+						"zh-TW": "最多等待",
+						"ja-JP": "最大待機時間",
+						"ko-KR": "최대 대기 시간",
+						"de-DE": "Maximale Wartezeit",
+						"fr-FR": "Attendre au plus",
+						"es-ES": "Espera máxima",
+						"pt-BR": "Esperar no máximo",
+						"ru-RU": "Ждать не дольше",
+						"uk-UA": "Чекати щонайбільше",
+						"tr-TR": "En fazla bekleme",
+						"fa-IR": "حداکثر انتظار"
 					},
 					"help": {
 						"zh": "这次请求最多等这么久；来晚的判定在下一次请求生效。",
-						"en": "This request waits this long; verdicts that come later apply at the next request."
+						"en": "This request waits this long; verdicts that come later apply at the next request.",
+						"zh-TW": "這次請求最多等這麼久；來晚的判定在下一次請求時生效。",
+						"ja-JP": "今回のリクエストはこの時間だけ待ちます。遅れて届いた判定は次のリクエストで反映されます。",
+						"ko-KR": "이번 요청은 이 시간만큼 기다리며, 늦게 온 판정은 다음 요청에 적용됩니다.",
+						"de-DE": "So lange wartet diese Anfrage; später eintreffende Urteile gelten ab der nächsten Anfrage.",
+						"fr-FR": "La requête en cours attend ce temps-là ; les jugements arrivés plus tard s’appliquent à la requête suivante.",
+						"es-ES": "Esta solicitud espera ese tiempo; los veredictos que llegan después se aplican en la siguiente solicitud.",
+						"pt-BR": "Esta solicitação espera esse tempo; vereditos que chegam depois valem na próxima solicitação.",
+						"ru-RU": "Текущий запрос ждёт столько; решения, пришедшие позже, применяются к следующему запросу.",
+						"uk-UA": "Поточний запит чекає стільки; рішення, що надходять пізніше, застосовуються до наступного запиту.",
+						"tr-TR": "Bu istek bu kadar bekler; daha sonra gelen kararlar bir sonraki istekte uygulanır.",
+						"fa-IR": "این درخواست همین‌قدر صبر می‌کند؛ نتیجه‌هایی که دیرتر برسند در درخواست بعدی اعمال می‌شوند."
 					}
 				}
 			]
@@ -4760,15 +5134,48 @@
 					"max": 30000,
 					"unit": {
 						"zh": "毫秒",
-						"en": "ms"
+						"en": "ms",
+						"zh-TW": "毫秒",
+						"ja-JP": "ミリ秒",
+						"ko-KR": "밀리초",
+						"de-DE": "ms",
+						"fr-FR": "ms",
+						"es-ES": "ms",
+						"pt-BR": "ms",
+						"ru-RU": "мс",
+						"uk-UA": "мс",
+						"tr-TR": "ms",
+						"fa-IR": "میلی‌ثانیه"
 					},
 					"label": {
 						"zh": "最多等待",
-						"en": "Wait at most"
+						"en": "Wait at most",
+						"zh-TW": "最多等待",
+						"ja-JP": "最大待機時間",
+						"ko-KR": "최대 대기 시간",
+						"de-DE": "Maximale Wartezeit",
+						"fr-FR": "Attendre au plus",
+						"es-ES": "Espera máxima",
+						"pt-BR": "Esperar no máximo",
+						"ru-RU": "Ждать не дольше",
+						"uk-UA": "Чекати щонайбільше",
+						"tr-TR": "En fazla bekleme",
+						"fa-IR": "حداکثر انتظار"
 					},
 					"help": {
 						"zh": "超时就不催了，判定只记账。",
-						"en": "After this there is no nudge; the verdict is only recorded."
+						"en": "After this there is no nudge; the verdict is only recorded.",
+						"zh-TW": "超過這個時間就不再提醒，判定結果只記錄下來。",
+						"ja-JP": "これを過ぎると促しはせず、判定は記録だけします。",
+						"ko-KR": "이 시간이 지나면 알려 주지 않고, 판정은 기록만 합니다.",
+						"de-DE": "Danach gibt es keine Erinnerung; das Urteil wird nur aufgezeichnet.",
+						"fr-FR": "Au-delà, pas de rappel ; le jugement est seulement enregistré.",
+						"es-ES": "Pasado este tiempo no hay recordatorio; el veredicto solo se registra.",
+						"pt-BR": "Depois disso não há lembrete; o veredito só é registrado.",
+						"ru-RU": "После этого напоминания нет, а решение только записывается.",
+						"uk-UA": "Після цього нагадування немає, а рішення лише записується.",
+						"tr-TR": "Bu süreden sonra hatırlatma yapılmaz; karar yalnızca kaydedilir.",
+						"fa-IR": "پس از این مدت یادآوری‌ای در کار نیست؛ نتیجهٔ داوری فقط ثبت می‌شود."
 					}
 				}
 			]
@@ -4852,7 +5259,7 @@
 			"summary": {
 				"zh": "在提示词缓存过期前视情况续一下。",
 				"en": "Refreshes the prompt cache before it expires when that pays off.",
-				"zh-TW": "划算時，在提示詞快取過期前先續上。",
+				"zh-TW": "划算時，在提示快取過期前先續上。",
 				"ja-JP": "効果がある場合に、期限が切れる前にプロンプトキャッシュを更新します。",
 				"ko-KR": "이득이 될 때 프롬프트 캐시가 만료되기 전에 갱신합니다.",
 				"de-DE": "Frischt den Prompt-Cache vor dem Ablaufen auf, wenn es sich lohnt.",
@@ -4871,11 +5278,33 @@
 			"name": "warmup",
 			"title": {
 				"zh": "判定连接保温",
-				"en": "Judge connection warm-up"
+				"en": "Judge connection warm-up",
+				"zh-TW": "判定器連線保溫",
+				"ja-JP": "判定器との接続の保温",
+				"ko-KR": "판정기 연결 예열",
+				"de-DE": "Judge-Verbindung warm halten",
+				"fr-FR": "Préchauffage de la connexion au juge",
+				"es-ES": "Calentamiento de la conexión con el juez",
+				"pt-BR": "Aquecimento da conexão com o juiz",
+				"ru-RU": "Прогрев соединения с судьёй",
+				"uk-UA": "Прогрівання з’єднання із суддею",
+				"tr-TR": "Hakem bağlantısını sıcak tutma",
+				"fa-IR": "گرم نگه‌داشتن اتصال داور"
 			},
 			"summary": {
 				"zh": "会话在用时每隔一会儿问判定器一个小问题，让连接一直热着：一轮开始前的判定省下 1–3 秒的建连。",
-				"en": "While the session is in use, one tiny question keeps the judge's connection warm: the questions before a turn skip 1-3 s of connecting."
+				"en": "While the session is in use, one tiny question keeps the judge's connection warm: the questions before a turn skip 1-3 s of connecting.",
+				"zh-TW": "對話使用中時，每隔一陣子問判定器一個小問題，讓連線一直保持熱的：一輪開始前的判定就能省下 1–3 秒的連線時間。",
+				"ja-JP": "セッションの使用中は、ときどきごく小さな問いを送って判定器との接続をウォームな状態に保ちます。これでターン開始前の判定は、接続にかかる 1〜3 秒を省けます。",
+				"ko-KR": "세션을 쓰는 동안 이따금 아주 작은 질문을 보내 판정기와의 연결을 웜 상태로 유지합니다. 그래서 턴이 시작되기 전의 판정은 연결에 드는 1~3초를 아낍니다.",
+				"de-DE": "Solange die Sitzung genutzt wird, hält hin und wieder eine winzige Frage die Verbindung zum Judge warm: Die Fragen vor einer Runde sparen sich 1–3 s Verbindungsaufbau.",
+				"fr-FR": "Tant que la session est utilisée, une toute petite question posée de temps en temps garde chaude la connexion au juge : les questions d’avant un tour s’épargnent 1 à 3 s de connexion.",
+				"es-ES": "Mientras la sesión está en uso, una pregunta mínima de vez en cuando mantiene caliente la conexión con el juez: las preguntas previas a un turno se ahorran de 1 a 3 s de conexión.",
+				"pt-BR": "Enquanto a sessão está em uso, uma pergunta mínima de vez em quando mantém aquecida a conexão com o juiz: as perguntas antes de um turno economizam de 1 a 3 s de conexão.",
+				"ru-RU": "Пока сеанс используется, время от времени крошечный вопрос держит соединение с судьёй прогретым: вопросы перед ходом не тратят 1–3 с на подключение.",
+				"uk-UA": "Поки сеанс використовується, час від часу крихітне запитання тримає з’єднання із суддею прогрітим: запитання перед ходом не витрачають 1–3 с на підключення.",
+				"tr-TR": "Oturum kullanılırken ara sıra sorulan küçücük bir soru hakem bağlantısını sıcak tutar: turdan önceki sorular bağlantı kurmaya giden 1-3 sn'den tasarruf eder.",
+				"fa-IR": "تا وقتی نشست در حال استفاده است، هرازگاهی یک پرسش بسیار کوچک اتصال داور را گرم نگه می‌دارد: پرسش‌های پیش از هر نوبت دیگر 1 تا 3 ثانیه برای برقراری اتصال معطل نمی‌شوند."
 			},
 			"defaultEnabled": true,
 			"options": [
@@ -4887,15 +5316,48 @@
 					"max": 85000,
 					"unit": {
 						"zh": "毫秒",
-						"en": "ms"
+						"en": "ms",
+						"zh-TW": "毫秒",
+						"ja-JP": "ミリ秒",
+						"ko-KR": "밀리초",
+						"de-DE": "ms",
+						"fr-FR": "ms",
+						"es-ES": "ms",
+						"pt-BR": "ms",
+						"ru-RU": "мс",
+						"uk-UA": "мс",
+						"tr-TR": "ms",
+						"fa-IR": "میلی‌ثانیه"
 					},
 					"label": {
 						"zh": "间隔",
-						"en": "Every"
+						"en": "Every",
+						"zh-TW": "間隔",
+						"ja-JP": "間隔",
+						"ko-KR": "간격",
+						"de-DE": "Intervall",
+						"fr-FR": "Intervalle",
+						"es-ES": "Intervalo",
+						"pt-BR": "Intervalo",
+						"ru-RU": "Интервал",
+						"uk-UA": "Інтервал",
+						"tr-TR": "Aralık",
+						"fa-IR": "فاصله"
 					},
 					"help": {
 						"zh": "服务端空闲约 90 秒断开，间隔要短于它。",
-						"en": "The server drops a connection idle for about 90 s; stay under that."
+						"en": "The server drops a connection idle for about 90 s; stay under that.",
+						"zh-TW": "伺服器端約 90 秒沒有動靜就會斷開連線，間隔要比這短。",
+						"ja-JP": "サーバーは約 90 秒アイドル状態が続いた接続を切断するので、間隔はそれより短くします。",
+						"ko-KR": "서버는 약 90초 동안 쉬고 있는 연결을 끊으므로, 간격은 그보다 짧아야 합니다.",
+						"de-DE": "Der Server trennt eine Verbindung nach etwa 90 s Leerlauf; bleib darunter.",
+						"fr-FR": "Le serveur coupe une connexion inactive depuis environ 90 s ; restez en dessous.",
+						"es-ES": "El servidor corta una conexión inactiva tras unos 90 s; quédate por debajo.",
+						"pt-BR": "O servidor derruba uma conexão ociosa por cerca de 90 s; fique abaixo disso.",
+						"ru-RU": "Сервер обрывает соединение, которое простаивает около 90 с; интервал должен быть меньше.",
+						"uk-UA": "Сервер розриває з’єднання, що простоює близько 90 с; інтервал має бути меншим.",
+						"tr-TR": "Sunucu yaklaşık 90 sn boşta kalan bir bağlantıyı keser; bunun altında kalın.",
+						"fa-IR": "سرور اتصالی را که حدود 90 ثانیه بیکار بماند قطع می‌کند؛ فاصله باید کمتر از این باشد."
 					}
 				},
 				{
@@ -4906,11 +5368,33 @@
 					"max": 7200000,
 					"unit": {
 						"zh": "毫秒",
-						"en": "ms"
+						"en": "ms",
+						"zh-TW": "毫秒",
+						"ja-JP": "ミリ秒",
+						"ko-KR": "밀리초",
+						"de-DE": "ms",
+						"fr-FR": "ms",
+						"es-ES": "ms",
+						"pt-BR": "ms",
+						"ru-RU": "мс",
+						"uk-UA": "мс",
+						"tr-TR": "ms",
+						"fa-IR": "میلی‌ثانیه"
 					},
 					"label": {
 						"zh": "多久没动静就停",
-						"en": "Stop after this much quiet"
+						"en": "Stop after this much quiet",
+						"zh-TW": "多久沒動靜就停",
+						"ja-JP": "この時間動きがなければ停止",
+						"ko-KR": "이만큼 조용하면 중지",
+						"de-DE": "Nach so viel Ruhe anhalten",
+						"fr-FR": "S’arrêter après ce temps d’inactivité",
+						"es-ES": "Parar tras este tiempo sin actividad",
+						"pt-BR": "Parar após este tempo sem atividade",
+						"ru-RU": "Остановить после такого затишья",
+						"uk-UA": "Зупинити після такого затишшя",
+						"tr-TR": "Bu kadar sessizlikten sonra dur",
+						"fa-IR": "توقف پس از این مدت بی‌تحرکی"
 					}
 				}
 			]
@@ -5236,8 +5720,8 @@
 				"zh": "蜂群",
 				"en": "Hive",
 				"zh-TW": "蜂群",
-				"ja-JP": "Hive",
-				"ko-KR": "Hive",
+				"ja-JP": "ハイブ",
+				"ko-KR": "하이브",
 				"de-DE": "Hive",
 				"fr-FR": "Ruche",
 				"es-ES": "Hive",
@@ -5252,7 +5736,7 @@
 				"en": "Several bees work one hard task in parallel; the judge gates what passes between them.",
 				"zh-TW": "多個蜂群成員平行處理同一個難題，由判定器把關它們之間傳遞什麼。",
 				"ja-JP": "複数のビーが 1 つの難しいタスクに並行して取り組みます。ビーの間でやり取りする内容は判定器が選別します。",
-				"ko-KR": "여러 벌이 하나의 어려운 작업을 병렬로 처리하고, 벌 사이에 오가는 내용은 판정기가 통제합니다.",
+				"ko-KR": "여러 비(bee)가 하나의 어려운 작업을 병렬로 처리하고, 비 사이에 오가는 내용은 판정기가 통제합니다.",
 				"de-DE": "Mehrere Bienen bearbeiten parallel eine schwierige Aufgabe; der Judge entscheidet, was zwischen ihnen weitergegeben wird.",
 				"fr-FR": "Plusieurs abeilles travaillent en parallèle sur une tâche difficile ; le juge filtre ce qui passe entre elles.",
 				"es-ES": "Varias abejas trabajan en paralelo en una misma tarea difícil; el juez controla lo que pasa entre ellas.",
@@ -5275,7 +5759,7 @@
 						"en": "Notes per bee at most",
 						"zh-TW": "每個成員最多發布幾則",
 						"ja-JP": "ビーごとの公開数の上限",
-						"ko-KR": "벌당 최대 게시 수",
+						"ko-KR": "비 한 마리당 최대 게시 수",
 						"de-DE": "Höchstens Erkenntnisse pro Biene",
 						"fr-FR": "Notes par abeille, au plus",
 						"es-ES": "Máximo de hallazgos publicados por abeja",
@@ -5297,7 +5781,7 @@
 						"en": "Deliveries per bee at most",
 						"zh-TW": "每個成員最多收到幾則",
 						"ja-JP": "ビーごとの配信数の上限",
-						"ko-KR": "벌당 최대 전달 수",
+						"ko-KR": "비 한 마리당 최대 전달 수",
 						"de-DE": "Höchstens Übergaben pro Biene",
 						"fr-FR": "Transmissions par abeille, au plus",
 						"es-ES": "Máximo de entregas por abeja",
@@ -5373,11 +5857,33 @@
 					"max": 30,
 					"label": {
 						"zh": "一条新发现最多对照几条旧发现",
-						"en": "Earlier findings a new one is held against, at most"
+						"en": "Earlier findings a new one is held against, at most",
+						"zh-TW": "一則新發現最多對照幾則較早的發現",
+						"ja-JP": "新しい発見と照らし合わせる以前の発見の最大数",
+						"ko-KR": "새 발견과 대조할 이전 발견의 최대 수",
+						"de-DE": "Höchstens so viele frühere Erkenntnisse, mit denen eine neue abgeglichen wird",
+						"fr-FR": "Découvertes antérieures confrontées à une nouvelle, au plus",
+						"es-ES": "Máximo de hallazgos anteriores con los que se contrasta uno nuevo",
+						"pt-BR": "Máximo de descobertas anteriores comparadas a uma nova",
+						"ru-RU": "Более ранних находок для сверки с новой не больше",
+						"uk-UA": "Макс. давніших знахідок для звіряння з новою",
+						"tr-TR": "Yeni bir bulgunun karşılaştırıldığı en fazla eski bulgu",
+						"fa-IR": "حداکثر یافته‌های قبلی که یک یافتهٔ تازه با آن‌ها سنجیده می‌شود"
 					},
 					"help": {
 						"zh": "只对照有共同词的旧发现。0 表示不做纠正。",
-						"en": "Only those sharing words with it. 0 turns corrections off."
+						"en": "Only those sharing words with it. 0 turns corrections off.",
+						"zh-TW": "只對照和它有共同字詞的舊發現。0 表示不做更正。",
+						"ja-JP": "共通する語を含むものだけと照らし合わせます。0 にすると訂正を行いません。",
+						"ko-KR": "같은 단어가 들어 있는 발견만 대조합니다. 0이면 정정을 하지 않습니다.",
+						"de-DE": "Nur solche, die Wörter mit ihr teilen. 0 schaltet Korrekturen aus.",
+						"fr-FR": "Seulement celles qui partagent des mots avec elle. 0 désactive les corrections.",
+						"es-ES": "Solo los que comparten palabras con él. 0 desactiva las correcciones.",
+						"pt-BR": "Só as que compartilham palavras com ela. 0 desativa as correções.",
+						"ru-RU": "Только те, у которых есть общие с ней слова. 0 — без исправлений.",
+						"uk-UA": "Лише ті, що мають із нею спільні слова. 0 вимикає виправлення.",
+						"tr-TR": "Yalnızca onunla ortak kelimeleri olanlar. 0 düzeltmeleri kapatır.",
+						"fa-IR": "فقط آن‌هایی که با آن واژهٔ مشترک دارند. 0 اصلاح‌ها را خاموش می‌کند."
 					}
 				},
 				{
@@ -5388,11 +5894,33 @@
 					"max": 3,
 					"label": {
 						"zh": "为没解决的冲突最多加派几只验证蜂",
-						"en": "Verifier bees for unsettled disputes, at most"
+						"en": "Verifier bees for unsettled disputes, at most",
+						"zh-TW": "為未解決的爭議最多加派幾個核實成員",
+						"ja-JP": "未解決の対立に追加する検証役のビーの最大数",
+						"ko-KR": "해결되지 않은 이견에 더 보낼 검증 비 최대 마릿수",
+						"de-DE": "Höchstens so viele Prüf-Bienen für ungeklärte Widersprüche",
+						"fr-FR": "Abeilles vérificatrices pour les désaccords non tranchés, au plus",
+						"es-ES": "Máximo de abejas verificadoras para desacuerdos sin resolver",
+						"pt-BR": "Máximo de abelhas verificadoras para divergências não resolvidas",
+						"ru-RU": "Проверяющих пчёл на неразрешённые разногласия не больше",
+						"uk-UA": "Макс. бджіл-перевіряльниць для нерозв’язаних розбіжностей",
+						"tr-TR": "Çözülmemiş çelişkiler için en fazla doğrulayıcı arı",
+						"fa-IR": "حداکثر زنبور راستی‌آزما برای اختلاف‌های حل‌نشده"
 					},
 					"help": {
 						"zh": "0 表示不加派，冲突两边都留在报告里。",
-						"en": "0 adds none; both sides stay in the report."
+						"en": "0 adds none; both sides stay in the report.",
+						"zh-TW": "0 表示不加派，爭議的兩邊都留在報告裡。",
+						"ja-JP": "0 にすると追加しません。対立する両方の発見がレポートに残ります。",
+						"ko-KR": "0이면 추가하지 않으며, 양쪽 모두 보고서에 남습니다.",
+						"de-DE": "0 fügt keine hinzu; beide Seiten bleiben im Bericht.",
+						"fr-FR": "0 n’en ajoute aucune ; les deux versions restent dans le rapport.",
+						"es-ES": "0 no añade ninguna; ambas partes quedan en el informe.",
+						"pt-BR": "0 não adiciona nenhuma; os dois lados ficam no relatório.",
+						"ru-RU": "0 — не добавлять; обе стороны остаются в отчёте.",
+						"uk-UA": "0 — не додавати; обидві сторони лишаються у звіті.",
+						"tr-TR": "0 hiç eklemez; iki taraf da raporda kalır.",
+						"fa-IR": "0 هیچ زنبوری اضافه نمی‌کند؛ هر دو طرف در گزارش می‌مانند."
 					}
 				},
 				{
@@ -5403,7 +5931,18 @@
 					"max": 600,
 					"label": {
 						"zh": "冲突挂多少秒没人解决才加派",
-						"en": "Seconds a dispute may stand before a verifier is added"
+						"en": "Seconds a dispute may stand before a verifier is added",
+						"zh-TW": "爭議幾秒沒人解決才加派核實成員",
+						"ja-JP": "検証役のビーを追加するまで対立を待つ秒数",
+						"ko-KR": "검증 비를 더 보내기 전까지 이견을 기다리는 시간(초)",
+						"de-DE": "Sekunden, die ein Widerspruch stehen darf, bevor eine Prüf-Biene dazukommt",
+						"fr-FR": "Secondes qu’un désaccord peut durer avant l’ajout d’une abeille vérificatrice",
+						"es-ES": "Segundos que puede durar un desacuerdo antes de añadir una abeja verificadora",
+						"pt-BR": "Segundos que uma divergência pode durar antes de uma abelha verificadora entrar",
+						"ru-RU": "Секунд, которые разногласие может висеть до добавления проверяющей пчелы",
+						"uk-UA": "Секунд, які розбіжність може тривати до додавання бджоли-перевіряльниці",
+						"tr-TR": "Doğrulayıcı arı eklenmeden önce bir çelişkinin bekleyebileceği saniye",
+						"fa-IR": "چند ثانیه اختلاف می‌تواند بماند تا یک زنبور راستی‌آزما اضافه شود"
 					}
 				}
 			]
