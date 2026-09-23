@@ -8,7 +8,13 @@ import type { Activity, ActivityPage, Result } from '@/common/kyrn/types';
 import common from '@/renderer/services/i18n/locales/en-US/common.json';
 import { KernelBody, useKyrnActivity } from '@/renderer/pages/conversation/KyrnPanel';
 import Board from '@/renderer/pages/conversation/KyrnPanel/Board';
-import { boardHistory, boardView, toBoardUpdate } from '@/renderer/pages/conversation/KyrnPanel/Board/board';
+import {
+  ACCOUNT_LIMIT,
+  boardAccount,
+  boardView,
+  toBoardNote,
+  toBoardUpdate,
+} from '@/renderer/pages/conversation/KyrnPanel/Board/board';
 import { emitter, type SendBoxCommandState } from '@/renderer/utils/emitter';
 
 const { activity } = vi.hoisted(() => ({ activity: vi.fn() }));
@@ -238,38 +244,274 @@ describe('the board panel', () => {
   });
 });
 
-describe('what the board said before', () => {
-  it('keeps the earlier boards, newest first, without the replayed, the repeated or the current one', () => {
-    const reading = update({ now: 'Reading the code', progress: 'Nothing is done yet.' });
-    const again = update({ now: 'Reading the code', progress: 'Nothing is done yet.' });
-    const fixing = update({ now: 'Fixing the login test', progress: 'Half the tests pass.' });
-    const replayed = update({ now: 'Fixing the login test', progress: 'Half the tests pass.', restored: true });
-    const current = update();
-    const earlier = boardHistory([switched(true), reading, again, fixing, replayed, current], toBoardUpdate(current));
-    expect(earlier.map((entry) => entry.update.id)).toEqual([fixing.id, reading.id]);
-    expect(earlier[0].at).toBe(fixing.at);
-    // Saying the same as the current board is no history.
-    const same = update();
-    expect(boardHistory([same, current], toBoardUpdate(current))).toEqual([]);
+/** A time of day, which the account's clock writes 24-hour and to the second. */
+const time = (hours: number, minutes: number, seconds: number) =>
+  new Date(2026, 8, 23, hours, minutes, seconds).getTime();
+const START = time(14, 0, 0);
+
+let counter = 0;
+/** One line of the account as the harness sends it: a fixed line, a second after the one before, unless told. */
+const noteOf = (fields: Record<string, unknown> = {}): Record<string, unknown> => {
+  counter += 1;
+  return { sequence: counter, at: START + counter * 1000, kind: 'step', text: 'Ran npm test', by: 'rules', ...fields };
+};
+const note = (fields: Record<string, unknown> = {}) => event('board.note', noteOf(fields));
+const lines = () => screen.getAllByTestId('mu-board-note');
+/** What each line says, newest first, without its time. */
+const texts = () => lines().map((row) => row.lastElementChild?.textContent);
+const readOut = () =>
+  [...screen.getByTestId('mu-board-announce').querySelectorAll('p')].map((part) => part.textContent);
+
+describe('the account before the first board', () => {
+  it('shows the lines alone, without asking for a moment more', () => {
+    showBoard([switched(true), note({ text: 'Changed src/a.ts', code: 'changed_file', params: { file: 'src/a.ts' } })]);
+    expect(screen.queryByTestId('mu-board-empty')).not.toBeInTheDocument();
+    expect(texts()).toEqual(['Changed src/a.ts']);
+  });
+});
+
+describe('reading the account from the session’s events', () => {
+  it('takes a note as the harness sent it, and drops one without its text or its time', () => {
+    expect(
+      toBoardNote(
+        note({
+          sequence: 4,
+          at: 1_000,
+          kind: 'check',
+          text: '  A check failed: npm test  ',
+          code: 'check_failed',
+          params: { command: 'npm test' },
+          failed: true,
+        })
+      )
+    ).toEqual({
+      id: '1000:4',
+      sequence: 4,
+      at: 1_000,
+      kind: 'check',
+      text: 'A check failed: npm test',
+      by: 'rules',
+      code: 'check_failed',
+      params: { command: 'npm test' },
+      failed: true,
+      restored: false,
+    });
+    expect(toBoardNote(note({ text: '  ' }))).toBeUndefined();
+    expect(toBoardNote(note({ at: undefined }))).toBeUndefined();
+    expect(toBoardNote(note({ at: 'this morning' }))).toBeUndefined();
+    expect(toBoardNote(note({ text: 'x'.repeat(2000) }))?.text).toHaveLength(601);
   });
 
-  it('lists them under the current board as quiet lines, while the board is on', () => {
+  it('keeps only what it can use: known kinds, a code on a fixed line, params that are words or numbers', () => {
+    const odd = toBoardNote(
+      note({
+        sequence: -1,
+        kind: 'celebrated',
+        by: 'someone',
+        code: 'changed_file',
+        params: { file: 'a.ts', 'two words': 'x', nested: { a: 1 }, count: Number.NaN, round: 2 },
+        failed: 'yes',
+      })
+    );
+    expect(odd).toMatchObject({ sequence: 0, by: 'model', failed: false, params: { file: 'a.ts', round: 2 } });
+    expect(odd?.kind).toBeUndefined();
+    // A code names one of the harness's fixed sentences: the model's own words have none.
+    expect(odd?.code).toBeUndefined();
+  });
+
+  it('merges the notes and the last board’s log by identity, the later one winning, oldest first', () => {
+    const changed = noteOf({ sequence: 1, at: 5_000, text: 'Changed a.ts' });
+    const looked = noteOf({ sequence: 2, at: 5_000, code: 'looked', params: { count: 2 }, text: 'Looked at 2' });
+    const ran = noteOf({ sequence: 3, at: 4_000, text: 'Ran npm test' });
+    const account = boardAccount([
+      update({ log: [noteOf({ sequence: 9, at: 1_000, text: 'Only in an older log' })] }),
+      event('board.note', changed),
+      update({ log: [changed, looked] }),
+      event('board.note', { ...looked, params: { count: 6 }, text: 'Looked at 6' }),
+      event('board.note', ran),
+      update({ now: 'A board without a log' }),
+    ]);
+    expect(account.map((line) => line.text)).toEqual(['Ran npm test', 'Changed a.ts', 'Looked at 6']);
+  });
+
+  it('keeps the newest lines when there are more than it holds', () => {
+    const account = boardAccount(
+      Array.from({ length: ACCOUNT_LIMIT + 5 }, (_, index) =>
+        event('board.note', noteOf({ sequence: index + 1, at: 10_000 + index, text: `Step ${index + 1}` }))
+      )
+    );
+    expect(account).toHaveLength(ACCOUNT_LIMIT);
+    expect(account[0].text).toBe('Step 6');
+  });
+
+  it('reads the log a board carries, and takes a note alone as a board that is on', () => {
+    const log = [noteOf({ text: 'Changed a.ts' }), { text: 'no time' }, 'not a note'];
+    expect(toBoardUpdate(update({ restored: true, log }))?.log).toEqual([
+      expect.objectContaining({ text: 'Changed a.ts', restored: true }),
+    ]);
+    expect(toBoardUpdate(update())?.log).toBeUndefined();
+    expect(boardView([note()])).toEqual({ known: true, on: true });
+  });
+});
+
+describe('the account under the board', () => {
+  it('lists what the agent did under the board, newest first, each line at its time', () => {
     showBoard([
       switched(true),
-      update({ now: 'Reading the code', progress: 'Nothing is done yet.' }),
-      update({ now: 'Fixing the login test', progress: '' }),
       update(),
+      note({ at: time(14, 3, 22), text: 'Changed src/login.ts' }),
+      note({ at: time(14, 7, 45), by: 'model', kind: 'said', text: 'The session cookie expires too soon.' }),
+      note({ at: time(14, 5, 1), text: 'Ran npm test' }),
     ]);
-    const earlier = screen.getByTestId('mu-board-earlier');
-    expect(earlier).toHaveTextContent('Earlier');
-    const rows = within(earlier).getAllByRole('listitem');
-    // What was done, or else what it was doing.
-    expect(rows[0]).toHaveTextContent('Fixing the login test');
-    expect(rows[1]).toHaveTextContent('Nothing is done yet.');
-    cleanup();
+    const account = screen.getByTestId('mu-board-account');
+    expect(account).toHaveTextContent('What it did');
+    expect(screen.getByTestId('mu-board-current').compareDocumentPosition(account)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING
+    );
+    // The board model's own words stand apart from the harness's fixed lines.
+    expect(lines().map((row) => [row.querySelector('time')?.textContent, row.getAttribute('data-by')])).toEqual([
+      ['14:07:45', 'model'],
+      ['14:05:01', 'rules'],
+      ['14:03:22', 'rules'],
+    ]);
+  });
 
-    showBoard([switched(true), update(), switched(false)]);
-    expect(screen.queryByTestId('mu-board-earlier')).not.toBeInTheDocument();
+  it('marks a line where something went wrong with a hollow dot, not a colour', () => {
+    showBoard([switched(true), note({ text: 'A check failed: npm test', failed: true }), note()]);
+    const [ran, failed] = lines();
+    expect(failed).toHaveAttribute('data-failed', 'true');
+    expect(failed.querySelector('[aria-hidden="true"]')).not.toBeNull();
+    expect(ran.querySelector('[aria-hidden="true"]')).toBeNull();
+  });
+
+  it('shows no account while the board is off', () => {
+    showBoard([switched(true), note(), switched(false)]);
+    expect(screen.queryByTestId('mu-board-account')).not.toBeInTheDocument();
+  });
+
+  it('words a fixed line in the app’s language from its code and params, whatever language the harness wrote', () => {
+    showBoard([
+      switched(true),
+      note({ code: 'changed_file', params: { file: 'src/login.ts' }, text: '改了 src/login.ts' }),
+      note({ code: 'looked', params: { count: 1 }, text: '看了 1 个文件或地方' }),
+      note({ code: 'helpers_sent', params: { count: 2, titles: 'tests, docs' }, text: '派出 2 个助手：tests, docs' }),
+      note({ code: 'goal_round', params: { round: 2, reason: ': the login test fails' }, text: '目标还没达成' }),
+      note({ code: 'ended', text: '停下来了。' }),
+    ]);
+    expect(texts()).toEqual([
+      'Stopped.',
+      'The goal is not met yet; mu sent it back to work (round 2): the login test fails',
+      'Sent out 2 helpers: tests, docs',
+      'Looked at 1 file or place',
+      'Changed src/login.ts',
+    ]);
+  });
+
+  it('keeps the harness’s sentence for a code it does not know or params that do not fit, and the model’s words', () => {
+    showBoard([
+      switched(true),
+      note({ code: 'tidied_up', params: { what: 'imports' }, text: 'Tidied up the imports' }),
+      note({ code: 'changed_file', params: {}, text: '改了 a.ts' }),
+      note({ code: 'looked', params: { count: 'three' }, text: '看了三个文件' }),
+      note({ by: 'model', code: 'changed_file', params: { file: 'b.ts' }, text: 'It moved the check into b.ts.' }),
+    ]);
+    expect(texts()).toEqual(['It moved the check into b.ts.', '看了三个文件', '改了 a.ts', 'Tidied up the imports']);
+  });
+
+  it('writes a fixed line’s counts in the app language', async () => {
+    await i18n.changeLanguage('de-DE');
+    try {
+      showBoard([switched(true), note({ code: 'looked', params: { count: 1234 }, text: 'Looked at 1234' })]);
+      expect(texts()).toEqual(['Looked at 1.234 files or places']);
+    } finally {
+      await i18n.changeLanguage('en');
+    }
+  });
+
+  it('changes a line the harness sends again where it stands, without fading it in; a new line fades in', () => {
+    const looked = noteOf({ code: 'looked', params: { count: 3 }, text: 'Looked at 3 files or places' });
+    const events = [switched(true), update(), event('board.note', looked)];
+    const { rerender } = showBoard(events);
+    const row = lines()[0];
+    rerender(
+      <Board
+        events={[
+          ...events,
+          note(),
+          event('board.note', { ...looked, params: { count: 7 }, text: 'Looked at 7 files or places' }),
+        ]}
+        conversationId='conv'
+      />
+    );
+    expect(texts()).toEqual(['Ran npm test', 'Looked at 7 files or places']);
+    // The same element: the line did not move, and nothing about it came in again.
+    expect(lines()[1]).toBe(row);
+    expect(row).not.toHaveAttribute('data-fresh');
+    expect(lines()[0]).toHaveAttribute('data-fresh', 'true');
+  });
+
+  it('opens a reopened conversation on the log the session replays, which a live note of the same line does not double', () => {
+    const changed = noteOf({ at: time(9, 0, 0), text: 'Changed src/login.ts' });
+    const looked = noteOf({ at: time(9, 1, 0), code: 'looked', params: { count: 2 }, text: 'Looked at 2' });
+    const events = [switched(true), update({ restored: true, log: [changed, looked] })];
+    const { rerender } = showBoard(events);
+    expect(texts()).toEqual(['Looked at 2 files or places', 'Changed src/login.ts']);
+    rerender(
+      <Board events={[...events, event('board.note', { ...looked, params: { count: 5 } })]} conversationId='conv' />
+    );
+    expect(texts()).toEqual(['Looked at 5 files or places', 'Changed src/login.ts']);
+  });
+
+  it('shows the newest 30 lines, and the older ones when asked', () => {
+    showBoard([
+      switched(true),
+      update(),
+      ...Array.from({ length: 35 }, (_, index) => note({ text: `Step ${index + 1}` })),
+    ]);
+    expect(texts()).toHaveLength(30);
+    expect(texts()[0]).toBe('Step 35');
+    const more = screen.getByTestId('mu-board-more');
+    expect(more).toHaveTextContent('5 earlier');
+    fireEvent.click(more);
+    expect(texts()).toHaveLength(35);
+    expect(texts()[34]).toBe('Step 1');
+    expect(screen.queryByTestId('mu-board-more')).not.toBeInTheDocument();
+  });
+
+  it('reads out the model’s new lines, but neither the fixed lines nor what was there when it opened', () => {
+    const events = [switched(true), update(), note({ by: 'model', text: 'It was there before.' })];
+    const { rerender } = showBoard(events);
+    const ran = note();
+    rerender(<Board events={[...events, ran]} conversationId='conv' />);
+    expect(screen.getByTestId('mu-board-announce')).toBeEmptyDOMElement();
+    const found = note({ by: 'model', kind: 'said', text: 'The session cookie expires too soon.' });
+    rerender(<Board events={[...events, ran, found]} conversationId='conv' />);
+    expect(readOut()).toEqual(['The session cookie expires too soon.']);
+  });
+
+  it('neither reads out nor fades in the log the session replays as it opens', () => {
+    const events = [switched(true)];
+    const { rerender } = showBoard(events);
+    const summary = noteOf({ by: 'model', kind: 'ended', text: 'The login works; the tests pass.' });
+    rerender(<Board events={[...events, update({ restored: true, log: [summary] })]} conversationId='conv' />);
+    expect(texts()).toEqual(['The login works; the tests pass.']);
+    expect(screen.getByTestId('mu-board-announce')).toBeEmptyDOMElement();
+    expect(lines()[0]).not.toHaveAttribute('data-fresh');
+  });
+
+  it('reads out only the news that came last: a line after a new board, then both when they come together', () => {
+    const events = [switched(true)];
+    const { rerender } = showBoard(events);
+    const board = update();
+    rerender(<Board events={[...events, board]} conversationId='conv' />);
+    expect(readOut()).toHaveLength(3);
+    const passed = note({ by: 'model', text: 'The tests pass now.' });
+    rerender(<Board events={[...events, board, passed]} conversationId='conv' />);
+    expect(readOut()).toEqual(['The tests pass now.']);
+    const last = update({ now: 'Wrapping up', phase: 'wrapping_up', progress: 'All done.' });
+    const summary = note({ by: 'model', text: 'It fixed the login.' });
+    rerender(<Board events={[...events, board, passed, last, summary]} conversationId='conv' />);
+    expect(readOut()).toEqual(['Wrapping up', 'Wrapping up', 'All done.', 'It fixed the login.']);
   });
 });
 

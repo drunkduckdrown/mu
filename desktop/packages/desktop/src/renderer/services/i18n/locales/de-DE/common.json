@@ -709,7 +709,10 @@
       "needsYouText": "Der Agent wartet in der Unterhaltung auf deine Antwort.",
       "quote": "In deiner Antwort zitieren",
       "quoteHint": "Klicke auf einen Punkt, um ihn in deiner Antwort zu zitieren; gesendet wird erst, wenn du sendest.",
-      "earlier": "Früher",
+      "account": "Was er getan hat",
+      "earlierNotes": "{{count, number}} frühere Einträge",
+      "earlierNotes_one": "{{count, number}} früherer Eintrag",
+      "earlierNotes_other": "{{count, number}} frühere Einträge",
       "phases": {
         "understanding": "Versteht die Aufgabe",
         "planning": "Plant",
@@ -747,6 +750,36 @@
           "focus": "{{now}} (Aktueller Punkt: {{focus}})",
           "planning": "Überlegt das Vorgehen; geändert ist noch nichts."
         }
+      },
+      "notes": {
+        "looked": "Hat sich {{count, number}} Dateien oder Stellen angesehen",
+        "looked_one": "Hat sich {{count, number}} Datei oder Stelle angesehen",
+        "looked_other": "Hat sich {{count, number}} Dateien oder Stellen angesehen",
+        "changed_file": "Hat {{file}} geändert",
+        "wrote_file": "Hat {{file}} geschrieben",
+        "ran_command": "Hat {{command}} ausgeführt",
+        "command_failed": "{{command}} ist fehlgeschlagen",
+        "check_passed": "Eine Prüfung war erfolgreich: {{command}}",
+        "check_failed": "Eine Prüfung ist fehlgeschlagen: {{command}}",
+        "item_done": "Erledigt: {{item}}",
+        "item_added": "Auf die Checkliste gesetzt: {{item}}",
+        "helpers_sent": "Hat {{count, number}} Helfer losgeschickt: {{titles}}",
+        "helpers_sent_one": "Hat {{count, number}} Helfer losgeschickt: {{titles}}",
+        "helpers_sent_other": "Hat {{count, number}} Helfer losgeschickt: {{titles}}",
+        "helpers_back": "{{count, number}} Helfer sind zurück",
+        "helpers_back_one": "{{count, number}} Helfer ist zurück",
+        "helpers_back_other": "{{count, number}} Helfer sind zurück",
+        "permission_allowed": "Du hast erlaubt: {{summary}}",
+        "permission_denied": "Du hast nicht erlaubt: {{summary}}",
+        "goal_round": "Das Ziel ist noch nicht erreicht; mu hat ihn wieder an die Arbeit geschickt (Runde {{round, number}}){{reason}}",
+        "goal_met": "Das Ziel ist erreicht: {{text}}",
+        "goal_paused": "Das Ziel ist pausiert{{reason}}",
+        "trouble_loop": "mu hat bemerkt, dass er denselben Schritt wiederholt: {{detail}}",
+        "trouble": "mu hat bemerkt: {{detail}}",
+        "did": "Hat {{tool}} benutzt: {{what}}",
+        "said_quote": "Er sagte: {{text}}",
+        "ended": "Angehalten.",
+        "waiting_reply": "Hat angehalten und wartet auf deine Antwort."
       }
     },
     "lessonsView": {

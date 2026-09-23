@@ -709,7 +709,10 @@
       "needsYouText": "에이전트가 대화에서 답을 기다리고 있습니다.",
       "quote": "답장에 인용",
       "quoteHint": "항목을 클릭하면 입력란에 인용됩니다. 직접 보내기 전에는 전송되지 않습니다.",
-      "earlier": "이전",
+      "account": "한 일",
+      "earlierNotes": "이전 기록 {{count, number}}개",
+      "earlierNotes_one": "이전 기록 {{count, number}}개",
+      "earlierNotes_other": "이전 기록 {{count, number}}개",
       "phases": {
         "understanding": "작업을 파악하는 중",
         "planning": "방법을 구상하는 중",
@@ -747,6 +750,36 @@
           "focus": "{{now}} (진행 중: {{focus}})",
           "planning": "어떻게 할지 구상하고 있습니다. 아직 아무것도 바꾸지 않았습니다."
         }
+      },
+      "notes": {
+        "looked": "파일이나 위치 {{count, number}}곳을 살펴봤습니다",
+        "looked_one": "파일이나 위치 {{count, number}}곳을 살펴봤습니다",
+        "looked_other": "파일이나 위치 {{count, number}}곳을 살펴봤습니다",
+        "changed_file": "파일을 바꿨습니다: {{file}}",
+        "wrote_file": "파일을 썼습니다: {{file}}",
+        "ran_command": "명령을 실행했습니다: {{command}}",
+        "command_failed": "명령 실행 중 오류가 났습니다: {{command}}",
+        "check_passed": "확인을 통과했습니다: {{command}}",
+        "check_failed": "확인을 통과하지 못했습니다: {{command}}",
+        "item_done": "확인 항목 하나를 마쳤습니다: {{item}}",
+        "item_added": "확인 항목에 추가했습니다: {{item}}",
+        "helpers_sent": "도우미 {{count, number}}명을 보냈습니다: {{titles}}",
+        "helpers_sent_one": "도우미 {{count, number}}명을 보냈습니다: {{titles}}",
+        "helpers_sent_other": "도우미 {{count, number}}명을 보냈습니다: {{titles}}",
+        "helpers_back": "도우미 {{count, number}}명이 돌아왔습니다",
+        "helpers_back_one": "도우미 {{count, number}}명이 돌아왔습니다",
+        "helpers_back_other": "도우미 {{count, number}}명이 돌아왔습니다",
+        "permission_allowed": "허용하셨습니다: {{summary}}",
+        "permission_denied": "허용하지 않으셨습니다: {{summary}}",
+        "goal_round": "목표를 아직 이루지 못해 mu가 다시 작업하게 했습니다({{round, number}}번째){{reason}}",
+        "goal_met": "목표를 이뤘습니다: {{text}}",
+        "goal_paused": "목표를 잠시 멈췄습니다{{reason}}",
+        "trouble_loop": "mu가 같은 단계를 되풀이하고 있다는 것을 알아챘습니다: {{detail}}",
+        "trouble": "mu가 알아챈 점: {{detail}}",
+        "did": "{{tool}} 도구를 썼습니다: {{what}}",
+        "said_quote": "에이전트가 한 말: {{text}}",
+        "ended": "멈췄습니다.",
+        "waiting_reply": "멈춰서 응답을 기다리고 있습니다."
       }
     },
     "lessonsView": {

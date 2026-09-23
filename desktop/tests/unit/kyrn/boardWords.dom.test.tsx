@@ -1,14 +1,18 @@
 import React from 'react';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { createInstance } from 'i18next';
 import { I18nextProvider } from 'react-i18next';
 import type { Activity } from '@/common/kyrn/types';
+import { formatNumber } from '@/renderer/services/i18n/format';
 import en from '@/renderer/services/i18n/locales/en-US/common.json';
 import zhCN from '@/renderer/services/i18n/locales/zh-CN/common.json';
 import zhTW from '@/renderer/services/i18n/locales/zh-TW/common.json';
 import Board from '@/renderer/pages/conversation/KyrnPanel/Board';
-import { toBoardUpdate } from '@/renderer/pages/conversation/KyrnPanel/Board/board';
+import { toBoardUpdate, type BoardNote } from '@/renderer/pages/conversation/KyrnPanel/Board/board';
+import { NOTE_SENTENCES, noteWords } from '@/renderer/pages/conversation/KyrnPanel/Board/noteWords';
 import { boardWords } from '@/renderer/pages/conversation/KyrnPanel/Board/wording';
 
 const i18n = createInstance();
@@ -143,5 +147,85 @@ describe('reading a fixed board’s codes', () => {
       String
     );
     expect(noFocus.now).toBe(update.now);
+  });
+});
+
+describe('a fixed line of the account in the app’s language', () => {
+  const note = (fields: Record<string, unknown>) =>
+    event('board.note', { kind: 'step', by: 'rules', failed: false, ...fields });
+
+  it('is worded again in Chinese when the harness wrote it in English', () => {
+    show([
+      note({
+        sequence: 1,
+        at: 1_000,
+        text: 'A check failed: npm test',
+        code: 'check_failed',
+        params: { command: 'npm test' },
+      }),
+      note({ sequence: 2, at: 2_000, text: 'Looked at 1 file or place', code: 'looked', params: { count: 1 } }),
+      note({ sequence: 3, at: 3_000, by: 'model', text: 'The login test fails: the cookie expires too soon.' }),
+    ]);
+    expect(screen.getByTestId('mu-board-account')).toHaveTextContent('它做了什么');
+    expect(screen.getAllByTestId('mu-board-note').map((row) => row.lastElementChild?.textContent)).toEqual([
+      'The login test fails: the cookie expires too soon.',
+      '看了 1 个文件或地方',
+      '检查没通过：npm test',
+    ]);
+  });
+
+  it('has every fixed line in all 13 languages, each filled with what it names, at any count', async () => {
+    const root = path.resolve(__dirname, '../../..');
+    const { supportedLanguages } = JSON.parse(
+      readFileSync(path.join(root, 'packages/desktop/src/common/config/i18n-config.json'), 'utf8')
+    ) as { supportedLanguages: string[] };
+    expect(supportedLanguages).toHaveLength(13);
+    const locales = await Promise.all(
+      supportedLanguages.map(async (language) => {
+        const common = JSON.parse(
+          readFileSync(
+            path.join(root, 'packages/desktop/src/renderer/services/i18n/locales', language, 'common.json'),
+            'utf8'
+          )
+        ) as Record<string, unknown>;
+        const local = createInstance();
+        await local.init({
+          lng: language,
+          resources: { [language]: { translation: { common } } },
+          interpolation: { escapeValue: false },
+        });
+        return { language, local };
+      })
+    );
+    for (const { language, local } of locales) {
+      for (const [code, names] of NOTE_SENTENCES) {
+        // One, a few, many: every plural form a language has.
+        for (const count of [1, 3, 5, 21]) {
+          const params = Object.fromEntries(
+            names.map((name) => [name, name === 'count' || name === 'round' ? count : `<${name}>`])
+          );
+          const line: BoardNote = {
+            id: '1:1',
+            sequence: 1,
+            at: 1,
+            text: '',
+            by: 'rules',
+            code,
+            params,
+            failed: false,
+            restored: false,
+          };
+          const said = noteWords(line, local.t, (key) => local.exists(key));
+          expect(said, `${language} ${code}`).toBeDefined();
+          expect(said, `${language} ${code}`).not.toContain('{{');
+          for (const name of names) {
+            const value = params[name];
+            expect(said, `${language} ${code} ${name}`).toContain(
+              typeof value === 'number' ? formatNumber(value, language) : value
+            );
+          }
+        }
+      }
+    }
   });
 });

@@ -709,7 +709,10 @@
       "needsYouText": "Ajan konuşmada yanıtınızı bekliyor.",
       "quote": "Yanıtınızda alıntıla",
       "quoteHint": "Yanıtınızda alıntılamak için birine tıklayın; siz göndermeden hiçbir şey gönderilmez.",
-      "earlier": "Önceki",
+      "account": "Neler yaptı",
+      "earlierNotes": "{{count, number}} önceki kayıt",
+      "earlierNotes_one": "{{count, number}} önceki kayıt",
+      "earlierNotes_other": "{{count, number}} önceki kayıt",
       "phases": {
         "understanding": "Görevi anlıyor",
         "planning": "Plan yapıyor",
@@ -747,6 +750,36 @@
           "focus": "{{now}} (Şu anki iş: {{focus}})",
           "planning": "Nasıl yapacağını düşünüyor; henüz hiçbir şeyi değiştirmedi."
         }
+      },
+      "notes": {
+        "looked": "{{count, number}} dosyaya veya yere baktı",
+        "looked_one": "{{count, number}} dosyaya veya yere baktı",
+        "looked_other": "{{count, number}} dosyaya veya yere baktı",
+        "changed_file": "{{file}} dosyasını değiştirdi",
+        "wrote_file": "{{file}} dosyasını yazdı",
+        "ran_command": "{{command}} komutunu çalıştırdı",
+        "command_failed": "{{command}} komutu hata verdi",
+        "check_passed": "Bir kontrol geçti: {{command}}",
+        "check_failed": "Bir kontrol geçmedi: {{command}}",
+        "item_done": "Listeden bir iş tamamlandı: {{item}}",
+        "item_added": "Yapılacaklar listesine eklendi: {{item}}",
+        "helpers_sent": "{{count, number}} yardımcı gönderdi: {{titles}}",
+        "helpers_sent_one": "{{count, number}} yardımcı gönderdi: {{titles}}",
+        "helpers_sent_other": "{{count, number}} yardımcı gönderdi: {{titles}}",
+        "helpers_back": "{{count, number}} yardımcı geri döndü",
+        "helpers_back_one": "{{count, number}} yardımcı geri döndü",
+        "helpers_back_other": "{{count, number}} yardımcı geri döndü",
+        "permission_allowed": "İzin verdiniz: {{summary}}",
+        "permission_denied": "İzin vermediniz: {{summary}}",
+        "goal_round": "Hedefe henüz ulaşılmadı; mu onu yeniden işe koştu ({{round, number}}. tur){{reason}}",
+        "goal_met": "Hedefe ulaşıldı: {{text}}",
+        "goal_paused": "Hedef duraklatıldı{{reason}}",
+        "trouble_loop": "mu aynı adımı tekrarladığını fark etti: {{detail}}",
+        "trouble": "mu bir şey fark etti: {{detail}}",
+        "did": "{{tool}} ile şunu yaptı: {{what}}",
+        "said_quote": "Şunu söyledi: {{text}}",
+        "ended": "Durdu.",
+        "waiting_reply": "Durdu, yanıtınızı bekliyor."
       }
     },
     "lessonsView": {

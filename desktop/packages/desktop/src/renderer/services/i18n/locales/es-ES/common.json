@@ -709,7 +709,10 @@
       "needsYouText": "El agente espera tu respuesta en la conversación.",
       "quote": "Citar en tu respuesta",
       "quoteHint": "Haz clic en uno para citarlo en tu respuesta; no se envía nada hasta que lo envíes tú.",
-      "earlier": "Antes",
+      "account": "Lo que ha hecho",
+      "earlierNotes": "{{count, number}} anteriores",
+      "earlierNotes_one": "{{count, number}} anterior",
+      "earlierNotes_other": "{{count, number}} anteriores",
       "phases": {
         "understanding": "Entendiendo la tarea",
         "planning": "Planificando",
@@ -747,6 +750,36 @@
           "focus": "{{now}} (En curso: {{focus}})",
           "planning": "Está pensando cómo hacerlo; aún no ha cambiado nada."
         }
+      },
+      "notes": {
+        "looked": "Ha mirado {{count, number}} archivos o sitios",
+        "looked_one": "Ha mirado {{count, number}} archivo o sitio",
+        "looked_other": "Ha mirado {{count, number}} archivos o sitios",
+        "changed_file": "Ha cambiado {{file}}",
+        "wrote_file": "Ha escrito {{file}}",
+        "ran_command": "Ha ejecutado {{command}}",
+        "command_failed": "{{command}} ha fallado",
+        "check_passed": "Una comprobación ha pasado: {{command}}",
+        "check_failed": "Una comprobación ha fallado: {{command}}",
+        "item_done": "Hecho: {{item}}",
+        "item_added": "Añadido a la lista de tareas: {{item}}",
+        "helpers_sent": "Ha enviado {{count, number}} ayudantes: {{titles}}",
+        "helpers_sent_one": "Ha enviado {{count, number}} ayudante: {{titles}}",
+        "helpers_sent_other": "Ha enviado {{count, number}} ayudantes: {{titles}}",
+        "helpers_back": "Han vuelto {{count, number}} ayudantes",
+        "helpers_back_one": "Ha vuelto {{count, number}} ayudante",
+        "helpers_back_other": "Han vuelto {{count, number}} ayudantes",
+        "permission_allowed": "Has permitido: {{summary}}",
+        "permission_denied": "No has permitido: {{summary}}",
+        "goal_round": "El objetivo aún no se ha cumplido; mu lo ha vuelto a poner a trabajar (ronda {{round, number}}){{reason}}",
+        "goal_met": "El objetivo se ha cumplido: {{text}}",
+        "goal_paused": "El objetivo está en pausa{{reason}}",
+        "trouble_loop": "mu ha notado que repite el mismo paso: {{detail}}",
+        "trouble": "mu ha notado: {{detail}}",
+        "did": "Ha usado {{tool}}: {{what}}",
+        "said_quote": "Ha dicho: {{text}}",
+        "ended": "Se ha detenido.",
+        "waiting_reply": "Se ha detenido y espera tu respuesta."
       }
     },
     "lessonsView": {

@@ -709,7 +709,10 @@
       "needsYouText": "عامل در گفتگو منتظر پاسخ شماست.",
       "quote": "نقل در پاسخ",
       "quoteHint": "روی یک مورد کلیک کنید تا در پاسخ شما نقل شود؛ تا خودتان نفرستید چیزی فرستاده نمی‌شود.",
-      "earlier": "پیش‌تر",
+      "account": "کارهایی که کرد",
+      "earlierNotes": "{{count, number}} مورد قدیمی‌تر",
+      "earlierNotes_one": "{{count, number}} مورد قدیمی‌تر",
+      "earlierNotes_other": "{{count, number}} مورد قدیمی‌تر",
       "phases": {
         "understanding": "در حال فهمیدن کار",
         "planning": "در حال برنامه‌ریزی",
@@ -747,6 +750,36 @@
           "focus": "{{now}} (مورد فعلی: {{focus}})",
           "planning": "در حال فکر کردن به راه انجام کار است؛ هنوز چیزی را تغییر نداده است."
         }
+      },
+      "notes": {
+        "looked": "{{count, number}} فایل یا جا را نگاه کرد",
+        "looked_one": "{{count, number}} فایل یا جا را نگاه کرد",
+        "looked_other": "{{count, number}} فایل یا جا را نگاه کرد",
+        "changed_file": "{{file}} را تغییر داد",
+        "wrote_file": "{{file}} را نوشت",
+        "ran_command": "{{command}} را اجرا کرد",
+        "command_failed": "اجرای {{command}} با خطا روبه‌رو شد",
+        "check_passed": "یک بررسی موفق بود: {{command}}",
+        "check_failed": "یک بررسی رد شد: {{command}}",
+        "item_done": "یک مورد انجام شد: {{item}}",
+        "item_added": "به فهرست کارها اضافه شد: {{item}}",
+        "helpers_sent": "{{count, number}} دستیار فرستاد: {{titles}}",
+        "helpers_sent_one": "{{count, number}} دستیار فرستاد: {{titles}}",
+        "helpers_sent_other": "{{count, number}} دستیار فرستاد: {{titles}}",
+        "helpers_back": "{{count, number}} دستیار برگشتند",
+        "helpers_back_one": "{{count, number}} دستیار برگشت",
+        "helpers_back_other": "{{count, number}} دستیار برگشتند",
+        "permission_allowed": "اجازه دادید: {{summary}}",
+        "permission_denied": "اجازه ندادید: {{summary}}",
+        "goal_round": "هدف هنوز برآورده نشده است؛ mu آن را دوباره سر کار فرستاد (دور {{round, number}}){{reason}}",
+        "goal_met": "هدف برآورده شد: {{text}}",
+        "goal_paused": "هدف متوقف شد{{reason}}",
+        "trouble_loop": "mu متوجه شد که همان قدم را تکرار می‌کند: {{detail}}",
+        "trouble": "mu متوجه شد: {{detail}}",
+        "did": "با {{tool}} این کار را کرد: {{what}}",
+        "said_quote": "گفت: {{text}}",
+        "ended": "متوقف شد.",
+        "waiting_reply": "متوقف شده و منتظر پاسخ شماست."
       }
     },
     "lessonsView": {

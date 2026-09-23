@@ -709,7 +709,10 @@
       "needsYouText": "L’agent attend votre réponse dans la conversation.",
       "quote": "Citer dans votre réponse",
       "quoteHint": "Cliquez sur un élément pour le citer dans votre réponse ; rien n’est envoyé avant que vous l’envoyiez.",
-      "earlier": "Plus tôt",
+      "account": "Ce qu’il a fait",
+      "earlierNotes": "{{count, number}} entrées plus anciennes",
+      "earlierNotes_one": "{{count, number}} entrée plus ancienne",
+      "earlierNotes_other": "{{count, number}} entrées plus anciennes",
       "phases": {
         "understanding": "Comprend la tâche",
         "planning": "Planifie",
@@ -747,6 +750,36 @@
           "focus": "{{now}} (En cours : {{focus}})",
           "planning": "Cherche comment s’y prendre ; rien n’est encore modifié."
         }
+      },
+      "notes": {
+        "looked": "A consulté {{count, number}} fichiers ou emplacements",
+        "looked_one": "A consulté {{count, number}} fichier ou emplacement",
+        "looked_other": "A consulté {{count, number}} fichiers ou emplacements",
+        "changed_file": "A modifié {{file}}",
+        "wrote_file": "A écrit {{file}}",
+        "ran_command": "A lancé {{command}}",
+        "command_failed": "{{command}} a échoué",
+        "check_passed": "Une vérification a réussi : {{command}}",
+        "check_failed": "Une vérification a échoué : {{command}}",
+        "item_done": "Fait : {{item}}",
+        "item_added": "Ajouté à la liste : {{item}}",
+        "helpers_sent": "A envoyé {{count, number}} assistants : {{titles}}",
+        "helpers_sent_one": "A envoyé {{count, number}} assistant : {{titles}}",
+        "helpers_sent_other": "A envoyé {{count, number}} assistants : {{titles}}",
+        "helpers_back": "{{count, number}} assistants sont revenus",
+        "helpers_back_one": "{{count, number}} assistant est revenu",
+        "helpers_back_other": "{{count, number}} assistants sont revenus",
+        "permission_allowed": "Vous avez autorisé : {{summary}}",
+        "permission_denied": "Vous n’avez pas autorisé : {{summary}}",
+        "goal_round": "L’objectif n’est pas encore atteint ; mu l’a remis au travail (tour {{round, number}}){{reason}}",
+        "goal_met": "L’objectif est atteint : {{text}}",
+        "goal_paused": "L’objectif est en pause{{reason}}",
+        "trouble_loop": "mu a remarqué qu’il répète la même étape : {{detail}}",
+        "trouble": "mu a remarqué : {{detail}}",
+        "did": "A utilisé {{tool}} : {{what}}",
+        "said_quote": "Il a dit : {{text}}",
+        "ended": "S’est arrêté.",
+        "waiting_reply": "S’est arrêté et attend votre réponse."
       }
     },
     "lessonsView": {

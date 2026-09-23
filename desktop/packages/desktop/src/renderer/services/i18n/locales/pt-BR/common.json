@@ -709,7 +709,10 @@
       "needsYouText": "O agente está esperando sua resposta na conversa.",
       "quote": "Citar na sua resposta",
       "quoteHint": "Clique em um item para citá-lo na sua resposta; nada é enviado até você enviar.",
-      "earlier": "Antes",
+      "account": "O que ele fez",
+      "earlierNotes": "{{count, number}} anteriores",
+      "earlierNotes_one": "{{count, number}} anterior",
+      "earlierNotes_other": "{{count, number}} anteriores",
       "phases": {
         "understanding": "Entendendo a tarefa",
         "planning": "Planejando",
@@ -747,6 +750,36 @@
           "focus": "{{now}} (Item atual: {{focus}})",
           "planning": "Pensando em como fazer; nada foi alterado ainda."
         }
+      },
+      "notes": {
+        "looked": "Olhou {{count, number}} arquivos ou lugares",
+        "looked_one": "Olhou {{count, number}} arquivo ou lugar",
+        "looked_other": "Olhou {{count, number}} arquivos ou lugares",
+        "changed_file": "Alterou {{file}}",
+        "wrote_file": "Escreveu {{file}}",
+        "ran_command": "Executou {{command}}",
+        "command_failed": "{{command}} deu erro",
+        "check_passed": "Uma verificação passou: {{command}}",
+        "check_failed": "Uma verificação falhou: {{command}}",
+        "item_done": "Feito: {{item}}",
+        "item_added": "Adicionado à lista de verificação: {{item}}",
+        "helpers_sent": "Enviou {{count, number}} ajudantes: {{titles}}",
+        "helpers_sent_one": "Enviou {{count, number}} ajudante: {{titles}}",
+        "helpers_sent_other": "Enviou {{count, number}} ajudantes: {{titles}}",
+        "helpers_back": "{{count, number}} ajudantes voltaram",
+        "helpers_back_one": "{{count, number}} ajudante voltou",
+        "helpers_back_other": "{{count, number}} ajudantes voltaram",
+        "permission_allowed": "Você permitiu: {{summary}}",
+        "permission_denied": "Você não permitiu: {{summary}}",
+        "goal_round": "O objetivo ainda não foi atingido; o mu o mandou de volta ao trabalho (rodada {{round, number}}){{reason}}",
+        "goal_met": "O objetivo foi atingido: {{text}}",
+        "goal_paused": "O objetivo está pausado{{reason}}",
+        "trouble_loop": "O mu percebeu que ele está repetindo o mesmo passo: {{detail}}",
+        "trouble": "O mu percebeu: {{detail}}",
+        "did": "Usou {{tool}}: {{what}}",
+        "said_quote": "Ele disse: {{text}}",
+        "ended": "Parou.",
+        "waiting_reply": "Parado, esperando sua resposta."
       }
     },
     "lessonsView": {

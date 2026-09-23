@@ -20,7 +20,7 @@ export type LogItem =
  * Kinds another tab shows (the board, and the cache ring above it), or the context line above the log: the log leaves
  * them out.
  */
-const SHOWN_ELSEWHERE = new Set(['board.update', 'context.usage', 'context.policy', 'turn.usage']);
+const SHOWN_ELSEWHERE = new Set(['board.update', 'board.note', 'context.usage', 'context.policy', 'turn.usage']);
 
 /** A harness frame is known by its runtime and its number there; a record the app made, by its own id. */
 const identity = (event: Activity): string =>

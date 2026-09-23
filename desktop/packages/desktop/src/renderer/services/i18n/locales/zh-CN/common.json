@@ -709,7 +709,10 @@
       "needsYouText": "代理在对话里等你回答。",
       "quote": "引用到回复里",
       "quoteHint": "点一条会引用到输入框，你发出去之前不会发送。",
-      "earlier": "之前",
+      "account": "它做了什么",
+      "earlierNotes": "更早的 {{count, number}} 条",
+      "earlierNotes_one": "更早的 {{count, number}} 条",
+      "earlierNotes_other": "更早的 {{count, number}} 条",
       "phases": {
         "understanding": "在弄懂任务",
         "planning": "在想怎么做",
@@ -747,6 +750,36 @@
         "confirm": {
           "waiting_reply": "它在等你回复。"
         }
+      },
+      "notes": {
+        "looked": "看了 {{count, number}} 个文件或地方",
+        "looked_one": "看了 {{count, number}} 个文件或地方",
+        "looked_other": "看了 {{count, number}} 个文件或地方",
+        "changed_file": "改了 {{file}}",
+        "wrote_file": "写了 {{file}}",
+        "ran_command": "运行了 {{command}}",
+        "command_failed": "运行 {{command}} 出错了",
+        "check_passed": "检查通过了：{{command}}",
+        "check_failed": "检查没通过：{{command}}",
+        "item_done": "做完了一条：{{item}}",
+        "item_added": "清单上加了一条：{{item}}",
+        "helpers_sent": "派出 {{count, number}} 个助手：{{titles}}",
+        "helpers_sent_one": "派出 {{count, number}} 个助手：{{titles}}",
+        "helpers_sent_other": "派出 {{count, number}} 个助手：{{titles}}",
+        "helpers_back": "{{count, number}} 个助手回来了",
+        "helpers_back_one": "{{count, number}} 个助手回来了",
+        "helpers_back_other": "{{count, number}} 个助手回来了",
+        "permission_allowed": "你允许了：{{summary}}",
+        "permission_denied": "你没允许：{{summary}}",
+        "goal_round": "目标还没达成，mu 让它接着干（第 {{round, number}} 轮）{{reason}}",
+        "goal_met": "目标达成了：{{text}}",
+        "goal_paused": "目标暂停了{{reason}}",
+        "trouble_loop": "mu 发现它在重复同一步：{{detail}}",
+        "trouble": "mu 发现：{{detail}}",
+        "did": "用 {{tool}} 做了：{{what}}",
+        "said_quote": "它说：{{text}}",
+        "ended": "停下来了。",
+        "waiting_reply": "停下来了，在等你回复。"
       }
     },
     "lessonsView": {

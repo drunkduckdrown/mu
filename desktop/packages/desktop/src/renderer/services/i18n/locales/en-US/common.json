@@ -709,7 +709,10 @@
       "needsYouText": "The agent is waiting for your answer in the conversation.",
       "quote": "Quote in your reply",
       "quoteHint": "Click one to quote it in your reply; nothing is sent until you send it.",
-      "earlier": "Earlier",
+      "account": "What it did",
+      "earlierNotes": "{{count, number}} earlier",
+      "earlierNotes_one": "{{count, number}} earlier",
+      "earlierNotes_other": "{{count, number}} earlier",
       "phases": {
         "understanding": "Understanding the task",
         "planning": "Planning",
@@ -747,6 +750,36 @@
         "confirm": {
           "waiting_reply": "It waits for your reply."
         }
+      },
+      "notes": {
+        "looked": "Looked at {{count, number}} files or places",
+        "looked_one": "Looked at {{count, number}} file or place",
+        "looked_other": "Looked at {{count, number}} files or places",
+        "changed_file": "Changed {{file}}",
+        "wrote_file": "Wrote {{file}}",
+        "ran_command": "Ran {{command}}",
+        "command_failed": "{{command}} failed",
+        "check_passed": "A check passed: {{command}}",
+        "check_failed": "A check failed: {{command}}",
+        "item_done": "Done: {{item}}",
+        "item_added": "Added to the checklist: {{item}}",
+        "helpers_sent": "Sent out {{count, number}} helpers: {{titles}}",
+        "helpers_sent_one": "Sent out {{count, number}} helper: {{titles}}",
+        "helpers_sent_other": "Sent out {{count, number}} helpers: {{titles}}",
+        "helpers_back": "{{count, number}} helpers came back",
+        "helpers_back_one": "{{count, number}} helper came back",
+        "helpers_back_other": "{{count, number}} helpers came back",
+        "permission_allowed": "You allowed: {{summary}}",
+        "permission_denied": "You did not allow: {{summary}}",
+        "goal_round": "The goal is not met yet; mu sent it back to work (round {{round, number}}){{reason}}",
+        "goal_met": "The goal holds: {{text}}",
+        "goal_paused": "The goal is paused{{reason}}",
+        "trouble_loop": "mu noticed it repeating the same step: {{detail}}",
+        "trouble": "mu noticed: {{detail}}",
+        "did": "Used {{tool}}: {{what}}",
+        "said_quote": "It said: {{text}}",
+        "ended": "Stopped.",
+        "waiting_reply": "Stopped, waiting for your reply."
       }
     },
     "lessonsView": {

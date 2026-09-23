@@ -5,8 +5,9 @@ import { useTranslation } from 'react-i18next';
 import type { Activity } from '@/common/kyrn/types';
 import { formatNumber } from '@/renderer/services/i18n/format';
 import { emitter, type SendBoxCommandState } from '@/renderer/utils/emitter';
-import { useClock } from '../clock';
-import { asksUser, boardHistory, boardView, share, type BoardUpdate } from './board';
+import Account from './Account';
+import { asksUser, boardAccount, boardView, share, type BoardNote, type BoardUpdate } from './board';
+import { noteWords } from './noteWords';
 import { boardWords, type BoardWords } from './wording';
 import styles from './Board.module.css';
 
@@ -17,30 +18,74 @@ const SWITCH_WAIT_MS = 60_000;
 type Pending = { to: boolean; stage: 'waiting' | 'sent' };
 
 /**
+ * What the panel has heard of the board since it opened. A line of the account is news when it came after the panel
+ * opened and is not from the account the session replays as it opens. That is decided once per line, the first time
+ * the panel sees it, so a line the harness sends again (a count that grew) changes where it stands, without fading in
+ * or being read out again.
+ */
+type Heard = {
+  /** Every line of the account, and whether it is news. */
+  fresh: ReadonlyMap<string, boolean>;
+  /** The last board that was news. */
+  board: string | undefined;
+  /** What the live region reads out: the news that came last, a new board, the model's new lines, or both at once. */
+  said: { board: string | undefined; notes: string[] };
+};
+
+/** On opening, nothing already there is news. */
+const opening = (notes: readonly BoardNote[]): Heard => ({
+  fresh: new Map(notes.map((note) => [note.id, false])),
+  board: undefined,
+  said: { board: undefined, notes: [] },
+});
+
+/** What came since `heard`: `heard` itself when nothing did. */
+function hear(heard: Heard, notes: readonly BoardNote[], news: BoardUpdate | undefined): Heard {
+  const board = news && news.id !== heard.board ? news.id : undefined;
+  if (!board && notes.every((note) => heard.fresh.has(note.id))) return heard;
+  const fresh = new Map<string, boolean>();
+  const told: string[] = [];
+  for (const note of notes) {
+    const known = heard.fresh.get(note.id);
+    fresh.set(note.id, known ?? !note.restored);
+    // Read out: the model's own words. The fixed lines come with every step and would be chatter.
+    if (known === undefined && !note.restored && note.by === 'model') told.push(note.id);
+  }
+  const said = board || told.length ? { board, notes: told } : heard.said;
+  return { fresh, board: board ?? heard.board, said };
+}
+
+/**
  * The plain-language board: where the work stands, in plain words, for the person and never for the model. The
  * harness writes it (Jev picks the facts, a plain-speaking model writes them up) and presents it; this shows the
- * latest one, what needs the person, and a quiet list of what the board said before. The switch is the harness's own
- * `/board on|off`, sent into the conversation like a typed command, so the board stays per project and the app never
- * writes its settings. It is offered only where the harness has said it has a board: anywhere else the command
- * would reach a model as a message.
+ * latest one, what needs the person, and under it the running account of what the agent did, one line per thing,
+ * as it happens. The switch is the harness's own `/board on|off`, sent into the conversation like a typed command,
+ * so the board stays per project and the app never writes its settings. It is offered only where the harness has
+ * said it has a board: anywhere else the command would reach a model as a message.
  */
 export default function Board({ events, conversationId }: { events: Activity[]; conversationId: string }) {
   const { t, i18n } = useTranslation();
   const view = useMemo(() => boardView(events), [events]);
-  // A fixed board is rebuilt in the reader's language; a model's board is shown as it wrote it.
-  const say = useMemo(() => {
+  const account = useMemo(() => boardAccount(events), [events]);
+  // A fixed board or line is rebuilt in the reader's language; what a model wrote is shown as it wrote it.
+  const { say, sayNote } = useMemo(() => {
     const has = (key: string) => i18n.exists(key);
     const number = (value: number) => formatNumber(value, i18n.language);
-    return (update: BoardUpdate) => boardWords(update, t, has, number);
+    return {
+      say: (update: BoardUpdate) => boardWords(update, t, has, number),
+      sayNote: (note: BoardNote) => noteWords(note, t, has),
+    };
   }, [i18n, t]);
   const words = useMemo(() => (view.update ? say(view.update) : undefined), [say, view.update]);
-  const history = useMemo(() => boardHistory(events, view.update), [events, view.update]);
   const [pending, setPending] = useState<Pending>();
   const on = view.on ?? false;
   // The board that was there when the panel opened is not news (give the panel `key={conversationId}`), nor is the
   // one the session replays on opening: only a later one fades in and is read out.
   const opened = useRef(view.update?.id);
   const news = view.update && view.update.id !== opened.current && !view.update.restored ? view.update : undefined;
+  const [heard, setHeard] = useState(() => opening(account));
+  const latest = hear(heard, account, news);
+  if (latest !== heard) setHeard(latest);
 
   useEffect(() => {
     if (!pending) return;
@@ -54,11 +99,22 @@ export default function Board({ events, conversationId }: { events: Activity[]; 
   }, [pending, view.on]);
   const turn = (to: boolean) => {
     setPending({ to, stage: 'sent' });
-    const heard = (state: SendBoxCommandState) =>
+    const answered = (state: SendBoxCommandState) =>
       setPending((now) => (now?.to !== to ? now : state === 'dropped' ? undefined : { to, stage: state }));
-    emitter.emit('sendbox.command', to ? '/board on' : '/board off', conversationId, heard);
+    emitter.emit('sendbox.command', to ? '/board on' : '/board off', conversationId, answered);
   };
   const switching = pending !== undefined;
+  // One paragraph per part, read with a pause between them in any language: the model's lines bring their own
+  // punctuation. A new board is read as its stage, what it does now and how far it is; a line, as its words.
+  const saidBoard = news && latest.said.board === news.id ? news : undefined;
+  const said = on
+    ? [
+        ...(saidBoard && words
+          ? [saidBoard.phase ? t(`common.kyrn.boardView.phases.${saidBoard.phase}`) : '', words.now, words.progress]
+          : []),
+        ...account.filter((note) => latest.said.notes.includes(note.id)).map((note) => note.text),
+      ].filter(Boolean)
+    : [];
 
   return (
     <section className={styles.board} data-testid='mu-board' aria-label={t('common.kyrn.boardView.title')}>
@@ -86,20 +142,19 @@ export default function Board({ events, conversationId }: { events: Activity[]; 
         <Off />
       ) : view.update ? (
         <Current update={view.update} words={words ?? view.update} fresh={news === view.update} />
-      ) : (
+      ) : account.length ? null : (
         <p className={styles.empty} data-testid='mu-board-empty'>
           {t('common.kyrn.boardView.empty')}
         </p>
       )}
-      {on && history.length ? <Earlier history={history} say={say} /> : null}
-      {/* In place from the start, so what changes in it is announced; only news goes in. One paragraph per part,
-          read with a pause between them in any language: the model's lines bring their own punctuation. */}
+      {on && account.length ? (
+        <Account notes={account} isFresh={(note) => latest.fresh.get(note.id) === true} words={sayNote} />
+      ) : null}
+      {/* In place from the start, so what changes in it is announced; only news goes in. */}
       <div className={styles.announce} aria-live='polite' aria-atomic='true' data-testid='mu-board-announce'>
-        {on && news && words
-          ? [news.phase ? t(`common.kyrn.boardView.phases.${news.phase}`) : '', words.now, words.progress]
-              .filter(Boolean)
-              .map((part, index) => <p key={index}>{part}</p>)
-          : null}
+        {said.map((part, index) => (
+          <p key={index}>{part}</p>
+        ))}
       </div>
     </section>
   );
@@ -210,33 +265,5 @@ function Current({ update, words, fresh }: { update: BoardUpdate; words: BoardWo
         </section>
       ) : null}
     </div>
-  );
-}
-
-/** What the board said before, newest first: one quiet line each, at the time it came. */
-function Earlier({
-  history,
-  say,
-}: {
-  history: { at: number; update: BoardUpdate }[];
-  say: (update: BoardUpdate) => BoardWords;
-}) {
-  const { t } = useTranslation();
-  const clock = useClock();
-  return (
-    <section className={styles.earlier} data-testid='mu-board-earlier' aria-label={t('common.kyrn.boardView.earlier')}>
-      <h4 className={styles.sectionTitle}>{t('common.kyrn.boardView.earlier')}</h4>
-      <ul className={styles.earlierList}>
-        {history.map(({ at, update }) => {
-          const words = say(update);
-          return (
-            <li key={update.id} className={styles.earlierItem}>
-              <span className={styles.earlierTime}>{clock(at)}</span>
-              <span className={styles.earlierText}>{words.progress || words.now}</span>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
   );
 }

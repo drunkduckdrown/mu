@@ -709,7 +709,10 @@
       "needsYouText": "エージェントが会話であなたの返事を待っています。",
       "quote": "返信に引用",
       "quoteHint": "項目をクリックすると入力欄に引用されます。送信するまで送られません。",
-      "earlier": "以前",
+      "account": "やったこと",
+      "earlierNotes": "さらに前の {{count, number}} 件",
+      "earlierNotes_one": "さらに前の {{count, number}} 件",
+      "earlierNotes_other": "さらに前の {{count, number}} 件",
       "phases": {
         "understanding": "タスクを理解中",
         "planning": "進め方を検討中",
@@ -747,6 +750,36 @@
           "focus": "{{now}}（取り組み中: {{focus}}）",
           "planning": "進め方を考えています。まだ何も変更していません。"
         }
+      },
+      "notes": {
+        "looked": "{{count, number}} 個のファイルや場所を見ました",
+        "looked_one": "{{count, number}} 個のファイルや場所を見ました",
+        "looked_other": "{{count, number}} 個のファイルや場所を見ました",
+        "changed_file": "{{file}} を変更しました",
+        "wrote_file": "{{file}} を書きました",
+        "ran_command": "{{command}} を実行しました",
+        "command_failed": "{{command}} の実行でエラーが出ました",
+        "check_passed": "チェックに通りました: {{command}}",
+        "check_failed": "チェックに通りませんでした: {{command}}",
+        "item_done": "項目を 1 つ終えました: {{item}}",
+        "item_added": "チェックリストに追加しました: {{item}}",
+        "helpers_sent": "助っ人を {{count, number}} 人送り出しました: {{titles}}",
+        "helpers_sent_one": "助っ人を {{count, number}} 人送り出しました: {{titles}}",
+        "helpers_sent_other": "助っ人を {{count, number}} 人送り出しました: {{titles}}",
+        "helpers_back": "助っ人が {{count, number}} 人戻ってきました",
+        "helpers_back_one": "助っ人が {{count, number}} 人戻ってきました",
+        "helpers_back_other": "助っ人が {{count, number}} 人戻ってきました",
+        "permission_allowed": "あなたが許可しました: {{summary}}",
+        "permission_denied": "あなたは許可しませんでした: {{summary}}",
+        "goal_round": "目標はまだ達成されていないので、mu が作業を続けさせました（{{round, number}} 回目）{{reason}}",
+        "goal_met": "目標を達成しました: {{text}}",
+        "goal_paused": "目標を一時停止しました{{reason}}",
+        "trouble_loop": "mu は同じ手順を繰り返していることに気づきました: {{detail}}",
+        "trouble": "mu が気づいたこと: {{detail}}",
+        "did": "{{tool}} を使いました: {{what}}",
+        "said_quote": "こう言いました: {{text}}",
+        "ended": "手を止めました。",
+        "waiting_reply": "手を止めて、あなたの返事を待っています。"
       }
     },
     "lessonsView": {
