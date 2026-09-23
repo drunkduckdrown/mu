@@ -707,14 +707,20 @@ describe("mu import", () => {
 		});
 		expect(checkout.error === undefined && checkout.env.MU_CODING_AGENT_DIR).toBe("/home/bai/.mu/agent");
 
-		const built = `${POSIX_ROOT}/judge/dist/import.js`;
-		expect(
-			planImport({ ...importArgs, platform: "linux", root: POSIX_ROOT, fs: disk({ [built]: "" }) }),
-		).toMatchObject({
-			args: [built, "--list"],
-		});
 		expect(planImport({ ...importArgs, platform: "linux", root: POSIX_ROOT, fs: disk({}) }).error).toContain(
-			"mu import is missing",
+			"mu import is missing from this checkout",
+		);
+
+		const pkg = "/usr/local/lib/node_modules/mu-agent";
+		const built = `${pkg}/judge/dist/import.js`;
+		expect(packageEntries({ root: pkg, platform: "linux" }).import).toBe(built);
+		const installed = { [`${pkg}/dist/bundle/cli.js`]: "", [`${pkg}/judge/dist/kyrn-judge.js`]: "" };
+		expect(
+			planImport({ ...importArgs, platform: "linux", root: pkg, fs: disk({ ...installed, [built]: "" }) }),
+		).toMatchObject({ command: "/usr/bin/node", args: [built, "--list"], agentDir: "/home/bai/.mu/agent" });
+		// A package built before mu import says to update, instead of passing `import` to pi as a message.
+		expect(planImport({ ...importArgs, platform: "linux", root: pkg, fs: disk(installed) }).error).toContain(
+			"npm i -g mu-agent",
 		);
 	});
 

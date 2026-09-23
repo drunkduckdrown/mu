@@ -43,6 +43,7 @@ export function packageEntries(input: { root: string; platform: Platform }): {
 	cli: string;
 	extension: string;
 	auth: string;
+	import: string;
 };
 export function envFilePath(input: { layout: Layout; root: string; muDir: string; platform: Platform }): string;
 export function agentDirFor(input: { env: Env; muDir: string; platform: Platform }): string;

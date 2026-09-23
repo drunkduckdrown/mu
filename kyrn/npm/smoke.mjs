@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// After `npm i -g mu-agent`: does the installed `mu` run, does it load the judgment layer, and does `mu auth` answer?
+// After `npm i -g mu-agent`: does the installed `mu` run, does it load the judgment layer, do `mu auth` and
+// `mu import` answer?
 //
 //   node kyrn/npm/smoke.mjs [the mu command]
 //
@@ -64,6 +65,18 @@ check(
 		["openai-codex", "anthropic", "xai"].every((provider) => status.offered.includes(provider)) &&
 		status.signedIn.length === 0,
 	auth.stdout.trim() || auth.stderr.trim(),
+);
+
+// The importer runs on Node alone; the throwaway home has no Claude Code or Codex conversation to list.
+const imports = spawnSync(mu, ["import", "--list", "--json"], options);
+let found;
+try {
+	found = JSON.parse(imports.stdout);
+} catch {}
+check(
+	"mu import --list",
+	imports.status === 0 && Array.isArray(found?.conversations) && found.conversations.length === 0,
+	imports.stderr.trim() || imports.stdout.trim().slice(0, 300),
 );
 
 const commands = await new Promise((resolve) => {

@@ -316,13 +316,14 @@ export function layoutOf({ root, platform, exists }) {
 	return exists(path.join(root, "dist", "bundle", "cli.js")) ? "package" : "repo";
 }
 
-/** The files the npm package runs: pi, the judgment layer, and the sign-in of `mu auth`. */
+/** The files the npm package runs: pi, the judgment layer, the sign-in of `mu auth` and the importer of `mu import`. */
 export function packageEntries({ root, platform }) {
 	const path = pathFor(platform);
 	return {
 		cli: path.join(root, "dist", "bundle", "cli.js"),
 		extension: path.join(root, "judge", "dist", "kyrn-judge.js"),
 		auth: path.join(root, "judge", "dist", "auth.js"),
+		import: path.join(root, "judge", "dist", "import.js"),
 	};
 }
 
@@ -570,14 +571,18 @@ export function planJudge({ platform, env, argv, bin, wsl = false }) {
  */
 export function planImport({ platform, env, argv, root, home, execPath, fs }) {
 	const path = pathFor(platform);
-	const source = path.join(root, "packages", "kyrn-judge", "src", "import", "cli.ts");
-	const built = path.join(root, "judge", "dist", "import.js");
-	const entry = fs.exists(source)
-		? ["--disable-warning=ExperimentalWarning", source]
-		: fs.exists(built)
-			? [built]
-			: undefined;
-	if (!entry) return { error: `mu import is missing from this installation (looked for ${source} and ${built})` };
+	let entry;
+	if (layoutOf({ root, platform, exists: fs.exists }) === "package") {
+		const built = packageEntries({ root, platform }).import;
+		if (!fs.exists(built)) {
+			return { error: `This mu-agent package has no mu import (${built} is missing). Update it: npm i -g mu-agent` };
+		}
+		entry = [built];
+	} else {
+		const source = path.join(root, "packages", "kyrn-judge", "src", "import", "cli.ts");
+		if (!fs.exists(source)) return { error: `mu import is missing from this checkout (${source})` };
+		entry = ["--disable-warning=ExperimentalWarning", source];
+	}
 	const agentDir = agentDirFor({ env, muDir: muHome({ home, platform, isDir: fs.isDir }), platform });
 	const childEnv = {};
 	for (const [key, value] of Object.entries(env)) if (typeof value === "string") childEnv[key] = value;

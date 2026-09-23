@@ -17,7 +17,7 @@
 //                      the native clipboard helpers of pi-tui
 //   judge/             the judgment layer built to JavaScript, with its prompts, skills and agents, and the
 //                      manifest.json the desktop app reads its settings from; dist/auth.js is `mu auth`, the
-//                      desktop app's subscription sign-in
+//                      desktop app's subscription sign-in, and dist/import.js is `mu import`
 //   docs/, examples/   pi's documentation, which the agent reads when asked about itself
 //   package.json       names the app mu (piConfig), so pi keeps its files in ~/.mu
 import { execFileSync } from "node:child_process";
@@ -185,6 +185,20 @@ async function buildJudge(out) {
 		for (const imported of output.imports) {
 			if (imported.external && !isBuiltin(imported.path) && imported.path !== PI_BUNDLE_INDEX && !OPTIONAL.has(imported.path)) {
 				throw new Error(`mu auth leaves ${imported.path} to be found at run time, and nothing provides it`);
+			}
+		}
+	}
+	// `mu import` (src/import) runs on a bare Node: what it takes from pi are types, so it carries everything it runs
+	// and leaves nothing but Node's own modules to be found.
+	const importer = await build({
+		...common,
+		entryPoints: { import: join(judgeSource, "src/import/cli.ts") },
+		outdir: join(judgeRoot, "dist"),
+	});
+	for (const output of Object.values(importer.metafile.outputs)) {
+		for (const imported of output.imports) {
+			if (imported.external && !isBuiltin(imported.path)) {
+				throw new Error(`mu import leaves ${imported.path} to be found at run time; it must run on Node alone`);
 			}
 		}
 	}

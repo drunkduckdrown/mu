@@ -44,6 +44,8 @@ mu judge <cmd>           the local judge (Laya): setup | start | stop | status |
 mu ledger [n] [--json]   what the judge decided in the last n sessions
 mu doctor                check the installation
 mu auth status           the subscription sign-in the desktop app uses (JSON lines)
+mu import --list         Claude Code and Codex conversations on this computer
+mu import <file>...      bring them into mu, to continue with /resume or mu --session
 mu help | version
 ```
 
