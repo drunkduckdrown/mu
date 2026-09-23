@@ -146,9 +146,6 @@ The permission mode and the goal sit in the composer; `⌘K` opens the command p
 
 Builds for macOS (Apple silicon / Intel), Windows (x64 / Arm) and Linux (x64 / Arm) are made by GitHub Actions and published under [Releases](https://github.com/qybaihe/mu/releases).
 
-<!-- Keep this line until the app is signed and notarized -->
-If macOS says the developer cannot be verified: right-click the app in Finder and choose Open, once.
-
 ## Command line
 
 ```bash
@@ -197,3 +194,7 @@ The desktop app is in `desktop/`: `bun install`, then `KYRN_ROOT="$(cd .. && pwd
 ## Credits and license
 
 mu is built on [pi](https://github.com/earendil-works/pi) (the coding agent, MIT; the root [LICENSE](LICENSE) covers `packages/` and `kyrn/`) and [AionUi](https://github.com/iOfficeAI/AionUi) (the desktop app, Apache 2.0; `desktop/` keeps its [LICENSE](desktop/LICENSE)). We are grateful to both. Third-party code in the judgment kernel is listed in [THIRD_PARTY_NOTICES.md](packages/kyrn-judge/THIRD_PARTY_NOTICES.md).
+
+## Community
+
+Support and discussion: [linux.do](https://linux.do).

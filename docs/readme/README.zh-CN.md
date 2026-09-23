@@ -146,9 +146,6 @@
 
 macOS（Apple 芯片 / Intel）、Windows（x64 / Arm）、Linux（x64 / Arm）的安装包由 GitHub Actions 构建，发布在 [Releases](https://github.com/qybaihe/mu/releases)。
 
-<!-- 签名之前保留这一行；拿到证书并公证后删掉 -->
-macOS 若提示无法验证开发者：在 Finder 里右键点击应用，选「打开」，只需一次。
-
 ## 命令行
 
 ```bash
@@ -197,3 +194,7 @@ npm run check                  # 格式、静态检查、类型
 ## 来源与协议
 
 mu 基于 [pi](https://github.com/earendil-works/pi)（编码代理，MIT；根目录的 [LICENSE](../../LICENSE) 覆盖 `packages/` 和 `kyrn/`）和 [AionUi](https://github.com/iOfficeAI/AionUi)（桌面端，Apache 2.0；`desktop/` 保留它的 [LICENSE](../../desktop/LICENSE)）改造，感谢两个项目。判定内核用到的第三方代码列在 [THIRD_PARTY_NOTICES.md](../../packages/kyrn-judge/THIRD_PARTY_NOTICES.md)。
+
+## 社区支持
+
+[linux.do](https://linux.do)
