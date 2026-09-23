@@ -378,7 +378,6 @@
   "model": "مدل",
   "system": "سیستم",
   "conversations": "گفتگوها",
-  "voiceInput": "ورودی صوتی",
   "about": "درباره ما",
   "advancedSettings": "تنظیمات پیشرفته",
   "addModel": "افزودن مدل",
@@ -502,30 +501,6 @@
   "imageGeneration": "ساخت تصویر",
   "imageGenerationToggle": "فعال‌سازی ابزار ساخت تصویر",
   "imageGenerationDescription": "انتخاب کنید ابزار به‌صورت پیش‌فرض از کدام مدل تصویری پیکربندی‌شده استفاده کند.",
-  "speechToText": "تبدیل گفتار به متن",
-  "speechToTextDescription": "ارائه‌دهنده ورودی صوتی استفاده‌شده در جعبه چت را پیکربندی کنید.",
-  "speechToTextApiKey": "کلید API",
-  "speechToTextBaseUrl": "آدرس پایه",
-  "speechToTextModel": "مدل",
-  "speechToTextLanguage": "زبان پیش‌فرض",
-  "speechToTextRequired": "(الزامی)",
-  "speechToTextOptional": "(اختیاری)",
-  "speechToTextSource": "سرویس",
-  "speechToTextSourceOpenAI": "OpenAI (رسمی)",
-  "speechToTextSourceDeepgram": "Deepgram (رسمی)",
-  "speechToTextSourceCustom": "سفارشی (سازگار با OpenAI)",
-  "speechToTextLanguageAuto": "تشخیص خودکار",
-  "speechToTextBaseUrlPlaceholder": "https://your-host/v1",
-  "speechToTextBaseUrlInvalid": "یک URL معتبر http(s) وارد کنید",
-  "speechToTextModelPlaceholder": "یک مدل انتخاب یا تایپ کنید",
-  "speechToTextTest": "ذخیره و آزمایش",
-  "speechToTextTestStop": "توقف",
-  "speechToTextTestRecording": "در حال ضبط… یک جمله کوتاه بگویید",
-  "speechToTextTestTranscribing": "در حال رونویسی…",
-  "speechToTextTestMissingKey": "قبل از آزمایش، کلید API را وارد کنید",
-  "speechToTextTestUploadHint": "میکروفون در دسترس نیست — برای آزمایش یک فایل صوتی انتخاب کنید",
-  "speechToTextStreamingBadge": "زنده",
-  "speechToTextWholeBadge": "گروهی",
   "mcp": "یکپارچگی MCP",
   "imageGenerationModel": "مدل تصویری",
   "imageGenSupportedTooltipTitle": "مدل‌های تصویری پشتیبانی‌شده فعلی:",
@@ -1019,7 +994,8 @@
     "clearConfirmTitle": "داده‌های مرور پاک شود؟",
     "clearConfirmContent": "از همه سایت‌های مرورگر درون‌برنامه خارج می‌شوید. این کار قابل بازگشت نیست.",
     "clearSuccess": "داده‌های مرور پاک شد",
-    "clearFailed": "پاک کردن داده‌های مرور ناموفق بود"
+    "clearFailed": "پاک کردن داده‌های مرور ناموفق بود",
+    "description": "اینکه عامل بتواند از مرورگر درون‌برنامه استفاده کند، و پاک کردن داده‌هایی که مرورگر نگه می‌دارد."
   },
   "archived": {
     "navLabel": "گفتگوهای بایگانی‌شده",
@@ -1077,7 +1053,6 @@
     "noProviderMatch": "هیچ ارائه‌دهنده‌ای {{model}} را ارائه نمی‌کند. مدل دیگری انتخاب کنید."
   },
   "promptTimeoutUnit": "ثانیه",
-  "speechToTextTestResultLine": "نتیجه ({{elapsed}}): {{text}}",
   "emojiCategories": {
     "recent": "اخیر",
     "smileys": "شکلک‌ها",
@@ -1097,5 +1072,9 @@
     "noTabId": "هیچ صفحهٔ تنظیماتی مشخص نشده است."
   },
   "mcpAuthRequiredNamed": "برای {{name}} باید وارد شوید",
-  "mcpTestConnectionSuccessNamed": "{{name}} متصل شد"
+  "mcpTestConnectionSuccessNamed": "{{name}} متصل شد",
+  "appearanceDescription": "زبان، تم، فونت‌ها و مقیاس.",
+  "systemDescription": "اجرا هنگام راه‌اندازی، بستن به سینی سیستم، اعلان‌ها و پوشه‌هایی که mu در آن‌ها کار می‌کند و لاگ می‌نویسد.",
+  "conversationsDescription": "مهلت‌ها، سقف اندازه پیش‌نمایش، محل ذخیره آپلودها و پیام‌های بین گفتگوها.",
+  "aboutDescription": "نسخه فعلی mu، به‌روزرسانی‌ها و راه دسترسی به لاگ‌ها."
 }

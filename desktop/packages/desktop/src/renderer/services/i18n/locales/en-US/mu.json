@@ -18,13 +18,12 @@
     "moreFeatures": "More features",
     "providers": "Providers",
     "defaultModel": "Default model",
-    "permissions": "Permissions",
     "context": "Context"
   },
   "pages": {
     "decisions": {
       "input": "Decision points: Input",
-      "context": "Decision points: Context",
+      "context": "Context",
       "memory": "Decision points: Lessons",
       "tools": "Decision points: Tools and safety",
       "turn": "Decision points: Turn",
@@ -39,12 +38,10 @@
     }
   },
   "modes": {
-    "active": "Active",
-    "shadow": "Shadow",
+    "active": "On",
     "off": "Off",
     "activeHelp": "The verdict takes effect.",
-    "shadowHelp": "Asked and recorded, but nothing changes.",
-    "offHelp": "Not asked. That step goes ahead without a verdict."
+    "offHelp": "The verdict has no effect: that step goes ahead as usual."
   },
   "harness": {
     "tooOld": "This version of mu is too old to list its decision points and features. Update mu to see them here; the basic settings still work.",
@@ -101,7 +98,6 @@
     "moreLead": "Everything else mu can do, grouped by where it acts. Each feature’s options are one click away.",
     "beta": "Beta",
     "reset": "Restore defaults",
-    "permissionsElsewhere": "The mode of a new conversation is chosen under Permissions.",
     "boardModelElsewhere": "The model that writes the board is chosen under Default model.",
     "options": "Options",
     "noOptions": "Nothing else to set: the switch is all there is.",
@@ -114,7 +110,7 @@
   "judges": {
     "tiersHelp": "Judges are tried in order. A later one only sees what the earlier ones left uncertain.",
     "order": "Order",
-    "orderHelp": "The first one is the judge chosen on the Judges page.",
+    "orderHelp": "The first one is the judge chosen above.",
     "tierTitle": "Tier {{index}}: {{name}}",
     "type": "How it is reached",
     "access": {
@@ -133,7 +129,7 @@
     },
     "intro": "While it works, mu makes many small calls: how to handle this message, whether this step breaks a rule you set. The judge answers them. Pick one.",
     "choose": "Choose a judge",
-    "custom": "The first judge right now is a custom one: see and change it on the Judge tiers page.",
+    "custom": "The first judge right now is a custom one: see and change it under Judge tiers below.",
     "keyPlaceholder": "Paste a TypeSafe or Vercel AI Gateway key",
     "choices": {
       "jev": {
@@ -202,31 +198,23 @@
     "manual": "Set (edited by hand)"
   },
   "context": {
-    "description": "When the conversation is compacted, and how. Kept in mu’s settings file, which mu on the command line uses too.",
     "auto": "Automatic compaction",
     "autoHelp": "Compacts the history when the context is nearly full.",
     "limit": "Context cap",
     "limitHelp": "0 follows the model's window minus the reserve. Otherwise {{min}} to {{max}}. Checked before the next model request; not a hard cut.",
-    "limitProblem": "Use 0, or a whole number from {{min}} to {{max}}."
+    "limitProblem": "Use 0, or a whole number from {{min}} to {{max}}.",
+    "lead": "When the conversation is compacted, how large its context may grow, and the decision points about context."
   },
   "permissions": {
-    "description": "Whether mu asks you before it acts. This is the mode every new conversation starts in; each conversation can still be switched from “Permissions” in its send box.",
-    "choose": "Mode of a new conversation",
-    "note": "The “Permissions” picker in a conversation’s send box switches that conversation only; typing /permissions in a conversation also changes the mode new conversations start in. What you said not to do is stopped in every mode, and a step that touches mu’s own settings always asks.",
-    "off": "Permission modes are off in Features: nothing is asked by mode, only the risky command guard works.",
-    "missing": "This version of mu has no permission modes yet. Update mu to choose one here.",
     "modes": {
       "full": {
-        "title": "Full access",
-        "description": "Runs everything without asking, so you are not interrupted."
+        "title": "Full access"
       },
       "jev": {
-        "title": "JeV approves",
-        "description": "Reads and edits in the project go ahead; JeV approves commands, changes outside the project and outside actions for you, and asks you only when it is not sure."
+        "title": "JeV approves"
       },
       "ask": {
-        "title": "Minimal permissions",
-        "description": "Only reading goes ahead; every edit, command and outside action asks you first."
+        "title": "Minimal permissions"
       }
     }
   },

@@ -60,7 +60,7 @@
   min-width: 0;
   padding: 7px 10px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text-primary);
   cursor: pointer;
   transition:
@@ -77,10 +77,19 @@
   outline-offset: 1px;
 }
 
-/* The chosen row: a quiet fill and a heavier name, no border of its own inside the list's frame. */
+/* The chosen row, as the settings rail marks its page: by weight, with no fill and no border of its own. */
 .itemActive,
 .itemActive:hover {
-  background: var(--color-fill-2);
+  background: none;
+}
+
+.itemName {
+  color: var(--text-secondary);
+}
+
+.item:hover .itemName,
+.itemActive .itemName {
+  color: var(--text-primary);
 }
 
 .itemActive .itemName {
@@ -257,18 +266,17 @@
   margin-bottom: 0;
 }
 
-/* Models: one line each, like a table; the one being edited opens below its line. */
+/* Models: one line each, like a table, between hairlines and with no box of their own inside the manager's frame; the
+   one being edited opens below its line. */
 .models {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  border: 1px solid var(--color-border-2);
-  border-radius: 8px;
-  overflow: hidden;
+  border-top: 1px solid var(--color-border-2);
 }
 
 .modelsEmpty {
-  padding: 12px;
+  padding: 12px 0;
   color: var(--text-secondary);
   font-size: 12px;
   line-height: 18px;
@@ -284,7 +292,7 @@
   gap: 8px;
   min-width: 0;
   min-height: 42px;
-  padding: 6px 8px 6px 12px;
+  padding: 6px 0;
 }
 
 .modelId,
@@ -330,7 +338,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
   gap: 8px;
-  padding: 0 12px 12px;
+  padding: 0 0 12px;
 }
 
 .modelFacts {

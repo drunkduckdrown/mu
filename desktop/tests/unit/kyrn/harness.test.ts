@@ -3,7 +3,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  bundledHarnessRoot,
   envFileOf,
+  expectedHarness,
   findHarness,
   launcherOf,
   layoutOf,
@@ -30,6 +32,7 @@ function machine(platform: NodeJS.Platform, files: string[], patch: Partial<Harn
     exists: (file) => found.has(file),
     list: () => [],
     real: (file) => file,
+    resourcesPath: undefined,
     ...patch,
   };
 }
@@ -40,6 +43,40 @@ describe('where the desktop finds the mu harness', () => {
     expect(findHarness('/work/KYRN-desktop', deps)).toEqual({ root: '/work/KYRN', layout: 'repo', source: 'env' });
     const both = machine('darwin', [], { env: { MU_ROOT: '/work/mu', KYRN_ROOT: '/work/KYRN' } });
     expect(findHarness('/work/KYRN-desktop', both)?.root).toBe('/work/mu');
+  });
+
+  it('then the copy the packaged app carries, before anything else on the machine', () => {
+    const resources = '/Applications/mu.app/Contents/Resources';
+    const bundled = `${resources}/harness/mu-agent`;
+    const files = [
+      `${bundled}/kyrn/bin/mu.mjs`,
+      `${bundled}/dist/bundle/cli.js`,
+      // A checkout beside and an npm install: both lose to the app's own copy.
+      '/work/KYRN/kyrn/bin/mu.mjs',
+      '/usr/local/lib/node_modules/mu-agent/kyrn/bin/mu.mjs',
+    ];
+    const app = machine('darwin', files, { resourcesPath: resources });
+    expect(findHarness(undefined, app)).toEqual({ root: bundled, layout: 'package', source: 'bundled' });
+    expect(findHarness('/work/KYRN-desktop', app)?.source).toBe('bundled');
+    expect(findHarness(undefined, { ...app, env: { MU_ROOT: '/work/KYRN' } })?.source).toBe('env');
+    // Development: Electron's own resources folder holds no mu.
+    expect(findHarness('/work/KYRN-desktop', { ...app, resourcesPath: '/dev/electron/Resources' })?.source).toBe(
+      'beside'
+    );
+    expect(bundledHarnessRoot('C:\\Program Files\\mu\\resources', 'win32')).toBe(
+      'C:\\Program Files\\mu\\resources\\harness\\mu-agent'
+    );
+  });
+
+  it('names where mu should be when none is found: the packaged app’s own copy, else the checkout beside', () => {
+    expect(expectedHarness(undefined, '/Applications/mu.app/Contents/Resources', 'darwin')).toEqual({
+      root: '/Applications/mu.app/Contents/Resources/harness/mu-agent',
+      layout: 'package',
+    });
+    expect(expectedHarness('/work/KYRN-desktop', '/dev/electron/Resources', 'darwin')).toEqual({
+      root: '/work/KYRN',
+      layout: 'repo',
+    });
   });
 
   it('then a checkout beside the desktop: the two repositories side by side, or the MU monorepo', () => {
@@ -111,13 +148,25 @@ describe('how the harness is started and where it keeps things', () => {
   });
 
   it('runs a Node launcher with Node and no shell, and anything else as it is', () => {
-    expect(launchCommand('C:\\src\\MU\\kyrn\\bin\\mu.mjs', ['--mode', 'rpc'], 'C:\\node\\node.exe')).toEqual({
+    expect(launchCommand('C:\\src\\MU\\kyrn\\bin\\mu.mjs', ['--mode', 'rpc'], 'C:\\node\\node.exe', false)).toEqual({
       command: 'C:\\node\\node.exe',
       args: ['C:\\src\\MU\\kyrn\\bin\\mu.mjs', '--mode', 'rpc'],
+      env: {},
     });
-    expect(launchCommand('/work/KYRN/kyrn/bin/kyrn', ['--mode', 'rpc'], '/usr/bin/node')).toEqual({
+    expect(launchCommand('/work/KYRN/kyrn/bin/kyrn', ['--mode', 'rpc'], '/usr/bin/node', true)).toEqual({
       command: '/work/KYRN/kyrn/bin/kyrn',
       args: ['--mode', 'rpc'],
+      env: {},
+    });
+  });
+
+  it('runs the Node launcher on the app’s own Electron as Node, which needs no Node on the machine', () => {
+    const app = '/Applications/mu.app/Contents/MacOS/mu';
+    const launcher = '/Applications/mu.app/Contents/Resources/harness/mu-agent/kyrn/bin/mu.mjs';
+    expect(launchCommand(launcher, ['auth', 'status'], app, true)).toEqual({
+      command: app,
+      args: [launcher, 'auth', 'status'],
+      env: { ELECTRON_RUN_AS_NODE: '1' },
     });
   });
 

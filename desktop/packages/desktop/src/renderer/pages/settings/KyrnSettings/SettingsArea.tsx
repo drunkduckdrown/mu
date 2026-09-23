@@ -7,12 +7,11 @@ import SettingsPageHeader from '../components/SettingsPageHeader';
 import type { DecisionPage, FeaturePage } from '../settingsNav';
 import { SECTIONS, isDecisionPage, isFeaturePage, manifestOf, type SectionId } from './draft';
 import MuErrorMessage from './fields/MuErrorMessage';
-import ContextSection from './sections/ContextSection';
+import ContextRows from './sections/ContextRows';
 import DecisionsSection from './sections/DecisionsSection';
 import FeaturesSection, { FeatureOptions } from './sections/FeaturesSection';
-import JudgesSection, { JudgeTiersSection } from './sections/JudgesSection';
+import JudgesSection from './sections/JudgesSection';
 import ProvidersSection, { DefaultModelSection } from './sections/ModelsSection';
-import PermissionsSection from './sections/PermissionsSection';
 import { useMuSettings, useSharedMuSettings, type MuSettings } from './useMuSettings';
 import styles from './SettingsArea.module.css';
 
@@ -36,8 +35,7 @@ type SettingsAreaProps = {
 };
 
 /**
- * Everything mu can be told: providers, the default model, judges and their tiers, decision points, features, context,
- * permissions.
+ * Everything mu can be told: providers, the default model, judges and their tiers, decision points, features, context.
  * They share one draft and one save, because the files behind them share one revision.
  *
  * In the settings the section comes from the route, and the draft from {@link MuSettingsProvider} around every
@@ -81,20 +79,21 @@ function Area({ section: routed, page, feature, part, onView, mu }: SettingsArea
       content = <DefaultModelSection draft={draft} base={base} available={mu.available} onDraft={mu.edit} />;
     else if (section === 'judges')
       content = <JudgesSection draft={draft} base={base} onChange={mu.editSettings} onKey={onKey} />;
-    else if (section === 'judgeTiers')
-      content = <JudgeTiersSection draft={draft} base={base} onChange={mu.editSettings} onKey={onKey} />;
-    else if (section === 'decisions')
+    else if (section === 'decisions' || section === 'context') {
+      // The context settings are the top of the decision points' context page: one page for context.
+      const shown = section === 'context' ? 'context' : isDecisionPage(view.page) ? view.page : undefined;
       content = (
         <DecisionsSection
-          page={isDecisionPage(view.page) ? view.page : undefined}
+          page={shown}
           settings={settings}
           manifest={manifest}
           query={query}
           onQuery={setQuery}
           onChange={mu.editSettings}
+          lead={shown === 'context' ? <ContextRows settings={settings} base={base} onChange={mu.editSettings} /> : null}
         />
       );
-    else if ((section === 'features' || section === 'moreFeatures') && view.feature) {
+    } else if ((section === 'features' || section === 'moreFeatures') && view.feature) {
       const { feature: name } = view;
       const group = section === 'moreFeatures' && isFeaturePage(view.page) ? view.page : undefined;
       content = (
@@ -122,9 +121,7 @@ function Area({ section: routed, page, feature, part, onView, mu }: SettingsArea
           onOpen={(name) => go({ section, page: group, feature: name })}
         />
       );
-    } else if (section === 'permissions')
-      content = <PermissionsSection settings={settings} manifest={manifest} onChange={mu.editSettings} />;
-    else content = <ContextSection settings={settings} base={base} onChange={mu.editSettings} />;
+    }
   }
 
   return (

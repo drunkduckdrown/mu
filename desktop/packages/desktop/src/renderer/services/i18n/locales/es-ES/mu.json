@@ -18,13 +18,12 @@
     "moreFeatures": "Más funciones",
     "providers": "Proveedores",
     "defaultModel": "Modelo predeterminado",
-    "permissions": "Permisos",
     "context": "Contexto"
   },
   "pages": {
     "decisions": {
       "input": "Puntos de decisión: Entrada",
-      "context": "Puntos de decisión: Contexto",
+      "context": "Contexto",
       "memory": "Puntos de decisión: Lecciones",
       "tools": "Puntos de decisión: Herramientas y seguridad",
       "turn": "Puntos de decisión: Turno",
@@ -39,12 +38,10 @@
     }
   },
   "modes": {
-    "active": "Activo",
-    "shadow": "Sombra",
+    "active": "Activado",
     "off": "Desactivado",
     "activeHelp": "El veredicto se aplica.",
-    "shadowHelp": "Se consulta y se registra, pero no cambia nada.",
-    "offHelp": "No se consulta. Ese paso sigue sin veredicto."
+    "offHelp": "El veredicto no tiene efecto: ese paso sigue como siempre."
   },
   "harness": {
     "tooOld": "Esta versión de mu es demasiado antigua para mostrar sus puntos de decisión y funciones. Actualiza mu para verlos aquí; la configuración básica sigue funcionando.",
@@ -101,7 +98,6 @@
     "moreLead": "Todo lo demás que mu puede hacer, agrupado según dónde actúa. Las opciones de cada función están a un clic.",
     "beta": "Beta",
     "reset": "Restablecer valores",
-    "permissionsElsewhere": "El modo de las conversaciones nuevas se elige en «Permisos».",
     "boardModelElsewhere": "El modelo que escribe el tablero se elige en «Modelo predeterminado».",
     "options": "Opciones",
     "noOptions": "No hay nada más que ajustar: solo está el interruptor.",
@@ -114,7 +110,7 @@
   "judges": {
     "tiersHelp": "Los jueces se consultan en orden. Uno posterior solo ve lo que los anteriores dejaron sin resolver.",
     "order": "Orden",
-    "orderHelp": "El primero es el juez elegido en la página «Jueces».",
+    "orderHelp": "El primero es el juez elegido arriba.",
     "tierTitle": "Nivel {{index}}: {{name}}",
     "type": "Forma de acceso",
     "access": {
@@ -133,7 +129,7 @@
     },
     "intro": "Mientras trabaja, mu hace muchas pequeñas valoraciones: cómo tratar este mensaje, si este paso rompe una regla que has fijado. El juez las responde. Elige uno.",
     "choose": "Elige un juez",
-    "custom": "Ahora el primer juez es uno personalizado: puedes verlo y cambiarlo en la página «Niveles de jueces».",
+    "custom": "Ahora el primer juez es uno personalizado: puedes verlo y cambiarlo abajo, en «Niveles de jueces».",
     "keyPlaceholder": "Pega una clave de TypeSafe o de Vercel AI Gateway",
     "choices": {
       "jev": {
@@ -202,31 +198,23 @@
     "manual": "Definida (a mano)"
   },
   "context": {
-    "description": "Cuándo y cómo se compacta la conversación. Se guarda en el archivo de ajustes de mu, que también usa mu en la línea de comandos.",
     "auto": "Compactación automática",
     "autoHelp": "Compacta el historial cuando el contexto está casi lleno.",
     "limit": "Límite de contexto",
     "limitHelp": "0 usa la ventana del modelo menos la reserva. Si no, entre {{min}} y {{max}}. Se comprueba antes de la siguiente solicitud al modelo; no es un corte estricto.",
-    "limitProblem": "Usa 0 o un número entero de {{min}} a {{max}}."
+    "limitProblem": "Usa 0 o un número entero de {{min}} a {{max}}.",
+    "lead": "Cuándo se compacta la conversación, cuánto puede crecer su contexto y los puntos de decisión sobre el contexto."
   },
   "permissions": {
-    "description": "Decide si mu te pregunta antes de actuar. Es el modo con el que empieza cada conversación nueva; cada conversación puede cambiarlo después desde «Permiso» en su cuadro de mensaje.",
-    "choose": "Modo de las conversaciones nuevas",
-    "note": "El selector «Permiso» del cuadro de mensaje de una conversación solo cambia esa conversación; escribir /permissions en una conversación también cambia el modo con el que empiezan las conversaciones nuevas. Lo que has pedido que no se haga se bloquea en todos los modos, y cualquier paso que afecte a la configuración de mu siempre te pregunta.",
-    "off": "Los modos de permiso están desactivados en «Funciones»: no se pregunta según el modo; solo actúa la protección contra comandos arriesgados.",
-    "missing": "Esta versión de mu aún no tiene modos de permiso. Actualiza mu para elegir uno aquí.",
     "modes": {
       "full": {
-        "title": "Acceso completo",
-        "description": "Lo ejecuta todo sin preguntar, para no interrumpirte."
+        "title": "Acceso completo"
       },
       "jev": {
-        "title": "JeV aprueba",
-        "description": "Las lecturas y ediciones dentro del proyecto se hacen sin preguntar; JeV aprueba por ti los comandos, los cambios fuera del proyecto y las acciones externas, y solo te pregunta cuando no está seguro."
+        "title": "JeV aprueba"
       },
       "ask": {
-        "title": "Permisos mínimos",
-        "description": "Solo la lectura se hace sin preguntar; antes de cada edición, comando o acción externa, te pregunta."
+        "title": "Permisos mínimos"
       }
     }
   },

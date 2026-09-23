@@ -378,7 +378,6 @@
   "model": "モデル",
   "system": "システム",
   "conversations": "会話",
-  "voiceInput": "音声入力",
   "about": "情報",
   "advancedSettings": "詳細設定",
   "addModel": "モデルを追加",
@@ -502,30 +501,6 @@
   "imageGeneration": "画像生成",
   "imageGenerationToggle": "画像生成ツールを有効にする",
   "imageGenerationDescription": "画像ツールで使用する既存の画像対応モデルを選択します。",
-  "speechToText": "音声文字起こし",
-  "speechToTextDescription": "チャット入力欄で使う音声文字起こしサービスを設定します。",
-  "speechToTextApiKey": "API キー",
-  "speechToTextBaseUrl": "ベース URL",
-  "speechToTextModel": "モデル",
-  "speechToTextLanguage": "既定の言語",
-  "speechToTextRequired": "（必須）",
-  "speechToTextOptional": "（任意）",
-  "speechToTextSource": "サービス",
-  "speechToTextSourceOpenAI": "OpenAI（公式）",
-  "speechToTextSourceDeepgram": "Deepgram（公式）",
-  "speechToTextSourceCustom": "カスタム（OpenAI 互換）",
-  "speechToTextLanguageAuto": "自動検出",
-  "speechToTextBaseUrlPlaceholder": "https://your-host/v1",
-  "speechToTextBaseUrlInvalid": "有効な http(s) URL を入力してください",
-  "speechToTextModelPlaceholder": "モデル名を選択または入力",
-  "speechToTextTest": "保存してテスト",
-  "speechToTextTestStop": "停止",
-  "speechToTextTestRecording": "録音中… 短い文を話してください",
-  "speechToTextTestTranscribing": "文字起こし中…",
-  "speechToTextTestMissingKey": "テスト前に API キーを入力してください",
-  "speechToTextTestUploadHint": "マイクが利用できません — 音声ファイルを選択してテストしてください",
-  "speechToTextStreamingBadge": "リアルタイム",
-  "speechToTextWholeBadge": "一括",
   "mcp": "MCP統合",
   "imageGenerationModel": "画像モデル",
   "imageGenSupportedTooltipTitle": "現在サポートされている画像モデル：",
@@ -1020,7 +995,8 @@
     "clearConfirmTitle": "閲覧データを消去しますか？",
     "clearConfirmContent": "アプリ内ブラウザーのすべてのサイトからサインアウトされます。この操作は取り消せません。",
     "clearSuccess": "閲覧データを消去しました",
-    "clearFailed": "閲覧データの消去に失敗しました"
+    "clearFailed": "閲覧データの消去に失敗しました",
+    "description": "エージェントにアプリ内ブラウザーの操作を許可するかどうかと、ブラウザーが保存したデータの消去。"
   },
   "archived": {
     "navLabel": "アーカイブ済みの会話",
@@ -1078,7 +1054,6 @@
     "noProviderMatch": "{{model}} を提供しているプロバイダーがありません。別のモデルを選択してください。"
   },
   "promptTimeoutUnit": "秒",
-  "speechToTextTestResultLine": "結果（{{elapsed}}）：{{text}}",
   "emojiCategories": {
     "recent": "最近使用",
     "smileys": "スマイリー",
@@ -1098,5 +1073,9 @@
     "noTabId": "設定ページが指定されていません。"
   },
   "mcpAuthRequiredNamed": "{{name}} へのログインが必要です",
-  "mcpTestConnectionSuccessNamed": "{{name}} に接続しました"
+  "mcpTestConnectionSuccessNamed": "{{name}} に接続しました",
+  "appearanceDescription": "言語、テーマ、フォント、ズーム。",
+  "systemDescription": "起動時の自動起動、トレイへの最小化、通知、mu の作業フォルダとログフォルダ。",
+  "conversationsDescription": "タイムアウト、プレビューのサイズ上限、アップロードの保存先、会話間メッセージ。",
+  "aboutDescription": "mu のバージョン、アップデート、ログフォルダへの入口。"
 }

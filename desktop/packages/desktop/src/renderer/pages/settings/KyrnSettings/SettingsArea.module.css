@@ -30,16 +30,17 @@
   min-width: 0;
 }
 
+/* As the settings rail: the section shown is marked by weight, not by a fill. */
 .navItem {
   display: flex;
   align-items: center;
   gap: 8px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: 8px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
   color: var(--text-secondary);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
   cursor: pointer;
   transition:
@@ -48,13 +49,15 @@
 }
 
 .navItem:hover {
-  background: var(--color-fill-2);
+  background: var(--color-fill-1);
+  color: var(--text-primary);
 }
 
 .navItemActive,
 .navItemActive:hover {
-  background: var(--color-fill-3);
+  background: none;
   color: var(--text-primary);
+  font-weight: 600;
 }
 
 .navLabel {
@@ -68,13 +71,13 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgb(var(--primary-6));
+  background: var(--text-secondary);
 }
 
 .content {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   min-width: 0;
 }
 
@@ -92,11 +95,10 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   border: 1px solid var(--border-base);
   border-radius: 8px;
   background: var(--bg-base);
-  box-shadow: 0 -6px 24px rgb(0 0 0 / 6%);
 }
 
 .saveText {

@@ -101,10 +101,7 @@ const MyAssistantsList: React.FC<MyAssistantsListProps> = ({
   const createdEmpty = createdAssistants.length === 0 && filter === 'all' && !searchActive;
 
   const renderCreatedEmpty = () => (
-    <div
-      className='flex flex-col items-center rounded-14px border border-dashed border-border-2 bg-fill-1/40 px-20px py-28px text-center'
-      data-testid='created-empty'
-    >
+    <div className='settings-list items-center px-20px py-28px text-center' data-testid='created-empty'>
       <div className='mb-6px text-13px font-600 text-t-primary'>
         {t('settings.customEmptyTitle', { defaultValue: 'No custom assistants yet' })}
       </div>
@@ -114,16 +111,10 @@ const MyAssistantsList: React.FC<MyAssistantsListProps> = ({
         })}
       </p>
       <div className='flex items-center gap-10px'>
-        <Button
-          type='primary'
-          size='small'
-          className='!rounded-8px'
-          onClick={handleCreateViaChat}
-          data-testid='created-empty-create'
-        >
+        <Button type='primary' size='small' onClick={handleCreateViaChat} data-testid='created-empty-create'>
           {t('settings.customEmptyCreate', { defaultValue: 'Create via chat' })}
         </Button>
-        <Button size='small' className='!rounded-8px' onClick={onGoOfficial} data-testid='created-empty-official'>
+        <Button size='small' onClick={onGoOfficial} data-testid='created-empty-official'>
           {t('settings.customEmptyBrowseOfficial', { defaultValue: 'Browse official' })}
         </Button>
       </div>
@@ -149,11 +140,7 @@ const MyAssistantsList: React.FC<MyAssistantsListProps> = ({
           </span>
         </span>
         <Dropdown droplist={filterMenu} trigger='click' position='br'>
-          <Button
-            size='mini'
-            data-testid='assistant-enabled-filter'
-            className='!flex !shrink-0 !items-center !gap-4px !rounded-8px'
-          >
+          <Button size='mini' data-testid='assistant-enabled-filter' className='!flex !shrink-0 !items-center !gap-4px'>
             <span>
               {t(`settings.assistantFilter.${filter}`, {
                 defaultValue: filter === 'all' ? 'All' : filter === 'enabled' ? 'Enabled' : 'Disabled',
@@ -165,7 +152,7 @@ const MyAssistantsList: React.FC<MyAssistantsListProps> = ({
       </div>
 
       {searchActive && !hasVisibleAssistants ? (
-        <div className='rounded-14px border border-dashed border-border-2 bg-fill-1/40 px-20px py-28px text-center text-13px text-t-secondary'>
+        <div className='settings-list px-20px py-28px text-center text-13px text-t-secondary'>
           {t('settings.assistantNoMatch', { defaultValue: 'No assistants match the current filters.' })}
         </div>
       ) : null}

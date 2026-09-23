@@ -18,8 +18,7 @@ type LegacyBusinessConfigKey =
   | 'acp.promptTimeout'
   | 'acp.agentIdleTimeout'
   | 'mcp.config'
-  | 'tools.imageGenerationModel'
-  | 'tools.speechToText';
+  | 'tools.imageGenerationModel';
 type LegacyConfigKey = ConfigKey | LegacyBusinessConfigKey;
 
 type LegacyMcpConfigFile = ConfigFile & {
@@ -40,14 +39,9 @@ const ALL_LEGACY_KEYS: LegacyConfigKey[] = [
   'ui.fontSize.markdown',
   'ui.fontSize.code',
   'tools.imageGenerationModel',
-  'tools.speechToText',
   'workspace.pasteConfirm',
   'upload.saveToWorkspace',
   'skillsMarket.enabled',
-  'pet.enabled',
-  'pet.size',
-  'pet.dnd',
-  'pet.confirmEnabled',
   'system.closeToTray',
   'system.notificationEnabled',
   'system.cronNotificationEnabled',

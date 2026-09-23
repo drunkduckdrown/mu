@@ -1,6 +1,7 @@
 /**
- * The two features of the harness manifest that the settings page has a place of its own for, as the harness describes
- * them (packages/kyrn-judge/manifest.json, trimmed to what the page reads). The shared fixture manifest is older.
+ * Two features of the harness manifest as the harness describes them (packages/kyrn-judge/manifest.json, trimmed to
+ * what the page reads): the permission modes, whose one option is the mode a new conversation starts in, and the
+ * board, whose model has a place of its own on the default model page. The shared fixture manifest is older.
  */
 export const PERMISSIONS_FEATURE = {
   name: 'permissions',

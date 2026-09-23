@@ -86,7 +86,8 @@ describe('Native Hive interaction', () => {
 
   it('opens the selected bee context with the real current tool and completed output', () => {
     render(view(<Hive events={hiveEvents} />));
-    fireEvent.click(screen.getByRole('button', { name: 'Inspect prefix-mutations' }));
+    // The records view has no map of its own (the tab draws it above): a bee is picked from a delivery's route.
+    fireEvent.click(screen.getByRole('button', { name: 'prefix-mutations' }));
     const inspector = screen.getByRole('region', { name: 'Execution context' });
     expect(within(inspector).getByText('read src/cache.ts')).toBeInTheDocument();
     // Counts are plural-aware and the thinking level is a word, not pi's raw id.
@@ -98,12 +99,22 @@ describe('Native Hive interaction', () => {
     expect(within(inspector).getByText('export const stablePrefix = true;')).toBeInTheDocument();
   });
 
-  it('draws only real directed deliveries, never judge-only connections', () => {
-    const { rerender } = render(view(<Hive events={hiveEvents.filter((event) => event.kind !== 'hive.delivery')} />));
-    expect(screen.queryByTestId('hive-connection')).not.toBeInTheDocument();
-    rerender(view(<Hive events={hiveEvents} />));
-    expect(screen.getByTestId('hive-connection')).toHaveAttribute('data-from', 'prefix-mutations');
-    expect(screen.getByTestId('hive-connection')).toHaveAttribute('data-to', 'provider-cache');
+  it('shows the run in miniature on its card: a dot per bee and the lines its latest notes went along', () => {
+    const message = hiveMessage();
+    message.content.update.rawOutput = {
+      details: {
+        snapshot: {
+          ...hiveSnapshot,
+          board: { latest: [{ bee: 'prefix-mutations', to: ['provider-cache'], text: 'Prefix is stable.' }] },
+        },
+      },
+    };
+    render(view(<MessageToolGroupSummary messages={[message]} />));
+    const miniature = within(screen.getByTestId('swarm-tool-card')).getByTestId('hive-miniature');
+    expect(miniature).toHaveAttribute('data-links', '1');
+    expect(miniature.querySelectorAll('circle')).toHaveLength(2);
+    expect(miniature.querySelectorAll('line')).toHaveLength(1);
+    expect(miniature.textContent).toBe('');
   });
 
   it('waits for the requested run rather than opening a different run, then applies late data', () => {
@@ -119,7 +130,7 @@ describe('Native Hive interaction', () => {
 
   it('keeps inspecting the selected run when a newer run arrives', () => {
     const { rerender } = render(view(<Hive events={hiveEvents} />));
-    fireEvent.click(screen.getByRole('button', { name: 'Inspect prefix-mutations' }));
+    fireEvent.click(screen.getByRole('button', { name: 'prefix-mutations' }));
     const newer = activity(
       'newer',
       'swarm.snapshot',

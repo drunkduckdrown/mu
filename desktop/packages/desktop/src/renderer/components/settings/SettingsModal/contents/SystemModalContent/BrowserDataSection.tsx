@@ -105,7 +105,7 @@ const BrowserDataSection: React.FC = () => {
 
   return (
     // The page's title names it: the section is only its rows.
-    <div className='px-16px md:px-24px py-4px bg-base border border-color-b-base rd-8px'>
+    <div className='settings-list'>
       <PreferenceRow
         label={t('settings.browserData.agentControlLabel')}
         description={t('settings.browserData.agentControlDesc')}
@@ -119,18 +119,19 @@ const BrowserDataSection: React.FC = () => {
       </PreferenceRow>
 
       {hasPendingChange && (
-        <Alert
-          type='warning'
-          content={
-            <div className='flex items-center justify-between gap-12px'>
-              <span>{t('settings.browserData.agentControlRestartRequired')}</span>
-              <Button size='small' type='primary' onClick={handleRestart}>
-                {t('settings.restartNow')}
-              </Button>
-            </div>
-          }
-          className='mb-8px'
-        />
+        <div className='py-12px'>
+          <Alert
+            type='warning'
+            content={
+              <div className='flex items-center justify-between gap-12px'>
+                <span>{t('settings.browserData.agentControlRestartRequired')}</span>
+                <Button size='small' type='primary' onClick={handleRestart}>
+                  {t('settings.restartNow')}
+                </Button>
+              </div>
+            }
+          />
+        </div>
       )}
 
       <PreferenceRow label={t('settings.browserData.clearLabel')} description={t('settings.browserData.clearDesc')}>

@@ -9,11 +9,11 @@ import { useTranslation } from 'react-i18next';
 import AppearanceModalContent from '@/renderer/components/settings/SettingsModal/contents/AppearanceModalContent';
 import { SettingsPage } from '../components/SettingsPageHeader';
 
-/** How mu looks: the language, the theme, the type and the scale. The desktop pet is the next page. */
+/** How mu looks: the language, the theme, the type and the scale. */
 const AppearanceSettings: React.FC = () => {
   const { t } = useTranslation();
   return (
-    <SettingsPage title={t('settings.appearancePanel')}>
+    <SettingsPage title={t('settings.appearancePanel')} description={t('settings.appearanceDescription')}>
       <AppearanceModalContent />
     </SettingsPage>
   );

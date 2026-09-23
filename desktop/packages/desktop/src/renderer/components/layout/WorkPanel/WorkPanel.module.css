@@ -110,11 +110,15 @@
   display: none;
 }
 
+/*
+ * 4px a side: eight Chinese labels (浏览器 among them) still fit the default 360px panel (about 305 of the strip's
+ * 318px), and eight icons (26px each, border included) fit the narrowest one.
+ */
 .tab:global(.arco-btn) {
   position: relative;
   flex: none;
   height: 40px;
-  padding: 0 7px;
+  padding: 0 4px;
   border-radius: 0;
   background: transparent;
   color: var(--text-secondary);
@@ -136,7 +140,7 @@
 .tab:global(.arco-btn)[aria-selected='true']::after {
   content: '';
   position: absolute;
-  inset-inline: 7px;
+  inset-inline: 4px;
   bottom: 0;
   height: 2px;
   border-radius: 1px;
@@ -148,7 +152,7 @@
   outline-offset: -4px;
 }
 
-/* Too narrow for the labels: one icon per tab (30px with the tab's padding), its name in the tooltip. */
+/* Too narrow for the labels: one icon per tab (26px with the tab's padding and border), its name in the tooltip. */
 .tabIcon {
   display: block;
   line-height: 0;
@@ -156,8 +160,8 @@
 
 .dot {
   position: absolute;
-  top: 9px;
-  inset-inline-end: 1px;
+  top: 6px;
+  inset-inline-end: 0;
   width: 6px;
   height: 6px;
   border-radius: 50%;

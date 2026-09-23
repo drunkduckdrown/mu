@@ -9,6 +9,7 @@ const {
   getModulesToRebuild,
 } = require('./rebuildNativeModules');
 const { verifyBundledAioncoreResources } = require('../packages/shared-scripts/src/verify-bundled-aioncore-resources');
+const { verifyBundledHarness } = require('../packages/shared-scripts/src/verify-bundled-harness');
 
 /**
  * afterPack hook for electron-builder
@@ -35,6 +36,13 @@ function verifyBundledResources(resourcesDir, electronPlatformName, targetArch) 
   }
 
   console.log(`   ✓ Bundled resources verified for ${result.runtimeKey} (${result.checked.length} checks)`);
+
+  // mu itself (scripts/kyrn/bundle-harness.mjs), installed for this build's system and processor.
+  const harness = verifyBundledHarness({ resourcesDir, electronPlatformName, targetArch });
+  if (harness.missing.length > 0) {
+    throw new Error(`Packaged app is missing mu: ${harness.missing.join(', ')}`);
+  }
+  console.log(`   mu-agent ${harness.version} verified (${harness.checked.length} checks)`);
 }
 
 module.exports = async function afterPack(context) {

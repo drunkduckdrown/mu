@@ -110,9 +110,9 @@ describe('the settings rail', () => {
     );
     expect(screen.getByRole('group', { name: 'settings.groups.kernel' })).toBeInTheDocument();
     expect(groupRows(container)).toEqual({
-      preferences: ['appearance', 'pet', 'system', 'conversations', 'voice'],
+      preferences: ['appearance', 'system', 'conversations'],
       models: ['providers', 'default-model'],
-      kernel: ['judges', 'judge-tiers', 'features', 'context', 'permissions'],
+      kernel: ['judges', 'features'],
       decisions: [
         'decisions-input',
         'decisions-context',
@@ -223,15 +223,7 @@ describe('the settings rail', () => {
     ];
     const { container } = renderRail();
     const rows = groupRows(container);
-    expect(rows.kernel).toEqual([
-      'ext-before',
-      'judges',
-      'ext-old',
-      'judge-tiers',
-      'features',
-      'context',
-      'permissions',
-    ]);
+    expect(rows.kernel).toEqual(['ext-before', 'judges', 'ext-old', 'features']);
     expect(rows.capabilities).toEqual([
       'skills',
       'tools',
@@ -298,7 +290,7 @@ describe('links to settings pages that no longer exist', () => {
   it('sends the six pages of the previous settings to the pages that hold them now', () => {
     const cases: [string, string][] = [
       ['/settings/models', '/settings/providers'],
-      ['/settings/permissions', '/settings/permissions'],
+      ['/settings/permissions', '/settings/more-features-tools/permissions'],
       ['/settings/kernel', '/settings/judges'],
       ['/settings/kernel?highlight=hive', '/settings/judges?highlight=hive'],
       ['/settings/skills', '/settings/skills'],
@@ -330,8 +322,8 @@ describe('links to settings pages that no longer exist', () => {
       ['/settings/kyrn/judges', '/settings/judges'],
       ['/settings/kyrn/decisions', '/settings/decisions-input'],
       ['/settings/kyrn/features', '/settings/features'],
-      ['/settings/kyrn/context', '/settings/context'],
-      ['/settings/kyrn/permissions', '/settings/permissions'],
+      ['/settings/kyrn/context', '/settings/decisions-context'],
+      ['/settings/kyrn/permissions', '/settings/more-features-tools/permissions'],
       ['/settings/model', '/settings/providers'],
       ['/settings/agent', '/settings/assistants'],
       ['/settings/agent/claude/repair', '/settings/assistants'],
@@ -342,11 +334,20 @@ describe('links to settings pages that no longer exist', () => {
       ['/settings/capabilities/skills/import-history', '/settings/skills/import-history'],
       ['/settings/display', '/settings/appearance'],
       ['/settings/webui', '/settings/system'],
+      // Pages folded into others: the judge tiers under the judge choice, the compaction settings on the context page,
+      // and the mode of a new conversation on the page of the permission feature's options.
+      ['/settings/judge-tiers', '/settings/judges'],
+      ['/settings/context', '/settings/decisions-context'],
+      ['/settings/context?highlight=limit', '/settings/decisions-context?highlight=limit'],
+      ['/settings/permissions?x=1', '/settings/more-features-tools/permissions?x=1'],
+      // Voice input and the desktop pet are gone: an old link opens the page each sat next to.
+      ['/settings/voice', '/settings/system'],
+      ['/settings/pet', '/settings/appearance'],
     ];
     for (const [link, target] of cases) expect(follow(link).path, link).toBe(target);
-    // The pet, the tools, the assistants, the archive and About were folded into other pages; now they are pages.
+    // The tools, the assistants, the archive and About were folded into other pages; now they are pages.
     const routes = SETTINGS_PAGES.map((page) => page.route as string);
-    for (const page of ['pet', 'tools', 'assistants', 'archived', 'about']) {
+    for (const page of ['tools', 'assistants', 'archived', 'about']) {
       expect(routes).toContain(`/settings/${page}`);
       expect(RETIRED_SETTINGS_PATHS).not.toHaveProperty(`/settings/${page}`);
     }

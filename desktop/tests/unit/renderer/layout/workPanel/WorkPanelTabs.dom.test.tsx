@@ -5,7 +5,7 @@
  */
 
 /**
- * The work panel's tab strip in a panel too narrow for its labels (seven tabs in the 279px a 900px window leaves):
+ * The work panel's tab strip in a panel too narrow for its labels (eight tabs in the 279px a 900px window leaves):
  * one icon per tab, each named by its tooltip and for screen readers, and the labels back once they fit again. The
  * strip never keeps tabs out of sight behind a sideways scroll.
  */
@@ -24,9 +24,9 @@ beforeAll(async () => {
   await i18n.init({ lng: 'en', resources: { en: { translation: { common } } }, interpolation: { escapeValue: false } });
 });
 
-/** The strip's width and what its labels take; an icon takes 30px. jsdom lays nothing out, so the test does. */
+/** The strip's width and what its labels take; an icon takes 26px. jsdom lays nothing out, so the test does. */
 const layout = { room: 400, labels: 380 };
-const ICON_PX = 30;
+const ICON_PX = 26;
 let resized: (() => void)[] = [];
 
 class RecordingResizeObserver {
@@ -98,8 +98,10 @@ describe('the work panel tab strip', () => {
     }
     expect(tabs().map((tab) => tab.getAttribute('aria-label'))).toEqual(labels);
     expect(screen.getByRole('tab', { selected: true })).toHaveAccessibleName(common.workPanel.tabs.judge);
-    // Seven icons fit where the labels did not: nothing is left out of view.
-    expect(WORK_PANEL_TABS.length * ICON_PX).toBeLessThanOrEqual(layout.room);
+    // Eight icons fit where the labels did not, even in the narrowest panel (228px for the tabs): nothing is left
+    // out of view.
+    expect(WORK_PANEL_TABS).toHaveLength(8);
+    expect(WORK_PANEL_TABS.length * ICON_PX).toBeLessThanOrEqual(228);
   });
 
   it('names an icon in a tooltip on hover', async () => {

@@ -13,7 +13,7 @@ import { SettingsPage } from '../components/SettingsPageHeader';
 const ConversationSettings: React.FC = () => {
   const { t } = useTranslation();
   return (
-    <SettingsPage title={t('settings.conversations')}>
+    <SettingsPage title={t('settings.conversations')} description={t('settings.conversationsDescription')}>
       <ConversationPreferences />
     </SettingsPage>
   );

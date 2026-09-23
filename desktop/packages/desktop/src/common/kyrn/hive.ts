@@ -99,12 +99,16 @@ export type HiveBee = BeeErrorState & {
 export type SwarmKind = 'hive' | 'delegate';
 /** A run's title. A delegate run's is mu's own words and has `titleCode`; a hive's is its goal, shown as it is. */
 export type SwarmTitle = { title: string; titleCode?: Coded };
+/** One of the board's latest notes as the harness sums them up: who posted it, whom the judge handed it to. */
+export type HiveBoardLine = { bee: string; to: string[]; text: string; state?: 'superseded' | 'contested' };
 export type HiveSnapshot = SwarmTitle & {
   kind: SwarmKind;
   bees: HiveBee[];
   startedAt: number;
   endedAt: number;
   now: number;
+  /** The board's last few notes (the harness keeps 8), oldest first; empty for a delegate run. */
+  latest: HiveBoardLine[];
 };
 export type HiveToolData = { kind: SwarmKind; goal: string; names: string[]; snapshot?: HiveSnapshot };
 
@@ -155,7 +159,21 @@ export function parseSwarmSnapshot(value: unknown): HiveSnapshot | undefined {
     startedAt: number(row.startedAt),
     endedAt: number(row.endedAt),
     now: number(row.now),
+    latest: parseBoardLines(record(row.board).latest),
   };
+}
+
+/** The board summary's latest notes: only their author, receivers, words and state; never a path or a score. */
+function parseBoardLines(value: unknown): HiveBoardLine[] {
+  if (!Array.isArray(value)) return [];
+  return value.slice(-16).flatMap((item): HiveBoardLine[] => {
+    const row = record(item);
+    const bee = text(row.bee);
+    if (!bee) return [];
+    const to = Array.isArray(row.to) ? row.to.slice(0, 32).map(text).filter(Boolean) : [];
+    const state = row.state === 'superseded' || row.state === 'contested' ? row.state : undefined;
+    return [{ bee, to, text: text(row.text), ...(state ? { state } : {}) }];
+  });
 }
 
 /** A hive's snapshot only: a delegate run is drawn by the panel's own list, not as a hive. */

@@ -378,7 +378,6 @@
   "model": "模型",
   "system": "系统",
   "conversations": "对话",
-  "voiceInput": "语音输入",
   "about": "关于",
   "advancedSettings": "高级设置",
   "addModel": "添加模型",
@@ -502,30 +501,6 @@
   "imageGeneration": "图像生成",
   "imageGenerationToggle": "启用图像生成工具",
   "imageGenerationDescription": "选择默认用于图像工具的已配置模型。",
-  "speechToText": "语音转文字",
-  "speechToTextDescription": "配置聊天输入框使用的语音转写服务。",
-  "speechToTextApiKey": "API Key",
-  "speechToTextBaseUrl": "Base URL",
-  "speechToTextModel": "模型",
-  "speechToTextLanguage": "默认语言",
-  "speechToTextRequired": "（必填）",
-  "speechToTextOptional": "（可选）",
-  "speechToTextSource": "服务来源",
-  "speechToTextSourceOpenAI": "OpenAI（官方）",
-  "speechToTextSourceDeepgram": "Deepgram（官方）",
-  "speechToTextSourceCustom": "自定义（OpenAI 兼容）",
-  "speechToTextLanguageAuto": "自动检测",
-  "speechToTextBaseUrlPlaceholder": "https://your-host/v1",
-  "speechToTextBaseUrlInvalid": "请输入有效的 http(s) 地址",
-  "speechToTextModelPlaceholder": "选择或输入模型名称",
-  "speechToTextTest": "保存并测试",
-  "speechToTextTestStop": "停止",
-  "speechToTextTestRecording": "录音中… 请说一句话",
-  "speechToTextTestTranscribing": "转写中…",
-  "speechToTextTestMissingKey": "请先填写 API Key 再测试",
-  "speechToTextTestUploadHint": "麦克风不可用——请选择音频文件进行测试",
-  "speechToTextStreamingBadge": "实时",
-  "speechToTextWholeBadge": "整段",
   "mcp": "MCP 集成",
   "imageGenerationModel": "图像模型",
   "imageGenSupportedTooltipTitle": "当前已支持的图像模型：",
@@ -1020,7 +995,8 @@
     "clearConfirmTitle": "确定清空浏览数据？",
     "clearConfirmContent": "应用内浏览器中所有网站的登录状态都会被退出，且无法恢复。",
     "clearSuccess": "浏览数据已清空",
-    "clearFailed": "清空浏览数据失败"
+    "clearFailed": "清空浏览数据失败",
+    "description": "是否允许代理操作应用内浏览器，以及清除浏览器保存的数据。"
   },
   "archived": {
     "navLabel": "已归档的对话",
@@ -1078,7 +1054,6 @@
     "noProviderMatch": "没有供应商提供 {{model}}，请选择其他模型。"
   },
   "promptTimeoutUnit": "秒",
-  "speechToTextTestResultLine": "识别结果（{{elapsed}}）：{{text}}",
   "emojiCategories": {
     "recent": "最近使用",
     "smileys": "表情",
@@ -1098,5 +1073,9 @@
     "noTabId": "未指定设置页。"
   },
   "mcpAuthRequiredNamed": "{{name}} 需要身份验证",
-  "mcpTestConnectionSuccessNamed": "{{name}} 连接测试成功"
+  "mcpTestConnectionSuccessNamed": "{{name}} 连接测试成功",
+  "appearanceDescription": "界面语言、主题、字体和缩放。",
+  "systemDescription": "开机启动、关闭到托盘、通知，以及 mu 的工作目录和日志目录。",
+  "conversationsDescription": "超时时间、预览大小上限、上传文件的去处，以及对话之间的消息。",
+  "aboutDescription": "当前的 mu 版本、更新，以及日志文件夹的入口。"
 }

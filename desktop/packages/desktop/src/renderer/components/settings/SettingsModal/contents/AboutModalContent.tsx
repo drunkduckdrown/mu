@@ -149,7 +149,7 @@ const AboutModalContent: React.FC = () => {
             <span className='text-18px font-600 leading-24px text-t-primary'>mu</span>
             {isElectron ? null : (
               <span
-                className='rd-6px bg-fill-2 px-8px py-2px text-12px font-500 text-t-secondary'
+                className='rd-4px bg-fill-2 px-6px py-2px text-12px font-500 text-t-secondary'
                 data-testid='about-version'
               >
                 {version}
@@ -160,7 +160,7 @@ const AboutModalContent: React.FC = () => {
         </div>
       </div>
 
-      <div className='flex flex-col divide-y divide-b-base rd-8px border border-solid border-[var(--border-base)] bg-base px-16px'>
+      <div className='settings-list'>
         {isElectron ? (
           <>
             <div className={rowClass}>

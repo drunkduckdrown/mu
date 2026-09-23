@@ -13,8 +13,8 @@ import {
 import type { KyrnSettings } from '@/common/kyrn/types';
 import { DECISION_PAGES, pageGroupLabelKey, type DecisionPage } from '../../settingsNav';
 import { decisionPageOf, isStrayDecision, matches } from '../draft';
-import ModeControl, { useModeLabels } from '../fields/ModeControl';
-import SectionShell from './SectionShell';
+import ModeControl, { shownMode, useModeLabels } from '../fields/ModeControl';
+import SectionShell, { GroupTitle } from './SectionShell';
 import styles from './sections.module.css';
 
 /** Groups the desktop has words for, should a manifest list decisions under one without naming it. */
@@ -34,6 +34,8 @@ type DecisionsSectionProps = {
   query: string;
   onQuery: (query: string) => void;
   onChange: (change: (settings: KyrnSettings) => KyrnSettings) => void;
+  /** Above the points: settings of the page's own that are not decision points (the context page's compaction). */
+  lead?: React.ReactNode;
 };
 
 /**
@@ -50,9 +52,10 @@ function useGroupTitle(manifest: HarnessManifest | undefined): (group: string) =
 type Block = { key: string; title?: string; rows: DecisionInfo[] };
 
 /**
- * The decision points of one page, in plain rows: a name, one sentence and the mode it runs in. A point without a mode
- * of its own shows the default mode; one with its own mode offers to go back to the default. The first page also holds
- * the default mode and a search over every point, whose results come from all the pages.
+ * The decision points of one page, in plain rows: a name, one sentence and whether it is on. A point without a mode of
+ * its own shows the default mode; one with its own mode offers to go back to the default. The first page also holds
+ * the default mode and a search over every point, whose results come from all the pages. The context page starts with
+ * the compaction settings, so that everything about context is one page.
  */
 export default function DecisionsSection({
   page,
@@ -61,12 +64,14 @@ export default function DecisionsSection({
   query,
   onQuery,
   onChange,
+  lead,
 }: DecisionsSectionProps) {
   const { t, i18n } = useTranslation();
-  const labels = useModeLabels(manifest);
+  const labels = useModeLabels();
   const say = (text?: Localized) => localized(text, i18n.language);
   const groupTitle = useGroupTitle(manifest);
   const first = page === undefined || page === FIRST_PAGE;
+  const pageLead = t('mu.decisions.pageLead', { page: t(`mu.pages.decisions.${FIRST_PAGE}`) });
   // The whole list: the area alone, or a search from the first page, which looks through every page.
   const whole = page === undefined || (first && query.trim() !== '');
 
@@ -117,11 +122,7 @@ export default function DecisionsSection({
     <SectionShell
       id={page ? `decisions-${page}` : 'decisions'}
       title={page ? t(`mu.pages.decisions.${page}`) : t('mu.sections.decisions')}
-      description={
-        first
-          ? t('mu.decisions.description')
-          : t('mu.decisions.pageLead', { page: t(`mu.pages.decisions.${FIRST_PAGE}`) })
-      }
+      description={first ? t('mu.decisions.description') : page === 'context' ? t('mu.context.lead') : pageLead}
       actions={
         first && manifest ? (
           <Input.Search
@@ -143,7 +144,7 @@ export default function DecisionsSection({
               <div className={styles.plainText}>
                 <div className={styles.plainTitle}>{t('mu.decisions.defaultMode')}</div>
                 <div className={styles.plainSummary}>{t('mu.decisions.defaultModeHelp')}</div>
-                <div className={styles.plainSummary}>{labels[settings.mode].help}</div>
+                <div className={styles.plainSummary}>{labels[shownMode(settings.mode)].help}</div>
               </div>
               <div className={styles.plainControl}>
                 <ModeControl
@@ -157,7 +158,15 @@ export default function DecisionsSection({
           </div>
         </div>
       ) : null}
+      {lead}
       {!manifest ? <Alert type='warning' content={t('mu.harness.tooOld')} /> : null}
+      {/* Under the page's own settings the points are a group of the page, which says where their default is. */}
+      {lead && blocks.length ? (
+        <div className={styles.groupHead}>
+          <GroupTitle>{t('mu.sections.decisions')}</GroupTitle>
+          <div className={styles.groupHelp}>{pageLead}</div>
+        </div>
+      ) : null}
       {blocks.map((block) => (
         <React.Fragment key={block.key}>
           {block.title ? <h3 className={styles.groupLabel}>{block.title}</h3> : null}
@@ -191,7 +200,7 @@ export default function DecisionsSection({
                           data-testid={`mu-decision-default-${decision.id}`}
                           onClick={() => setMode(decision.id, undefined)}
                         >
-                          {t('mu.decisions.useDefault', { mode: labels[settings.mode].label })}
+                          {t('mu.decisions.useDefault', { mode: labels[shownMode(settings.mode)].label })}
                         </Button>
                       ) : null}
                     </div>

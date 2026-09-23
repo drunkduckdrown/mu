@@ -4,6 +4,17 @@ import { list, record, str } from '../activity';
 
 export type HiveNote = { id: string; from: string; text: string; kind: string };
 export type HiveDelivery = { id: string; from: string; to: string; text: string; noteId: string; at: number };
+/** What the judge read a later note as doing to an earlier one (the harness's `relations.jsonl`). */
+export type HiveRelationKind = 'supersedes' | 'contradicts' | 'supports';
+export type HiveRelation = {
+  id: string;
+  later: string;
+  earlier: string;
+  relation: HiveRelationKind;
+  score: number;
+  by: string;
+  at: number;
+};
 export type HiveRun = {
   id: string;
   at: number;
@@ -13,8 +24,11 @@ export type HiveRun = {
   events: Activity[];
   notes: HiveNote[];
   deliveries: HiveDelivery[];
+  relations: HiveRelation[];
   gates: Activity[];
 };
+
+const RELATIONS: readonly HiveRelationKind[] = ['supersedes', 'contradicts', 'supports'];
 
 /** Join within a run, never across runs with coincidentally identical bee/note names. */
 export function buildHiveRuns(events: Activity[]): HiveRun[] {
@@ -35,6 +49,7 @@ export function buildHiveRuns(events: Activity[]): HiveRun[] {
         events: [],
         notes: [],
         deliveries: [],
+        relations: [],
         gates: [],
       };
       runs.set(event.run, run);
@@ -65,6 +80,25 @@ export function buildHiveRuns(events: Activity[]): HiveRun[] {
     run.notes = [...notes.values()];
     const seen = new Set<string>();
     for (const event of run.events) {
+      if (event.kind === 'hive.relation') {
+        const relation = RELATIONS.find((known) => known === event.payload.relation);
+        const later = str(event.payload.later);
+        const earlier = str(event.payload.earlier);
+        const key = JSON.stringify(['relation', later, earlier]);
+        if (!relation || !later || !earlier || later === earlier || seen.has(key)) continue;
+        seen.add(key);
+        const score = event.payload.score;
+        run.relations.push({
+          id: event.id,
+          later,
+          earlier,
+          relation,
+          score: typeof score === 'number' && Number.isFinite(score) ? score : 0,
+          by: str(event.payload.by),
+          at: event.at,
+        });
+        continue;
+      }
       if (event.kind !== 'hive.delivery') continue;
       const noteId = str(event.payload.note);
       const to = str(event.payload.to);

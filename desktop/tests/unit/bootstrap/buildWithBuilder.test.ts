@@ -263,15 +263,18 @@ childProcess.execSync = function mockedExecSync(command) {
     {
       args: ['arm64', '--win', '--arm64'],
       expectedArch: 'arm64',
+      expectedPlatform: 'win32',
     },
     {
       args: ['auto', '--mac', '--x64'],
       expectedArch: 'x64',
+      expectedPlatform: 'darwin',
     },
-  ])('prepares bundled AionCore for $expectedArch with args $args', ({ args, expectedArch }) => {
+  ])('prepares AionCore and mu for $expectedArch with args $args', ({ args, expectedArch, expectedPlatform }) => {
     const tempDir = mkdtempSync(join(tmpdir(), 'aionui-build-test-'));
     const hookPath = join(tempDir, 'hook.cjs');
     const callsPath = join(tempDir, 'prepare-calls.json');
+    const harnessCallsPath = join(tempDir, 'harness-calls.json');
     const outDir = resolve(repoRoot, 'out');
     const backupOutDir = resolve(repoRoot, `.tmp-out-backup-${process.pid}-${Date.now()}-${expectedArch}`);
 
@@ -320,6 +323,20 @@ function ensurePlaceholder(relativePath) {
   }
 }
 
+// Bundling mu (scripts/kyrn/bundle-harness.mjs) would fetch the pinned mu-agent: record the system and processor
+// it is asked for instead.
+const originalExecFileSync = childProcess.execFileSync;
+childProcess.execFileSync = function mockedExecFileSync(file, args, options) {
+  if (Array.isArray(args) && String(args[0]).endsWith('bundle-harness.mjs')) {
+    const callsPath = process.env.AIONUI_HARNESS_CALLS_FILE;
+    const calls = fs.existsSync(callsPath) ? JSON.parse(fs.readFileSync(callsPath, 'utf8')) : [];
+    calls.push(args.slice(1));
+    fs.writeFileSync(callsPath, JSON.stringify(calls));
+    return Buffer.from('');
+  }
+  return originalExecFileSync.call(this, file, args, options);
+};
+
 childProcess.execSync = function mockedExecSync(command) {
   const commandText = String(command);
   if (commandText.includes('electron-vite build')) {
@@ -351,6 +368,7 @@ childProcess.execSync = function mockedExecSync(command) {
         env: {
           ...process.env,
           AIONUI_PREPARE_CALLS_FILE: callsPath,
+          AIONUI_HARNESS_CALLS_FILE: harnessCallsPath,
           NODE_OPTIONS: [process.env.NODE_OPTIONS, `--require=${hookPath}`].filter(Boolean).join(' '),
         },
       });
@@ -366,6 +384,9 @@ childProcess.execSync = function mockedExecSync(command) {
 
       const calls = JSON.parse(readFileSync(callsPath, 'utf8')) as Array<{ arch?: string } | null>;
       expect(calls).toContainEqual(expect.objectContaining({ arch: expectedArch }));
+      expect(JSON.parse(readFileSync(harnessCallsPath, 'utf8'))).toEqual([
+        ['--platform', expectedPlatform, '--arch', expectedArch],
+      ]);
     } finally {
       rmSync(outDir, { recursive: true, force: true });
       if (movedExistingOut) {

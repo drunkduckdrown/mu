@@ -378,7 +378,6 @@
   "model": "Model",
   "system": "Sistem",
   "conversations": "Konuşmalar",
-  "voiceInput": "Sesli giriş",
   "about": "Hakkında",
   "advancedSettings": "Gelişmiş Ayarlar",
   "addModel": "Model Ekle",
@@ -502,30 +501,6 @@
   "imageGeneration": "Görüntü Oluşturma",
   "imageGenerationToggle": "Görüntü oluşturma aracını etkinleştir",
   "imageGenerationDescription": "Aracın varsayılan olarak hangi yapılandırılmış görüntü yetenekli modeli kullanacağını seçin.",
-  "speechToText": "Konuşmadan Yazıya",
-  "speechToTextDescription": "Sohbet kutusunda kullanılacak konuşmadan yazıya servisini yapılandırın.",
-  "speechToTextApiKey": "API anahtarı",
-  "speechToTextBaseUrl": "Temel URL",
-  "speechToTextModel": "Model",
-  "speechToTextLanguage": "Varsayılan Dil",
-  "speechToTextRequired": "(zorunlu)",
-  "speechToTextOptional": "(isteğe bağlı)",
-  "speechToTextSource": "Hizmet",
-  "speechToTextSourceOpenAI": "OpenAI (Resmî)",
-  "speechToTextSourceDeepgram": "Deepgram (Resmî)",
-  "speechToTextSourceCustom": "Özel (OpenAI uyumlu)",
-  "speechToTextLanguageAuto": "Otomatik algıla",
-  "speechToTextBaseUrlPlaceholder": "https://your-host/v1",
-  "speechToTextBaseUrlInvalid": "Geçerli bir http(s) URL girin",
-  "speechToTextModelPlaceholder": "Model adı seçin veya yazın",
-  "speechToTextTest": "Kaydet ve Test Et",
-  "speechToTextTestStop": "Durdur",
-  "speechToTextTestRecording": "Kayıt yapılıyor… kısa bir cümle söyleyin",
-  "speechToTextTestTranscribing": "Yazıya dökülüyor…",
-  "speechToTextTestMissingKey": "Test etmeden önce API anahtarını girin",
-  "speechToTextTestUploadHint": "Mikrofon kullanılamıyor — test için bir ses dosyası seçin",
-  "speechToTextStreamingBadge": "Canlı",
-  "speechToTextWholeBadge": "Toplu",
   "mcp": "MCP Entegrasyonu",
   "imageGenerationModel": "Görüntü Modeli",
   "imageGenSupportedTooltipTitle": "Şu anda desteklenen görüntü modelleri:",
@@ -1019,7 +994,8 @@
     "clearConfirmTitle": "Tarama verileri temizlensin mi?",
     "clearConfirmContent": "Uygulama içi tarayıcıdaki tüm sitelerden çıkış yapılacak. Bu işlem geri alınamaz.",
     "clearSuccess": "Tarama verileri temizlendi",
-    "clearFailed": "Tarama verileri temizlenemedi"
+    "clearFailed": "Tarama verileri temizlenemedi",
+    "description": "Aracının uygulama içi tarayıcıyı kullanıp kullanamayacağı ve tarayıcının sakladıklarının temizlenmesi."
   },
   "archived": {
     "navLabel": "Arşivlenmiş konuşmalar",
@@ -1077,7 +1053,6 @@
     "noProviderMatch": "{{model}} modelini sunan bir sağlayıcı yok. Başka bir model seçin."
   },
   "promptTimeoutUnit": "sn",
-  "speechToTextTestResultLine": "Sonuç ({{elapsed}}): {{text}}",
   "emojiCategories": {
     "recent": "Son kullanılanlar",
     "smileys": "İfadeler",
@@ -1097,5 +1072,9 @@
     "noTabId": "Hiçbir ayar sayfası belirtilmedi."
   },
   "mcpAuthRequiredNamed": "{{name}} için giriş yapmanız gerekiyor",
-  "mcpTestConnectionSuccessNamed": "{{name}} bağlandı"
+  "mcpTestConnectionSuccessNamed": "{{name}} bağlandı",
+  "appearanceDescription": "Dil, tema, yazı tipleri ve ölçek.",
+  "systemDescription": "Açılışta başlatma, tepsiye kapatma, bildirimler ve mu'nun çalıştığı ve günlük tuttuğu klasörler.",
+  "conversationsDescription": "Zaman aşımları, önizleme boyut sınırı, yüklemelerin konumu ve sohbetler arası mesajlar.",
+  "aboutDescription": "mu'nun hangi sürümü olduğu, güncellemeleri ve günlüklerine giden yol."
 }

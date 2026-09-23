@@ -150,6 +150,8 @@
   "browser": {
     "newTab": "새 탭",
     "addressPlaceholder": "URL 입력 또는 검색",
+    "tabsLabel": "열린 페이지",
+    "closeTab": "{{title}} 닫기",
     "agentActiveTooltip": "에이전트가 이 탭을 조작하고 있습니다",
     "tabLimitReached": "탭 수 한도({{count}})에 도달하여 가장 오래된 탭을 재사용했습니다.",
     "agentFirstUseTitle": "에이전트가 앱 내 브라우저를 사용하고 있습니다",

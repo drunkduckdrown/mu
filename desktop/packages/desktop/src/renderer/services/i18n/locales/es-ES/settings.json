@@ -366,7 +366,6 @@
   "model": "Modelo",
   "system": "Sistema",
   "conversations": "Conversaciones",
-  "voiceInput": "Entrada de voz",
   "about": "Acerca de",
   "advancedSettings": "Configuración avanzada",
   "addModel": "Agregar modelo",
@@ -490,30 +489,6 @@
   "imageGeneration": "Generación de imágenes",
   "imageGenerationToggle": "Activar herramienta de generación de imágenes",
   "imageGenerationDescription": "Elige qué modelo con capacidad de imagen configurado debe usar la herramienta por defecto.",
-  "speechToText": "Voz a texto",
-  "speechToTextDescription": "Configura el proveedor de entrada de voz utilizado por el cuadro de chat.",
-  "speechToTextApiKey": "Clave API",
-  "speechToTextBaseUrl": "URL base",
-  "speechToTextModel": "Modelo",
-  "speechToTextLanguage": "Idioma predeterminado",
-  "speechToTextRequired": "(obligatorio)",
-  "speechToTextOptional": "(opcional)",
-  "speechToTextSource": "Servicio",
-  "speechToTextSourceOpenAI": "OpenAI (Oficial)",
-  "speechToTextSourceDeepgram": "Deepgram (Oficial)",
-  "speechToTextSourceCustom": "Personalizado (compatible con OpenAI)",
-  "speechToTextLanguageAuto": "Detección automática",
-  "speechToTextBaseUrlPlaceholder": "https://tu-host/v1",
-  "speechToTextBaseUrlInvalid": "Ingresa una URL http(s) válida",
-  "speechToTextModelPlaceholder": "Seleccionar o escribir un nombre de modelo",
-  "speechToTextTest": "Guardar y probar",
-  "speechToTextTestStop": "Detener",
-  "speechToTextTestRecording": "Grabando... di una oración corta",
-  "speechToTextTestTranscribing": "Transcribiendo...",
-  "speechToTextTestMissingKey": "Ingresa la clave API antes de probar",
-  "speechToTextTestUploadHint": "Micrófono no disponible — elige un archivo de audio para probar",
-  "speechToTextStreamingBadge": "En vivo",
-  "speechToTextWholeBadge": "Por lotes",
   "mcp": "Integración MCP",
   "imageGenerationModel": "Modelo de imagen",
   "imageGenSupportedTooltipTitle": "Modelos de imagen actualmente compatibles:",
@@ -1019,7 +994,8 @@
     "clearConfirmTitle": "¿Borrar los datos de navegación?",
     "clearConfirmContent": "Se cerrará tu sesión en todos los sitios del navegador integrado. Esta acción no se puede deshacer.",
     "clearSuccess": "Datos de navegación borrados",
-    "clearFailed": "No se pudieron borrar los datos de navegación"
+    "clearFailed": "No se pudieron borrar los datos de navegación",
+    "description": "Si el agente puede usar el navegador integrado y cómo borrar lo que guarda el navegador."
   },
   "archived": {
     "navLabel": "Conversaciones archivadas",
@@ -1077,7 +1053,6 @@
     "noProviderMatch": "Ningún proveedor ofrece {{model}}. Elige otro modelo."
   },
   "promptTimeoutUnit": "s",
-  "speechToTextTestResultLine": "Resultado ({{elapsed}}): {{text}}",
   "emojiCategories": {
     "recent": "Recientes",
     "smileys": "Emoticonos",
@@ -1097,5 +1072,9 @@
     "noTabId": "No se ha indicado ninguna página de configuración."
   },
   "mcpAuthRequiredNamed": "{{name}} necesita que inicies sesión",
-  "mcpTestConnectionSuccessNamed": "{{name}} conectado"
+  "mcpTestConnectionSuccessNamed": "{{name}} conectado",
+  "appearanceDescription": "El idioma, el tema, las fuentes y la escala.",
+  "systemDescription": "El inicio con el equipo, minimizar a la bandeja, las notificaciones y las carpetas donde mu trabaja y guarda sus registros.",
+  "conversationsDescription": "Los tiempos de espera, el límite de tamaño de la vista previa, dónde se guardan las subidas y los mensajes entre conversaciones.",
+  "aboutDescription": "Qué versión de mu es esta, sus actualizaciones y el acceso a sus registros."
 }

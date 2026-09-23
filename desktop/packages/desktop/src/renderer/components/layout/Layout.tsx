@@ -17,6 +17,7 @@ import { setGlobalNavigate } from '@/renderer/utils/navigation';
 import { usePreviewContext } from '@renderer/pages/conversation/Preview';
 import WorkPanelHost from '@renderer/components/layout/WorkPanel';
 import { useWorkPanelMemory } from '@renderer/components/layout/WorkPanel/workPanelStore';
+import { useBrowserMaximized } from '@renderer/pages/conversation/Preview/browser/browserStore';
 import { setCurrentProject } from '@renderer/pages/conversation/explorer/currentProjectStore';
 import {
   setCurrentConversation,
@@ -176,11 +177,15 @@ const Layout: React.FC<{
   const currentConversation = useCurrentConversation();
   const workPanel = useWorkPanelMemory(currentConversation);
   const { containerRef: mainRowRef, containerWidth: mainRowWidth } = useContainerWidth();
-  // 最大化：隐藏聊天区、让工作面板的预览铺满它腾出的空间；左侧边栏不动。
-  // Maximized: hide the chat area and let the work panel's preview fill the
-  // space it vacated; the left sidebar is left untouched.
+  // 最大化：隐藏聊天区、让工作面板的预览（或浏览器）铺满它腾出的空间；左侧边栏不动。
+  // Maximized: hide the chat area and let the work panel's preview (or its
+  // browser) fill the space it vacated; the left sidebar is left untouched.
+  const browserMaximized = useBrowserMaximized();
   const previewMaximized =
-    !isMobile && Boolean(currentConversation) && workPanel.open && workPanel.tab === 'preview' && isPreviewMaximized;
+    !isMobile &&
+    Boolean(currentConversation) &&
+    workPanel.open &&
+    ((workPanel.tab === 'preview' && isPreviewMaximized) || (workPanel.tab === 'browser' && browserMaximized));
   const routeLayoutMountedRef = useRef(false);
   useEffect(() => {
     if (!routeLayoutMountedRef.current) {

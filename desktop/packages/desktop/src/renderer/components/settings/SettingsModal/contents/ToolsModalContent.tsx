@@ -14,8 +14,8 @@ import { mcpService } from '@/common/adapter/ipcBridge';
 import { type IMcpServer, BUILTIN_IMAGE_GEN_ID, BUILTIN_IMAGE_GEN_NAME } from '@/common/config/storage';
 import { isImageGenSupported } from '@/common/utils/imageModelAllowlist';
 import { parseError } from '@/common/utils';
-import { Button, Divider, Form, Message, Modal, Switch } from '@arco-design/web-react';
-import { Right } from '@icon-park/react';
+import { Button, Message, Modal, Switch, Tooltip } from '@arco-design/web-react';
+import { Help, Right } from '@icon-park/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useConfigModelListWithImage from '@/renderer/hooks/agent/useConfigModelListWithImage';
@@ -196,27 +196,27 @@ const ModalMcpManagementSection: React.FC<{
   };
 
   return (
-    <div className='flex flex-col gap-16px min-h-0'>
+    <section className='settings-group min-h-0'>
       <div className='flex gap-8px items-center justify-between'>
-        <div className='text-14px font-500 text-t-primary'>{t('settings.mcpSettings')}</div>
+        <h3 className='settings-group__title'>{t('settings.mcpSettings')}</h3>
         <div>{renderAddButton()}</div>
       </div>
 
       <div className='flex-1 min-h-0'>
         {visibleMcpServers.length === 0 && extensionMcpServers.length === 0 ? (
-          <div className='py-24px text-center text-t-secondary text-14px border border-dashed border-color-b-base rd-8px'>
-            {t('settings.mcpNoServersFound')}
+          <div className='settings-list'>
+            <div className='py-24px text-center text-t-secondary text-13px'>{t('settings.mcpNoServersFound')}</div>
           </div>
         ) : (
           <AionScrollArea
             className={classNames('max-h-360px', isPageMode && 'max-h-none')}
             disableOverflow={isPageMode}
           >
-            {/* One row per server, set apart by hairlines: no boxes inside the tools card. The line sits on a wrapper,
+            {/* One row per server between hairlines, no boxes. The line sits on a wrapper (settings-list draws it),
                 because a borderless Arco collapse clears any border of its own. */}
-            <div className='flex flex-col'>
-              {visibleMcpServers.map((server, index) => (
-                <div key={server.id} className={index > 0 ? 'border-t border-t-b-base' : undefined}>
+            <div className='settings-list'>
+              {visibleMcpServers.map((server) => (
+                <div key={server.id}>
                   <McpServerItem
                     server={server}
                     isCollapsed={mcpCollapseKey[server.id] || false}
@@ -231,11 +231,8 @@ const ModalMcpManagementSection: React.FC<{
                   />
                 </div>
               ))}
-              {extensionMcpServers.map((server, index) => (
-                <div
-                  key={server.id}
-                  className={visibleMcpServers.length + index > 0 ? 'border-t border-t-b-base' : undefined}
-                >
+              {extensionMcpServers.map((server) => (
+                <div key={server.id}>
                   <McpServerItem
                     server={server}
                     isCollapsed={mcpCollapseKey[server.id] || false}
@@ -278,7 +275,7 @@ const ModalMcpManagementSection: React.FC<{
       >
         <p>{t('settings.mcpDeleteConfirm')}</p>
       </Modal>
-    </div>
+    </section>
   );
 };
 
@@ -503,11 +500,11 @@ const ToolsModalContent: React.FC = () => {
     <div className='flex flex-col h-full w-full'>
       {mcpMessageContext}
 
-      {/* Content Area */}
+      {/* Content Area: the MCP servers, then image generation, as quiet lists with no boxes. */}
       <AionScrollArea className='flex-1 min-h-0 pb-16px' disableOverflow={isPageMode}>
-        <div className='space-y-16px'>
+        <div className='flex flex-col gap-16px'>
           {/* MCP 工具配置 */}
-          <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px flex flex-col min-h-0'>
+          <div className='flex flex-col min-h-0'>
             <div className='flex-1 min-h-0'>
               <AionScrollArea
                 className={classNames('h-full', isPageMode && 'overflow-visible')}
@@ -524,10 +521,10 @@ const ToolsModalContent: React.FC = () => {
               </AionScrollArea>
             </div>
           </div>
-          {/* 图像生成 */}
-          <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px'>
-            <div className='flex items-center justify-between mb-16px'>
-              <span className='text-14px font-500 text-t-primary'>{t('settings.imageGeneration')}</span>
+          {/* 图像生成: the switch, then the model it draws with. */}
+          <div className='settings-list'>
+            <div className='flex items-center justify-between gap-24px py-12px'>
+              <span className='text-14px font-500 leading-22px text-t-primary'>{t('settings.imageGeneration')}</span>
               <Switch
                 size='small'
                 disabled={
@@ -542,23 +539,30 @@ const ToolsModalContent: React.FC = () => {
               />
             </div>
 
-            <Divider className='mt-0px mb-20px' />
-
-            <Form layout='horizontal' labelAlign='left' className='space-y-12px'>
-              <Form.Item
-                label={t('settings.imageGenerationModel')}
-                tooltip={
-                  <div className='space-y-4px'>
-                    <div>{t('settings.imageGenSupportedTooltipTitle')}</div>
-                    <ul className='list-disc ps-16px m-0'>
-                      <li>{t('settings.imageGenSupportedTooltipGemini')}</li>
-                      <li>{t('settings.imageGenSupportedTooltipOpenRouter')}</li>
-                      <li>{t('settings.imageGenSupportedTooltipAntigravity')}</li>
-                    </ul>
-                    <div>{t('settings.imageGenUnsupportedTooltip')}</div>
-                  </div>
-                }
-              >
+            <div className='flex flex-col gap-8px py-12px md:flex-row md:items-center md:justify-between md:gap-24px'>
+              <div className='flex min-w-0 items-center gap-6px'>
+                <span className='text-14px font-500 leading-22px text-t-primary'>
+                  {t('settings.imageGenerationModel')}
+                </span>
+                <Tooltip
+                  content={
+                    <div className='space-y-4px'>
+                      <div>{t('settings.imageGenSupportedTooltipTitle')}</div>
+                      <ul className='list-disc ps-16px m-0'>
+                        <li>{t('settings.imageGenSupportedTooltipGemini')}</li>
+                        <li>{t('settings.imageGenSupportedTooltipOpenRouter')}</li>
+                        <li>{t('settings.imageGenSupportedTooltipAntigravity')}</li>
+                      </ul>
+                      <div>{t('settings.imageGenUnsupportedTooltip')}</div>
+                    </div>
+                  }
+                >
+                  <span className='inline-flex shrink-0 cursor-help text-t-tertiary hover:text-t-secondary'>
+                    <Help theme='outline' size='14' fill='currentColor' />
+                  </span>
+                </Tooltip>
+              </div>
+              <div className='w-full md:w-280px md:shrink-0'>
                 {imageGenerationModelList.length > 0 ? (
                   <AionSelect
                     value={
@@ -588,7 +592,7 @@ const ToolsModalContent: React.FC = () => {
                     ))}
                   </AionSelect>
                 ) : (
-                  <div className='text-t-secondary flex flex-wrap items-center gap-4px'>
+                  <div className='text-13px text-t-secondary flex flex-wrap items-center gap-4px md:justify-end'>
                     <span>{t('settings.noAvailable')}</span>
                     {navigateToSettingsTab ? (
                       // In the text colour with a trailing chevron: it reads as the way there, not as more of the sentence.
@@ -613,8 +617,8 @@ const ToolsModalContent: React.FC = () => {
                     )}
                   </div>
                 )}
-              </Form.Item>
-            </Form>
+              </div>
+            </div>
           </div>
         </div>
       </AionScrollArea>

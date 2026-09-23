@@ -8,23 +8,21 @@ import {
 import { providerKeyVariable, type ProviderSettings } from '@/common/kyrn/models';
 import type { Credential, KyrnSettings, SaveSettings } from '@/common/kyrn/types';
 import { DECISION_PAGES, FEATURE_PAGES, type DecisionPage, type FeaturePage } from '../settingsNav';
-import { choiceOf, choose, jevKeyVariable, profileFor } from './judgeChoice';
 
 /**
  * The parts of mu's settings, in the order of the settings rail: the providers and the model a new user sets up first,
  * then the kernel. Each is one page, or — the decision points and the more features — a group of pages; all of them
- * edit one draft, saved at once, and the save bar names the parts that changed.
+ * edit one draft, saved at once, and the save bar names the parts that changed. The context settings are on the
+ * decision points' context page, next to the points about context; they keep their own name in the save bar.
  */
 export const SECTIONS = [
   'providers',
   'defaultModel',
   'judges',
-  'judgeTiers',
   'decisions',
   'features',
   'moreFeatures',
   'context',
-  'permissions',
 ] as const;
 export type SectionId = (typeof SECTIONS)[number];
 
@@ -112,7 +110,8 @@ export const newDraft = (settings: KyrnSettings): Draft => ({ settings, judgeKey
 
 /**
  * The settings as the page reads them. A main process older than this page sends no permission default and no board
- * model: without them the whole area would fail to draw; with these it shows that mu cannot be told.
+ * model: without them the whole area would fail to draw; with these it shows that mu cannot be told. The permission
+ * default is read (the guide starts a conversation in it) and never written from here.
  */
 export const completeSettings = (settings: KyrnSettings): KyrnSettings => ({
   ...settings,
@@ -142,8 +141,7 @@ export function dirtySections(base: KyrnSettings, draft: Draft): Set<SectionId> 
   const next = draft.settings;
   const manifest = manifestOf(base);
   const dirty = new Set<SectionId>();
-  if (!same(base.tiers, next.tiers) || !same(base.judges, next.judges) || hasKeys(draft.judgeKeys))
-    for (const id of judgePagesOf(base, draft)) dirty.add(id);
+  if (!same(base.tiers, next.tiers) || !same(base.judges, next.judges) || hasKeys(draft.judgeKeys)) dirty.add('judges');
   if (base.mode !== next.mode || !same(base.decisionModes, next.decisionModes)) dirty.add('decisions');
   for (const feature of manifest?.features ?? [])
     if (!sameFeatureState(feature, base.features[feature.name], next.features[feature.name]))
@@ -156,35 +154,11 @@ export function dirtySections(base: KyrnSettings, draft: Draft): Set<SectionId> 
     dirty.add('providers');
   if (!same(base.models.defaults, next.models.defaults) || base.boardModel.model !== next.boardModel.model)
     dirty.add('defaultModel');
-  if (base.permissions.mode !== next.permissions.mode) dirty.add('permissions');
   if (base.autoCompaction !== next.autoCompaction || base.maxContextTokens !== next.maxContextTokens)
     dirty.add('context');
   // The summary-free compaction is one switch on the more-features page: the feature and the old beta flag as one.
   if (base.betaCompression !== next.betaCompression) dirty.add('moreFeatures');
   return dirty;
-}
-
-/**
- * Which of the two judge pages a change to the judges was made on. The judges page picks the first judge's kind and
- * takes Jev's key while Jev is that judge; what that pick alone would not give (another order, the way Jev is reached,
- * its model, the key of a Jev further down the order) is the tiers page's. A pick taken back leaves the judges page's
- * own change behind.
- */
-function judgePagesOf(base: KyrnSettings, draft: Draft): SectionId[] {
-  const next = draft.settings;
-  const choice = choiceOf(next);
-  const choiceKey = choice === 'jev' ? jevKeyVariable(next.judges[profileFor(next, 'jev') ?? '']) : undefined;
-  const typed = Object.keys(draft.judgeKeys).filter((variable) => draft.judgeKeys[variable]);
-  const byChoice = choice ? choose(base, choice) : base;
-  const pages: SectionId[] = [];
-  if (choice !== choiceOf(base) || (choiceKey !== undefined && typed.includes(choiceKey))) pages.push('judges');
-  if (
-    (!same(byChoice.tiers, next.tiers) && !same(base.tiers, next.tiers)) ||
-    !same(base.judges, next.judges) ||
-    typed.some((variable) => variable !== choiceKey)
-  )
-    pages.push('judgeTiers');
-  return pages.length ? pages : ['judges'];
 }
 
 /** Hand-written models.json entries that were there when the settings were read, and are removed in the draft. */
@@ -198,7 +172,16 @@ export function removedEntries(base: KyrnSettings, draft: Draft): string[] {
  * settings the draft was made from, says which hand-written entries were removed.
  */
 export function toSave(draft: Draft, base?: KyrnSettings): SaveSettings {
-  const { keys: _keys, harness, decisionModes, features, models, permissions, boardModel, ...rest } = draft.settings;
+  const {
+    keys: _keys,
+    harness,
+    decisionModes,
+    features,
+    models,
+    permissions: _permissions,
+    boardModel,
+    ...rest
+  } = draft.settings;
   const removeEntries = base ? removedEntries(base, draft) : [];
   const credentials: Credential[] = [
     ...Object.entries(draft.judgeKeys).map(([name, value]) => ({ name, value })),
@@ -215,7 +198,6 @@ export function toSave(draft: Draft, base?: KyrnSettings): SaveSettings {
       ...(removeEntries.length ? { removeEntries } : {}),
     },
     ...(credentials.length ? { credentials } : {}),
-    ...(permissions.mode ? { permissions: { mode: permissions.mode } } : {}),
     ...(boardModel.supported ? { boardModel: { model: boardModel.model } } : {}),
   };
 }

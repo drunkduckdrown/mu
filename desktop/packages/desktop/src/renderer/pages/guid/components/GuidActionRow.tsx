@@ -106,7 +106,6 @@ type GuidActionRowProps = {
   // Send button
   loading: boolean;
   isButtonDisabled: boolean;
-  speechInputNode?: React.ReactNode;
   onSend: () => void;
 };
 
@@ -136,7 +135,6 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
   onToggleMcpServer,
   loading,
   isButtonDisabled,
-  speechInputNode,
   onSend,
 }) => {
   const { t } = useTranslation();
@@ -574,7 +572,6 @@ const GuidActionRow: React.FC<GuidActionRowProps> = ({
           </div>
         )}
 
-        {speechInputNode}
         <Button
           shape='circle'
           type='primary'

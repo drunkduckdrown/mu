@@ -88,17 +88,18 @@ const SettingsPageHeader: React.FC<SettingsPageHeaderProps> = ({
                 )}
               >
                 <span>{tab.label}</span>
+                {/* Greys only: the tab shown is told by its weight, its count's darker grey and the line under it. */}
                 {typeof tab.count === 'number' ? (
                   <span
                     className={classNames(
-                      'ms-6px inline-flex h-16px min-w-16px items-center justify-center rounded-999px px-5px text-10px font-500 leading-none',
-                      isActive ? 'bg-primary-1 text-primary-6' : 'bg-fill-2 text-t-quaternary'
+                      'ms-6px inline-flex h-16px min-w-16px items-center justify-center rounded-999px px-5px text-10px font-500 leading-none bg-fill-2',
+                      isActive ? 'text-t-secondary' : 'text-t-quaternary'
                     )}
                   >
                     {tab.count}
                   </span>
                 ) : null}
-                {isActive ? <span className='absolute inset-x-0 -bottom-1px h-2px rounded-2px bg-primary-6' /> : null}
+                {isActive ? <span className='absolute inset-x-0 -bottom-1px h-2px rounded-2px bg-t-primary' /> : null}
               </button>
             );
           })}

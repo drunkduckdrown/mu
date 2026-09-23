@@ -11,7 +11,6 @@ import SystemSettings from '@/renderer/pages/settings/SystemSettings';
 import AboutSettings from '@/renderer/pages/settings/SystemSettings/AboutSettings';
 import BrowserSettings from '@/renderer/pages/settings/SystemSettings/BrowserSettings';
 import ConversationSettings from '@/renderer/pages/settings/SystemSettings/ConversationSettings';
-import VoiceSettings from '@/renderer/pages/settings/SystemSettings/VoiceSettings';
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'en' } }),
@@ -22,9 +21,6 @@ vi.mock('@/renderer/components/settings/SettingsModal/contents/SystemModalConten
 }));
 vi.mock('@/renderer/components/settings/SettingsModal/contents/SystemModalContent/ConversationPreferences', () => ({
   default: () => <div data-testid='conversation-preferences' />,
-}));
-vi.mock('@/renderer/components/settings/SettingsModal/contents/SystemModalContent/VoiceInputSection', () => ({
-  default: () => <div data-testid='voice-input-section' />,
 }));
 vi.mock('@/renderer/components/settings/SettingsModal/contents/SystemModalContent/BrowserDataSection', () => ({
   default: () => <div data-testid='browser-data-section' />,
@@ -46,19 +42,35 @@ describe('the pages that were one long system page', () => {
     vi.clearAllMocks();
   });
 
+  // Every settings page has the one header: its title, and one line on what the page holds.
   it.each([
-    ['system', SystemSettings, 'settings.system', 'system-modal-content'],
-    ['conversations', ConversationSettings, 'settings.conversations', 'conversation-preferences'],
-    ['voice input', VoiceSettings, 'settings.voiceInput', 'voice-input-section'],
-    ['in-app browser', BrowserSettings, 'settings.browserData.title', 'browser-data-section'],
-    ['about', AboutSettings, 'settings.about', 'about-modal-content'],
-  ])('gives the %s its own page, titled, in the page frame with no width of its own', (_name, Page, title, content) => {
-    render(<Page />);
-    const wrapper = screen.getByTestId('settings-page-wrapper');
-    expect(wrapper).not.toHaveAttribute('data-content-class');
-    expect(within(wrapper).getByRole('heading', { name: title })).toBeInTheDocument();
-    expect(within(wrapper).getByTestId(content)).toBeInTheDocument();
-  });
+    ['system', SystemSettings, 'settings.system', 'settings.systemDescription', 'system-modal-content'],
+    [
+      'conversations',
+      ConversationSettings,
+      'settings.conversations',
+      'settings.conversationsDescription',
+      'conversation-preferences',
+    ],
+    [
+      'in-app browser',
+      BrowserSettings,
+      'settings.browserData.title',
+      'settings.browserData.description',
+      'browser-data-section',
+    ],
+    ['about', AboutSettings, 'settings.about', 'settings.aboutDescription', 'about-modal-content'],
+  ])(
+    'gives the %s its own page, titled and described, in the page frame with no width of its own',
+    (_name, Page, title, description, content) => {
+      render(<Page />);
+      const wrapper = screen.getByTestId('settings-page-wrapper');
+      expect(wrapper).not.toHaveAttribute('data-content-class');
+      expect(within(wrapper).getByRole('heading', { name: title })).toBeInTheDocument();
+      expect(within(wrapper).getByText(description)).toBeInTheDocument();
+      expect(within(wrapper).getByTestId(content)).toBeInTheDocument();
+    }
+  );
 
   it('keeps About and the conversation rows off the system page: they are pages of their own now', () => {
     render(<SystemSettings />);

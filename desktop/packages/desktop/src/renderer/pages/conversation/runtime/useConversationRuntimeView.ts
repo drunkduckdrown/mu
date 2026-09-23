@@ -101,7 +101,7 @@ export const useConversationRuntimeView = (conversation_id: string): UseConversa
         // a missed WS frame (window reload/reconnect race) can otherwise
         // leave the row dark even though the runtime is still processing.
         if (runtime) {
-          reconcileGeneratingFromRuntime(conversation_id, runtime.is_processing === true);
+          reconcileGeneratingFromRuntime(conversation_id, runtime.is_processing === true, runtime.turn_id);
           reconcileWaitingConfirmationFromRuntime(conversation_id, runtime.pending_confirmations ?? 0);
         }
       })
@@ -156,7 +156,9 @@ export const useConversationRuntimeView = (conversation_id: string): UseConversa
   const markSendAccepted = useCallback(
     (turn_id: string, runtime: TConversationRuntimeSummary, msg_id?: string) => {
       flushRuntimeViewLogs(localSendAccepted(conversation_id, turn_id, runtime, msg_id));
-      reconcileGeneratingFromRuntime(conversation_id, runtime.is_processing === true);
+      // The response can come after the turn it started has ended (a command mu answers at once): the sidebar then
+      // knows the turn is over and keeps its spinner out.
+      reconcileGeneratingFromRuntime(conversation_id, runtime.is_processing === true, runtime.turn_id ?? turn_id);
     },
     [conversation_id]
   );

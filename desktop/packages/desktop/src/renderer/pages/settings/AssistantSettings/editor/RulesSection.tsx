@@ -41,16 +41,16 @@ const RulesSection: React.FC<RulesSectionProps> = ({
       extra={
         <div className='flex items-center gap-6px'>
           {isReadOnly ? (
-            <span className='rounded-8px bg-fill-1 px-8px py-3px text-10px font-500 text-t-tertiary'>
+            <span className='rounded-4px bg-fill-2 px-8px py-3px text-10px font-500 text-t-tertiary'>
               {readOnlyLabel}
             </span>
           ) : null}
           {isRuleEditable ? (
-            <div className='flex items-center rounded-10px bg-fill-1 p-2px'>
+            <div className='flex items-center rounded-8px bg-fill-1 p-2px'>
               <Button
                 type='text'
                 size='mini'
-                className={`${promptViewMode === 'edit' ? '!rounded-8px !bg-base !text-primary-6' : '!rounded-8px !text-t-secondary'}`}
+                className={`${promptViewMode === 'edit' ? '!rounded-6px !bg-base !text-t-primary' : '!rounded-6px !text-t-secondary'}`}
                 onClick={() => setPromptViewMode('edit')}
               >
                 {t('settings.promptEdit', { defaultValue: 'Edit' })}
@@ -58,7 +58,7 @@ const RulesSection: React.FC<RulesSectionProps> = ({
               <Button
                 type='text'
                 size='mini'
-                className={`${promptViewMode === 'preview' ? '!rounded-8px !bg-base !text-primary-6' : '!rounded-8px !text-t-secondary'}`}
+                className={`${promptViewMode === 'preview' ? '!rounded-6px !bg-base !text-t-primary' : '!rounded-6px !text-t-secondary'}`}
                 onClick={() => setPromptViewMode('preview')}
               >
                 {t('settings.promptPreview', { defaultValue: 'Preview' })}
@@ -79,7 +79,7 @@ const RulesSection: React.FC<RulesSectionProps> = ({
       }
       testId='assistant-card-rules'
     >
-      <div className='overflow-hidden rounded-12px bg-fill-1' style={{ height: rulesContainerHeight }}>
+      <div className='overflow-hidden rounded-8px bg-fill-1' style={{ height: rulesContainerHeight }}>
         {promptViewMode === 'edit' && isRuleEditable ? (
           <div className='h-full'>
             <Input.TextArea

@@ -33,12 +33,13 @@ describe('theme cards', () => {
     expect(screen.getByTestId('theme-card-light').style.backgroundImage).toContain('light-cover.png');
   });
 
+  // The ring is in the body text colour, not the accent: the settings keep lavender for buttons and switches.
   it('marks the chosen card with a ring and a check, and only that one', async () => {
     render(<CssThemeSettings />);
     const light = await screen.findByTestId('theme-card-light');
     await waitFor(() => expect(screen.getAllByRole('radio')).toHaveLength(3));
     expect(light).toHaveAttribute('aria-checked', 'true');
-    expect(light.style.outline).toContain('var(--mu-accent-border)');
+    expect(light.style.outline).toContain('var(--text-primary)');
     expect(light.querySelector('svg')).not.toBeNull();
     const dark = screen.getByTestId('theme-card-dark');
     expect(dark).toHaveAttribute('aria-checked', 'false');

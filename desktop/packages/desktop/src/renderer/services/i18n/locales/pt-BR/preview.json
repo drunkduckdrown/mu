@@ -150,6 +150,8 @@
   "browser": {
     "newTab": "Nova aba",
     "addressPlaceholder": "Digite uma URL ou pesquise",
+    "tabsLabel": "Páginas abertas",
+    "closeTab": "Fechar {{title}}",
     "agentActiveTooltip": "O agente está operando esta aba",
     "tabLimitReached": "Limite de abas atingido ({{count}}). A aba mais antiga foi reutilizada.",
     "agentFirstUseTitle": "O agente está usando o navegador integrado",

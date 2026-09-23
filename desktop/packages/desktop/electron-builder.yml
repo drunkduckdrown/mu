@@ -119,9 +119,13 @@ extraResources:
   - from: resources/hub
     to: hub
   # mu's ACP adapter launchers: AionCore runs resources/mu/acp (acp.cmd on Windows), which runs the bundled adapter
-  # out/main/mu-acp.js (unpacked below) with the user's Node
+  # out/main/mu-acp.js (unpacked below) on the app's own binary as Node
   - from: resources/mu
     to: mu
+  # mu itself: the npm package mu-agent with its dependencies (scripts/kyrn/bundle-harness.mjs), which the adapter
+  # and the sign-in run on the app's own binary as Node. Plain files outside app.asar, read by that Node.
+  - from: resources/harness
+    to: harness
 win:
   target:
     - nsis
@@ -227,7 +231,7 @@ asarUnpack:
   - 'out/main/builtin-mcp-image-gen.js'
   - 'out/main/builtin-mcp-browser.js'
   - 'out/main/team-mcp-stdio.js'
-  # mu's ACP adapter, run by an external node from resources/mu
+  # mu's ACP adapter, run by the app's own binary as Node from resources/mu
   - 'out/main/mu-acp.js'
 
 # Compression level: normal for faster builds, maximum for smallest size

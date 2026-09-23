@@ -5,31 +5,49 @@
  */
 
 /**
- * 浏览器 tab 在 PreviewContext 中的行为测试。
+ * PreviewContext 与浏览器的分工，以及 PreviewContext 自身那些"错了会很难查"的逻辑。
  *
- * 这里覆盖的都是"错了会很难查"的逻辑：tab 上限触发时的复用、空白页不被误合并、
- * 后台 tab 能被更新、以及持久化时活动角标必须被重置。
+ * 网页不再是预览的 tab：它们在工作面板的「浏览器」里（browserStore，另有测试）。这里锁住
+ * 预览把网页交给浏览器、两者跟着同一个项目切换、旧版本存在预览里的网页不再回到预览；
+ * 以及打开时的聚焦和 updateTab 的行为。
  *
- * Covers the PreviewContext behaviors whose failures are hard to diagnose: tab-cap
- * reuse, blank tabs not merging into each other, background tabs being patchable,
- * and the activity badge never being restored as active.
+ * What PreviewContext hands to the browser, and the PreviewContext behaviours whose failures are hard to diagnose.
+ * Web pages are no longer preview tabs: they live in the work panel's 浏览器 tab (`browserStore`, tested on its own).
+ * This pins the preview handing web pages over, the two following the same project, pages an older build kept in the
+ * preview never coming back there, focus on open, and `updateTab`.
  */
 
 import React from 'react';
 import { act, render } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+type StreamMessage = { type: string; data: unknown; conversation_id?: string };
+
+const wires = vi.hoisted(() => ({
+  stream: undefined as undefined | ((message: StreamMessage) => void),
+  notified: vi.fn(),
+}));
 
 vi.mock('@/common', () => ({
   ipcBridge: {
     fileStream: { contentUpdate: { on: () => () => {} } },
     preview: { open: { on: () => () => {} } },
-    conversation: { responseStream: { on: () => () => {} } },
+    conversation: {
+      responseStream: {
+        on: (listener: (message: StreamMessage) => void) => {
+          wires.stream = listener;
+          return () => {
+            wires.stream = undefined;
+          };
+        },
+      },
+    },
     fs: { getFileContent: { invoke: vi.fn() }, writeFile: { invoke: vi.fn() } },
   },
 }));
 
 vi.mock('@/renderer/pages/conversation/Preview/browser/firstUseNotice', () => ({
-  maybeNotifyFirstAgentBrowserUse: vi.fn(),
+  maybeNotifyFirstAgentBrowserUse: wires.notified,
 }));
 
 import {
@@ -37,7 +55,12 @@ import {
   usePreviewContext,
   type PreviewContextValue,
 } from '@/renderer/pages/conversation/Preview/context/PreviewContext';
-import { MAX_BROWSER_TABS } from '@/renderer/pages/conversation/Preview/browser/constants';
+import { browserNow, resetBrowserStoreForTest } from '@/renderer/pages/conversation/Preview/browser/browserStore';
+import {
+  onPreviewOpened,
+  type OpenedIn,
+  type PreviewOpener,
+} from '@/renderer/pages/conversation/Preview/context/previewOpeners';
 
 let ctx: PreviewContextValue;
 
@@ -53,157 +76,133 @@ const renderProvider = () =>
     </PreviewProvider>
   );
 
-const browserTabs = () => ctx.tabs.filter((tab) => tab.content_type === 'browser');
+const pages = () => browserNow().tabs.map((tab) => tab.url);
 
+let heard: [PreviewOpener, OpenedIn][] = [];
+let stopHearing = () => {};
 beforeEach(() => {
   localStorage.clear();
+  resetBrowserStoreForTest();
+  heard = [];
+  stopHearing = onPreviewOpened((by, where) => heard.push([by, where]));
+});
+afterEach(() => {
+  stopHearing();
+  vi.clearAllMocks();
 });
 
-describe('PreviewContext browser tabs', () => {
-  it('opens a blank browser tab with the placeholder title', () => {
-    renderProvider();
-    act(() => ctx.openBrowserTab());
-
-    expect(browserTabs()).toHaveLength(1);
-    expect(browserTabs()[0].content).toBe('about:blank');
-    expect(browserTabs()[0].title).toBe('New Tab');
-    expect(ctx.isOpen).toBe(true);
-  });
-
-  it('opens a browser tab at a given address', () => {
+describe('PreviewContext and the browser', () => {
+  it('opens a web page in the browser, never among the preview’s tabs', () => {
     renderProvider();
     act(() => ctx.openBrowserTab('https://example.com'));
+    act(() => ctx.openBrowserTab());
 
-    expect(browserTabs()[0].content).toBe('https://example.com');
+    expect(pages()).toEqual(['https://example.com', 'about:blank']);
+    expect(ctx.tabs).toEqual([]);
+    expect(ctx.isOpen).toBe(false);
+    expect(heard).toEqual([
+      ['user', 'browser'],
+      ['user', 'browser'],
+    ]);
+  });
+
+  it('hands a page opened as a `url` or `browser` preview to the browser, with who opened it', () => {
+    renderProvider();
+    // What an agent's navigation tool opens arrives as a `url` preview.
+    act(() =>
+      ctx.openPreview('https://agent.test/', 'url', { title: 'Browser: https://agent.test/' }, { by: 'agent' })
+    );
+    act(() => ctx.openPreview('https://person.test/', 'browser'));
+
+    expect(pages()).toEqual(['https://agent.test/', 'https://person.test/']);
+    expect(ctx.tabs).toEqual([]);
+    expect(heard).toEqual([
+      ['agent', 'browser'],
+      ['user', 'browser'],
+    ]);
+
+    // The same `url` again is the page already open, brought to the front, as the preview found its tab again.
+    act(() => ctx.openPreview('https://agent.test/', 'url', undefined, { by: 'agent' }));
+    expect(pages()).toEqual(['https://agent.test/', 'https://person.test/']);
+    expect(browserNow().activeTabId).toBe(browserNow().tabs[0].id);
+  });
+
+  it('keeps files in the preview, and says so', () => {
+    renderProvider();
+    act(() => ctx.openPreview('const a = 1;', 'code', { file_name: 'a.ts' }, { by: 'agent' }));
+
+    expect(ctx.tabs).toHaveLength(1);
+    expect(browserNow().tabs).toEqual([]);
+    expect(heard).toEqual([['agent', 'preview']]);
   });
 
   it('refuses to open the app itself as a page', () => {
     renderProvider();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     act(() => ctx.openBrowserTab(`${window.location.origin}/index.html#/login`));
-    expect(browserTabs()).toHaveLength(0);
+    expect(browserNow().tabs).toHaveLength(0);
+    expect(ctx.tabs).toHaveLength(0);
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });
 
-  it('stacks multiple blank browser tabs instead of merging them', () => {
-    // 关键行为：两个新建 tab 内容和标题都相同，普通去重逻辑会把它们合成一个，
-    // 用户点两次加号只会看到一个 tab。
-    // Key behavior: two fresh tabs share content and title, so the normal dedupe
-    // path would fold them into one and two plus-clicks would yield one tab.
-    renderProvider();
-    act(() => ctx.openBrowserTab());
-    act(() => ctx.openBrowserTab());
-
-    expect(browserTabs()).toHaveLength(2);
-  });
-
-  it('stacks tabs pointing at the same address', () => {
-    renderProvider();
-    act(() => ctx.openBrowserTab('https://example.com'));
-    act(() => ctx.openBrowserTab('https://example.com'));
-
-    expect(browserTabs()).toHaveLength(2);
-  });
-
-  it('caps the number of browser tabs and reuses the oldest one', () => {
-    renderProvider();
-    for (let i = 0; i < MAX_BROWSER_TABS; i += 1) {
-      act(() => ctx.openBrowserTab(`https://example.com/${i}`));
-    }
-    expect(browserTabs()).toHaveLength(MAX_BROWSER_TABS);
-    const oldestId = browserTabs()[0].id;
-
-    act(() => ctx.openBrowserTab('https://overflow.example.com'));
-
-    expect(browserTabs()).toHaveLength(MAX_BROWSER_TABS);
-    // 最旧的 tab 被导航到新地址，而不是新增一个
-    // The oldest tab is navigated to the new address rather than a tab being added.
-    expect(browserTabs()[0].id).toBe(oldestId);
-    expect(browserTabs()[0].content).toBe('https://overflow.example.com');
-    expect(ctx.activeTabId).toBe(oldestId);
-  });
-
-  it('surfaces a signal when the cap is hit so the UI can explain the reuse', () => {
-    renderProvider();
-    expect(ctx.browserTabLimitHitAt).toBeNull();
-
-    for (let i = 0; i < MAX_BROWSER_TABS + 1; i += 1) {
-      act(() => ctx.openBrowserTab(`https://example.com/${i}`));
-    }
-
-    expect(ctx.browserTabLimitHitAt).toBeTypeOf('number');
-  });
-
-  it('does not hit the cap while below the limit', () => {
-    renderProvider();
-    for (let i = 0; i < MAX_BROWSER_TABS; i += 1) {
-      act(() => ctx.openBrowserTab(`https://example.com/${i}`));
-    }
-    expect(ctx.browserTabLimitHitAt).toBeNull();
-  });
-});
-
-describe('PreviewContext browser tab persistence', () => {
-  const readScope = (scope: string) => JSON.parse(localStorage.getItem(`preview-ui:${scope}`) ?? '{}');
-
-  it('persists browser tabs per project so switching projects restores the right pages', async () => {
+  it('switches the browser to the project the preview switches to', () => {
     renderProvider();
     act(() => ctx.closePreviewIfScopeChanged('project-a'));
     act(() => ctx.openBrowserTab('https://example.com'));
-
-    // 切换到另一个项目时，当前项目的状态被写入；浏览器 tab 属于项目而非会话
-    // Switching to another project persists the current one. Browser tabs belong to
-    // the project, not the conversation.
-    act(() => ctx.closePreviewIfScopeChanged('project-b'));
-
-    const stored = readScope('project-a');
-    expect(stored.tabs).toHaveLength(1);
-    expect(stored.tabs[0].content).toBe('https://example.com');
-    expect(stored.tabs[0].content_type).toBe('browser');
-
-    // project-b 是新项目，不该看到 project-a 的 tab
-    // project-b is a different project and must not see project-a's tabs.
-    expect(browserTabs()).toHaveLength(0);
-
-    // 切回来后恢复 / Returning restores them
-    act(() => ctx.closePreviewIfScopeChanged('project-a'));
-    expect(browserTabs()).toHaveLength(1);
-    expect(browserTabs()[0].content).toBe('https://example.com');
-  });
-
-  it('never restores the agent activity badge as active', () => {
-    // 关键行为：角标是"此刻 Agent 正在操作"的实时信号。若被持久化成 true，
-    // 重启后会永久亮着，用户会以为 Agent 在偷偷操作浏览器。
-    // Key behavior: the badge means "the agent is acting right now". Persisted as
-    // true it would stay lit forever after a restart, making the user think the
-    // agent is secretly driving the browser.
-    renderProvider();
-    act(() => ctx.closePreviewIfScopeChanged('project-a'));
-    act(() => ctx.openBrowserTab('https://example.com'));
-    const tabId = browserTabs()[0].id;
-    act(() => ctx.updateTab(tabId, { metadata: { agentActive: true } }));
-    expect(browserTabs()[0].metadata?.agentActive).toBe(true);
 
     act(() => ctx.closePreviewIfScopeChanged('project-b'));
-
-    const stored = readScope('project-a');
-    expect(stored.tabs[0].metadata.agentActive).toBe(false);
+    expect(browserNow().tabs).toEqual([]);
 
     act(() => ctx.closePreviewIfScopeChanged('project-a'));
-    expect(browserTabs()[0].metadata?.agentActive).toBe(false);
+    expect(pages()).toEqual(['https://example.com']);
+    // Kept by the browser, not in the preview's entry.
+    expect(JSON.parse(localStorage.getItem('browser-ui:project-a') ?? '{}').tabs).toHaveLength(1);
+    expect(localStorage.getItem('preview-ui:project-a') ?? '').not.toContain('https://example.com');
   });
 
-  it('persists the favicon so restored tabs keep their site icon', () => {
+  it('leaves the pages an older build kept among its tabs to the browser, and never writes them back', () => {
+    localStorage.setItem(
+      'preview-ui:project-a',
+      JSON.stringify({
+        isOpen: true,
+        activeTabId: 'browser-1',
+        tabs: [
+          { id: 'md-1', content: '# Notes', content_type: 'markdown', title: 'notes.md' },
+          { id: 'browser-1', content: 'https://docs.test/', content_type: 'browser', title: 'Docs' },
+        ],
+      })
+    );
     renderProvider();
     act(() => ctx.closePreviewIfScopeChanged('project-a'));
-    act(() => ctx.openBrowserTab('https://example.com'));
-    act(() => ctx.updateTab(browserTabs()[0].id, { metadata: { favicon: 'https://example.com/favicon.ico' } }));
 
+    expect(ctx.tabs.map((tab) => tab.id)).toEqual(['md-1']);
+    // The page that was in front went to the browser: the preview shows its file.
+    expect(ctx.activeTabId).toBe('md-1');
+    expect(pages()).toEqual(['https://docs.test/']);
+    expect(browserNow().handOver).toBe(true);
+
+    // The preview writes its entry on leaving the project; the page stays the browser's.
     act(() => ctx.closePreviewIfScopeChanged('project-b'));
+    expect(localStorage.getItem('preview-ui:project-a') ?? '').not.toContain('https://docs.test/');
     act(() => ctx.closePreviewIfScopeChanged('project-a'));
+    expect(ctx.tabs.map((tab) => tab.id)).toEqual(['md-1']);
+    expect(pages()).toEqual(['https://docs.test/']);
+  });
 
-    expect(browserTabs()[0].metadata?.favicon).toBe('https://example.com/favicon.ico');
+  it('marks the browser’s pages while the agent’s browser tool drives them, and says so the first time', () => {
+    renderProvider();
+    act(() => ctx.openBrowserTab('https://example.com'));
+    const tool = (status: string) =>
+      act(() =>
+        wires.stream?.({ type: 'tool_group', conversation_id: 'c1', data: [{ name: 'aionui-browser__click', status }] })
+      );
+
+    tool('Executing');
+    expect(browserNow().tabs.every((tab) => tab.agentActive)).toBe(true);
+    expect(wires.notified).toHaveBeenCalledTimes(1);
+    tool('Success');
+    expect(browserNow().tabs.every((tab) => !tab.agentActive)).toBe(true);
   });
 });
 
@@ -231,14 +230,6 @@ describe('PreviewContext focus on open', () => {
     act(() => ctx.openPreview('c', 'code', { file_name: 'c.ts' }));
     expect(ctx.tabs).toHaveLength(3);
     expect(ctx.activeTabId).toBe(ctx.tabs[2].id);
-  });
-
-  it('focuses each newly opened browser tab', () => {
-    renderProvider();
-    act(() => ctx.openBrowserTab('https://first.example.com'));
-    act(() => ctx.openBrowserTab('https://second.example.com'));
-
-    expect(ctx.activeTabId).toBe(browserTabs()[1].id);
   });
 
   // Dedup keys on ChatFileRef identity. A file name is not identity — matching on it
@@ -307,84 +298,78 @@ describe('PreviewContext focus on open', () => {
 });
 
 describe('PreviewContext updateTab', () => {
-  it('patches title, address and metadata of a specific tab', () => {
+  it('patches title, content and metadata of a specific tab', () => {
     renderProvider();
-    act(() => ctx.openBrowserTab());
-    const tabId = browserTabs()[0].id;
+    act(() => ctx.openPreview('<p>a</p>', 'html', { file_name: 'a.html' }));
+    const tabId = ctx.tabs[0].id;
 
-    act(() =>
-      ctx.updateTab(tabId, {
-        title: 'Example Domain',
-        content: 'https://example.com',
-        metadata: { favicon: 'https://example.com/favicon.ico' },
-      })
-    );
+    act(() => ctx.updateTab(tabId, { title: 'Renamed', content: '<p>b</p>', metadata: { targetLine: 12 } }));
 
-    const tab = browserTabs()[0];
-    expect(tab.title).toBe('Example Domain');
-    expect(tab.content).toBe('https://example.com');
-    expect(tab.metadata?.favicon).toBe('https://example.com/favicon.ico');
+    const tab = ctx.tabs[0];
+    expect(tab.title).toBe('Renamed');
+    expect(tab.content).toBe('<p>b</p>');
+    expect(tab.metadata?.targetLine).toBe(12);
   });
 
   it('updates a background tab without stealing focus', () => {
-    // 关键行为：后台 tab 的页面标题也会变化，更新它不能把用户拽到那个 tab 上
-    // Key behavior: a background tab's page title still changes, and updating it
-    // must not drag the user over to that tab.
+    // 关键行为：更新后台 tab 不能把用户拽到那个 tab 上
+    // Key behavior: updating a background tab must not drag the user over to it.
     renderProvider();
-    act(() => ctx.openBrowserTab('https://first.example.com'));
-    const firstId = browserTabs()[0].id;
-    act(() => ctx.openBrowserTab('https://second.example.com'));
-    const secondId = browserTabs()[1].id;
+    act(() => ctx.openPreview('a', 'code', { file_name: 'a.ts' }));
+    const firstId = ctx.tabs[0].id;
+    act(() => ctx.openPreview('b', 'code', { file_name: 'b.ts' }));
+    const secondId = ctx.tabs[1].id;
 
     act(() => ctx.updateTab(firstId, { title: 'First' }));
 
     expect(ctx.activeTabId).toBe(secondId);
-    expect(browserTabs()[0].title).toBe('First');
+    expect(ctx.tabs[0].title).toBe('First');
   });
 
   it('merges metadata instead of replacing it', () => {
     renderProvider();
-    act(() => ctx.openBrowserTab());
-    const tabId = browserTabs()[0].id;
+    act(() => ctx.openPreview('a', 'code', { file_name: 'a.ts' }));
+    const tabId = ctx.tabs[0].id;
 
-    act(() => ctx.updateTab(tabId, { metadata: { favicon: 'a.ico' } }));
-    act(() => ctx.updateTab(tabId, { metadata: { agentActive: true } }));
+    act(() => ctx.updateTab(tabId, { metadata: { targetLine: 3 } }));
+    act(() => ctx.updateTab(tabId, { metadata: { targetColumn: 7 } }));
 
-    expect(browserTabs()[0].metadata?.favicon).toBe('a.ico');
-    expect(browserTabs()[0].metadata?.agentActive).toBe(true);
+    expect(ctx.tabs[0].metadata?.targetLine).toBe(3);
+    expect(ctx.tabs[0].metadata?.targetColumn).toBe(7);
+    expect(ctx.tabs[0].metadata?.file_name).toBe('a.ts');
   });
 
-  it('ignores an empty title so a blank page cannot erase a good one', () => {
+  it('ignores an empty title so it cannot erase a good one', () => {
     renderProvider();
-    act(() => ctx.openBrowserTab());
-    const tabId = browserTabs()[0].id;
+    act(() => ctx.openPreview('a', 'code', { file_name: 'a.ts' }));
+    const tabId = ctx.tabs[0].id;
     act(() => ctx.updateTab(tabId, { title: 'Real Title' }));
 
     act(() => ctx.updateTab(tabId, { title: '' }));
 
-    expect(browserTabs()[0].title).toBe('Real Title');
+    expect(ctx.tabs[0].title).toBe('Real Title');
   });
 
   it('is a no-op for an unknown tab id and for an empty id', () => {
     renderProvider();
-    act(() => ctx.openBrowserTab());
-    const before = browserTabs()[0];
+    act(() => ctx.openPreview('a', 'code', { file_name: 'a.ts' }));
+    const before = ctx.tabs[0];
 
     act(() => ctx.updateTab('does-not-exist', { title: 'Nope' }));
     act(() => ctx.updateTab('', { title: 'Nope' }));
 
-    expect(browserTabs()[0]).toEqual(before);
+    expect(ctx.tabs[0]).toEqual(before);
   });
 
-  it('allows clearing the address to an empty string', () => {
+  it('allows clearing the content to an empty string', () => {
     // content 用 typeof 检查而非真值检查，空字符串是合法的清空操作
     // content is checked with typeof rather than truthiness, so clearing is valid.
     renderProvider();
-    act(() => ctx.openBrowserTab('https://example.com'));
-    const tabId = browserTabs()[0].id;
+    act(() => ctx.openPreview('a', 'code', { file_name: 'a.ts' }));
+    const tabId = ctx.tabs[0].id;
 
     act(() => ctx.updateTab(tabId, { content: '' }));
 
-    expect(browserTabs()[0].content).toBe('');
+    expect(ctx.tabs[0].content).toBe('');
   });
 });

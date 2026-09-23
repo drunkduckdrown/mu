@@ -77,11 +77,7 @@ const OfficialAssistantsGrid: React.FC<OfficialAssistantsGridProps> = ({
           </span>
         </span>
         <Dropdown droplist={filterMenu} trigger='click' position='br'>
-          <Button
-            size='mini'
-            data-testid='official-enabled-filter'
-            className='!flex !shrink-0 !items-center !gap-4px !rounded-8px'
-          >
+          <Button size='mini' data-testid='official-enabled-filter' className='!flex !shrink-0 !items-center !gap-4px'>
             <span>
               {t(`settings.assistantFilter.${filter}`, {
                 defaultValue: filter === 'all' ? 'All' : filter === 'enabled' ? 'Enabled' : 'Disabled',
@@ -94,7 +90,7 @@ const OfficialAssistantsGrid: React.FC<OfficialAssistantsGridProps> = ({
 
       <div className='grid grid-cols-1 gap-14px sm:grid-cols-2 lg:grid-cols-3'>
         {officialAssistants.length === 0 ? (
-          <div className='col-span-full rounded-14px border border-dashed border-border-2 bg-fill-1/40 px-20px py-28px text-center text-13px text-t-secondary'>
+          <div className='col-span-full settings-list px-20px py-28px text-center text-13px text-t-secondary'>
             {searchActive
               ? t('settings.assistantNoMatch', { defaultValue: 'No assistants match the current filters.' })
               : t('settings.assistantsEmpty', { defaultValue: 'No assistants configured.' })}
@@ -126,7 +122,7 @@ const OfficialAssistantsGrid: React.FC<OfficialAssistantsGridProps> = ({
             <div
               key={assistant.id}
               data-testid={`official-card-${assistant.id}`}
-              className='group flex cursor-pointer flex-col rounded-14px border border-solid border-transparent bg-base p-16px transition-all duration-180 hover:border-border-2'
+              className='group flex cursor-pointer flex-col rounded-8px border border-solid border-transparent bg-base p-16px transition-all duration-180 hover:border-border-2'
               onClick={() => onOpenSettings(assistant)}
             >
               {/* Header row: avatar on the left, enable switch on the right. */}
@@ -162,7 +158,7 @@ const OfficialAssistantsGrid: React.FC<OfficialAssistantsGridProps> = ({
                       type='text'
                       size='small'
                       data-testid={`btn-chat-${assistant.id}`}
-                      className='!inline-flex !h-28px !items-center !justify-center !rounded-9px !bg-fill-2 !px-12px !leading-none !text-t-secondary !opacity-0 transition-all hover:!bg-fill-3 hover:!text-t-primary group-hover:!opacity-100'
+                      className='!inline-flex !h-28px !items-center !justify-center !rounded-6px !bg-fill-2 !px-12px !leading-none !text-t-secondary !opacity-0 transition-all hover:!bg-fill-3 hover:!text-t-primary group-hover:!opacity-100'
                       onClick={() => onStartChat(assistant)}
                     >
                       {t('settings.assistantGoChat', { defaultValue: 'Chat' })}
@@ -174,7 +170,7 @@ const OfficialAssistantsGrid: React.FC<OfficialAssistantsGridProps> = ({
                       size='small'
                       icon={<MoreOne theme='outline' size='16' fill='currentColor' />}
                       aria-label={t('common.more', { defaultValue: 'More' })}
-                      className='!flex !h-32px !w-36px !items-center !justify-center !rounded-9px !p-0 !text-t-tertiary hover:!bg-fill-2 hover:!text-t-primary'
+                      className='!flex !h-32px !w-36px !items-center !justify-center !rounded-6px !p-0 !text-t-tertiary hover:!bg-fill-2 hover:!text-t-primary'
                       data-testid={`btn-assistant-more-${assistant.id}`}
                     />
                   </Dropdown>

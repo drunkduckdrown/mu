@@ -14,10 +14,7 @@ const MU_PAGES: Partial<Record<SettingsPageId, AreaView>> = {
   providers: { section: 'providers' },
   'default-model': { section: 'defaultModel' },
   judges: { section: 'judges' },
-  'judge-tiers': { section: 'judgeTiers' },
   features: { section: 'features' },
-  context: { section: 'context' },
-  permissions: { section: 'permissions' },
   ...Object.fromEntries(
     DECISION_PAGES.map((page): [SettingsPageId, AreaView] => [`decisions-${page}`, { section: 'decisions', page }])
   ),

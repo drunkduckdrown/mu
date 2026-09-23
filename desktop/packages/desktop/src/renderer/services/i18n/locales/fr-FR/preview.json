@@ -150,6 +150,8 @@
   "browser": {
     "newTab": "Nouvel onglet",
     "addressPlaceholder": "Saisissez une URL ou recherchez",
+    "tabsLabel": "Pages ouvertes",
+    "closeTab": "Fermer {{title}}",
     "agentActiveTooltip": "L'agent utilise cet onglet",
     "tabLimitReached": "Limite d'onglets atteinte ({{count}}). L'onglet le plus ancien a été réutilisé.",
     "agentFirstUseTitle": "L'agent utilise le navigateur intégré",

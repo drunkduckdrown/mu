@@ -407,12 +407,13 @@ const ArchivedSettings: React.FC = () => {
     [i18n.language]
   );
 
-  const renderRow = (row: ArchivedRow, isLast: boolean) => (
+  // One row of a project's quiet list: settings-list draws the hairlines between rows.
+  const renderRow = (row: ArchivedRow) => (
     <div
       key={row.key}
-      className={`group box-border flex h-56px items-center gap-10px px-14px py-6px transition-colors hover:bg-fill-2 ${
+      className={`group box-border flex h-56px items-center gap-10px px-8px py-6px transition-colors hover:bg-fill-1 ${
         selectionMode ? 'cursor-pointer' : ''
-      } ${!isLast ? 'border-0 border-b border-solid border-[var(--color-border-2)]' : ''}`}
+      }`}
       onClick={() => {
         if (selectionMode) toggleRowSelected(row);
       }}
@@ -426,7 +427,7 @@ const ArchivedSettings: React.FC = () => {
       ) : null}
       <span className='size-20px flex items-center justify-center shrink-0 line-height-0'>{row.icon}</span>
       <div className='min-w-0 flex-1'>
-        <div className='overflow-hidden text-ellipsis whitespace-nowrap text-14px font-[600] text-t-primary'>
+        <div className='overflow-hidden text-ellipsis whitespace-nowrap text-14px font-[500] text-t-primary'>
           {row.name}
         </div>
         {row.updatedAt ? (
@@ -446,12 +447,7 @@ const ArchivedSettings: React.FC = () => {
             title={t('settings.archived.delete')}
             onClick={() => handleDelete(row)}
           />
-          <Button
-            type='secondary'
-            size='mini'
-            className='!h-28px !rounded-8px !px-10px'
-            onClick={() => void handleRestore(row)}
-          >
+          <Button type='secondary' size='mini' className='!h-28px !px-10px' onClick={() => void handleRestore(row)}>
             {t('settings.archived.restore')}
           </Button>
         </div>
@@ -463,29 +459,24 @@ const ArchivedSettings: React.FC = () => {
     <>
       <SettingsPageHeader
         title={t('settings.archived.navLabel')}
+        description={t('settings.archived.description')}
         actions={
           total > 0 ? (
             <div className='flex min-w-0 items-center justify-end gap-10px'>
               {selectionMode ? (
-                <div className='flex items-center gap-10px rd-8px border border-solid border-[var(--color-border-2)] bg-base px-10px py-6px'>
-                  <span className='px-4px text-14px text-t-secondary'>
+                <div className='flex items-center gap-10px'>
+                  <span className='text-13px text-t-secondary'>
                     {t('settings.archived.selectedCount', { count: selectedRows.length })}
                   </span>
-                  <Checkbox className='!text-14px' checked={allRowsSelected} onChange={handleSelectAll}>
+                  <Checkbox checked={allRowsSelected} onChange={handleSelectAll}>
                     {t('settings.archived.selectAll')}
                   </Checkbox>
-                  <Button
-                    size='small'
-                    type='secondary'
-                    className='!h-32px !rounded-10px !px-12px !text-14px'
-                    onClick={handleCancelSelectionMode}
-                  >
+                  <Button size='small' type='secondary' onClick={handleCancelSelectionMode}>
                     {t('settings.archived.cancelSelect')}
                   </Button>
                   <Button
                     size='small'
                     status='warning'
-                    className='!h-32px !rounded-10px !px-12px !text-14px'
                     disabled={selectedRows.length === 0}
                     onClick={handleDeleteSelected}
                   >
@@ -494,10 +485,9 @@ const ArchivedSettings: React.FC = () => {
                 </div>
               ) : (
                 <Button
-                  size='default'
+                  size='small'
                   type='secondary'
-                  icon={<ListCheckbox theme='outline' size='16' />}
-                  className='!h-34px !rounded-10px !px-14px !text-14px !font-[500]'
+                  icon={<ListCheckbox theme='outline' size='14' />}
                   onClick={() => setSelectionMode(true)}
                 >
                   {t('settings.archived.multiSelect')}
@@ -517,8 +507,8 @@ const ArchivedSettings: React.FC = () => {
           <Empty description={t('settings.archived.empty')} />
         </div>
       ) : (
-        <div className='mt-18px flex flex-col gap-12px'>
-          <div className='flex flex-col gap-20px'>
+        <div className='mt-16px flex flex-col gap-12px'>
+          <div className='flex flex-col gap-16px'>
             {archivedBlocks.map((block) => {
               const blockSelected = block.rows.length > 0 && block.rows.every((row) => selectedKeys.has(row.key));
               const blockPartiallySelected =
@@ -535,16 +525,14 @@ const ArchivedSettings: React.FC = () => {
                       />
                     ) : null}
                     <FolderClose theme='outline' size='16' className='shrink-0 text-t-secondary' />
-                    <h2 className='m-0 min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-16px font-[600] text-t-primary'>
+                    <h2 className='m-0 min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-13px font-[600] text-t-primary'>
                       {block.name}
                     </h2>
-                    <span className='shrink-0 text-13px text-t-secondary'>
+                    <span className='shrink-0 text-12px text-t-secondary'>
                       {t('settings.archived.chatCount', { count: block.rows.length })}
                     </span>
                   </div>
-                  <div className='overflow-hidden rd-8px border border-solid border-[var(--color-border-2)] bg-base'>
-                    {block.rows.map((row, index) => renderRow(row, index === block.rows.length - 1))}
-                  </div>
+                  <div className='settings-list'>{block.rows.map((row) => renderRow(row))}</div>
                   {block.hasMore ? (
                     <div className='flex justify-center'>
                       <Button

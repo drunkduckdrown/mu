@@ -72,7 +72,9 @@ function copyFileSafe(sourcePath, targetPath) {
 
 function copyDirectorySafe(sourcePath, targetPath) {
   ensureDirectory(path.dirname(targetPath));
-  fs.cpSync(sourcePath, targetPath, { recursive: true, force: true });
+  // Links stay as they are: Node's own bin/npm and bin/npx are relative links, which cpSync would otherwise turn into
+  // absolute ones into the source folder, broken on every other machine (and refused by a strict codesign check).
+  fs.cpSync(sourcePath, targetPath, { recursive: true, force: true, verbatimSymlinks: true });
 }
 
 function ensureExecutableMode(filePath) {

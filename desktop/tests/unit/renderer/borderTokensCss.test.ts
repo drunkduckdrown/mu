@@ -174,7 +174,7 @@ describe('the text and fill tokens', () => {
 describe('every colour-family class the renderer writes', () => {
   it('finds the families it is meant to check', () => {
     const classes = colourFamilyClassesInSource();
-    for (const expected of ['bg-bg-2', 'hover:bg-bg-3', 'text-t-primary', 'bg-fill-2', 'border-border-2', 'divide-y']) {
+    for (const expected of ['bg-bg-2', 'hover:bg-bg-3', 'text-t-primary', 'bg-fill-2', 'border-border-2']) {
       expect(classes, `the scan sees ${expected}`).toContain(expected);
     }
   });

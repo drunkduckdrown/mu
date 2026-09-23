@@ -70,22 +70,16 @@ const normalizeTestId = (name: string): string => {
   return name.replace(/[:/\s<>"'|?*]/g, '-');
 };
 
-const getAvatarColorClass = (name: string) => {
-  if (!name) return 'bg-[#165DFF] text-white';
-  const colors = [
-    'bg-[#165DFF] text-white', // Blue
-    'bg-[#00B42A] text-white', // Green
-    'bg-[#722ED1] text-white', // Purple
-    'bg-[#F5319D] text-white', // Pink
-    'bg-[#F77234] text-white', // Orange
-    'bg-[#14C9C9] text-white', // Cyan
-  ];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-};
+/**
+ * A skill's tile: its first letter on a grey square. The settings pages keep to greys, so the tiles no longer take a
+ * colour from the name.
+ */
+const SKILL_TILE =
+  'w-40px h-40px rd-8px flex items-center justify-center font-600 text-16px text-transform-uppercase bg-fill-2 text-t-secondary';
+
+/** One skill of a list: a row between hairlines, grey on hover, darker grey while a link points at it. */
+const skillRowClass = (highlighted: boolean) =>
+  `flex flex-col sm:flex-row gap-16px px-8px py-12px transition-colors duration-200 cursor-pointer ${highlighted ? 'bg-fill-2' : 'hover:bg-fill-1'}`;
 
 const buildImportHistoryGroups = (records: SkillImportRecord[]): SkillImportHistoryGroup[] => {
   const byOperation = new Map<string, SkillImportHistoryGroup>();
@@ -530,7 +524,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
     }
 
     return (
-      <div className='mt-10px border border-[rgba(var(--warning-6),0.24)] bg-[rgba(var(--warning-6),0.08)] rd-10px px-12px py-10px'>
+      <div className='mt-10px border border-[rgba(var(--warning-6),0.24)] bg-[rgba(var(--warning-6),0.08)] rd-6px px-12px py-10px'>
         <div className='flex items-start gap-8px'>
           <span className='shrink-0 mt-1px text-warning-6 text-13px'>!</span>
           <div className='min-w-0 text-12px leading-relaxed text-warning-6'>
@@ -551,40 +545,30 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
     );
   };
 
+  // The import history: the page's one header (title, one line, the way back), then one row per import.
   const importHistoryContent = (
     <div data-testid='skill-import-history-page' className='flex flex-col h-full w-full'>
-      <div className='space-y-16px pb-24px'>
-        <div className='px-[16px] md:px-[32px] py-20px bg-base rd-16px md:rd-24px border border-color-b-base'>
-          <div className='flex flex-col sm:flex-row sm:items-start justify-between gap-12px'>
-            <div>
-              <div className='flex items-center gap-10px'>
-                <span className='text-16px md:text-18px text-t-primary font-bold tracking-tight'>
-                  {t('settings.skillsHub.importHistoryTitle', { defaultValue: 'Import history' })}
-                </span>
-              </div>
-              <p className='mt-6px text-12px text-t-tertiary leading-relaxed'>
-                {t('settings.skillsHub.importHistoryDescription', {
-                  defaultValue: 'If an import fails, follow the note in the record and import again.',
-                })}
-              </p>
-            </div>
-            <button
-              data-testid='btn-back-to-skills'
-              className='flex items-center justify-center px-14px py-7px bg-base border border-border-1 hover:border-border-2 hover:bg-fill-1 text-t-primary rd-8px shadow-sm transition-all focus:outline-none shrink-0 cursor-pointer whitespace-nowrap text-13px font-medium'
-              onClick={showSkillList}
-            >
+      <div className='flex flex-col gap-16px pb-24px'>
+        <SettingsPageHeader
+          sticky={false}
+          title={t('settings.skillsHub.importHistoryTitle', { defaultValue: 'Import history' })}
+          description={t('settings.skillsHub.importHistoryDescription', {
+            defaultValue: 'If an import fails, follow the note in the record and import again.',
+          })}
+          actions={
+            <Button size='small' type='secondary' data-testid='btn-back-to-skills' onClick={showSkillList}>
               {t('settings.skillsHub.backToSkills', { defaultValue: 'Back to skills' })}
-            </button>
-          </div>
-        </div>
+            </Button>
+          }
+        />
 
-        <div className='px-[16px] md:px-[32px] py-16px bg-base rd-16px md:rd-24px border border-color-b-base'>
+        <div className='settings-list'>
           {importHistoryGroups.length === 0 ? (
-            <div className='px-12px py-14px text-12px text-t-tertiary'>
+            <div className='py-14px text-12px text-t-tertiary'>
               {t('settings.skillsHub.importHistoryEmpty', { defaultValue: 'No import records yet.' })}
             </div>
           ) : (
-            <div className='flex flex-col gap-8px'>
+            <>
               {importHistoryGroups.map((group) => {
                 const failedRecords = group.records.filter((record) => record.status === 'failed');
                 const importedNames = formatNameList(
@@ -599,11 +583,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
                   <div
                     key={group.operationId}
                     data-testid={`skill-import-history-record-${normalizeTestId(group.sourceLabel)}`}
-                    className={`border rd-12px px-12px py-10px ${
-                      failedRecords.length > 0
-                        ? 'border-[rgba(var(--warning-6),0.28)] bg-[rgba(var(--warning-6),0.03)]'
-                        : 'border-transparent bg-fill-1'
-                    }`}
+                    className='py-12px'
                   >
                     <div className='flex flex-col sm:flex-row sm:items-start justify-between gap-8px'>
                       <div className='min-w-0'>
@@ -630,7 +610,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
                   </div>
                 );
               })}
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -650,13 +630,11 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
           skillRefs.current[skill.name] = el;
         }}
         onClick={() => openSkillDetail(skill.name)}
-        className={`flex flex-col sm:flex-row gap-16px p-16px bg-base border hover:border-border-1 hover:bg-fill-1 rd-12px transition-all duration-200 cursor-pointer ${highlightedSkill === skill.name ? 'border-primary-5 bg-primary-1' : 'border-transparent'}`}
+        className={skillRowClass(highlightedSkill === skill.name)}
       >
         <div className='shrink-0 flex items-start sm:mt-2px'>
           {isExtension || isAuto ? (
-            <div
-              className={`w-40px h-40px rd-10px bg-[rgba(var(--${accent}-6),0.08)] flex items-center justify-center shadow-sm`}
-            >
+            <div className={`w-40px h-40px rd-8px bg-[rgba(var(--${accent}-6),0.08)] flex items-center justify-center`}>
               {isExtension ? (
                 <Puzzle theme='filled' size={20} fill='rgb(var(--primary-6))' />
               ) : (
@@ -664,15 +642,11 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
               )}
             </div>
           ) : (
-            <div
-              className={`w-40px h-40px rd-10px flex items-center justify-center font-bold text-16px shadow-sm text-transform-uppercase ${getAvatarColorClass(skill.name)}`}
-            >
-              {skill.name.charAt(0).toUpperCase()}
-            </div>
+            <div className={SKILL_TILE}>{skill.name.charAt(0).toUpperCase()}</div>
           )}
         </div>
         <div className='flex-1 min-w-0 flex flex-col justify-center gap-4px'>
-          <h3 className='text-14px font-semibold text-t-primary/90 truncate m-0'>{skill.name}</h3>
+          <h3 className='text-14px font-500 text-t-primary truncate m-0'>{skill.name}</h3>
           {skill.description && (
             <p className='text-13px text-t-secondary leading-relaxed line-clamp-2 m-0' title={skill.description}>
               {skill.description}
@@ -708,9 +682,9 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
     hint?: React.ReactNode
   ) => (
     <div data-testid={testId}>
-      <div className='flex items-center gap-10px mb-12px'>
+      <div className='flex items-center gap-8px mb-8px'>
         {icon}
-        <span className='text-14px font-bold text-t-primary'>{title}</span>
+        <span className='text-13px font-600 text-t-primary'>{title}</span>
         {hint ? (
           <span className='inline-flex shrink-0' title={typeof hint === 'string' ? hint : undefined}>
             <Help theme='outline' size={14} className='text-t-tertiary hover:text-t-secondary cursor-help shrink-0' />
@@ -718,7 +692,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
         ) : null}
         <span className={`text-12px px-10px py-2px rd-[100px] font-medium ${countClass}`}>{count}</span>
       </div>
-      <div className='flex flex-col gap-4px rounded-8px border border-solid border-[var(--border-base)] bg-base p-4px'>
+      <div className='settings-list'>
         {skills.length > 0 ? (
           skills.map((skill) => renderReadonlySkillCard(skill, variant))
         ) : (
@@ -821,7 +795,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
         </div>
       )}
       {mySkills.length > 0 ? (
-        <div className='flex flex-col gap-4px rounded-8px border border-solid border-[var(--border-base)] bg-base p-4px'>
+        <div className='settings-list'>
           {filteredSkills.length === 0 && (
             <div className='text-center text-t-secondary text-13px py-32px'>
               {t('settings.skillsHub.noSearchResults', { defaultValue: 'No matching skills.' })}
@@ -835,7 +809,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
                 skillRefs.current[skill.name] = el;
               }}
               onClick={batchMode ? () => toggleSkillSelected(skill.name) : () => openSkillDetail(skill.name)}
-              className={`group flex flex-col sm:flex-row gap-16px p-14px border rd-12px transition-all duration-200 cursor-pointer ${highlightedSkill === skill.name ? 'border-primary-5 bg-primary-1' : selectedSkillNames.has(skill.name) && batchMode ? 'border-transparent bg-[rgba(var(--primary-6),0.06)]' : 'border-transparent bg-base hover:border-border-2'}`}
+              className={`group ${skillRowClass(highlightedSkill === skill.name || (batchMode && selectedSkillNames.has(skill.name)))}`}
             >
               {batchMode && (
                 <div className='shrink-0 flex items-center sm:self-center'>
@@ -848,15 +822,11 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
                 </div>
               )}
               <div className='shrink-0 flex items-start sm:mt-2px'>
-                <div
-                  className={`w-40px h-40px rd-10px flex items-center justify-center font-bold text-16px shadow-sm text-transform-uppercase ${getAvatarColorClass(skill.name)}`}
-                >
-                  {skill.name.charAt(0).toUpperCase()}
-                </div>
+                <div className={SKILL_TILE}>{skill.name.charAt(0).toUpperCase()}</div>
               </div>
 
               <div className='flex-1 min-w-0 flex flex-col justify-center gap-4px'>
-                <h3 className='text-14px font-semibold text-t-primary/90 truncate m-0'>{skill.name}</h3>
+                <h3 className='text-14px font-500 text-t-primary truncate m-0'>{skill.name}</h3>
                 {skill.description && (
                   <p className='text-13px text-t-secondary leading-relaxed line-clamp-2 m-0' title={skill.description}>
                     {skill.description}
@@ -869,7 +839,7 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
                   <SkillUsedByStack assistants={getAssistantsUsingSkill(skill.name, assistantCatalog ?? [])} />
                   <button
                     data-testid={`btn-delete-${normalizeTestId(skill.name)}`}
-                    className='p-8px hover:bg-danger-1 hover:text-danger-6 text-t-tertiary rd-6px outline-none flex items-center justify-center border border-transparent cursor-pointer transition-colors shadow-sm bg-base sm:bg-transparent sm:shadow-none opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity'
+                    className='p-8px hover:bg-danger-1 hover:text-danger-6 text-t-tertiary rd-6px flex items-center justify-center border border-transparent cursor-pointer transition-colors bg-transparent opacity-100 sm:opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity'
                     onClick={(e) => {
                       e.stopPropagation();
                       Modal.confirm({
@@ -906,12 +876,14 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
           ))}
         </div>
       ) : (
-        <div className='text-center text-t-secondary text-13px py-40px rounded-8px border border-solid border-[var(--border-base)] bg-base'>
-          {loading
-            ? t('common.loading', { defaultValue: 'Please wait...' })
-            : t('settings.skillsHub.noSkills', {
-                defaultValue: 'No skills found. Import some to get started.',
-              })}
+        <div className='settings-list'>
+          <div className='text-center text-t-secondary text-13px py-40px'>
+            {loading
+              ? t('common.loading', { defaultValue: 'Please wait...' })
+              : t('settings.skillsHub.noSkills', {
+                  defaultValue: 'No skills found. Import some to get started.',
+                })}
+          </div>
         </div>
       )}
     </div>
@@ -921,13 +893,13 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
   const officialPane = (
     <div className='flex flex-col gap-24px'>
       <div data-testid='official-skills-section'>
-        <p className='m-0 mb-12px text-12px leading-relaxed text-t-tertiary'>
+        <p className='m-0 mb-8px text-12px leading-relaxed text-t-tertiary'>
           {t('settings.skillsHub.officialHint', {
             defaultValue: 'Built-in skills maintained by mu — read-only and updated with each release.',
           })}
         </p>
         {officialSkills.length > 0 ? (
-          <div className='flex flex-col gap-4px rounded-8px border border-solid border-[var(--border-base)] bg-base p-4px'>
+          <div className='settings-list'>
             {filteredOfficialSkills.length === 0 && (
               <div className='text-center text-t-secondary text-13px py-32px'>
                 {t('settings.skillsHub.noSearchResults', { defaultValue: 'No matching skills.' })}
@@ -938,10 +910,12 @@ const SkillsHubSettings: React.FC<SkillsHubSettingsProps> = ({ withWrapper = tru
             )}
           </div>
         ) : (
-          <div className='text-center text-t-secondary text-13px py-40px rounded-8px border border-solid border-[var(--border-base)] bg-base'>
-            {loading
-              ? t('common.loading', { defaultValue: 'Please wait...' })
-              : t('settings.skillsHub.officialSkillsEmpty', { defaultValue: 'No official skills available.' })}
+          <div className='settings-list'>
+            <div className='text-center text-t-secondary text-13px py-40px'>
+              {loading
+                ? t('common.loading', { defaultValue: 'Please wait...' })
+                : t('settings.skillsHub.officialSkillsEmpty', { defaultValue: 'No official skills available.' })}
+            </div>
           </div>
         )}
       </div>

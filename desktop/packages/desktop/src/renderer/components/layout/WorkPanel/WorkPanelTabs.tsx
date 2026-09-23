@@ -6,7 +6,7 @@
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button, Tooltip } from '@arco-design/web-react';
-import { Bee, Brain, Close, Code, FolderOpen, Gavel, PreviewOpen, ViewGridDetail } from '@icon-park/react';
+import { Bee, Brain, Browser, Close, Code, FolderOpen, Gavel, PreviewOpen, ViewGridDetail } from '@icon-park/react';
 import { useTranslation } from 'react-i18next';
 import { WORK_PANEL_TABS, type WorkPanelTab } from './workPanelStore';
 import styles from './WorkPanel.module.css';
@@ -24,6 +24,7 @@ const TAB_ICONS: Record<WorkPanelTab, typeof Bee> = {
   files: FolderOpen,
   preview: PreviewOpen,
   source: Code,
+  browser: Browser,
 };
 
 /**
@@ -61,9 +62,10 @@ function useLabelsFit(list: React.RefObject<HTMLDivElement | null>, labels: stri
 }
 
 /**
- * The 40px strip: 看板 · 判定 · 蜂群 · 经验 · 文件 · 预览 · 源码, then a close button. The open tab is underlined in the one
- * accent colour; a tab with news the person has not seen carries a small dot. Arrow keys move between tabs. A panel
- * too narrow for every label shows one icon per tab instead, each named by its tooltip, so no tab is ever out of view.
+ * The 40px strip: 看板 · 判定 · 蜂群 · 经验 · 文件 · 预览 · 源码 · 浏览器, then a close button. The open tab is underlined
+ * in the one accent colour; a tab with news the person has not seen carries a small dot. Arrow keys move between
+ * tabs. A panel too narrow for every label shows one icon per tab instead, each named by its tooltip, so no tab is
+ * ever out of view.
  */
 export default function WorkPanelTabs({
   active,

@@ -20,9 +20,11 @@ import { ModifiedMark } from '../fields/Row';
 import SectionShell from './SectionShell';
 import styles from './sections.module.css';
 
-/** Options that have a place of their own in the settings, by feature, with the sentence that points there. */
+/**
+ * Options that have a place of their own in the settings, by feature, with the sentence that points there. The mode a
+ * new conversation starts in has none: it is an option of the permission modes feature, on that feature's page.
+ */
 const ELSEWHERE: Record<string, { key: string; where: string }> = {
-  permissions: { key: 'mode', where: 'mu.features.permissionsElsewhere' },
   board: { key: 'model', where: 'mu.features.boardModelElsewhere' },
 };
 
@@ -254,7 +256,7 @@ export function FeatureOptions({
       ) : null}
       {own.length ? (
         <div
-          className={classNames(styles.card, !state.enabled && styles.dim)}
+          className={classNames(styles.list, !state.enabled && styles.dim)}
           data-testid={`mu-feature-details-${feature.name}`}
         >
           {parts[at - 1].map((option) => (

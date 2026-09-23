@@ -22,13 +22,13 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   return (
     <section
       data-testid={testId}
-      className='rounded-12px bg-2 px-[12px] py-[16px] md:rounded-16px md:px-[24px] md:py-[20px]'
+      className='flex flex-col border-0 border-t border-solid border-[var(--border-base)] pt-16px first:border-t-0 first:pt-0'
     >
       <div className='mb-12px flex items-center gap-8px'>
-        <div className='text-14px font-500 text-t-primary'>{title}</div>
+        <div className='text-13px font-600 text-t-primary'>{title}</div>
         {legend ? (
           <span
-            className={`rounded-6px px-8px py-2px text-10px font-500 ${
+            className={`rounded-4px px-8px py-2px text-10px font-500 ${
               legend.tone === 'now'
                 ? 'border border-success-8 bg-success-8 text-white font-600'
                 : 'border border-warning-8 bg-warning-8 text-white font-600'
@@ -38,7 +38,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
           </span>
         ) : null}
         {readOnly && readOnlyLabel ? (
-          <span className='ms-auto rounded-8px bg-fill-1 px-8px py-3px text-10px font-500 text-t-tertiary'>
+          <span className='ms-auto rounded-4px bg-fill-2 px-8px py-3px text-10px font-500 text-t-tertiary'>
             {readOnlyLabel}
           </span>
         ) : null}
@@ -87,7 +87,7 @@ export const ConfigRow: React.FC<ConfigRowProps> = ({ label, children, hint, ico
 
 export const ReadonlySelectionField: React.FC<{ value: string }> = ({ value }) => {
   return (
-    <div className='min-h-32px rounded-8px bg-fill-1 px-12px py-8px text-13px leading-20px text-t-secondary'>
+    <div className='min-h-32px rounded-6px bg-fill-1 px-12px py-8px text-13px leading-20px text-t-secondary'>
       {value}
     </div>
   );

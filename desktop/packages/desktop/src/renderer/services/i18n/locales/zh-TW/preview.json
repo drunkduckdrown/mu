@@ -150,6 +150,8 @@
   "browser": {
     "newTab": "新增標籤頁",
     "addressPlaceholder": "輸入網址或搜尋內容",
+    "tabsLabel": "已開啟的網頁",
+    "closeTab": "關閉「{{title}}」",
     "agentActiveTooltip": "Agent 正在操作此標籤頁",
     "tabLimitReached": "標籤頁數量已達上限（{{count}} 個），已重複使用最早開啟的標籤頁。",
     "agentFirstUseTitle": "Agent 正在使用應用內瀏覽器",

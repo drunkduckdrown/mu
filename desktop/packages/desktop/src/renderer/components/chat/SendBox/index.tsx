@@ -65,9 +65,6 @@ import { useUploadState } from '@renderer/hooks/file/useUploadState';
 import { useAbortUploadsOnConversationChange } from '@renderer/hooks/file/useAbortUploadsOnConversationChange';
 import UploadProgressBar from '@renderer/components/media/UploadProgressBar';
 import { allSupportedExts } from '@renderer/services/FileService';
-import SpeechInputButton from '@/renderer/components/chat/SpeechInputButton';
-import { appendSpeechTranscript } from '@/renderer/hooks/system/useSpeechInput';
-import { createChainedDispatch, useLiveTranscriptInsertion } from '@/renderer/hooks/system/useLiveTranscriptInsertion';
 import { getConversationInputHistory, isCaretOnFirstLine } from '@/renderer/utils/chat/messageHistory';
 import SendArrowIcon from './SendArrowIcon';
 import './sendbox.css';
@@ -1639,30 +1636,6 @@ const SendBox: React.FC<{
     }
   };
 
-  // SendBox is controlled (`value`/`onChange`): adapt the plain value setter
-  // into a functional-update dispatch. Same-tick updates (live-region restore
-  // followed by the terminal transcript append) must chain through a pending
-  // value — the committed `input` prop only catches up on the next render.
-  const speechDispatch = useMemo(
-    () =>
-      createChainedDispatch(
-        () => latestInputRef.current,
-        (value) => setInputRef.current(value)
-      ),
-    [latestInputRef, setInputRef]
-  );
-  useEffect(() => {
-    // The committed input caught up (or the user typed) — drop the chain.
-    speechDispatch.reset();
-  }, [input, speechDispatch]);
-  const handleSpeechTranscript = useCallback(
-    (transcript: string) => {
-      speechDispatch.dispatch((prev) => appendSpeechTranscript(prev, transcript));
-    },
-    [speechDispatch]
-  );
-  const { handleLiveTranscript } = useLiveTranscriptInsertion(speechDispatch.dispatch);
-
   const hasDraftToSend = input.trim().length > 0 || domSnippets.length > 0;
 
   const addToDraftLabel = t('conversation.commandQueue.addToQueue', { defaultValue: 'Save to Draft box' });
@@ -1863,12 +1836,9 @@ const SendBox: React.FC<{
   ) : null;
 
   // On mobile compact mode, the parent supplies the action sheet — collapse
-  // tools/rightTools into the `+` launcher while keeping voice input accessible.
+  // tools/rightTools into the `+` launcher.
   const renderedTools = isMobileCompact ? mobilePlusButton : tools;
   const renderedRightTools = isMobileCompact ? null : rightTools;
-  const renderedSpeechButton = (
-    <SpeechInputButton onLiveTranscript={handleLiveTranscript} onTranscript={handleSpeechTranscript} />
-  );
 
   const renderHighlightedInputValue = useCallback(() => {
     if (!input) {
@@ -2191,7 +2161,6 @@ const SendBox: React.FC<{
           </div>
           {isSingleLine && (
             <div className='flex items-center gap-1'>
-              {renderedSpeechButton}
               {sendButtonPrefix}
               {renderActionButtons()}
             </div>
@@ -2215,7 +2184,6 @@ const SendBox: React.FC<{
             </div>
             <div className='sendbox-actions flex items-center gap-1'>
               {renderedRightTools}
-              {renderedSpeechButton}
               {sendButtonPrefix}
               {renderActionButtons()}
             </div>

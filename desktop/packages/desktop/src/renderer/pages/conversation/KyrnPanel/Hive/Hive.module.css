@@ -199,76 +199,9 @@
   background: var(--warning);
 }
 
-.graph {
-  position: relative;
-  direction: ltr;
-  margin-block: 12px 4px;
-  border: 1px solid var(--border-base);
-  border-radius: 8px;
-  background: var(--bg-1);
-}
-
-.edges {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  color: var(--brand);
-  pointer-events: none;
-}
-.edge {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.5;
-  opacity: 0.7;
-}
-.edge[data-muted='true'] {
-  opacity: 0.15;
-}
-
-.node:global(.arco-btn) {
-  position: absolute;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  width: 43%;
-  height: auto;
-  padding: 0 3px 5px;
-  border-radius: 12px;
-  color: var(--text-primary);
-  background: transparent;
-  white-space: normal;
-}
-.node:global(.arco-btn:hover) {
-  background: var(--bg-hover);
-}
-.node[aria-pressed='true'] .avatar {
-  outline: 2px solid var(--brand);
-  outline-offset: 3px;
-}
-.node:focus-visible,
 .agentRow:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
-}
-.nodeName {
-  max-width: 100%;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  font-size: 12px;
-  line-height: 1.3;
-  font-weight: 500;
-  unicode-bidi: plaintext;
-}
-.nodeStatus {
-  font-size: 10px;
-  line-height: 1.3;
-  color: var(--text-secondary);
 }
 .hint {
   font-size: 11px;
@@ -442,6 +375,26 @@
   color: var(--text-secondary);
   font-size: 12px;
   font-variant-numeric: tabular-nums;
+}
+
+/* The word that opens or closes a run's map: quiet, and marked by weight when the map is open. */
+.mapToggle:global(.arco-btn) {
+  flex: none;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.mapToggle:global(.arco-btn[aria-pressed='true']) {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.mapToggle:global(.arco-btn:hover) {
+  background: var(--bg-hover);
 }
 
 .rows {

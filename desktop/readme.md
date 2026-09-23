@@ -1,6 +1,5 @@
 > **This folder is the desktop app of [mu](../README.md)**, built on [AionUi](https://github.com/iOfficeAI/AionUi) (Apache-2.0, see [LICENSE](LICENSE)). The text below is AionUi's own README, kept for reference; its demo GIFs and videos were left out of this repository to keep it small, and can be seen upstream. Build and run instructions for mu's app are in the [main README](../README.md).
 
-
 <p align="center">
   <img src="./resources/aionui-banner-1.png" alt="AionUi - Cowork with AI Agents" width="100%">
 </p>

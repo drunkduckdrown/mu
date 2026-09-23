@@ -389,7 +389,6 @@
   "model": "Модель",
   "system": "Система",
   "conversations": "Диалоги",
-  "voiceInput": "Голосовой ввод",
   "about": "О программе",
   "advancedSettings": "Расширенные настройки",
   "addModel": "Добавить модель",
@@ -508,30 +507,6 @@
   "imageGeneration": "Генерация изображений",
   "imageGenerationToggle": "Включить инструмент генерации изображений",
   "imageGenerationDescription": "Выберите настроенную модель с поддержкой изображений для использования по умолчанию.",
-  "speechToText": "Преобразование речи в текст",
-  "speechToTextDescription": "Настройте провайдера для голосового ввода в поле чата.",
-  "speechToTextApiKey": "API-ключ",
-  "speechToTextBaseUrl": "Базовый URL",
-  "speechToTextModel": "Модель",
-  "speechToTextLanguage": "Язык по умолчанию",
-  "speechToTextRequired": "(обязательно)",
-  "speechToTextOptional": "(необязательно)",
-  "speechToTextSource": "Сервис",
-  "speechToTextSourceOpenAI": "OpenAI (официальный)",
-  "speechToTextSourceDeepgram": "Deepgram (официальный)",
-  "speechToTextSourceCustom": "Пользовательский (совместим с OpenAI)",
-  "speechToTextLanguageAuto": "Автоопределение",
-  "speechToTextBaseUrlPlaceholder": "https://your-host/v1",
-  "speechToTextBaseUrlInvalid": "Введите корректный http(s) URL",
-  "speechToTextModelPlaceholder": "Выберите или введите название модели",
-  "speechToTextTest": "Сохранить и проверить",
-  "speechToTextTestStop": "Стоп",
-  "speechToTextTestRecording": "Запись… произнесите короткую фразу",
-  "speechToTextTestTranscribing": "Распознавание…",
-  "speechToTextTestMissingKey": "Перед проверкой введите API-ключ",
-  "speechToTextTestUploadHint": "Микрофон недоступен — выберите аудиофайл для проверки",
-  "speechToTextStreamingBadge": "В реальном времени",
-  "speechToTextWholeBadge": "Целиком",
   "mcp": "Интеграция MCP",
   "imageGenerationModel": "Модель для изображений",
   "imageGenSupportedTooltipTitle": "Поддерживаемые модели изображений:",
@@ -1039,7 +1014,8 @@
     "clearConfirmTitle": "Очистить данные браузера?",
     "clearConfirmContent": "Вы выйдете со всех сайтов во встроенном браузере. Это действие нельзя отменить.",
     "clearSuccess": "Данные браузера очищены",
-    "clearFailed": "Не удалось очистить данные браузера"
+    "clearFailed": "Не удалось очистить данные браузера",
+    "description": "Может ли агент работать со встроенным браузером, и очистка данных, которые хранит браузер."
   },
   "archived": {
     "navLabel": "Диалоги в архиве",
@@ -1101,7 +1077,6 @@
     "noProviderMatch": "Ни один провайдер не предоставляет {{model}}. Выберите другую модель."
   },
   "promptTimeoutUnit": "сек",
-  "speechToTextTestResultLine": "Результат ({{elapsed}}): {{text}}",
   "emojiCategories": {
     "recent": "Недавние",
     "smileys": "Смайлики",
@@ -1121,5 +1096,9 @@
     "noTabId": "Страница настроек не указана."
   },
   "mcpAuthRequiredNamed": "{{name}}: требуется вход",
-  "mcpTestConnectionSuccessNamed": "{{name}}: подключение установлено"
+  "mcpTestConnectionSuccessNamed": "{{name}}: подключение установлено",
+  "appearanceDescription": "Язык, тема, шрифты и масштаб.",
+  "systemDescription": "Запуск вместе с системой, сворачивание в трей, уведомления и папки, где mu работает и пишет логи.",
+  "conversationsDescription": "Таймауты, предельный размер предпросмотра, место для загрузок и сообщения между диалогами.",
+  "aboutDescription": "Какая это версия mu, её обновления и путь к логам."
 }

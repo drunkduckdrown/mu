@@ -10,7 +10,7 @@ import { configService } from '@/common/config/configService';
 import AionScrollArea from '@/renderer/components/base/AionScrollArea';
 import { notifyManualRestartRequired } from '@/renderer/utils/appRestart';
 import { isElectronDesktop } from '@/renderer/utils/platform';
-import { Alert, Collapse, Form, Message, Modal, Switch } from '@arco-design/web-react';
+import { Alert, Form, Message, Modal, Switch } from '@arco-design/web-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import useSWR from 'swr';
@@ -22,7 +22,8 @@ import PreferenceRow from './PreferenceRow';
 /**
  * The machine underneath mu: whether it starts with the computer and where it goes when closed, the graphics
  * acceleration, notifications, and the folders it works and logs in (plus the developer tools in dev mode). What a
- * conversation waits for and may keep is the conversations page; the language is on the appearance page.
+ * conversation waits for and may keep is the conversations page; the language is on the appearance page. Two quiet
+ * lists: the switches, then the folders.
  */
 const SystemModalContent: React.FC = () => {
   const { t } = useTranslation();
@@ -294,78 +295,45 @@ const SystemModalContent: React.FC = () => {
       {modalContextHolder}
 
       <AionScrollArea className='flex-1 min-h-0 pb-16px' disableOverflow={isPageMode}>
-        <div className='space-y-16px'>
-          <div className='px-16px md:px-24px py-4px bg-base border border-color-b-base rd-8px'>
-            <div className='w-full flex flex-col divide-y divide-b-base'>
-              {preferenceItems.map((item) => (
-                <PreferenceRow key={item.key} label={item.label} description={item.description}>
-                  {item.component}
+        <div className='flex flex-col gap-16px'>
+          <div className='settings-list'>
+            {preferenceItems.map((item) => (
+              <PreferenceRow key={item.key} label={item.label} description={item.description}>
+                {item.component}
+              </PreferenceRow>
+            ))}
+            <PreferenceRow label={t('settings.notification')}>
+              <Switch size='small' checked={notificationEnabled} onChange={handleNotificationEnabledChange} />
+            </PreferenceRow>
+            {/* The scheduled tasks' own notifications: a row of their own, set in, only while notifications are on. */}
+            {notificationEnabled ? (
+              <div className='ps-16px'>
+                <PreferenceRow label={t('settings.cronNotificationEnabled')}>
+                  <Switch
+                    size='small'
+                    checked={cronNotificationEnabled}
+                    onChange={handleCronNotificationEnabledChange}
+                  />
                 </PreferenceRow>
-              ))}
-            </div>
-            {/* Notifications: the switch, and under it — only while it is on — the scheduled tasks' own. */}
-            <Collapse
-              bordered={false}
-              activeKey={notificationEnabled ? ['notification'] : []}
-              onChange={(_, keys) => {
-                const shouldExpand = (keys as string[]).includes('notification');
-                if (shouldExpand && !notificationEnabled) {
-                  handleNotificationEnabledChange(true);
-                } else if (!shouldExpand && notificationEnabled) {
-                  handleNotificationEnabledChange(false);
-                }
-              }}
-              className='border-t border-t-b-base [&_.arco-collapse-item]:!border-none [&_.arco-collapse-item-header]:!px-0 [&_.arco-collapse-item-header]:!bg-transparent [&_.arco-collapse-item-header-title]:!flex-1 [&_.arco-collapse-item-content]:!bg-transparent [&_.arco-collapse-item-content-box]:!px-0 [&_.arco-collapse-item-content-box]:!pb-0'
-            >
-              <Collapse.Item
-                name='notification'
-                showExpandIcon={false}
-                header={
-                  <div className='flex flex-1 items-center justify-between w-full'>
-                    <span className='text-14px font-500 leading-22px text-t-primary'>{t('settings.notification')}</span>
-                    <Switch
-                      size='small'
-                      checked={notificationEnabled}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={handleNotificationEnabledChange}
-                    />
-                  </div>
-                }
-              >
-                <div className='ps-12px'>
-                  <PreferenceRow label={t('settings.cronNotificationEnabled')}>
-                    <Switch
-                      size='small'
-                      checked={cronNotificationEnabled}
-                      disabled={!notificationEnabled}
-                      onChange={handleCronNotificationEnabledChange}
-                    />
-                  </PreferenceRow>
-                </div>
-              </Collapse.Item>
-            </Collapse>
+              </div>
+            ) : null}
           </div>
 
-          <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px'>
-            <Form form={form} layout='vertical' className='space-y-16px' onValuesChange={handleValuesChange}>
-              <DirInputItem label={t('settings.workDir')} field='workDir' />
-              <DirInputItem label={t('settings.logDir')} field='logDir' />
-              {error && (
-                <Alert
-                  className='mt-16px'
-                  type='error'
-                  content={
-                    <div>
-                      <span>{t('settings.dirChangeFailed')}</span>
-                      {error.detail && (
-                        <div className='mt-4px text-12px text-t-secondary break-all'>{error.detail}</div>
-                      )}
-                    </div>
-                  }
-                />
-              )}
-            </Form>
-          </div>
+          <Form form={form} layout='vertical' className='settings-list' onValuesChange={handleValuesChange}>
+            <DirInputItem label={t('settings.workDir')} field='workDir' />
+            <DirInputItem label={t('settings.logDir')} field='logDir' />
+          </Form>
+          {error && (
+            <Alert
+              type='error'
+              content={
+                <div>
+                  <span>{t('settings.dirChangeFailed')}</span>
+                  {error.detail && <div className='mt-4px text-12px text-t-secondary break-all'>{error.detail}</div>}
+                </div>
+              }
+            />
+          )}
 
           {/* Developer settings: DevTools + CDP (only visible in dev mode) */}
           <DevSettings />

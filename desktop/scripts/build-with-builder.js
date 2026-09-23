@@ -10,7 +10,7 @@
  * - Packaging only: use --pack-only to skip electron-builder distributable creation
  */
 
-const { execSync, spawnSync } = require('child_process');
+const { execFileSync, execSync, spawnSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -761,6 +761,16 @@ try {
 
   // 6. Prepare hub resources (index.json + extension zips for offline fallback)
   execSync('node scripts/prepareHubResources.js', { stdio: 'inherit', env: process.env });
+
+  // mu itself, for the system and processor being built: resources/harness, which extraResources copies into the app
+  // and afterPack checks (scripts/kyrn/bundle-harness.mjs). MU_HARNESS_TARBALL names the mu-agent tarball to carry.
+  const systems = { '--win': 'win32', '--linux': 'linux', '--mac': 'darwin' };
+  const harnessPlatform = Object.entries(systems).find(([flag]) => builderArgs.includes(flag))?.[1] ?? process.platform;
+  execFileSync(
+    process.execPath,
+    [path.join(__dirname, 'kyrn', 'bundle-harness.mjs'), '--platform', harnessPlatform, '--arch', targetArch],
+    { stdio: 'inherit', env: process.env }
+  );
 
   // 6. 运行 electron-builder 生成分发包（DMG/ZIP/EXE等）
   // Run electron-builder to create distributables (DMG/ZIP/EXE, etc.)

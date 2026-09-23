@@ -90,18 +90,12 @@ vi.mock('@/renderer/hooks/file/useAbortUploadsOnConversationChange', () => ({
   useAbortUploadsOnConversationChange: vi.fn(),
 }));
 
-vi.mock('@/renderer/hooks/system/useLiveTranscriptInsertion', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/renderer/hooks/system/useLiveTranscriptInsertion')>();
-  return { ...actual, useLiveTranscriptInsertion: () => ({ handleLiveTranscript: vi.fn() }) };
-});
-
 vi.mock('@/renderer/utils/emitter', () => ({
   emitter: { emit: vi.fn() },
   useAddEventListener: vi.fn(),
 }));
 
 vi.mock('@/renderer/components/chat/BtwOverlay', () => ({ default: () => null }));
-vi.mock('@/renderer/components/chat/SpeechInputButton', () => ({ default: () => null }));
 vi.mock('@/renderer/components/media/UploadProgressBar', () => ({ default: () => null }));
 
 import SendBox from '@/renderer/components/chat/SendBox';

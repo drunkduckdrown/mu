@@ -1,6 +1,4 @@
 import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { dirname, join } from 'node:path';
 import { createInterface } from 'node:readline';
 import type { Readable, Writable } from 'node:stream';
 import {
@@ -11,6 +9,7 @@ import {
   type LoginStatus,
   type SubscriptionProvider,
 } from '../../../common/kyrn/login';
+import { launchCommand } from './piRpc';
 
 /**
  * What the manager needs of the runner process: lines out, lines in, and a way to end it. Its end is read from
@@ -70,8 +69,8 @@ const toModels = (value: unknown): LoginModel[] =>
     .map((model) => ({ id: str(model.id), name: str(model.name) || str(model.id) }));
 
 /**
- * One sign-in at a time. The flow runs in a child process (pi's code, pi's credential store); this keeps the state
- * a screen polls, opens the provider's page in the browser, and passes the person's answer to a prompt back in.
+ * One sign-in at a time. The flow runs in a child process, `mu auth` (pi's code, pi's credential store); this keeps the
+ * state a screen polls, opens the provider's page in the browser, and passes the person's answer to a prompt back in.
  */
 export class LoginManager {
   private current: LoginState = { id: 0, phase: 'idle' };
@@ -244,32 +243,16 @@ export class LoginManager {
 }
 
 /**
- * tsx the way the harness itself starts: its own copy, looked for from its checkout upwards (a worktree kept under
- * the main checkout runs on the main checkout's node_modules), and the desktop's copy only when it has none.
- */
-export function findTsx(root: string, desktopRoot: string, exists: (path: string) => boolean = existsSync): string {
-  for (let dir = root; ; dir = dirname(dir)) {
-    const entry = join(dir, 'node_modules', 'tsx', 'dist', 'cli.mjs');
-    if (exists(entry)) return entry;
-    if (dirname(dir) === dir) break;
-  }
-  return join(desktopRoot, 'node_modules', 'tsx', 'dist', 'cli.mjs');
-}
-
-/**
- * The runner as a child process: pi from the harness checkout, run from source like the harness runs, which needs
- * the harness's tsconfig (its path mapping points pi's packages at their sources; they are not built). Without a
+ * The runner as a child process: `mu auth status | login <provider> | logout <provider>`, the harness's own sign-in,
+ * started through its launcher as a session is (harness.ts, launcherOf), so it is the same for a checkout, mu-agent
+ * from npm and the copy inside the packaged app. It signs in to mu's agent dir, the one the settings read. Without a
  * shell, so nothing in a path is ever parsed as a command, on Windows as elsewhere.
  */
-export function spawnLoginRunner(root: string, agentDir: string, desktopRoot: string): SpawnRunner {
-  const tsx = findTsx(root, desktopRoot);
-  const tsconfig = join(root, 'tsconfig.json');
-  const runner = join(desktopRoot, 'packages', 'desktop', 'src', 'process', 'agent', 'kyrn', 'loginRunner.ts');
+export function spawnAuth(launcher: string, agentDir: string): SpawnRunner {
   return (args) => {
-    const env: NodeJS.ProcessEnv = { ...process.env, KYRN_ROOT: root, MU_LOGIN_AGENT_DIR: agentDir };
-    delete env.ELECTRON_RUN_AS_NODE;
-    return spawn(process.env.MU_NODE || 'node', [tsx, '--tsconfig', tsconfig, runner, ...args], {
-      env,
+    const start = launchCommand(launcher, ['auth', ...args]);
+    return spawn(start.command, start.args, {
+      env: { ...process.env, ...start.env, MU_AGENT_DIR: agentDir },
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true,
     });

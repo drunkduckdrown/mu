@@ -36,8 +36,6 @@ const MAIN_PROCESS_FILES = [
   'packages/desktop/src/process/bridge/applicationBridgeCore.ts',
   'packages/desktop/src/process/bridge/dialogBridge.ts',
   'packages/desktop/src/process/bridge/notificationBridge.ts',
-  'packages/desktop/src/process/pet/petConfirmManager.ts',
-  'packages/desktop/src/process/pet/petManager.ts',
   'packages/desktop/src/process/services/i18n/index.ts',
   'packages/desktop/src/process/startup/backendStartupFailure.ts',
   'packages/desktop/src/process/startup/quitCleanup.ts',

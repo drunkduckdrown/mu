@@ -288,6 +288,7 @@ export class Telemetry {
         for (const [name, kind] of [
           ['board.jsonl', 'hive.note'],
           ['deliveries.jsonl', 'hive.delivery'],
+          ['relations.jsonl', 'hive.relation'],
           ['gate.jsonl', 'hive.gate'],
         ])
           this.ingest(join(dir, name), kind, run);

@@ -107,11 +107,11 @@ export function useSettingsNav(): SettingsNavGroup[] {
 }
 
 /**
- * The settings rail: seven groups under muted headers, whitespace between them and no lines. The page shown is marked
- * by a grey row and a thin bar of the accent on its left edge (mu-shell.css). A row says only what its group's header
- * leaves out ("Context" under "Decision points"); collapsed, only the icons remain, and each tooltip gives the whole
- * name. The rail is taller than most windows, so whenever the page changes (a click, the palette, a link) the rail
- * scrolls just far enough to show that page's row.
+ * The settings rail: seven groups under small grey headers, whitespace between them and no lines. The page shown is
+ * marked by weight alone: its row reads in the body colour and bold, the others in grey, with no fill and no accent. A
+ * row says only what its group's header leaves out ("Context" under "Decision points"); collapsed, only the icons
+ * remain, and each tooltip gives the whole name. The rail is taller than most windows, so whenever the page changes (a
+ * click, the palette, a link) the rail scrolls just far enough to show that page's row.
  */
 const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }> = ({
   collapsed = false,
@@ -145,7 +145,7 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
           className={classNames('settings-sider__group flex flex-col gap-2px shrink-0', index > 0 && 'mt-10px')}
         >
           {/* Collapsed, the header goes and the margin alone keeps the groups apart. */}
-          <div className='settings-sider__group-header collapsed-hidden h-24px px-8px flex items-end pb-4px text-12px font-[500] lh-16px text-t-tertiary text-nowrap overflow-hidden'>
+          <div className='settings-sider__group-header collapsed-hidden h-24px px-8px flex items-end pb-4px text-11px font-[500] lh-16px text-t-tertiary text-nowrap overflow-hidden'>
             {group.label}
           </div>
           {group.items.map((item) => {
@@ -157,12 +157,9 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
                   data-settings-path={item.path}
                   aria-current={isSelected ? 'page' : undefined}
                   className={classNames(
-                    'settings-sider__item h-32px rd-8px flex items-center gap-8px group cursor-pointer relative overflow-hidden shrink-0 transition-colors',
+                    'settings-sider__item h-32px rd-6px flex items-center gap-8px group cursor-pointer relative overflow-hidden shrink-0 transition-colors',
                     collapsed ? 'w-full justify-center px-0' : 'justify-start px-8px',
-                    {
-                      'hover:bg-fill-2': !isSelected,
-                      '!bg-fill-2': isSelected,
-                    }
+                    { 'hover:bg-fill-1': !isSelected }
                   )}
                   onClick={() => {
                     Promise.resolve(navigate(`/settings/${item.path}`, { replace: true })).catch((error) => {
@@ -186,13 +183,21 @@ const SettingsSider: React.FC<{ collapsed?: boolean; tooltipEnabled?: boolean }>
                           theme: 'outline',
                           size: '16',
                           strokeWidth: 3,
-                          className: 'block leading-none text-t-secondary',
+                          className: classNames(
+                            'block leading-none',
+                            isSelected ? 'text-t-primary' : 'text-t-tertiary'
+                          ),
                         }
                       )
                     )}
                   </span>
                   <FlexFullContainer className='h-24px collapsed-hidden'>
-                    <div className='settings-sider__item-label text-nowrap overflow-hidden inline-block w-full text-13px font-[500] lh-24px whitespace-nowrap text-t-primary'>
+                    <div
+                      className={classNames(
+                        'settings-sider__item-label text-nowrap overflow-hidden inline-block w-full text-13px lh-24px whitespace-nowrap',
+                        isSelected ? 'font-600 text-t-primary' : 'font-400 text-t-secondary group-hover:text-t-primary'
+                      )}
+                    >
                       {item.railLabel}
                     </div>
                   </FlexFullContainer>

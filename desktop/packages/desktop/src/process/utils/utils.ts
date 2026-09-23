@@ -47,6 +47,11 @@ const ensureCliSafeSymlink = (targetPath: string, symlinkName: string): string =
   if (!getPlatformServices().paths.needsCliSafeSymlinks()) {
     return targetPath;
   }
+  // An E2E run keeps to its sandbox profile (AIONUI_E2E_USER_DATA_DIR, a temporary folder): a shortcut in the real
+  // home folder would outlive the run and re-point the installed app's own.
+  if (process.env.AIONUI_E2E_TEST === '1' && process.env.AIONUI_E2E_USER_DATA_DIR?.trim()) {
+    return targetPath;
+  }
 
   const homePath = getElectronPathOrFallback('home');
   const symlinkPath = path.join(homePath, symlinkName);

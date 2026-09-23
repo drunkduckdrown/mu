@@ -6,6 +6,7 @@
 
 import { ipcBridge } from '@/common';
 import type { TChatConversation } from '@/common/config/storage';
+import { getConversationOrNull } from '@/renderer/pages/conversation/utils/conversationCache';
 import { addEventListener } from '@/renderer/utils/emitter';
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 
@@ -371,7 +372,7 @@ const refreshConversations = () => {
 };
 
 /** Source of a generating-state transition, logged for field diagnosis. */
-type GeneratingTransitionSource = 'stream' | 'reconcile' | 'terminal' | 'turnCompleted' | 'deleted';
+type GeneratingTransitionSource = 'stream' | 'reconcile' | 'terminal' | 'turnCompleted' | 'deleted' | 'verified';
 
 const logGeneratingTransition = (conversation_id: string, next: boolean, source: GeneratingTransitionSource) => {
   void ipcBridge.application.writeRendererLog
@@ -387,17 +388,86 @@ const logGeneratingTransition = (conversation_id: string, next: boolean, source:
     .catch(() => {});
 };
 
+/**
+ * Turns that are over, per conversation, from a terminal frame or `turn.completed`. A runtime summary taken while one
+ * of them ran must not light the spinner again, for nothing would put it out: a command mu answers at once (the
+ * board's `/board on`) ends its turn before the renderer reads the send response, whose summary still says
+ * `is_processing` (seen live: the row kept spinning until the next turn ended, once for 78 minutes).
+ */
+const ENDED_TURNS_KEPT = 16;
+const endedTurnIdsByConversation = new Map<string, string[]>();
+
+const noteTurnEnded = (conversation_id: string, turn_id: string | null | undefined) => {
+  if (!turn_id) return;
+  const ended = endedTurnIdsByConversation.get(conversation_id) ?? [];
+  if (ended.includes(turn_id)) return;
+  endedTurnIdsByConversation.set(conversation_id, [...ended.slice(-(ENDED_TURNS_KEPT - 1)), turn_id]);
+};
+
+const hasTurnEnded = (conversation_id: string, turn_id: string | null | undefined): boolean =>
+  typeof turn_id === 'string' &&
+  turn_id !== '' &&
+  (endedTurnIdsByConversation.get(conversation_id) ?? []).includes(turn_id);
+
+/**
+ * A spinner lit by a runtime summary alone waits for a live frame to confirm it. Until one comes it is checked against
+ * the backend at this interval and put out once the backend says the conversation is idle, so a missed terminal
+ * frame or a summary without a turn id cannot keep it spinning.
+ */
+export const UNCONFIRMED_GENERATING_CHECK_MS = 10_000;
+/** Checks before an unconfirmed spinner is left to its turn's terminal frame alone. */
+const UNCONFIRMED_GENERATING_CHECKS = 30;
+const unconfirmedGenerating = new Map<string, ReturnType<typeof setTimeout>>();
+
+const confirmGenerating = (conversation_id: string) => {
+  const timer = unconfirmedGenerating.get(conversation_id);
+  if (timer === undefined) return;
+  clearTimeout(timer);
+  unconfirmedGenerating.delete(conversation_id);
+};
+
+const checkUnconfirmedGenerating = (conversation_id: string, attempt: number) => {
+  const timer: ReturnType<typeof setTimeout> = setTimeout(() => {
+    // A live frame, or the spinner going out, settles it while the check is on its way.
+    const current = () => unconfirmedGenerating.get(conversation_id) === timer;
+    const again = () => {
+      if (!current()) return;
+      if (attempt < UNCONFIRMED_GENERATING_CHECKS) checkUnconfirmedGenerating(conversation_id, attempt + 1);
+      else unconfirmedGenerating.delete(conversation_id);
+    };
+    void getConversationOrNull(conversation_id).then((conversation) => {
+      if (!current()) return;
+      // A backend that reports no runtime cannot say either way: the turn's own frames decide.
+      if (conversation && !conversation.runtime) {
+        unconfirmedGenerating.delete(conversation_id);
+        return;
+      }
+      if (conversation?.runtime?.is_processing === true) {
+        again();
+        return;
+      }
+      unconfirmedGenerating.delete(conversation_id);
+      clearGenerating(conversation_id, 'verified');
+    }, again);
+  }, UNCONFIRMED_GENERATING_CHECK_MS);
+  unconfirmedGenerating.set(conversation_id, timer);
+};
+
 const markGenerating = (conversation_id: string, source: GeneratingTransitionSource = 'stream') => {
+  // A live frame confirms the spinner, whoever lit it.
+  if (source === 'stream') confirmGenerating(conversation_id);
   if (generatingConversationIdsState.has(conversation_id)) {
     return;
   }
 
   generatingConversationIdsState = new Set(generatingConversationIdsState).add(conversation_id);
+  if (source === 'reconcile') checkUnconfirmedGenerating(conversation_id, 1);
   logGeneratingTransition(conversation_id, true, source);
   emitStoreChange();
 };
 
 const clearGenerating = (conversation_id: string, source: GeneratingTransitionSource = 'terminal') => {
+  confirmGenerating(conversation_id);
   if (!generatingConversationIdsState.has(conversation_id)) {
     return;
   }
@@ -407,6 +477,17 @@ const clearGenerating = (conversation_id: string, source: GeneratingTransitionSo
   generatingConversationIdsState = next;
   logGeneratingTransition(conversation_id, false, source);
   emitStoreChange();
+};
+
+const logStaleSummaryIgnored = (conversation_id: string, turn_id: string) => {
+  void ipcBridge.application.writeRendererLog
+    .invoke({
+      level: 'info',
+      tag: 'conversationListSync',
+      message: 'sidebar_generating_stale_summary_ignored',
+      data: { conversation_id, turn_id },
+    })
+    .catch(() => {});
 };
 
 /**
@@ -424,14 +505,25 @@ export const shouldReconcileMarkGenerating = (isProcessing: boolean): boolean =>
  * runtime summary's `is_processing` bit is in hand for a conversation — it
  * covers the case where a WS stream frame was missed (window reload/reconnect
  * race) and the store would otherwise never know the turn is still running.
+ *
+ * @param turn_id the turn the summary describes: a summary of a turn that has ended since is stale and lights nothing
  */
-export const reconcileGeneratingFromRuntime = (conversation_id: string, isProcessing: boolean): void => {
+export const reconcileGeneratingFromRuntime = (
+  conversation_id: string,
+  isProcessing: boolean,
+  turn_id?: string | null
+): void => {
   if (!conversation_id) {
     return;
   }
-  if (shouldReconcileMarkGenerating(isProcessing)) {
-    markGenerating(conversation_id, 'reconcile');
+  if (!shouldReconcileMarkGenerating(isProcessing)) {
+    return;
   }
+  if (turn_id && hasTurnEnded(conversation_id, turn_id)) {
+    logStaleSummaryIgnored(conversation_id, turn_id);
+    return;
+  }
+  markGenerating(conversation_id, 'reconcile');
 };
 
 /**
@@ -596,6 +688,7 @@ const initializeConversationListSyncStore = () => {
       clearCompletionUnreadState(event.conversation_id);
       clearManualUnreadState(event.conversation_id);
       clearCompleted(event.conversation_id);
+      endedTurnIdsByConversation.delete(event.conversation_id);
     }
     refreshConversations();
   });
@@ -616,6 +709,7 @@ const initializeConversationListSyncStore = () => {
     }
 
     if (isTerminalStreamMessage(message)) {
+      noteTurnEnded(conversation_id, message.turn_id);
       const wasGenerating = generatingConversationIdsState.has(conversation_id);
       if (wasGenerating && activeConversationIdState !== conversation_id) {
         markCompletionUnread(conversation_id);
@@ -657,6 +751,7 @@ const initializeConversationListSyncStore = () => {
     if (isTerminalTurnState(event.state) && activeConversationIdState !== event.session_id) {
       markCompletionUnread(event.session_id);
     }
+    noteTurnEnded(event.session_id, event.turn_id);
     markCompleted(event.session_id, event.turn_id);
     clearGenerating(event.session_id, 'turnCompleted');
     refreshConversations();

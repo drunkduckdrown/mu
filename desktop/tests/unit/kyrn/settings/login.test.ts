@@ -1,11 +1,13 @@
 import { EventEmitter } from 'node:events';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { PassThrough } from 'node:stream';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  findTsx,
   LoginManager,
   openable,
+  spawnAuth,
   type RunnerProcess,
 } from '../../../../packages/desktop/src/process/agent/kyrn/login';
 
@@ -322,10 +324,27 @@ describe('what the sign-in may open and run', () => {
     expect(openable(undefined)).toBe(false);
   });
 
-  it('runs on the harness’s own tsx, found from its checkout upwards, and the desktop’s only without one', () => {
-    const root = join('/work', 'KYRN', '.claude', 'worktrees', 'w');
-    const main = join('/work', 'KYRN', 'node_modules', 'tsx', 'dist', 'cli.mjs');
-    expect(findTsx(root, '/desk', (path) => path === main)).toBe(main);
-    expect(findTsx(root, '/desk', () => false)).toBe(join('/desk', 'node_modules', 'tsx', 'dist', 'cli.mjs'));
+  it('runs `mu auth` through the harness’s launcher, signed in to mu’s agent dir', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mu-auth-'));
+    try {
+      // A launcher that answers as `mu auth status` does, and says what it was started with.
+      const launcher = join(dir, 'mu.mjs');
+      writeFileSync(
+        launcher,
+        [
+          'const [command, mode] = process.argv.slice(2);',
+          'const models = [{ id: `${command} ${mode}`, name: process.env.MU_AGENT_DIR }];',
+          "const signedIn = [{ provider: 'openai-codex', models }];",
+          "console.log(JSON.stringify({ type: 'status', offered: ['openai-codex', 'anthropic'], signedIn }));",
+        ].join('\n')
+      );
+      const manager = new LoginManager(spawnAuth(launcher, join(dir, 'agent')), () => {});
+      await expect(manager.status()).resolves.toEqual({
+        offered: ['openai-codex', 'anthropic'],
+        signedIn: [{ provider: 'openai-codex', models: [{ id: 'auth status', name: join(dir, 'agent') }] }],
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

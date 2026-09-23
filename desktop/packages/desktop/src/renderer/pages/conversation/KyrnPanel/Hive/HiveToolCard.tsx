@@ -7,12 +7,14 @@ import type { NormalizedToolStatus } from '@/common/chat/normalizeToolCall';
 import { requestHiveFocus } from '../focus';
 import BeeAvatar from './BeeAvatar';
 import { beeErrorText, swarmTitleText } from './codes';
+import HiveMiniature from './Graph/Miniature';
 import styles from './Hive.module.css';
 
 /**
  * A sub-agent run in the transcript: one line per sub-agent, never the tool's payload. Each line says who it is (its
  * name and the role it was given) and what it is doing right now — the tool it is running, what it is thinking about,
- * or, once it is back, the first of what it reported. A line opens that sub-agent in the panel.
+ * or, once it is back, the first of what it reported. The header carries the run's map in miniature, and opens the
+ * run in the panel's hive tab; a line opens that sub-agent there.
  */
 
 /**
@@ -68,6 +70,9 @@ export default function HiveToolCard({
         aria-label={t('common.kyrn.hiveView.open')}
       >
         <span className={styles.agentsTitle}>{title}</span>
+        {data.snapshot && (
+          <HiveMiniature kind={data.snapshot.kind} bees={data.snapshot.bees} latest={data.snapshot.latest} />
+        )}
         <span className={styles.agentsSummary}>{summary}</span>
         <Right size={12} />
       </Button>

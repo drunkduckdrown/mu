@@ -345,7 +345,7 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({ edito
     <div className='flex flex-col gap-16px pb-24px'>
       {isBuiltin && activeAssistant ? (
         <div
-          className='rounded-12px bg-fill-1 px-14px py-12px text-13px leading-20px text-t-secondary md:rounded-16px'
+          className='rounded-8px bg-fill-1 px-14px py-12px text-13px leading-20px text-t-secondary'
           data-testid='assistant-builtin-readonly-banner'
         >
           <div className='flex items-start gap-8px'>
@@ -382,7 +382,7 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({ edito
       ) : null}
       {isGenerated ? (
         <div
-          className='rounded-12px bg-fill-1 px-14px py-12px text-13px leading-20px text-t-secondary md:rounded-16px'
+          className='rounded-8px bg-fill-1 px-14px py-12px text-13px leading-20px text-t-secondary'
           data-testid='assistant-cli-readonly-banner'
         >
           <div className='flex items-start gap-8px'>
@@ -432,14 +432,14 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({ edito
       />
 
       <div
-        className='rounded-12px bg-2 px-[12px] py-[16px] md:rounded-16px md:px-[24px] md:py-[20px]'
+        className='flex flex-col border-0 border-t border-solid border-[var(--border-base)] pt-16px first:border-t-0 first:pt-0'
         data-testid='assistant-card-engine'
       >
         <div className='mb-12px flex items-center gap-8px'>
-          <div className='text-14px font-500 text-t-primary'>
+          <div className='text-13px font-600 text-t-primary'>
             {t('settings.assistantEngineSection', { defaultValue: 'Engine' })}
           </div>
-          <span className='rounded-6px border border-warning-8 bg-warning-8 px-8px py-2px text-10px font-600 text-white'>
+          <span className='rounded-4px border border-warning-8 bg-warning-8 px-8px py-2px text-10px font-600 text-white'>
             {t('settings.assistantOnlyNewConversation', { defaultValue: 'New conversations only' })}
           </span>
         </div>
@@ -504,7 +504,7 @@ const AssistantEditorSections: React.FC<AssistantEditorSectionsProps> = ({ edito
                     {renderAgentAvatar(option)}
                     <span className='truncate'>{option.name}</span>
                     {option.isExtension ? (
-                      <Tag size='small' color='arcoblue'>
+                      <Tag size='small' color='gray'>
                         ext
                       </Tag>
                     ) : null}

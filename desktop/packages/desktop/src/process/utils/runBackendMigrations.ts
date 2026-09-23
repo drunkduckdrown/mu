@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { execFile } from 'node:child_process';
 import { migrateConfigStorage, migrateLegacyMcpConfigToDb, migrateProviders } from '@/common/config/configMigration';
 import { httpRequest } from '@/common/adapter/httpBridge';
 import { mcpService } from '@/common/adapter/ipcBridge';
@@ -223,47 +222,6 @@ function buildDefaultMcpServers(): McpImportServer[] {
   ];
 }
 
-async function isCommandAvailable(command: string): Promise<boolean> {
-  return await new Promise((resolve) => {
-    execFile(command, ['--version'], { timeout: 3000 }, (error) => {
-      if (!error) {
-        resolve(true);
-        return;
-      }
-
-      const err = error as NodeJS.ErrnoException;
-      if (err.code === 'ENOENT') {
-        resolve(false);
-        return;
-      }
-
-      resolve(true);
-    });
-  });
-}
-
-async function ensureBuiltinChromeDevtoolsAvailability(server?: IMcpServer): Promise<void> {
-  if (
-    !server ||
-    server.name !== BUILTIN_CHROME_DEVTOOLS_NAME ||
-    server.transport.type !== 'stdio' ||
-    server.transport.command !== 'npx'
-  ) {
-    return;
-  }
-
-  const hasNpx = await isCommandAvailable(server.transport.command);
-  if (hasNpx) {
-    return;
-  }
-
-  try {
-    await mcpService.testMcpConnection.invoke(server);
-  } catch (error) {
-    console.warn('[Migration] chrome-devtools MCP preflight failed', error);
-  }
-}
-
 function buildOriginalJsonFromTransport(server: Pick<IMcpServer, 'name' | 'description' | 'transport'>): string {
   const transport_config =
     server.transport.type === 'stdio'
@@ -333,9 +291,8 @@ async function ensureBootstrapMcpServersInDb(configFile: ConfigFile): Promise<vo
     });
   }
 
-  const refreshedServers = await mcpService.listServers.invoke();
-  const chromeDevtoolsServer = refreshedServers.find((server) => server.name === BUILTIN_CHROME_DEVTOOLS_NAME);
-  await ensureBuiltinChromeDevtoolsAvailability(chromeDevtoolsServer);
+  // The chrome-devtools server stays off until the person turns it on. Nothing here tries it: on a machine without
+  // Node, a test connection is `npx -y chrome-devtools-mcp@latest` on the bundled Node, a download at first start.
 
   if (
     imageEnvResolution.ok === true &&

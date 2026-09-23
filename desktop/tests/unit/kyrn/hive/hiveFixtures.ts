@@ -60,6 +60,21 @@ export const hiveEvents: Activity[] = [
   }),
   activity('gate', 'hive.gate', { from: 'prefix-mutations', to: 'provider-cache', deliver: true }),
   activity('delivery', 'hive.delivery', { note: 'note-1', to: 'provider-cache' }),
+  activity('note-2', 'hive.note', {
+    id: 'note-2',
+    bee: 'provider-cache',
+    kind: 'finding',
+    text: 'The prefix changes once the provider swaps its cache key.',
+  }),
+  // The judge read the second note as replacing the first: a correction, drawn from its author to the first's.
+  activity('relation', 'hive.relation', {
+    later: 'note-2',
+    earlier: 'note-1',
+    relation: 'supersedes',
+    score: 0.9,
+    by: 'provider-cache',
+    at: '2026-09-23T00:00:00.000Z',
+  }),
   activity(
     'tool-start',
     'bee.event',

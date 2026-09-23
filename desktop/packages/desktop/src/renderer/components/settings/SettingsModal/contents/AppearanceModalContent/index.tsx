@@ -69,26 +69,25 @@ const AppearanceModalContent: React.FC = () => {
     <div className='flex flex-col h-full w-full'>
       {/* 内容区域 / Content Area */}
       <AionScrollArea className='flex-1 min-h-0 pb-16px' disableOverflow={isPageMode}>
-        <div className='space-y-16px'>
+        {/* Quiet lists and groups, no boxes: the language, the theme gallery, the fonts, the scale. */}
+        <div className='flex flex-col gap-16px'>
           {/* 语言 / Language */}
-          <div className='px-16px md:px-24px py-14px md:py-16px bg-base border border-color-b-base rd-8px'>
-            <div className='w-full flex flex-col divide-y divide-b-base' data-testid='appearance-language'>
-              <PreferenceRow label={t('settings.language')}>
-                <LanguageSwitcher />
-              </PreferenceRow>
-            </div>
+          <div className='settings-list' data-testid='appearance-language'>
+            <PreferenceRow label={t('settings.language')}>
+              <LanguageSwitcher />
+            </PreferenceRow>
           </div>
 
           {/* 主题画廊 / Theme Gallery */}
-          <div className='px-16px md:px-24px py-14px md:py-16px bg-base border border-color-b-base rd-8px'>
-            <div className='text-14px font-500 text-t-primary leading-22px mb-12px'>{t('settings.theme')}</div>
+          <section className='settings-group'>
+            <h3 className='settings-group__title'>{t('settings.theme')}</h3>
             <CssThemeSettings />
-          </div>
+          </section>
 
           {/* 字体（字族 + 字号）/ Fonts (family + size) */}
-          <div className='px-16px md:px-24px py-14px md:py-16px bg-base border border-color-b-base rd-8px'>
-            <div className='text-14px font-500 text-t-primary leading-22px mb-12px'>{t('settings.fonts')}</div>
-            <div className='w-full flex flex-col divide-y divide-b-base'>
+          <section className='settings-group'>
+            <h3 className='settings-group__title'>{t('settings.fonts')}</h3>
+            <div className='settings-list'>
               {FONT_SIZE_KEYS.map((key) => (
                 <PreferenceRow key={key} label={t(FONT_REGION_LABEL_KEY[key])}>
                   <div className='flex items-center gap-12px flex-wrap justify-end'>
@@ -110,15 +109,13 @@ const AppearanceModalContent: React.FC = () => {
                 </PreferenceRow>
               ))}
             </div>
-          </div>
+          </section>
 
           {/* 缩放控制 / Scale Control */}
-          <div className='px-16px md:px-24px py-14px md:py-16px bg-base border border-color-b-base rd-8px'>
-            <div className='w-full flex flex-col divide-y divide-b-base'>
-              <PreferenceRow label={t('settings.scale')}>
-                <ScaleControl />
-              </PreferenceRow>
-            </div>
+          <div className='settings-list'>
+            <PreferenceRow label={t('settings.scale')}>
+              <ScaleControl />
+            </PreferenceRow>
           </div>
         </div>
       </AionScrollArea>

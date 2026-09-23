@@ -70,6 +70,18 @@ vi.mock('@/renderer/pages/conversation/Preview', () => ({
   usePreviewContext: () => wires.preview,
   PreviewPanel: () => <div data-testid='preview-panel' />,
 }));
+// The browser itself has tests of its own (tests/unit/preview/browser/browserPanel.dom.test.tsx).
+vi.mock('@/renderer/pages/conversation/Preview/browser/BrowserPanel', () => ({
+  default: ({ maximized, onToggleMaximize }: { maximized: boolean; onToggleMaximize?: () => void }) => (
+    <div data-testid='browser-panel' data-maximized={maximized ? 'true' : 'false'}>
+      {onToggleMaximize ? (
+        <button type='button' onClick={onToggleMaximize}>
+          fill the page
+        </button>
+      ) : null}
+    </div>
+  ),
+}));
 vi.mock('@/renderer/pages/conversation/explorer/ExplorerContainer', () => ({
   ExplorerContainer: ({
     view,
@@ -91,7 +103,11 @@ vi.mock('@/renderer/pages/conversation/GroupedHistory/hooks/useVisibleConversati
 vi.mock('@/renderer/utils/platform', () => ({ isElectronDesktop: () => true, isMacOS: () => true }));
 
 import WorkPanelHost, { panelGeometry } from '@/renderer/components/layout/WorkPanel';
-import { readWorkPanelMemory, resetWorkPanelStoreForTest } from '@/renderer/components/layout/WorkPanel/workPanelStore';
+import {
+  readWorkPanelMemory,
+  rememberWorkPanel,
+  resetWorkPanelStoreForTest,
+} from '@/renderer/components/layout/WorkPanel/workPanelStore';
 import { useConversationShortcuts } from '@/renderer/hooks/ui/useConversationShortcuts';
 import {
   resetCurrentConversationForTest,
@@ -102,6 +118,12 @@ import {
   setCurrentProject,
 } from '@/renderer/pages/conversation/explorer/currentProjectStore';
 import { requestHiveFocus } from '@/renderer/pages/conversation/KyrnPanel';
+import {
+  browserNow,
+  openBrowserPage,
+  resetBrowserStoreForTest,
+  switchBrowserScope,
+} from '@/renderer/pages/conversation/Preview/browser/browserStore';
 import { announcePreviewOpened } from '@/renderer/pages/conversation/Preview/context/previewOpeners';
 import {
   dispatchWorkspaceToggleEvent,
@@ -192,6 +214,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   localStorage.clear();
   resetWorkPanelStoreForTest();
+  resetBrowserStoreForTest();
   resetCurrentConversationForTest();
   resetCurrentProjectForTest();
   wires.records = {};
@@ -206,7 +229,7 @@ afterEach(() => {
 });
 
 describe('the work panel', () => {
-  it('shows its tabs in one strip, in order: board, judge, hive, lessons, files, preview, source', async () => {
+  it('shows its tabs in one strip, in order: board, judge, hive, lessons, files, preview, source, browser', async () => {
     show();
     await settle();
     expect(screen.getAllByRole('tab').map((item) => item.textContent)).toEqual([
@@ -217,6 +240,7 @@ describe('the work panel', () => {
       'Files',
       'Preview',
       'Source',
+      'Browser',
     ]);
     expect(screen.getByRole('tablist')).toHaveAccessibleName(common.workPanel.tabsLabel);
   });
@@ -408,10 +432,126 @@ describe('the work panel', () => {
     expect(dots()).toEqual([]);
     expect(screen.getByText(common.workPanel.previewEmpty)).toBeInTheDocument();
 
-    // mu's browser about to type is done where the person can see it.
+    // Something the agent does where the person can see it comes up in view.
     fireEvent.click(tab('Board'));
     act(() => announcePreviewOpened('agent-watched'));
     expect(selected()).toHaveTextContent('Preview');
+  });
+
+  it('comes up on its browser when the person opens a web page, and only marks the browser when the agent does', async () => {
+    show();
+    await settle();
+    act(() => {
+      openBrowserPage('https://agent.test/', { by: 'agent' });
+    });
+    expect(panel()).toHaveAttribute('data-open', 'false');
+    expect(dots()).toEqual(['browser']);
+
+    act(() => {
+      openBrowserPage('https://person.test/', { by: 'user' });
+    });
+    expect(panel()).toHaveAttribute('data-open', 'true');
+    expect(selected()).toHaveTextContent('Browser');
+    expect(dots()).toEqual([]);
+    const body = document.querySelector('[data-body="browser"]') as HTMLElement;
+    expect(body).toHaveAttribute('data-active', 'true');
+    expect(within(body).getByTestId('browser-panel')).toBeInTheDocument();
+
+    // Already looking at the browser: the agent's next page comes to the front there, with no dot.
+    let agentPage: string | null = null;
+    act(() => {
+      agentPage = openBrowserPage('https://agent.test/next', { by: 'agent' });
+    });
+    expect(browserNow().activeTabId).toBe(agentPage);
+    expect(dots()).toEqual([]);
+
+    // Elsewhere in the panel, the agent's page is news on the browser only.
+    fireEvent.click(tab('Preview'));
+    act(() => {
+      openBrowserPage('https://agent.test/third', { by: 'agent' });
+    });
+    expect(selected()).toHaveTextContent('Preview');
+    expect(dots()).toEqual(['browser']);
+
+    // mu about to type into its page, or asking the person to confirm a step, brings the browser into view.
+    fireEvent.click(tab('Board'));
+    act(() => announcePreviewOpened('agent-watched', 'browser'));
+    expect(selected()).toHaveTextContent('Browser');
+    expect(dots()).toEqual([]);
+  });
+
+  it('marks the browser while the agent’s browser tool is at work, in the conversation it belongs to', async () => {
+    show();
+    await settle();
+    const browse = (conversation: string, status: string) =>
+      act(() =>
+        wires.stream?.({
+          type: 'tool_group',
+          conversation_id: conversation,
+          data: [{ name: 'aionui-browser__navigate_page', status }],
+        })
+      );
+    browse('conv-2', 'Executing');
+    expect(dots()).toEqual([]);
+    browse('conv-1', 'Success');
+    expect(dots()).toEqual([]);
+    browse('conv-1', 'Executing');
+    expect(dots()).toEqual(['browser']);
+    act(() => setCurrentConversation('conv-2'));
+    await settle();
+    expect(dots()).toEqual(['browser']);
+  });
+
+  it('follows the web pages an older build kept in 预览 over to 浏览器, once', async () => {
+    // An older build: the project's pages among the preview's tabs, one of them in front, the panel on 预览.
+    localStorage.setItem(
+      'preview-ui:project-1',
+      JSON.stringify({
+        isOpen: true,
+        activeTabId: 'browser-old',
+        tabs: [
+          { id: 'md-1', content: '# Notes', content_type: 'markdown', title: 'notes.md' },
+          { id: 'browser-old', content: 'https://docs.test/', content_type: 'browser', title: 'Docs' },
+        ],
+      })
+    );
+    rememberWorkPanel('conv-1', { open: true, tab: 'preview' });
+    show();
+    await settle();
+    expect(selected()).toHaveTextContent('Preview');
+
+    // The preview's scope switch brings the browser along (PreviewContext calls it with its own).
+    act(() => switchBrowserScope('project-1'));
+    expect(browserNow().tabs.map((page) => page.url)).toEqual(['https://docs.test/']);
+    expect(selected()).toHaveTextContent('Browser');
+    expect(readWorkPanelMemory('conv-1')).toMatchObject({ open: true, tab: 'browser' });
+
+    // Once: going back to 预览 and returning to the project leaves the panel where the person put it.
+    fireEvent.click(tab('Preview'));
+    act(() => switchBrowserScope('project-2'));
+    act(() => switchBrowserScope('project-1'));
+    expect(browserNow().tabs.map((page) => page.url)).toEqual(['https://docs.test/']);
+    expect(selected()).toHaveTextContent('Preview');
+  });
+
+  it('lets the browser fill the page by its own button, apart from the preview', async () => {
+    show();
+    await settle();
+    act(() => {
+      openBrowserPage('https://person.test/', { by: 'user' });
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'fill the page' }));
+    expect(panel()).toHaveAttribute('data-maximized', 'true');
+    expect(screen.getByTestId('browser-panel')).toHaveAttribute('data-maximized', 'true');
+
+    // The preview is not maximized: on its tab the panel is its usual width, and back on the browser it fills again.
+    fireEvent.click(tab('Preview'));
+    expect(panel()).not.toHaveAttribute('data-maximized');
+    fireEvent.click(tab('Browser'));
+    expect(panel()).toHaveAttribute('data-maximized', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'fill the page' }));
+    expect(panel()).not.toHaveAttribute('data-maximized');
   });
 
   it('opens on the hive tab, at the sub-agent clicked in the transcript', async () => {
@@ -439,7 +579,7 @@ describe('the work panel', () => {
     await settle();
     expect(panel()).toHaveAttribute('data-open', 'true');
     expect(selected()).toHaveTextContent('Hive');
-    const critic = screen.getByText('critic').closest('[data-bee]') as HTMLElement;
+    const critic = document.querySelector('[data-bee="critic"]') as HTMLElement;
     expect(within(critic).getByRole('button', { expanded: true })).toBeInTheDocument();
   });
 
@@ -479,8 +619,8 @@ describe('the work panel', () => {
     expect(selected()).toHaveTextContent('Judge');
     expect(document.activeElement).toBe(tab('Judge'));
     fireEvent.keyDown(tab('Judge'), { key: 'End' });
-    expect(selected()).toHaveTextContent('Source');
-    fireEvent.keyDown(tab('Source'), { key: 'Home' });
+    expect(selected()).toHaveTextContent('Browser');
+    fireEvent.keyDown(tab('Browser'), { key: 'Home' });
     expect(selected()).toHaveTextContent('Board');
   });
 
@@ -521,6 +661,8 @@ describe('the work panel', () => {
       dispatchWorkspaceToggleEvent();
     });
     expect(screen.queryByTestId('work-panel-resize')).not.toBeInTheDocument();
+    // A sheet cannot fill the page: the browser offers no button for it.
+    expect(within(screen.getByTestId('browser-panel')).queryByRole('button')).not.toBeInTheDocument();
     const backdrop = document.querySelector('[aria-hidden="true"][class*="backdrop"]') as HTMLElement;
     fireEvent.click(backdrop);
     expect(panel()).toHaveAttribute('data-open', 'false');

@@ -16,12 +16,12 @@
   min-width: 0;
 }
 
+/* A group of rows: its small title and one line under it when it has them, then the rows as a quiet list. No box: the
+   hairlines above, between and below the rows are all the frame there is. */
 .card {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  padding: 0 16px;
-  border: 1px solid var(--border-base);
-  border-radius: 8px;
-  background: var(--bg-base);
 }
 
 .cardHead {
@@ -29,14 +29,14 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 6px 8px;
-  padding: 10px 0 6px;
+  padding-bottom: 8px;
 }
 
 .cardTitle {
   color: var(--text-primary);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  line-height: 22px;
+  line-height: 20px;
 }
 
 .cardSpacer {
@@ -44,6 +44,7 @@
 }
 
 .cardSummary {
+  margin-top: -6px;
   padding-bottom: 8px;
   color: var(--text-secondary);
   font-size: 12px;
@@ -51,17 +52,41 @@
   text-wrap: balance;
 }
 
-.cardBody {
+/* A quiet list of rows. The Card's rows, a feature's options, the judge choices and the decision points use it alike:
+   a hairline above the first row and between rows, none under the last (settings.css draws the other pages alike). */
+.cardBody,
+.list {
+  min-width: 0;
   border-top: 1px solid var(--border-base);
 }
 
-.groupTitle {
-  margin: 6px 0 -6px;
+/* The small title of a group of a page, sitting 8px above what it names (the page's rhythm is 16px). */
+.groupTitle,
+.groupLabel {
+  margin: 0 0 -8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+/* A group of a page: its small title, and one line on what it holds. */
+.groupHead {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: -8px;
+}
+
+.groupHead .groupTitle {
+  margin: 0;
+}
+
+.groupHelp {
   color: var(--text-secondary);
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
   line-height: 18px;
+  text-wrap: balance;
 }
 
 .search {
@@ -87,40 +112,32 @@
   opacity: 0.62;
 }
 
-/* The judges page: three choices as radio tiles, the chosen one opened to the one thing it needs. */
-.choices {
+/* A choice of one (the judge, the permission mode, the board's model): a quiet list of radio rows, the chosen one opened
+   to the one thing it needs. */
+.choices,
+.choiceRows {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border-top: 1px solid var(--border-base);
 }
 
 .choice {
   display: flex;
   gap: 12px;
-  padding: 12px 16px;
-  border: 1px solid var(--border-base);
-  border-radius: 8px;
-  background: var(--bg-base);
+  padding: 12px 0;
   cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
 }
 
-.choice:hover {
-  border-color: var(--color-border-3);
+.choice + .choice {
+  border-top: 1px solid var(--border-base);
 }
 
 .choice:focus-visible {
-  outline: 2px solid rgb(var(--primary-4));
-  outline-offset: 2px;
+  outline: 2px solid var(--color-text-3);
+  outline-offset: -2px;
 }
 
-.choiceActive,
-.choiceActive:hover {
-  border-color: var(--mu-accent-border, rgb(var(--primary-5)));
-  background: var(--bg-base);
+.choiceActive {
   cursor: default;
 }
 
@@ -137,10 +154,15 @@
     box-shadow 0.15s ease;
 }
 
-.choiceActive .choiceRadio {
-  border-color: rgb(var(--primary-6));
+.choice:hover .choiceRadio {
+  border-color: var(--color-text-3);
+}
+
+.choiceActive .choiceRadio,
+.choiceActive:hover .choiceRadio {
+  border-color: var(--text-primary);
   box-shadow: inset 0 0 0 3.5px var(--bg-base);
-  background: rgb(var(--primary-6));
+  background: var(--text-primary);
 }
 
 .choiceText {
@@ -160,10 +182,10 @@
 }
 
 .choiceTag {
-  padding: 0 8px;
-  border-radius: 999px;
-  background: rgb(var(--primary-1));
-  color: rgb(var(--primary-6));
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--color-fill-2);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 500;
   line-height: 18px;
@@ -182,26 +204,9 @@
   cursor: auto;
 }
 
-/* The same choices as plain rows of the card they sit in (人话模型): no box of their own, hairlines between them. */
-.choiceRows {
-  display: flex;
-  flex-direction: column;
-}
-
-.choiceRows > .choice,
-.choiceRows > .choice:hover {
-  padding: 12px 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-}
-
-.choiceRows > .choice + .choice {
-  border-top: 1px solid var(--border-base);
-}
-
-.choiceRows > .choice:focus-visible {
-  outline-offset: -2px;
+/* Inside a group's list (人话模型), the choices are its rows: the list's own lines frame them. */
+.cardBody > .choiceRows {
+  border-top: 0;
 }
 
 .choiceField {
@@ -231,9 +236,9 @@
   text-wrap: balance;
 }
 
-/* Laya further down the judge order: its panel in the card, spaced as a row. */
+/* Laya further down the judge order: its panel in the group's list, spaced as a row. */
 .tierPanel {
-  padding: 10px 0;
+  padding: 12px 0;
 }
 
 /* Laya on this machine: where it stands, what can be done, and the script's last words while it works. */
@@ -273,7 +278,7 @@
   padding: 8px 10px;
   max-height: 120px;
   overflow: auto;
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--color-fill-1);
   color: var(--text-secondary);
   font-family: var(--font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
@@ -303,7 +308,7 @@
   flex: 1;
   min-width: 0;
   padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: 6px;
   background: var(--color-fill-1);
   color: var(--text-primary);
   font-family: var(--font-mono, ui-monospace, 'SF Mono', Menlo, monospace);
@@ -313,15 +318,13 @@
   user-select: all;
 }
 
-/* Plain rows, laid out like the app's other settings pages: a panel of rows, each a readable title, one sentence and
-   its control (the features' switches, the decision points' modes). A feature's options are a page of their own. */
+/* Plain rows, laid out like the app's other settings pages: a quiet list of rows, each a readable title, one sentence
+   and its control (the features' switches, the decision points' modes). A feature's options are a page of their own. */
 .plainList {
   display: flex;
   flex-direction: column;
-  padding: 0 16px;
-  border: 1px solid var(--border-base);
-  border-radius: 8px;
-  background: var(--bg-base);
+  min-width: 0;
+  border-top: 1px solid var(--border-base);
 }
 
 .plainRow + .plainRow {
@@ -352,10 +355,10 @@
 }
 
 .featureBeta {
-  padding: 0 7px;
-  border-radius: 999px;
-  background: var(--mu-accent-fill, var(--color-primary-light-1));
-  color: var(--mu-accent-on, rgb(var(--primary-6)));
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--color-fill-2);
+  color: var(--text-secondary);
   font-size: 11px;
   font-weight: 500;
   line-height: 18px;
@@ -408,12 +411,6 @@
   font-size: 12px;
 }
 
-@container mu-section (max-width: 520px) {
-  .plainList {
-    padding: 0 12px;
-  }
-}
-
 .plainControl {
   display: flex;
   flex-shrink: 0;
@@ -424,14 +421,6 @@
 
 .plainMuted {
   opacity: 0.55;
-}
-
-.groupLabel {
-  margin: 8px 0 -6px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 20px;
 }
 
 @container mu-section (max-width: 560px) {

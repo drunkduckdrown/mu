@@ -51,6 +51,15 @@ export const PREVIEW_SCOPE_KEY_PREFIX = 'preview-ui:';
 /** Storage key holding the persisted state for one preview scope. */
 export const previewScopeStorageKey = (scope: string): string => `${PREVIEW_SCOPE_KEY_PREFIX}${scope}`;
 
+/**
+ * localStorage key prefix for a scope's browser pages (`browser/browserStore.ts`), which live beside the preview's
+ * files per project and are cleared with them.
+ */
+export const BROWSER_SCOPE_KEY_PREFIX = 'browser-ui:';
+
+/** Storage key holding the browser pages of one scope. */
+export const browserScopeStorageKey = (scope: string): string => `${BROWSER_SCOPE_KEY_PREFIX}${scope}`;
+
 /** Every persisted preview-scope key currently present in localStorage. */
 export const listPersistedPreviewScopeKeys = (): string[] => {
   const keys: string[] = [];
@@ -62,15 +71,22 @@ export const listPersistedPreviewScopeKeys = (): string[] => {
 };
 
 /**
- * Drop every persisted preview scope.
+ * Drop every persisted preview scope, and the browser pages kept beside them.
  *
- * Called on logout: these entries are keyed by project id and hold file content,
- * so leaving them would show the next account the previous one's open tabs.
- * Nothing cleaned them up before — the logout sweep only matched auth/csrf/token.
+ * Called on logout: these entries are keyed by project id and hold file content
+ * and the addresses of open pages, so leaving them would show the next account the
+ * previous one's open tabs. Nothing cleaned them up before — the logout sweep only
+ * matched auth/csrf/token.
  */
 export const clearPersistedPreviewScopes = (): void => {
   try {
     listPersistedPreviewScopeKeys().forEach((key) => localStorage.removeItem(key));
+    const browserKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith(BROWSER_SCOPE_KEY_PREFIX)) browserKeys.push(key);
+    }
+    browserKeys.forEach((key) => localStorage.removeItem(key));
   } catch {
     // Storage unavailable — nothing to clear.
   }

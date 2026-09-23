@@ -39,6 +39,7 @@ type CardProps = {
   children?: React.ReactNode;
 };
 
+/** A group of rows: an optional small title, a line under it, then the rows between hairlines. No box around them. */
 export function Card({ title, badges, extra, summary, dim, testId, children }: CardProps) {
   const hasBody = React.Children.toArray(children).length > 0;
   return (
@@ -52,7 +53,7 @@ export function Card({ title, badges, extra, summary, dim, testId, children }: C
         </div>
       ) : null}
       {summary ? <div className={styles.cardSummary}>{summary}</div> : null}
-      {hasBody ? <div className={classNames(title && styles.cardBody, dim && styles.dim)}>{children}</div> : null}
+      {hasBody ? <div className={classNames(styles.cardBody, dim && styles.dim)}>{children}</div> : null}
     </div>
   );
 }

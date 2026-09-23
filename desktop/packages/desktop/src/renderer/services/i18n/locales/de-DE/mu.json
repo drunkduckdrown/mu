@@ -18,13 +18,12 @@
     "moreFeatures": "Weitere Funktionen",
     "providers": "Anbieter",
     "defaultModel": "Standardmodell",
-    "permissions": "Berechtigungen",
     "context": "Kontext"
   },
   "pages": {
     "decisions": {
       "input": "Entscheidungspunkte: Eingabe",
-      "context": "Entscheidungspunkte: Kontext",
+      "context": "Kontext",
       "memory": "Entscheidungspunkte: Lektionen",
       "tools": "Entscheidungspunkte: Tools und Sicherheit",
       "turn": "Entscheidungspunkte: Runde",
@@ -39,12 +38,10 @@
     }
   },
   "modes": {
-    "active": "Aktiv",
-    "shadow": "Schatten",
+    "active": "An",
     "off": "Aus",
     "activeHelp": "Das Urteil wird angewendet.",
-    "shadowHelp": "Wird gefragt und aufgezeichnet, ändert aber nichts.",
-    "offHelp": "Wird nicht gefragt. Dieser Schritt läuft ohne Urteil weiter."
+    "offHelp": "Das Urteil wirkt sich nicht aus: Dieser Schritt läuft wie gewohnt weiter."
   },
   "harness": {
     "tooOld": "Diese mu-Version ist zu alt, um ihre Entscheidungspunkte und Funktionen aufzulisten. Aktualisiere mu, um sie hier zu sehen; die Grundeinstellungen funktionieren weiterhin.",
@@ -101,7 +98,6 @@
     "moreLead": "Alles Weitere, was mu kann, danach geordnet, wo es wirkt. Die Optionen jeder Funktion sind einen Klick entfernt.",
     "beta": "Beta",
     "reset": "Standard wiederherstellen",
-    "permissionsElsewhere": "Den Modus neuer Unterhaltungen wählst du unter „Berechtigungen“.",
     "boardModelElsewhere": "Das Modell, das das Board schreibt, wählst du unter „Standardmodell“.",
     "options": "Optionen",
     "noOptions": "Sonst gibt es nichts einzustellen: Der Schalter ist alles.",
@@ -114,7 +110,7 @@
   "judges": {
     "tiersHelp": "Die Judges werden der Reihe nach gefragt. Ein späterer sieht nur, was die vorherigen offen gelassen haben.",
     "order": "Reihenfolge",
-    "orderHelp": "Der erste ist der Judge, der auf der Seite „Judges“ gewählt ist.",
+    "orderHelp": "Der erste ist der Judge, der oben gewählt ist.",
     "tierTitle": "Stufe {{index}}: {{name}}",
     "type": "Anbindung",
     "access": {
@@ -133,7 +129,7 @@
     },
     "intro": "Während mu arbeitet, fallen viele kleine Fragen an: wie es mit dieser Nachricht umgehen soll, ob dieser Schritt gegen eine deiner Vorgaben verstößt. Der Judge beantwortet sie. Wähle einen aus.",
     "choose": "Judge wählen",
-    "custom": "Der erste Judge ist gerade ein benutzerdefinierter: Auf der Seite „Judge-Stufen“ kannst du ihn ansehen und ändern.",
+    "custom": "Der erste Judge ist gerade ein benutzerdefinierter: Unten unter „Judge-Stufen“ kannst du ihn ansehen und ändern.",
     "keyPlaceholder": "Schlüssel von TypeSafe oder Vercel AI Gateway einfügen",
     "choices": {
       "jev": {
@@ -202,31 +198,23 @@
     "manual": "Gesetzt (von Hand)"
   },
   "context": {
-    "description": "Wann und wie die Unterhaltung verdichtet wird. Steht in der Einstellungsdatei von mu, die auch mu auf der Kommandozeile nutzt.",
     "auto": "Automatische Verdichtung",
     "autoHelp": "Verdichtet den Verlauf, wenn der Kontext fast voll ist.",
     "limit": "Kontextgrenze",
     "limitHelp": "0 folgt dem Kontextfenster des Modells abzüglich der Reserve. Sonst {{min}} bis {{max}}. Wird vor der nächsten Modellanfrage geprüft, kein harter Schnitt.",
-    "limitProblem": "Gib 0 oder eine ganze Zahl von {{min}} bis {{max}} ein."
+    "limitProblem": "Gib 0 oder eine ganze Zahl von {{min}} bis {{max}} ein.",
+    "lead": "Wann das Gespräch verdichtet wird, wie groß sein Kontext werden darf, und die Entscheidungspunkte zum Kontext."
   },
   "permissions": {
-    "description": "Ob mu dich fragt, bevor es handelt. In diesem Modus startet jede neue Unterhaltung; jede Unterhaltung lässt sich trotzdem über „Berechtigung“ in ihrem Eingabefeld umstellen.",
-    "choose": "Modus neuer Unterhaltungen",
-    "note": "Die Auswahl „Berechtigung“ im Eingabefeld einer Unterhaltung stellt nur diese Unterhaltung um; gibst du in einer Unterhaltung /permissions ein, änderst du auch den Modus, mit dem neue Unterhaltungen starten. Was du untersagt hast, wird in jedem Modus gestoppt, und bei einem Schritt, der die Einstellungen von mu selbst betrifft, wirst du immer gefragt.",
-    "off": "Die Berechtigungsmodi sind unter „Funktionen“ ausgeschaltet: Es wird nicht nach Modus gefragt, nur der Schutz vor riskanten Befehlen greift.",
-    "missing": "Diese Version von mu hat noch keine Berechtigungsmodi. Aktualisiere mu, um hier einen auszuwählen.",
     "modes": {
       "full": {
-        "title": "Vollzugriff",
-        "description": "Führt alles aus, ohne zu fragen, damit du nicht unterbrochen wirst."
+        "title": "Vollzugriff"
       },
       "jev": {
-        "title": "JeV gibt frei",
-        "description": "Lesen und Bearbeiten im Projekt laufen direkt; Befehle, Änderungen außerhalb des Projekts und Aktionen nach außen gibt JeV für dich frei und fragt dich nur im Zweifel."
+        "title": "JeV gibt frei"
       },
       "ask": {
-        "title": "Minimale Berechtigungen",
-        "description": "Nur Lesen läuft direkt; vor jeder Änderung, jedem Befehl und jeder Aktion nach außen wirst du gefragt."
+        "title": "Minimale Berechtigungen"
       }
     }
   },

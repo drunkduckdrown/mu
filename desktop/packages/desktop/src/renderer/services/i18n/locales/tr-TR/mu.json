@@ -18,13 +18,12 @@
     "moreFeatures": "Diğer özellikler",
     "providers": "Sağlayıcılar",
     "defaultModel": "Varsayılan model",
-    "permissions": "İzinler",
     "context": "Bağlam"
   },
   "pages": {
     "decisions": {
       "input": "Karar noktaları: Girdi",
-      "context": "Karar noktaları: Bağlam",
+      "context": "Bağlam",
       "memory": "Karar noktaları: Dersler",
       "tools": "Karar noktaları: Araçlar ve güvenlik",
       "turn": "Karar noktaları: Tur",
@@ -39,12 +38,10 @@
     }
   },
   "modes": {
-    "active": "Etkin",
-    "shadow": "Gölge",
+    "active": "Açık",
     "off": "Kapalı",
     "activeHelp": "Karar uygulanır.",
-    "shadowHelp": "Sorulur ve kaydedilir, ama hiçbir şey değişmez.",
-    "offHelp": "Soru sorulmaz. O adım karar olmadan devam eder."
+    "offHelp": "Karar etkili olmaz: o adım her zamanki gibi devam eder."
   },
   "harness": {
     "tooOld": "Bu mu sürümü, karar noktalarını ve özelliklerini listeleyemeyecek kadar eski. Bunları burada görmek için mu’yu güncelleyin; temel ayarlar yine de çalışır.",
@@ -101,7 +98,6 @@
     "moreLead": "mu’nun yapabildiği diğer her şey, etki ettiği yere göre gruplandı. Her özelliğin seçenekleri bir tık uzakta.",
     "beta": "Beta",
     "reset": "Varsayılanlara dön",
-    "permissionsElsewhere": "Yeni bir konuşmanın modu İzinler bölümünde seçilir.",
     "boardModelElsewhere": "Panoyu yazan model, Varsayılan model bölümünde seçilir.",
     "options": "Seçenekler",
     "noOptions": "Ayarlanacak başka bir şey yok: yalnızca anahtar var.",
@@ -114,7 +110,7 @@
   "judges": {
     "tiersHelp": "Hakemler sırayla denenir. Sonraki hakem yalnızca öncekilerin emin olamadığı soruları görür.",
     "order": "Sıra",
-    "orderHelp": "İlki, Hakemler sayfasında seçilen hakemdir.",
+    "orderHelp": "İlki, yukarıda seçilen hakemdir.",
     "tierTitle": "{{index}}. kademe: {{name}}",
     "type": "Erişim yolu",
     "access": {
@@ -133,7 +129,7 @@
     },
     "intro": "mu çalışırken pek çok küçük soruyla karşılaşır: bu mesaj nasıl ele alınmalı, bu adım koyduğunuz bir kuralı çiğniyor mu? Bunları hakem yanıtlar. Birini seçin.",
     "choose": "Bir hakem seçin",
-    "custom": "Şu an ilk sıradaki hakem özel bir hakem: Hakem kademeleri sayfasında görüp değiştirebilirsiniz.",
+    "custom": "Şu an ilk sıradaki hakem özel bir hakem: aşağıda, Hakem kademeleri bölümünde görüp değiştirebilirsiniz.",
     "keyPlaceholder": "TypeSafe veya Vercel AI Gateway anahtarını yapıştırın",
     "choices": {
       "jev": {
@@ -202,31 +198,23 @@
     "manual": "Ayarlandı (elle)"
   },
   "context": {
-    "description": "Konuşmanın ne zaman ve nasıl sıkıştırılacağı. mu’nun ayar dosyasında tutulur; komut satırındaki mu da aynı dosyayı kullanır.",
     "auto": "Otomatik sıkıştırma",
     "autoHelp": "Bağlam neredeyse dolduğunda geçmişi sıkıştırır.",
     "limit": "Bağlam sınırı",
     "limitHelp": "0 ise modelin penceresi, ayrılan pay düşülerek kullanılır. Aksi hâlde {{min}} ile {{max}} arası. Sonraki model isteğinden önce kontrol edilir; kesin bir sınır değildir.",
-    "limitProblem": "0 ya da {{min}} ile {{max}} arasında bir tam sayı girin."
+    "limitProblem": "0 ya da {{min}} ile {{max}} arasında bir tam sayı girin.",
+    "lead": "Konuşmanın ne zaman sıkıştırılacağı, bağlamının ne kadar büyüyebileceği ve bağlamla ilgili karar noktaları."
   },
   "permissions": {
-    "description": "mu'nun bir işlem yapmadan önce size sorup sormayacağını belirler. Her yeni konuşma bu modda başlar; her konuşmanın modu yine de kendi mesaj alanındaki “İzinler” menüsünden değiştirilebilir.",
-    "choose": "Yeni konuşmaların modu",
-    "note": "Bir konuşmanın mesaj alanındaki “İzinler” menüsü yalnızca o konuşmanın modunu değiştirir; konuşmada /permissions yazmak ise yeni konuşmaların başladığı modu da değiştirir. Yapılmamasını söylediğiniz şeyler her modda durdurulur; mu'nun kendi ayarlarına dokunan bir adım için ise her zaman size sorulur.",
-    "off": "İzin modları Özellikler bölümünde kapalı: moda göre hiçbir şey sorulmaz, yalnızca riskli komut koruması çalışır.",
-    "missing": "mu'nun bu sürümünde henüz izin modları yok. Burada bir mod seçebilmek için mu'yu güncelleyin.",
     "modes": {
       "full": {
-        "title": "Tam erişim",
-        "description": "Her şeyi sormadan çalıştırır; böylece işiniz bölünmez."
+        "title": "Tam erişim"
       },
       "jev": {
-        "title": "JeV onaylar",
-        "description": "Proje içindeki okuma ve düzenlemeler doğrudan yapılır; komutları, proje dışındaki değişiklikleri ve dış işlemleri sizin yerinize JeV onaylar ve yalnızca emin olmadığında size sorar."
+        "title": "JeV onaylar"
       },
       "ask": {
-        "title": "En az izin",
-        "description": "Yalnızca okuma doğrudan yapılır; her düzenleme, komut ve dış işlem için önce size sorulur."
+        "title": "En az izin"
       }
     }
   },

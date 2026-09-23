@@ -39,35 +39,22 @@ interface SkillInfo {
   source?: 'builtin' | 'custom' | 'cron' | 'extension';
 }
 
-const getAvatarColorClass = (name: string) => {
-  if (!name) return 'bg-[#165DFF] text-white';
-  const colors = [
-    'bg-[#165DFF] text-white', // Blue
-    'bg-[#00B42A] text-white', // Green
-    'bg-[#722ED1] text-white', // Purple
-    'bg-[#F5319D] text-white', // Pink
-    'bg-[#F77234] text-white', // Orange
-    'bg-[#14C9C9] text-white', // Cyan
-  ];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return colors[Math.abs(hash) % colors.length];
-};
-
-const SectionCard: React.FC<{
+/**
+ * One part of a skill's page: its small title with an action on the right, then its rows between hairlines. No box:
+ * the settings pages draw quiet lists.
+ */
+const Section: React.FC<{
   title: React.ReactNode;
   extra?: React.ReactNode;
   children: React.ReactNode;
   'data-testid'?: string;
 }> = ({ title, extra, children, 'data-testid': dataTestId }) => (
-  <section data-testid={dataTestId} className='rounded-16px border border-border-2 bg-base px-20px py-18px'>
-    <div className='mb-14px flex items-center justify-between gap-12px'>
-      <h2 className='m-0 text-14px font-600 text-t-primary'>{title}</h2>
+  <section data-testid={dataTestId} className='settings-group'>
+    <div className='flex min-h-24px items-center justify-between gap-12px'>
+      <h2 className='settings-group__title'>{title}</h2>
       {extra}
     </div>
-    {children}
+    <div className='settings-list'>{children}</div>
   </section>
 );
 
@@ -182,7 +169,7 @@ const SkillDetailPage: React.FC = () => {
             icon={<ArrowLeft size={16} />}
             onClick={goBack}
             data-testid='btn-back-skill-detail'
-            className='!flex !items-center !gap-4px !rounded-8px !px-6px !text-t-primary'
+            className='!flex !items-center !gap-4px !px-6px !text-t-primary'
           >
             {t('settings.skillsHub.detailBackToList', { defaultValue: 'All skills' })}
           </Button>
@@ -195,27 +182,26 @@ const SkillDetailPage: React.FC = () => {
         ) : !skill ? (
           <div
             data-testid='skill-detail-not-found'
-            className='rounded-12px bg-fill-1 px-16px py-40px text-center text-13px text-t-tertiary'
+            className='settings-list py-40px text-center text-13px text-t-tertiary'
           >
             {t('settings.skillsHub.detailNotFound', { defaultValue: 'Skill not found. It may have been deleted.' })}
           </div>
         ) : (
           <div className='mx-auto flex w-full max-w-760px flex-col gap-16px'>
             {/* Basic info */}
-            <SectionCard
+            <Section
               title={t('settings.skillsHub.detailInfoTitle', { defaultValue: 'Skill info' })}
               data-testid='skill-detail-info'
             >
-              <div className='flex gap-16px'>
-                <div
-                  className={`h-48px w-48px shrink-0 rounded-12px flex items-center justify-center text-18px font-bold shadow-sm text-transform-uppercase ${getAvatarColorClass(skill.name)}`}
-                >
+              <div className='flex gap-16px py-12px'>
+                {/* The first letter on a grey square, as in the list. */}
+                <div className='h-48px w-48px shrink-0 rd-8px flex items-center justify-center text-18px font-600 text-transform-uppercase bg-fill-2 text-t-secondary'>
                   {skill.name.charAt(0).toUpperCase()}
                 </div>
                 <div className='min-w-0 flex flex-col gap-6px'>
                   <div className='flex items-center gap-8px'>
                     <span className='text-16px font-600 text-t-primary'>{skill.name}</span>
-                    <span className='rounded-4px bg-fill-1 px-6px py-1px text-11px text-t-secondary'>
+                    <span className='rounded-4px bg-fill-2 px-6px py-1px text-11px text-t-secondary'>
                       {sourceLabel(skill)}
                     </span>
                   </div>
@@ -225,10 +211,10 @@ const SkillDetailPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-            </SectionCard>
+            </Section>
 
             {/* Single source of truth: assistants using this skill, with inline add/remove */}
-            <SectionCard
+            <Section
               title={t('settings.skillsHub.detailUsedByTitleWithCount', { count: usingAssistants.length })}
               data-testid='skill-detail-used-by'
               extra={
@@ -267,22 +253,19 @@ const SkillDetailPage: React.FC = () => {
               }
             >
               {usingAssistants.length === 0 ? (
-                <div
-                  data-testid='skill-detail-used-by-empty'
-                  className='rounded-8px bg-fill-1 px-12px py-16px text-center text-12px text-t-tertiary'
-                >
+                <div data-testid='skill-detail-used-by-empty' className='py-16px text-center text-12px text-t-tertiary'>
                   {t('settings.skillsHub.detailUsedByEmpty', {
                     defaultValue: 'No assistants are using this skill yet.',
                   })}
                 </div>
               ) : (
-                <div className='flex flex-col gap-4px'>
+                <>
                   {usingAssistants.map((assistant) => {
                     const isReadonly = readonlyUsers.some((a) => a.id === assistant.id);
                     return (
                       <div
                         key={assistant.id}
-                        className='group flex cursor-pointer items-center gap-10px rounded-8px px-12px py-10px transition-colors hover:bg-fill-1'
+                        className='group flex cursor-pointer items-center gap-10px px-8px py-10px transition-colors hover:bg-fill-1'
                         data-testid={`skill-used-by-row-${assistant.id}`}
                         onClick={() => openAssistant(assistant.id)}
                       >
@@ -291,7 +274,7 @@ const SkillDetailPage: React.FC = () => {
                           {assistantLabel(assistant)}
                         </Typography.Text>
                         {isReadonly ? (
-                          <span className='rounded-4px bg-fill-1 px-6px py-1px text-11px text-t-tertiary'>
+                          <span className='rounded-4px bg-fill-2 px-6px py-1px text-11px text-t-tertiary'>
                             {t('settings.skillsHub.detailBuiltinAssistant', { defaultValue: 'Built-in' })}
                           </span>
                         ) : (
@@ -316,11 +299,11 @@ const SkillDetailPage: React.FC = () => {
                       </div>
                     );
                   })}
-                </div>
+                </>
               )}
-            </SectionCard>
+            </Section>
 
-            <SectionCard
+            <Section
               title={t('settings.skillsHub.detailFilesTitle', { defaultValue: 'Skill files' })}
               data-testid='skill-detail-files'
               extra={
@@ -335,8 +318,10 @@ const SkillDetailPage: React.FC = () => {
                 </Button>
               }
             >
-              <SkillFileBrowser skill={skill} />
-            </SectionCard>
+              <div className='py-12px'>
+                <SkillFileBrowser skill={skill} />
+              </div>
+            </Section>
           </div>
         )}
       </div>

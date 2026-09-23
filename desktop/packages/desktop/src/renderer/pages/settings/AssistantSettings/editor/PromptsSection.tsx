@@ -71,7 +71,7 @@ const PromptsSection: React.FC<PromptsSectionProps> = ({
       testId='assistant-card-prompts'
     >
       {showPromptPanel ? (
-        <div className='space-y-6px rounded-12px bg-fill-1 px-12px py-6px'>
+        <div className='space-y-6px rounded-8px bg-fill-1 px-12px py-6px'>
           {recommendedPromptItems.length > 0 ? (
             <div className='space-y-4px'>
               {recommendedPromptItems.map((prompt, index) => {
@@ -150,7 +150,7 @@ const PromptsSection: React.FC<PromptsSectionProps> = ({
           ) : null}
 
           {addingPrompt && isPromptEditable ? (
-            <div className='flex items-center gap-8px rounded-10px bg-base p-4px'>
+            <div className='flex items-center gap-8px rounded-8px bg-base p-4px'>
               <Input
                 value={newPromptDraft}
                 onChange={(value) => setNewPromptDraft(value)}

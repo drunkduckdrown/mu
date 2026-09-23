@@ -10,8 +10,8 @@ import type { ChatFileRef, ContentEncoding } from '@/common/types/chatFile';
 import { chatFileRefKey, isChatFileRef } from '@/common/types/chatFile';
 import { emitter } from '@/renderer/utils/emitter';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { BROWSER_BLANK_URL, MAX_BROWSER_TABS, isAppAddress } from '../browser/constants';
 import { isBrowserMcpActivity, isBrowserMcpSettled } from '../browser/agentActivity';
+import { markBrowserAgentActive, openBrowserPage, switchBrowserScope } from '../browser/browserStore';
 import { maybeNotifyFirstAgentBrowserUse } from '../browser/firstUseNotice';
 import { listPersistedPreviewScopeKeys, previewScopeStorageKey, type PreviewScopeKey } from './previewScope';
 import { peKey } from '@/renderer/pages/conversation/explorer/explorerModel';
@@ -63,9 +63,6 @@ export interface PreviewMetadata {
   targetLine?: number; // 打开文件后定位到的目标行 / Target line to reveal after opening
   targetColumn?: number; // 打开文件后定位到的目标列 / Target column to reveal after opening
   missingFile?: boolean; // 文件不存在或无法读取 / Whether the referenced file is missing or unreadable
-  favicon?: string; // 浏览器 tab 的站点图标 URL / Site icon URL for browser tabs
-  agentActive?: boolean; // Agent 正在操作该浏览器 tab / Agent is currently driving this browser tab
-  muRun?: string; // Opened by mu's browse loop: own session partition, step bar above the page
 }
 
 export interface PreviewTab {
@@ -92,11 +89,11 @@ export interface OpenPreviewOptions {
 
 /**
  * `updateTab` 允许修改的字段：标题、地址（content）、metadata。
- * 刻意不含 isDirty / originalContent —— 那是编辑器的账，浏览器 tab 不该碰。
+ * 刻意不含 isDirty / originalContent —— 那是编辑器的账，别处不该碰。
  *
  * Fields `updateTab` may patch: title, address (content) and metadata.
  * Deliberately excludes isDirty / originalContent, which belong to the editor's
- * bookkeeping and must not be disturbed by browser tabs.
+ * bookkeeping and must not be disturbed from elsewhere.
  */
 export type PreviewTabPatch = {
   title?: string;
@@ -119,13 +116,15 @@ export interface PreviewContextValue {
    * unexpected maximized state.
    */
   isMaximized: boolean;
-  tabs: PreviewTab[]; // 所有打开的 tabs
+  /** The preview's tabs: files, HTML, diffs and other previews; web pages are the browser's (`browserStore.ts`). */
+  tabs: PreviewTab[];
   activeTabId: string | null; // 当前激活的 tab ID
 
   // 获取当前激活的 tab / Get active tab
   activeTab: PreviewTab | null;
 
   // 预览面板操作 / Preview panel operations
+  /** Open something in the preview. A web page (`browser` or `url`) opens in the browser instead. */
   openPreview: (
     content: string,
     type: PreviewContentType,
@@ -133,8 +132,8 @@ export interface PreviewContextValue {
     options?: OpenPreviewOptions
   ) => void;
   /**
-   * 打开浏览器 tab，省略 url 则开空白页。
-   * Open a browser tab; blank page when url is omitted.
+   * 在浏览器里打开网页，省略 url 则开空白页；工作面板随之切到「浏览器」。
+   * Open a web page in the browser (a blank page when url is omitted); the work panel comes up on its 浏览器 tab.
    */
   openBrowserTab: (url?: string) => void;
   closePreview: () => void;
@@ -149,24 +148,13 @@ export interface PreviewContextValue {
   updateContent: (content: string) => void;
   /**
    * 按 tabId 局部更新 tab（标题 / 地址 / metadata），不影响 dirty 状态。
-   * 浏览器 tab 用它把页面标题、favicon、Agent 活动状态同步上来 —— 用 tabId 而非
-   * activeTabId 是必须的：后台 tab 的标题也要能更新，不能抢焦点。
+   * 用 tabId 而非 activeTabId：后台 tab 也要能更新，不能抢焦点。
    *
    * Patch a tab by id (title / address / metadata) without touching dirty state.
-   * Browser tabs use this to sync page title, favicon and agent activity.
-   * Addressing by tabId (not activeTabId) is required so background tabs can
-   * update without stealing focus.
+   * Addressing by tabId (not activeTabId) lets a background tab update without
+   * stealing focus.
    */
   updateTab: (tabId: string, patch: PreviewTabPatch) => void;
-  /**
-   * 浏览器 tab 达到上限、被迫复用旧 tab 的时刻（时间戳）；null 表示未发生。
-   * UI 据此提示用户关闭旧 tab，而不是让"复用"看起来像 bug。
-   *
-   * Timestamp of the most recent browser-tab cap hit (null when it never
-   * happened). Lets the UI tell the user to close old tabs instead of leaving
-   * the silent tab reuse looking like a bug.
-   */
-  browserTabLimitHitAt: number | null;
   /**
    * Timestamp of the most recent time persisting tabs had to be given up because
    * local storage is full (null when it never happened).
@@ -232,9 +220,8 @@ type PersistedScopeState = { isOpen: boolean; tabs: PreviewTab[]; activeTabId: s
 // 仅持久化小体积文本预览，避免大文本导致 localStorage 写入卡顿
 // Persist only lightweight text previews to avoid localStorage jank on large files
 const MAX_PERSISTED_TAB_CONTENT_LENGTH = 80_000;
-// `browser` tabs persist so switching projects/conversations restores the same
-// open pages (per-project, see `previewScope.ts`). Their `content` is just a URL,
-// so they are always well under the size cap.
+// Web pages are not the preview's: the browser keeps and restores them per project
+// (`browser/browserStore.ts`), and carries over the ones earlier builds kept here.
 /**
  * Types whose content never comes from `/api/fs/content`: pdf streams from a URL,
  * office renders through its own process, and an unsupported format has nothing to
@@ -281,6 +268,9 @@ const REFETCHABLE_CONTENT_TYPES = new Set<PreviewContentType>([...CONTENT_FREE_P
  * tab. The tabs were still in memory — collapsing and reopening the panel restored all
  * of them — so the loss appeared only when the panel's state went through storage,
  * which made it look like the file types were unsupported rather than unsaved.
+ *
+ * `browser` is not among them: a web page lives in the browser, which carries over the
+ * pages an earlier build stored here, so this reader leaves them out.
  */
 const PERSISTABLE_CONTENT_TYPES = new Set<PreviewContentType>([
   'markdown',
@@ -288,7 +278,6 @@ const PERSISTABLE_CONTENT_TYPES = new Set<PreviewContentType>([
   'code',
   'csv',
   'diff',
-  'browser',
   'image',
   'pdf',
   'word',
@@ -306,11 +295,7 @@ const PERSISTABLE_CONTENT_TYPES = new Set<PreviewContentType>([
  * to be written, which is the data loss this whole area has been about.
  */
 const tabForPersistence = (tab: PreviewTab): PreviewTab | null => {
-  const shared = {
-    ...tab,
-    // Agent activity is a live, per-session signal — never restore it as active.
-    metadata: tab.metadata?.agentActive ? { ...tab.metadata, agentActive: false } : tab.metadata,
-  };
+  const shared = { ...tab };
 
   if (REFETCHABLE_CONTENT_TYPES.has(tab.content_type)) {
     // A missing `fileRef` is not rejected here. Dropping unrestorable tabs is the
@@ -553,9 +538,6 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // twice), so decisions with observable side effects are made up front.
   const tabsRef = useRef<PreviewTab[]>([]);
   tabsRef.current = tabs;
-  // Set when a browser-tab open was folded into an existing tab because the cap
-  // was reached, so the UI can tell the user instead of silently reusing a tab.
-  const [browserTabLimitHitAt, setBrowserTabLimitHitAt] = useState<number | null>(null);
   // Set when a persist attempt was abandoned on a full quota, so the UI can warn
   // instead of letting persistence stop working unannounced.
   const [persistQuotaExceededAt, setPersistQuotaExceededAt] = useState<number | null>(null);
@@ -701,10 +683,6 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
    */
   const findPreviewTabInList = useCallback(
     (tabList: PreviewTab[], type: PreviewContentType, content?: string, meta?: PreviewMetadata) => {
-      // Browser tabs are never deduped: each one is an independent page the user
-      // (or an agent) opened on purpose, and they carry no file identity.
-      if (type === 'browser') return null;
-
       const refKey = meta?.fileRef ? chatFileRefKey(meta.fileRef) : '';
       const reflessKey = refKey ? null : reflessTabKey(type, content, meta);
 
@@ -741,6 +719,13 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const openPreview = useCallback(
     (new_content: string, type: PreviewContentType, meta?: PreviewMetadata, options?: OpenPreviewOptions) => {
+      // A web page opens in the browser, which lives beside the preview in the work panel, never among its tabs. A
+      // `url` preview (what an agent's navigation opens) finds its page again, as the preview found its tab again.
+      if (type === 'browser' || type === 'url') {
+        openBrowserPage(new_content, { by: options?.by ?? 'user', reuse: type === 'url' });
+        return;
+      }
+
       /**
        * 所有决策都在调用 setTabs 之前基于 tabsRef 做完，updater 只负责按决策产出
        * 新数组。
@@ -777,19 +762,9 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // 已打开同一内容：聚焦现有 tab，不新建 / Same content already open: focus it
       const existingTab = findPreviewTabInList(currentTabs, type, new_content, meta);
 
-      // 浏览器 tab 上限：满了就复用最旧的一个，并给 UI 一个可提示的信号
-      // Browser tab cap: when full, reuse the oldest and raise a signal the UI can
-      // surface, so the reuse doesn't look like a bug.
-      const atBrowserTabLimit =
-        !existingTab &&
-        type === 'browser' &&
-        currentTabs.filter((tab) => tab.content_type === 'browser').length >= MAX_BROWSER_TABS;
-      if (atBrowserTabLimit) setBrowserTabLimitHitAt(Date.now());
-
       // Tab 标题：优先使用文件名，并从 title 中提取实际文件名
       // Tab title: Prefer file_name and extract actual filename from title.
-      // Without either, the tab stores a sentinel that the tab strip shows in the reader's language (see tabTitle.ts);
-      // a browser tab's title follows the page title once it loads.
+      // Without either, the tab stores a sentinel that the tab strip shows in the reader's language (see tabTitle.ts).
       const title =
         extractFileName(meta?.file_name) || extractFileName(meta?.title) || fallbackTabTitle(type, meta?.language);
 
@@ -804,14 +779,9 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return activeTab && !activeTab.isDirty ? activeTab : null;
       })();
 
-      // 上限触发时被复用的最旧浏览器 tab / Oldest browser tab reused at the cap
-      const cappedTarget = atBrowserTabLimit
-        ? (currentTabs.find((tab) => tab.content_type === 'browser') ?? null)
-        : null;
-
       // 生成唯一 ID / Generate unique ID
       const newTabId = `${type}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-      const targetTabId = existingTab?.id ?? replaceTarget?.id ?? cappedTarget?.id ?? newTabId;
+      const targetTabId = existingTab?.id ?? replaceTarget?.id ?? newTabId;
 
       setTabs((prevTabs) => {
         if (existingTab) {
@@ -847,46 +817,27 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
           return prevTabs.map((tab) => (tab.id === replaceTarget.id ? replacedTab : tab));
         }
 
-        if (cappedTarget) {
-          return prevTabs.map((tab) =>
-            tab.id === cappedTarget.id ? { ...tab, content: new_content, title, metadata: meta } : tab
-          );
-        }
-
         return [...prevTabs, newTab];
       });
 
       setActiveTabId(targetTabId);
       setIsOpen(true);
-      announcePreviewOpened(options?.by ?? 'user');
+      announcePreviewOpened(options?.by ?? 'user', 'preview');
     },
     [extractFileName, findPreviewTabInList]
   );
 
   /**
-   * 打开一个浏览器 tab（省略 url 则开空白页）。
+   * 在浏览器里打开网页（省略 url 则开空白页）。聊天里的链接、文件树的「浏览器」入口、
+   * 选中文字里的网址都走这里；页面由 browserStore 保管，不进预览的 tab 列表。
    *
-   * 单独提供而不是让调用方拼 openPreview('', 'browser') 的原因：
-   * 加号按钮、workspace 下拉入口、Agent 调用是三条独立路径，必须保证
-   * 空白页地址、标题兜底完全一致，否则会出现「有的新 tab 是空白、有的是搜索页」。
-   *
-   * Open a browser tab (blank when no url is given). Exposed as its own method
-   * rather than having callers assemble `openPreview('', 'browser')`: the plus
-   * button, the workspace dropdown and the agent are three independent entry
-   * points, and they must agree on the blank address and fallback title.
+   * Open a web page in the browser (blank when no url is given): a link in the chat, the
+   * file tree's Browser entry and an address in selected text all come here. The page is
+   * kept by the browser's store (`browser/browserStore.ts`), not among the preview's tabs.
    */
-  const openBrowserTab = useCallback(
-    (url?: string) => {
-      const address = url?.trim() || BROWSER_BLANK_URL;
-      // The app is not a page to browse (see isAppAddress): such a tab would only show the web sign-in.
-      if (isAppAddress(address)) {
-        console.warn('[Preview] refused to open the app itself in a browser tab:', address);
-        return;
-      }
-      openPreview(address, 'browser');
-    },
-    [openPreview]
-  );
+  const openBrowserTab = useCallback((url?: string) => {
+    openBrowserPage(url, { by: 'user' });
+  }, []);
 
   /**
    * Hide the preview panel, keeping its tabs.
@@ -958,6 +909,9 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // would drop the subscriptions the restore had just created.
       resetPreviewWatch();
       currentScopeRef.current = scopeKey;
+      // The browser follows the same project. It reads first: an earlier build kept the project's pages in the
+      // preview's entry, and the browser carries them over before the preview writes that entry again without them.
+      switchBrowserScope(scopeKey);
       const loaded = scopeKey != null ? loadScopeState(scopeKey) : EMPTY_SCOPE_STATE;
       // Subscriptions for these tabs come from the tabs effect, which this setTabs
       // triggers — restored tabs are subscribed exactly like freshly opened ones.
@@ -1304,7 +1258,7 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   /**
    * 跟踪 Agent 对应用内浏览器的操作，并驱动两件事：
-   * 1. tab 上的活动角标（持续显示，用户随时知道浏览器不是自己在动）
+   * 1. 浏览器页面上的活动角标（持续显示，用户随时知道浏览器不是自己在动）
    * 2. 首次操作时的一次性提示（不打断、不需要确认）
    *
    * 为什么监听工具调用流而不是等浏览器自己上报：Agent 是通过 CDP 直接操作 webview
@@ -1321,22 +1275,6 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
    * signal that separates the two.
    */
   useEffect(() => {
-    const markBrowserTabs = (agentActive: boolean) => {
-      setTabs((prevTabs) => {
-        // 只标记浏览器 tab；没有浏览器 tab 时返回原数组，避免无意义的重渲染
-        // Only browser tabs are marked; return the same array when there are none
-        // so no pointless re-render is triggered.
-        if (
-          !prevTabs.some((tab) => tab.content_type === 'browser' && Boolean(tab.metadata?.agentActive) !== agentActive)
-        ) {
-          return prevTabs;
-        }
-        return prevTabs.map((tab) =>
-          tab.content_type === 'browser' ? { ...tab, metadata: { ...tab.metadata, agentActive } } : tab
-        );
-      });
-    };
-
     /**
      * 这个订阅纯粹是锦上添花（一个角标 + 一次提示）。如果消息流不可用（WebUI
      * 未连接、测试环境未提供该通道），不能让整个预览面板挂掉 —— 预览是主功能，
@@ -1352,12 +1290,12 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const unsubscribe = stream.on((message) => {
       if (isBrowserMcpActivity(message.type, message.data)) {
-        markBrowserTabs(true);
+        markBrowserAgentActive(true);
         maybeNotifyFirstAgentBrowserUse();
         return;
       }
       if (isBrowserMcpSettled(message.type, message.data)) {
-        markBrowserTabs(false);
+        markBrowserAgentActive(false);
       }
     });
 
@@ -1381,7 +1319,6 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
       updateContent,
       updateTab,
       openBrowserTab,
-      browserTabLimitHitAt,
       persistQuotaExceededAt,
       saveContent,
       reloadTabContent,
@@ -1413,7 +1350,6 @@ export const PreviewProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updateContent,
     updateTab,
     openBrowserTab,
-    browserTabLimitHitAt,
     persistQuotaExceededAt,
     saveContent,
     reloadTabContent,

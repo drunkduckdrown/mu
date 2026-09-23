@@ -201,12 +201,12 @@ describe('a settings section as its own page', () => {
     expect(within(other).queryByRole('button')).not.toBeInTheDocument();
   });
 
-  it('keeps the order of several judges on the judge tiers page, in the open, each judge by its name', async () => {
-    at('/settings/judge-tiers', <SettingsArea section='judgeTiers' />);
+  it('keeps the order of several judges under the choice, in the open, each judge by its name', async () => {
+    at('/settings/judges', <SettingsArea section='judges' />);
     const tiers = await screen.findByTestId('mu-judge-tiers');
     expect(screen.getByRole('heading', { name: 'Judge tiers' })).toBeInTheDocument();
     expect(within(tiers).getByLabelText('Order')).toBeInTheDocument();
-    // Laya, the one judge here, needs nothing on this page: the judges page installs and starts it.
+    // Laya, the one judge here, needs nothing in the tiers: the choice above installs and starts it.
     const laya = within(tiers).getByTestId('mu-judge-tier-0');
     expect(laya).toHaveTextContent('Tier 1: Local Laya');
     expect(within(laya).queryByRole('textbox')).not.toBeInTheDocument();

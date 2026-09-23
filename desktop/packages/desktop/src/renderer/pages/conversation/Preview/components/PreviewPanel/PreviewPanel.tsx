@@ -42,8 +42,6 @@ import OfficeDocPreview from '../viewers/OfficeDocViewer';
 import PptViewer from '../viewers/PptViewer';
 import CodeEditor from '../editors/CodeEditor';
 import URLViewer from '../viewers/URLViewer';
-import BrowserTabLayer from '../../browser/BrowserTabLayer';
-import { MAX_BROWSER_TABS } from '../../browser/constants';
 import {
   PreviewTabs,
   PreviewToolbar,
@@ -103,9 +101,6 @@ const PreviewPanel: React.FC = () => {
     tabsWithUpdate,
     clearTabUpdate,
     addDomSnippet,
-    updateTab,
-    openBrowserTab,
-    browserTabLimitHitAt,
     persistQuotaExceededAt,
   } = usePreviewContext();
   const layout = useLayoutContext();
@@ -261,22 +256,6 @@ const PreviewPanel: React.FC = () => {
   const handleCancelRefresh = useCallback(() => {
     setRefreshConfirm({ show: false, tabId: null });
   }, []);
-
-  // 新建浏览器 tab（tab 栏加号）/ New browser tab (plus button in the tab bar)
-  const handleNewBrowserTab = useCallback(() => openBrowserTab(), [openBrowserTab]);
-
-  /**
-   * 浏览器 tab 达上限时提示用户。上限触达会复用最旧的 tab，如果不说一声，
-   * 用户看到的是"点了新建但旧 tab 内容变了"——像 bug。
-   *
-   * Warn when the browser tab cap is hit. Hitting the cap reuses the oldest tab;
-   * without this notice the user just sees an old tab's content change, which
-   * reads as a bug.
-   */
-  useEffect(() => {
-    if (!browserTabLimitHitAt) return;
-    messageApi.warning?.(t('preview.browser.tabLimitReached', { count: MAX_BROWSER_TABS }));
-  }, [browserTabLimitHitAt, messageApi, t]);
 
   /**
    * Local storage filled up, so this scope's tabs will not be restored later.
@@ -910,11 +889,6 @@ const PreviewPanel: React.FC = () => {
     if (metadata?.oversized) return renderOversized();
     if (content_type === 'unsupported') return renderUnsupported();
 
-    // 浏览器 tab 由常驻的 BrowserTabLayer 渲染，不能走这里 —— 否则切 tab 会重新加载页面
-    // Browser tabs are rendered by the always-mounted BrowserTabLayer; rendering
-    // them here would reload the page on every tab switch.
-    if (content_type === 'browser') return null;
-
     // Markdown 模式 / Markdown mode
     if (isMarkdown) {
       // 分屏模式：左右分割（编辑器 + 预览）/ Split-screen mode: Editor + Preview
@@ -1177,16 +1151,11 @@ const PreviewPanel: React.FC = () => {
       // Translated here, at render time: a title stored in the language of the moment would not follow a switch.
       title: previewTabDisplayTitle(tab, t),
       isDirty: tab.isDirty,
-      favicon: tab.content_type === 'browser' ? tab.metadata?.favicon : undefined,
-      agentActive: tab.content_type === 'browser' ? tab.metadata?.agentActive : undefined,
       canCopyPath: canCopyAbsolutePath(paths.absolute, isElectronDesktop()),
       canCopyRelativePath: Boolean(paths.relative),
       canRevealInFolder: canRevealInFolder(paths.absolute, isElectronDesktop()),
     };
   });
-
-  // 浏览器 tab 常驻挂载，切 tab 不销毁 webview / Browser tabs stay mounted across switches
-  const browserTabs = tabs.filter((tab) => tab.content_type === 'browser');
 
   return (
     <PreviewToolbarExtrasProvider value={toolbarExtrasContextValue}>
@@ -1224,18 +1193,11 @@ const PreviewPanel: React.FC = () => {
           // On mobile the preview is already a full overlay, so maximizing is
           // meaningless; omitting the callback hides the button.
           onToggleMaximize={layout?.isMobile ? undefined : toggleMaximized}
-          // 只要面板里已经有任意 tab（文件或浏览器），就露出「新建浏览器 tab」的加号，
-          // 不必等用户先手动开过一次浏览器。面板本身为空时才隐藏，避免出现一个没有
-          // 上下文的孤立加号。
-          // Show the "new browser tab" plus as soon as the panel holds any tab (file or
-          // browser) instead of requiring the user to open a browser first. It stays
-          // hidden only while the panel is empty, so the plus never appears alone.
-          onNewBrowserTab={previewTabs.length > 0 ? handleNewBrowserTab : undefined}
         />
 
-        {/* 工具栏（URL / 浏览器 类型不显示工具栏，因为不需要下载/编辑等功能）
-            Toolbar (hidden for URL and browser types — no download/edit needed) */}
-        {content_type !== 'url' && content_type !== 'browser' && !metadata?.missingFile && (
+        {/* 工具栏（URL 类型不显示工具栏，因为不需要下载/编辑等功能）
+            Toolbar (hidden for the URL type — no download/edit needed) */}
+        {content_type !== 'url' && !metadata?.missingFile && (
           <PreviewToolbar
             content_type={content_type}
             isMarkdown={isMarkdown}
@@ -1273,10 +1235,6 @@ const PreviewPanel: React.FC = () => {
 
         {/* 预览内容 / Preview content */}
         {renderContent()}
-
-        {/* 浏览器层：常驻挂载，切 tab 不重新加载页面
-            Browser layer: always mounted so tab switches don't reload pages */}
-        <BrowserTabLayer browserTabs={browserTabs} activeTabId={activeTabId} updateTab={updateTab} />
 
         {/* Tab 右键菜单 / Tab context menu */}
         {/* eslint-disable-next-line max-len */}

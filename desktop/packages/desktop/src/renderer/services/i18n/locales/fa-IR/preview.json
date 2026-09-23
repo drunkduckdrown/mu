@@ -150,6 +150,8 @@
   "browser": {
     "newTab": "زبانه جدید",
     "addressPlaceholder": "نشانی اینترنتی را وارد کنید یا جست‌وجو کنید",
+    "tabsLabel": "صفحه‌های باز",
+    "closeTab": "بستن {{title}}",
     "agentActiveTooltip": "عامل در حال کار با این زبانه است",
     "tabLimitReached": "به سقف تعداد زبانه‌ها ({{count}}) رسیدید. قدیمی‌ترین زبانه دوباره استفاده شد.",
     "agentFirstUseTitle": "عامل از مرورگر درون‌برنامه استفاده می‌کند",

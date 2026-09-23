@@ -368,7 +368,6 @@
   "model": "Modell",
   "system": "System",
   "conversations": "Unterhaltungen",
-  "voiceInput": "Spracheingabe",
   "about": "Über",
   "advancedSettings": "Erweiterte Einstellungen",
   "addModel": "Modell hinzufügen",
@@ -492,30 +491,6 @@
   "imageGeneration": "Bildgenerierung",
   "imageGenerationToggle": "Bildgenerierungs-Tool aktivieren",
   "imageGenerationDescription": "Wähle, welches konfigurierte bildtaugliche Modell das Tool standardmäßig verwenden soll.",
-  "speechToText": "Sprache zu Text",
-  "speechToTextDescription": "Konfiguriere den Spracheingabe-Anbieter für das Chat-Feld.",
-  "speechToTextApiKey": "API-Schlüssel",
-  "speechToTextBaseUrl": "Basis-URL",
-  "speechToTextModel": "Modell",
-  "speechToTextLanguage": "Standardsprache",
-  "speechToTextRequired": "(erforderlich)",
-  "speechToTextOptional": "(optional)",
-  "speechToTextSource": "Dienst",
-  "speechToTextSourceOpenAI": "OpenAI (offiziell)",
-  "speechToTextSourceDeepgram": "Deepgram (offiziell)",
-  "speechToTextSourceCustom": "Benutzerdefiniert (OpenAI-kompatibel)",
-  "speechToTextLanguageAuto": "Automatische Erkennung",
-  "speechToTextBaseUrlPlaceholder": "https://your-host/v1",
-  "speechToTextBaseUrlInvalid": "Geben Sie eine gültige HTTP(S)-URL ein",
-  "speechToTextModelPlaceholder": "Modellname auswählen oder eingeben",
-  "speechToTextTest": "Speichern & Testen",
-  "speechToTextTestStop": "Stopp",
-  "speechToTextTestRecording": "Aufnahme läuft… sprich einen kurzen Satz",
-  "speechToTextTestTranscribing": "Wird transkribiert…",
-  "speechToTextTestMissingKey": "Geben Sie den API-Schlüssel vor dem Testen ein",
-  "speechToTextTestUploadHint": "Mikrofon nicht verfügbar — wähle eine Audiodatei zum Testen",
-  "speechToTextStreamingBadge": "Live",
-  "speechToTextWholeBadge": "Batch",
   "mcp": "MCP-Integration",
   "imageGenerationModel": "Bildmodell",
   "imageGenSupportedTooltipTitle": "Derzeit unterstützte Bildmodelle:",
@@ -1019,7 +994,8 @@
     "clearConfirmTitle": "Browserdaten löschen?",
     "clearConfirmContent": "Du wirst von allen Websites im integrierten Browser abgemeldet. Das kann nicht rückgängig gemacht werden.",
     "clearSuccess": "Browserdaten gelöscht",
-    "clearFailed": "Browserdaten konnten nicht gelöscht werden"
+    "clearFailed": "Browserdaten konnten nicht gelöscht werden",
+    "description": "Ob der Agent den integrierten Browser bedienen darf, und das Löschen der Daten, die der Browser speichert."
   },
   "archived": {
     "navLabel": "Archivierte Unterhaltungen",
@@ -1077,7 +1053,6 @@
     "noProviderMatch": "Kein Anbieter bietet {{model}} an. Wähle ein anderes Modell."
   },
   "promptTimeoutUnit": "s",
-  "speechToTextTestResultLine": "Ergebnis ({{elapsed}}): {{text}}",
   "emojiCategories": {
     "recent": "Zuletzt verwendet",
     "smileys": "Smileys",
@@ -1097,5 +1072,9 @@
     "noTabId": "Es wurde keine Einstellungsseite angegeben."
   },
   "mcpAuthRequiredNamed": "{{name}} erfordert eine Anmeldung",
-  "mcpTestConnectionSuccessNamed": "{{name}} verbunden"
+  "mcpTestConnectionSuccessNamed": "{{name}} verbunden",
+  "appearanceDescription": "Sprache, Theme, Schriftarten und Skalierung.",
+  "systemDescription": "Start mit dem Computer, Schließen in die Taskleiste, Benachrichtigungen und die Ordner, in denen mu arbeitet und protokolliert.",
+  "conversationsDescription": "Zeitlimits, die Größengrenze der Vorschau, der Ablageort für Uploads und Nachrichten zwischen Unterhaltungen.",
+  "aboutDescription": "Welche Version von mu das ist, ihre Updates und der Weg zu den Protokollen."
 }

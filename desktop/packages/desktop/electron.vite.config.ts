@@ -147,9 +147,6 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           input: {
             index: resolve('packages/desktop/src/preload/main.ts'),
-            petPreload: resolve('packages/desktop/src/preload/petPreload.ts'),
-            petHitPreload: resolve('packages/desktop/src/preload/petHitPreload.ts'),
-            petConfirmPreload: resolve('packages/desktop/src/preload/petConfirmPreload.ts'),
           },
         },
       },
@@ -216,9 +213,6 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           input: {
             index: resolve(rendererRoot, 'index.html'),
-            pet: resolve(rendererRoot, 'pet/pet.html'),
-            'pet-hit': resolve(rendererRoot, 'pet/pet-hit.html'),
-            'pet-confirm': resolve(rendererRoot, 'pet/pet-confirm.html'),
           },
           external: ['node:crypto', 'crypto'],
           onwarn(warning, warn) {

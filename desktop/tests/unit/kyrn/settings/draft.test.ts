@@ -125,30 +125,30 @@ describe('the draft of the settings area', () => {
     expect(setCompaction({ ...base, features: {} }, true).betaCompression).toBe(true);
     expect([...dirtySections(base, newDraft(on))]).toEqual(['moreFeatures']);
   });
-  it('names the judges page for the choice and Jev’s key, and the tiers page for the order and the profiles', () => {
+  it('names the one judges page for the choice, the order, a profile’s field and any judge’s key', () => {
     const laya = { type: 'local' as const, model: '', baseUrl: '', apiKeyEnv: '', timeoutMs: 3000 };
     const one = { ...base, judges: { ...base.judges, laya } };
     const two = { ...one, tiers: ['jev', 'laya'] };
-    // Laya picked on the judges page: the one judge now, nothing the tiers page did.
+    // Laya picked: the one judge now.
     expect([...dirtySections(two, newDraft({ ...two, tiers: ['laya'] }))]).toEqual(['judges']);
-    // The order turned round on the tiers page: another first judge, and an order the choice alone would not give.
-    expect([...dirtySections(two, newDraft({ ...two, tiers: ['laya', 'jev'] }))]).toEqual(['judges', 'judgeTiers']);
-    // A second judge added, the first kept: the tiers page alone.
-    expect([...dirtySections(one, newDraft(two))]).toEqual(['judgeTiers']);
+    // The order turned round, and a second judge added.
+    expect([...dirtySections(two, newDraft({ ...two, tiers: ['laya', 'jev'] }))]).toEqual(['judges']);
+    expect([...dirtySections(one, newDraft(two))]).toEqual(['judges']);
     // A profile's field.
     const slower = structuredClone(one);
     slower.judges.jev.timeoutMs = 9000;
-    expect([...dirtySections(one, newDraft(slower))]).toEqual(['judgeTiers']);
-    // Laya picked and Jev picked again: the cascade is one judge now, a change of the judges page.
-    expect([...dirtySections(two, newDraft({ ...two, tiers: ['jev'] }))]).toEqual(['judges']);
-    // Another judge's key is the tiers page's.
-    expect([...dirtySections(base, { ...newDraft(base), judgeKeys: { MU_JUDGE_OWN: 'k' } })]).toEqual(['judgeTiers']);
-    // Jev's key is the judges page's while Jev is the judge chosen there, and the tiers page's further down the order.
-    expect([...dirtySections(two, { ...newDraft(two), judgeKeys: { TYPESAFE_API_KEY: 'k' } })]).toEqual(['judges']);
+    expect([...dirtySections(one, newDraft(slower))]).toEqual(['judges']);
+    // A key, of the judge chosen or of one further down the order.
+    expect([...dirtySections(base, { ...newDraft(base), judgeKeys: { MU_JUDGE_OWN: 'k' } })]).toEqual(['judges']);
     const layaFirst = { ...one, tiers: ['laya', 'jev'] };
     expect([...dirtySections(layaFirst, { ...newDraft(layaFirst), judgeKeys: { TYPESAFE_API_KEY: 'k' } })]).toEqual([
-      'judgeTiers',
+      'judges',
     ]);
+  });
+  it('never writes the mode a new conversation starts in: that is the permission feature’s option now', () => {
+    const picked = { ...base, permissions: { mode: 'full', from: 'picked' as const } };
+    expect(toSave(newDraft(picked))).not.toHaveProperty('permissions');
+    expect([...dirtySections(base, newDraft(picked))]).toEqual([]);
   });
   it('searches every word, in any of the texts, ignoring case', () => {
     expect(matches('', 'anything')).toBe(true);

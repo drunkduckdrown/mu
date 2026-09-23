@@ -152,6 +152,8 @@
   "browser": {
     "newTab": "Новая вкладка",
     "addressPlaceholder": "Введите URL или поисковый запрос",
+    "tabsLabel": "Открытые страницы",
+    "closeTab": "Закрыть «{{title}}»",
     "agentActiveTooltip": "Агент управляет этой вкладкой",
     "tabLimitReached": "Достигнут предел вкладок ({{count}}). Самая старая вкладка была использована повторно.",
     "agentFirstUseTitle": "Агент использует встроенный браузер",

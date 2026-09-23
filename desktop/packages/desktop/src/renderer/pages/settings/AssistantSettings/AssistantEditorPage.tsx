@@ -18,7 +18,11 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({ editor, activ
   const canSave = isCreating || Boolean(activeAssistant);
 
   return (
-    <div data-testid='assistant-editor-page' className='flex h-full min-h-0 flex-col overflow-hidden bg-transparent'>
+    // The settings frame's two classes (on the page and on its column) bring the settings' flat controls here too.
+    <div
+      data-testid='assistant-editor-page'
+      className='settings-page-wrapper flex h-full min-h-0 flex-col overflow-hidden bg-transparent'
+    >
       <div
         data-testid='assistant-editor-bar'
         className='sticky top-0 z-10 flex h-48px flex-shrink-0 items-center gap-12px border-b border-border-2 bg-bg-0 px-18px'
@@ -29,7 +33,7 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({ editor, activ
             icon={<ArrowLeft size={16} />}
             onClick={onBack}
             data-testid='btn-back-assistant-editor'
-            className='!flex !items-center !gap-4px !rounded-8px !px-6px !text-t-primary'
+            className='!flex !items-center !gap-4px !px-6px !text-t-primary'
           >
             {t('settings.assistantBackToList', { defaultValue: 'All assistants' })}
           </Button>
@@ -72,7 +76,7 @@ const AssistantEditorPage: React.FC<AssistantEditorPageProps> = ({ editor, activ
         data-editor-popup-root
         className='relative min-h-0 flex-1 overflow-auto px-18px py-18px pb-24px'
       >
-        <div className='mx-auto w-full max-w-760px'>
+        <div className='settings-page-content mx-auto w-full max-w-760px'>
           <AssistantEditorSections editor={editor} activeAssistant={activeAssistant} />
         </div>
       </div>

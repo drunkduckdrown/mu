@@ -5,7 +5,10 @@
  */
 
 import React, { useCallback } from 'react';
-import WebviewHost from '@/renderer/components/media/WebviewHost';
+import WebviewHost, {
+  type WebviewNavigation,
+  type WebviewNavigationState,
+} from '@/renderer/components/media/WebviewHost';
 import {
   BROWSER_BLANK_URL,
   BROWSER_SESSION_PARTITION,
@@ -30,6 +33,13 @@ export interface BrowserViewerProps {
   onWebContentsReady?: (webContentsId: number, webview: Electron.WebviewTag) => void;
   /** See WebviewHost: the page keeps its own links and forms. */
   pristine?: boolean;
+  /**
+   * The page's navigation state as it changes, for the browser's one address bar above its pages. Without it the
+   * page draws its own bar (see WebviewHost).
+   */
+  onNavigationChange?: (tabId: string, state: WebviewNavigationState) => void;
+  /** Filled with the page's navigation controls, for the same address bar. */
+  navigationRef?: React.Ref<WebviewNavigation>;
 }
 
 /**
@@ -43,7 +53,8 @@ export interface BrowserViewerProps {
  * Differs from URLViewer in exactly the three ways that justify a separate
  * component: a shared persistent partition (sign-in survives), keyword search in
  * the address bar, and writing address/title/favicon back onto the owning tab so
- * the browser can be restored after a restart.
+ * the browser can be restored after a restart. In the work panel's browser the
+ * address bar is the browser's own, above all its pages (`onNavigationChange`).
  */
 const BrowserViewer: React.FC<BrowserViewerProps> = ({
   url,
@@ -54,8 +65,15 @@ const BrowserViewer: React.FC<BrowserViewerProps> = ({
   partition = BROWSER_SESSION_PARTITION,
   onWebContentsReady,
   pristine,
+  onNavigationChange,
+  navigationRef,
 }) => {
   const handleUrlChange = useCallback((next: string) => onUrlChange(tabId, next), [tabId, onUrlChange]);
+
+  const handleNavigationChange = useCallback(
+    (state: WebviewNavigationState) => onNavigationChange?.(tabId, state),
+    [tabId, onNavigationChange]
+  );
 
   const handleTitleChange = useCallback(
     (title: string) => {
@@ -93,6 +111,8 @@ const BrowserViewer: React.FC<BrowserViewerProps> = ({
       onDidFinishLoad={handleDidFinishLoad}
       onWebContentsReady={onWebContentsReady}
       pristine={pristine}
+      onNavigationChange={onNavigationChange ? handleNavigationChange : undefined}
+      navigationRef={navigationRef}
     />
   );
 };

@@ -236,14 +236,12 @@ const ConversationPreferences: React.FC = () => {
   ];
 
   return (
-    <div className='px-16px md:px-24px py-4px bg-base border border-color-b-base rd-8px'>
-      <div className='w-full flex flex-col divide-y divide-b-base'>
-        {preferenceItems.map((item) => (
-          <PreferenceRow key={item.key} label={item.label} description={item.description}>
-            {item.component}
-          </PreferenceRow>
-        ))}
-      </div>
+    <div className='settings-list'>
+      {preferenceItems.map((item) => (
+        <PreferenceRow key={item.key} label={item.label} description={item.description}>
+          {item.component}
+        </PreferenceRow>
+      ))}
     </div>
   );
 };

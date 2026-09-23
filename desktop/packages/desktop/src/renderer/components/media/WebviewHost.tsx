@@ -4,12 +4,29 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Left, Right, Refresh, Loading } from '@icon-park/react';
 import { ipcBridge } from '@/common';
 import { formatNumber } from '@/renderer/services/i18n/format';
 import { InternalNavTracker, shouldResetHistoryForUrlProp } from './webviewHistory';
+
+/** Where a page is and what its navigation can do now, for an owner that draws the controls itself. */
+export type WebviewNavigationState = {
+  url: string;
+  canGoBack: boolean;
+  canGoForward: boolean;
+  loading: boolean;
+};
+
+/** A page's navigation, for an owner that draws the controls itself. */
+export type WebviewNavigation = {
+  back: () => void;
+  forward: () => void;
+  reload: () => void;
+  /** Go to an address (already a URL); the page's own address again reloads it. */
+  go: (url: string) => void;
+};
 
 export interface WebviewHostProps {
   /** URL to display */
@@ -55,6 +72,14 @@ export interface WebviewHostProps {
    * preview and fatal for a page that someone fills in and submits (a search, a sign-in).
    */
   pristine?: boolean;
+  /**
+   * For an owner that draws the navigation itself (the in-app browser: one address bar for all its pages): hears the
+   * page's address, history and loading as they change. With it this host draws no bar of its own and never hides
+   * the page while it loads, whatever `showNavBar` says.
+   */
+  onNavigationChange?: (state: WebviewNavigationState) => void;
+  /** Filled with the page's navigation while it is mounted (see `onNavigationChange`). */
+  navigationRef?: React.Ref<WebviewNavigation>;
 }
 
 const MIN_ZOOM_FACTOR = 0.75;
@@ -85,8 +110,13 @@ const WebviewHost: React.FC<WebviewHostProps> = ({
   resolveUrlInput,
   onWebContentsReady,
   pristine = false,
+  onNavigationChange,
+  navigationRef,
 }) => {
   const { t, i18n } = useTranslation();
+  // An owner that draws the navigation gets the state instead of a bar; the loading veil is for bare embeds only.
+  const drawsNavBar = showNavBar && !onNavigationChange;
+  const veilsWhileLoading = !showNavBar && !onNavigationChange;
   const containerRef = useRef<HTMLDivElement | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const webviewRef = useRef<Electron.WebviewTag | null>(null);
@@ -104,6 +134,8 @@ const WebviewHost: React.FC<WebviewHostProps> = ({
   onTitleChangeRef.current = onTitleChange;
   const onFaviconChangeRef = useRef(onFaviconChange);
   onFaviconChangeRef.current = onFaviconChange;
+  const onNavigationChangeRef = useRef(onNavigationChange);
+  onNavigationChangeRef.current = onNavigationChange;
 
   // Navigation state
   const [currentUrl, setCurrentUrl] = useState(url);
@@ -582,6 +614,22 @@ const WebviewHost: React.FC<WebviewHostProps> = ({
     webviewRef.current?.reload();
   }, []);
 
+  // The owner's controls, when it draws them: the same actions as the bar below.
+  useImperativeHandle(
+    navigationRef,
+    () => ({
+      back: handleGoBack,
+      forward: handleGoForward,
+      reload: handleRefresh,
+      go: (targetUrl: string) => (targetUrl === currentUrl ? handleRefresh() : navigateToWithHistory(targetUrl)),
+    }),
+    [handleGoBack, handleGoForward, handleRefresh, navigateToWithHistory, currentUrl]
+  );
+
+  useEffect(() => {
+    onNavigationChangeRef.current?.({ url: currentUrl, canGoBack, canGoForward, loading: isLoading });
+  }, [currentUrl, canGoBack, canGoForward, isLoading]);
+
   // URL bar submit
   const handleUrlSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -639,7 +687,7 @@ const WebviewHost: React.FC<WebviewHostProps> = ({
 
   return (
     <div ref={containerRef} className={`h-full w-full flex flex-col ${className ?? ''}`} style={style}>
-      {showNavBar && (
+      {drawsNavBar && (
         <style>
           {`
             .aion-url-viewer-toolbar {
@@ -739,7 +787,7 @@ const WebviewHost: React.FC<WebviewHostProps> = ({
         </style>
       )}
       {/* Navigation bar (optional) */}
-      {showNavBar && (
+      {drawsNavBar && (
         <div className='aion-url-viewer-toolbar flex items-center gap-6px h-40px px-10px bg-bg-2 border-b border-border-1 flex-shrink-0'>
           <button
             onClick={handleGoBack}
@@ -792,7 +840,7 @@ const WebviewHost: React.FC<WebviewHostProps> = ({
       )}
 
       {/* Loading indicator (when no nav bar) */}
-      {!showNavBar && isLoading && (
+      {veilsWhileLoading && isLoading && (
         <div className='absolute inset-0 flex items-center justify-center text-t-secondary text-14px z-10 pointer-events-none'>
           <span className='animate-pulse'>{t('preview.loading')}</span>
         </div>
@@ -810,7 +858,7 @@ const WebviewHost: React.FC<WebviewHostProps> = ({
           src={currentUrl}
           className='border-0 absolute start-0 top-0'
           style={{
-            opacity: !showNavBar && isLoading ? 0 : 1,
+            opacity: veilsWhileLoading && isLoading ? 0 : 1,
             transition: 'opacity 150ms ease-in',
           }}
           {...webviewAttrs}

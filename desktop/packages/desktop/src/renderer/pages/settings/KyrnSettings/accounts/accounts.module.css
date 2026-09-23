@@ -5,7 +5,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 12px 14px;
-  border-radius: 10px;
+  border-radius: 8px;
   background: var(--color-fill-1);
 }
 
@@ -18,14 +18,14 @@
   line-height: 20px;
 }
 
-/* A slow pulse while the browser has the sign-in. */
+/* A slow pulse while the browser has the sign-in: grey, since the settings keep lavender for buttons and switches. */
 .pulse {
   flex: none;
   width: 8px;
   height: 8px;
   margin-top: 6px;
   border-radius: 50%;
-  background: var(--mu-accent-dot, rgb(var(--primary-5)));
+  background: rgb(var(--primary-5));
   animation: pulse 1.6s ease-in-out infinite;
 }
 
@@ -106,7 +106,7 @@
   gap: 6px;
   padding: 12px 14px;
   border: 1px solid color-mix(in srgb, rgb(var(--warning-6)) 32%, var(--color-border-2));
-  border-radius: 10px;
+  border-radius: 8px;
   background: color-mix(in srgb, rgb(var(--warning-6)) 8%, var(--bg-1));
 }
 

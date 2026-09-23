@@ -28,11 +28,8 @@ import { useMuStartMode } from './hooks/useMuStartMode';
 import { useTypewriterPlaceholder } from './hooks/useTypewriterPlaceholder';
 import { ensureBackendMcpCatalog } from '@/renderer/hooks/mcp/catalog';
 import { resolveGuidAssistantDefaults } from './utils/assistantDefaults';
-import SpeechInputButton from '@/renderer/components/chat/SpeechInputButton';
 import { chatFileRefPath, uploadFileRef } from '@/common/types/chatFile';
 import { useOpenFileSelector } from '@/renderer/hooks/file/useOpenFileSelector';
-import { appendSpeechTranscript } from '@/renderer/hooks/system/useSpeechInput';
-import { useLiveTranscriptInsertion } from '@/renderer/hooks/system/useLiveTranscriptInsertion';
 import { ArrowRightUp } from '@icon-park/react';
 import { Button, ConfigProvider } from '@arco-design/web-react';
 import React, { useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
@@ -611,14 +608,6 @@ const GuidPage: React.FC = () => {
     />
   );
 
-  const handleSpeechTranscript = useCallback(
-    (transcript: string) => {
-      guidInput.setInput((prev) => appendSpeechTranscript(prev, transcript));
-    },
-    [guidInput.setInput]
-  );
-  const { handleLiveTranscript } = useLiveTranscriptInsertion(guidInput.setInput);
-
   // Build the action row
   const actionRowNode = (
     <GuidActionRow
@@ -645,9 +634,6 @@ const GuidPage: React.FC = () => {
       mcpServers={availableMcpServers}
       selectedMcpServerIds={guidSelectedMcpServerIds ?? []}
       onToggleMcpServer={handleToggleMcpServer}
-      speechInputNode={
-        <SpeechInputButton onLiveTranscript={handleLiveTranscript} onTranscript={handleSpeechTranscript} />
-      }
       loading={guidInput.loading}
       isButtonDisabled={send.isButtonDisabled}
       onSend={send.sendMessageHandler}

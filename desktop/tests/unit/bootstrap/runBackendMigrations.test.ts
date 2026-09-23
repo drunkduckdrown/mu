@@ -215,4 +215,32 @@ describe('runBackendMigrations', () => {
       'yes'
     );
   });
+
+  it('registers the chrome-devtools server switched off and never tries it, also where Node is missing', async () => {
+    // Trying it runs `npx -y chrome-devtools-mcp@latest`: without Node on the machine, that is the bundled Node
+    // fetching chrome-devtools-mcp at the first start.
+    const chromeDevtools: IMcpServer = {
+      id: 'chrome-devtools-id',
+      name: 'chrome-devtools',
+      enabled: false,
+      builtin: true,
+      transport: { type: 'stdio', command: 'npx', args: ['-y', 'chrome-devtools-mcp@latest'] },
+      created_at: 1,
+      updated_at: 1,
+      original_json: '{"mcpServers":{"chrome-devtools":{"command":"npx","args":["-y","chrome-devtools-mcp@latest"]}}}',
+    };
+    listServersMock.mockResolvedValueOnce([]).mockResolvedValue([chromeDevtools]);
+    const path = process.env.PATH;
+    process.env.PATH = '';
+    try {
+      await runBackendMigrations(configFile as never);
+    } finally {
+      process.env.PATH = path;
+    }
+
+    expect(batchImportServersMock).toHaveBeenCalledWith({
+      servers: expect.arrayContaining([expect.objectContaining({ name: 'chrome-devtools', enabled: false })]),
+    });
+    expect(testMcpConnectionMock).not.toHaveBeenCalled();
+  });
 });

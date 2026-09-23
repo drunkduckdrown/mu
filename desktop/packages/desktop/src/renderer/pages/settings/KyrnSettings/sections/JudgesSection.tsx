@@ -20,7 +20,7 @@ import {
   profileFor,
   withJevAccess,
 } from '../judgeChoice';
-import SectionShell, { Card } from './SectionShell';
+import SectionShell, { Card, GroupTitle } from './SectionShell';
 import LocalJudgePanel from './LocalJudgePanel';
 import styles from './sections.module.css';
 
@@ -32,24 +32,15 @@ type JudgesSectionProps = {
 };
 
 /**
- * Which judge answers the small questions mu asks while it works: one choice, and under it the one thing that choice
- * needs (Jev a key, Laya the one-click panel). Nothing else: the order of several judges and the way Jev is reached
- * are the judge tiers page.
+ * The judges page. First the choice most people make once: which judge answers the small questions mu asks while it
+ * works, and under it the one thing that choice needs (Jev a key, Laya the one-click panel). Below it the judge tiers:
+ * the order in which several judges are asked, and what each one needs.
  */
-export default function JudgesSection({ draft, onChange, onKey }: JudgesSectionProps) {
+export default function JudgesSection({ draft, base, onChange, onKey }: JudgesSectionProps) {
   const { t } = useTranslation();
   return (
     <SectionShell id='judges' title={t('mu.sections.judges')} description={t('mu.judges.intro')}>
       <JudgeChoices draft={draft} onChange={onChange} onKey={onKey} />
-    </SectionShell>
-  );
-}
-
-/** The judge tiers page: the order in which the judges are asked, and under it what each one needs. */
-export function JudgeTiersSection({ draft, base, onChange, onKey }: JudgesSectionProps) {
-  const { t } = useTranslation();
-  return (
-    <SectionShell id='judgeTiers' title={t('mu.sections.judgeTiers')} description={t('mu.judges.tiersHelp')}>
       <JudgeTiers draft={draft} base={base} onChange={onChange} onKey={onKey} />
     </SectionShell>
   );
@@ -146,10 +137,11 @@ export function ChoiceBody({ choice, draft, onKey }: BodyProps) {
 }
 
 /**
- * The order, by the judges' names (Jev, Laya), then a card per judge in that order with what it needs. Jev: the way it
- * is reached and its model. The one thing a judge needs to run (Jev's key, Laya's install) is on the judges page when
- * it is the judge chosen there, the first; a judge further down the order needs it here, where it is the only place.
- * A judge of another kind (a model as judge, a self-hosted service) goes by the name it was given.
+ * The judge tiers, under the choice: the order, by the judges' names (Jev, Laya), then a group per judge in that order
+ * with what it needs. Jev: the way it is reached and its model. The one thing a judge needs to run (Jev's key, Laya's
+ * install) is asked for in the choice above when it is the judge chosen there, the first; a judge further down the
+ * order needs it here, where it is the only place. A judge of another kind (a model as judge, a self-hosted service)
+ * goes by the name it was given.
  */
 function JudgeTiers({ draft, base, onChange, onKey }: JudgesSectionProps) {
   const { t, i18n } = useTranslation();
@@ -167,6 +159,10 @@ function JudgeTiers({ draft, base, onChange, onKey }: JudgesSectionProps) {
   ];
   return (
     <div className={styles.stack} data-testid='mu-judge-tiers'>
+      <div className={styles.groupHead}>
+        <GroupTitle>{t('mu.sections.judgeTiers')}</GroupTitle>
+        <div className={styles.groupHelp}>{t('mu.judges.tiersHelp')}</div>
+      </div>
       <Card>
         <Row
           title={t('mu.judges.order')}
@@ -202,7 +198,7 @@ function JudgeTiers({ draft, base, onChange, onKey }: JudgesSectionProps) {
             {kind === 'jev' ? (
               <JevFields draft={draft} base={base} index={index} onChange={onChange} onKey={onKey} />
             ) : kind === 'local' && index > 0 ? (
-              // The first judge is the one chosen on the judges page, which installs and starts it.
+              // The first judge is the one chosen above, whose choice installs and starts it.
               <div className={styles.tierPanel}>
                 <LocalJudgePanel />
               </div>
@@ -223,7 +219,7 @@ function JevFields({ draft, base, index, onChange, onKey }: JudgesSectionProps &
   const access = judge.type as JevAccess;
   const before = base.judges[base.tiers[index] ?? ''];
   const variable = jevKeyVariable(judge);
-  // The first judge's key is asked for on the judges page.
+  // The first judge's key is asked for in the choice above.
   const keyHere = index > 0;
   return (
     <>

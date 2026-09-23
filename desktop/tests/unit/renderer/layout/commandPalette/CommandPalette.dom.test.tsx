@@ -20,7 +20,6 @@ import type { TChatConversation } from '@/common/config/storage';
 import enCommon from '@/renderer/services/i18n/locales/en-US/common.json';
 import enConversation from '@/renderer/services/i18n/locales/en-US/conversation.json';
 import enMu from '@/renderer/services/i18n/locales/en-US/mu.json';
-import enPet from '@/renderer/services/i18n/locales/en-US/pet.json';
 import enSettings from '@/renderer/services/i18n/locales/en-US/settings.json';
 
 const state = vi.hoisted(() => ({
@@ -37,7 +36,6 @@ const MODULES: Record<string, unknown> = {
   common: enCommon,
   conversation: enConversation,
   mu: enMu,
-  pet: enPet,
   settings: enSettings,
 };
 const lookup = (node: unknown, path: string[]): unknown => {

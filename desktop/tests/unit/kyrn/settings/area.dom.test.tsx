@@ -320,9 +320,9 @@ describe('decision points and features from the manifest', () => {
     expect(within(screen.getByTestId('mu-feature-compaction')).getByText('Beta')).toBeInTheDocument();
   });
   it.each([
-    ['zh-CN', '消息预判', '生效'],
-    ['ja-JP', 'Message preflight', 'Active'],
-    ['en-US', 'Message preflight', 'Active'],
+    ['zh-CN', '消息预判', '开启'],
+    ['ja-JP', 'Message preflight', 'On'],
+    ['en-US', 'Message preflight', 'On'],
   ])('reads the manifest in the language of %s', async (language, title, mode) => {
     await i18n.changeLanguage(language);
     await open('decisions');
@@ -411,7 +411,7 @@ describe('decision points and features from the manifest', () => {
     bridge.settings.mockResolvedValue({ ok: true, data: settings({ harness: { status: 'missing' }, features: {} }) });
     await open('decisions');
     expect(screen.getByText(/too old to list/)).toBeInTheDocument();
-    fireEvent.click(within(screen.getByTestId('mu-default-mode')).getByText('Active'));
+    fireEvent.click(within(screen.getByTestId('mu-default-mode')).getByText('On'));
     fireEvent.click(screen.getByText('Save'));
     await waitFor(() => expect(bridge.save).toHaveBeenCalled());
     const sent = bridge.save.mock.calls[0][0] as SaveSettings;
@@ -419,13 +419,42 @@ describe('decision points and features from the manifest', () => {
     expect(sent).not.toHaveProperty('features');
     expect(sent).not.toHaveProperty('decisionModes');
   });
+  it('shows each point off or on: a stored shadow reads as off, and a change writes active or off', async () => {
+    bridge.settings.mockResolvedValue({
+      ok: true,
+      data: settings({ mode: 'shadow', decisionModes: { 'tool.risk': 'shadow', 'input.preflight': 'active' } }),
+    });
+    await open('decisions');
+    const risk = screen.getByTestId('mu-decision-tool.risk');
+    const byDefault = screen.getByTestId('mu-default-mode');
+    // Two states, off first; the harness's third mode is not offered, and is not named anywhere.
+    expect(
+      within(risk)
+        .getAllByRole('radio')
+        .map((radio) => radio.closest('label')?.textContent)
+    ).toEqual(['Off', 'On']);
+    expect(within(risk).getByRole('radio', { name: 'Off' })).toBeChecked();
+    expect(within(byDefault).getByRole('radio', { name: 'Off' })).toBeChecked();
+    expect(within(screen.getByTestId('mu-decision-input.preflight')).getByRole('radio', { name: 'On' })).toBeChecked();
+    expect(screen.getByTestId('kyrn-settings')).not.toHaveTextContent(/shadow/i);
+    // Nothing is written until a state is picked: a shadow left alone stays as it is in the file.
+    expect(screen.queryByTestId('mu-save-bar')).not.toBeInTheDocument();
+    fireEvent.click(within(risk).getByText('On'));
+    fireEvent.click(within(byDefault).getByText('On'));
+    fireEvent.click(within(byDefault).getByText('Off'));
+    fireEvent.click(screen.getByText('Save'));
+    await waitFor(() => expect(bridge.save).toHaveBeenCalled());
+    const sent = bridge.save.mock.calls[0][0] as SaveSettings;
+    expect(sent.mode).toBe('off');
+    expect(sent.decisionModes).toEqual({ 'tool.risk': 'active', 'input.preflight': 'active' });
+  });
 });
 
 describe('the save bar', () => {
   it('appears with the first change, names the sections, saves everything at once and goes away', async () => {
     await open('decisions');
     expect(screen.queryByTestId('mu-save-bar')).not.toBeInTheDocument();
-    fireEvent.click(within(screen.getByTestId('mu-decision-tool.risk')).getByText('Active'));
+    fireEvent.click(within(screen.getByTestId('mu-decision-tool.risk')).getByText('On'));
     fireEvent.click(screen.getByTestId('mu-nav-moreFeatures'));
     fireEvent.click(
       within(screen.getByTestId('mu-feature-guard')).getByRole('switch', { name: 'Risky command guard' })
@@ -451,13 +480,11 @@ describe('the save bar', () => {
     await open('decisions');
     const row = screen.getByTestId('mu-decision-tool.risk');
     expect(within(row).getByRole('radio', { name: 'Off' })).toBeChecked();
-    // A point without a mode of its own shows the default and offers nothing to undo.
-    expect(
-      within(screen.getByTestId('mu-decision-input.preflight')).getByRole('radio', { name: 'Shadow' })
-    ).toBeChecked();
+    // A point without a mode of its own shows the default (a shadow, which reads as off) and offers nothing to undo.
+    expect(within(screen.getByTestId('mu-decision-input.preflight')).getByRole('radio', { name: 'Off' })).toBeChecked();
     expect(screen.queryByTestId('mu-decision-default-input.preflight')).not.toBeInTheDocument();
-    fireEvent.click(within(row).getByText('Use the default (Shadow)'));
-    expect(within(row).getByRole('radio', { name: 'Shadow' })).toBeChecked();
+    fireEvent.click(within(row).getByText('Use the default (Off)'));
+    expect(within(row).getByRole('radio', { name: 'Off' })).toBeChecked();
     expect(screen.queryByTestId('mu-decision-default-tool.risk')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('Discard'));
     expect(screen.queryByTestId('mu-save-bar')).not.toBeInTheDocument();
@@ -1162,7 +1189,7 @@ describe('providers and the default model', () => {
   });
 });
 
-describe('permissions', () => {
+describe('the permission modes and the board', () => {
   /** Settings from a harness with permission modes and a board that can be told its model. */
   function withModes(patch: Partial<KyrnSettings> = {}): KyrnSettings {
     const parsed = parseManifest(withOwnPlaces(manifestJson));
@@ -1173,74 +1200,40 @@ describe('permissions', () => {
     return settings({ harness: parsed, features, ...patch });
   }
 
-  it('sets the mode every new conversation starts in, full access included, and saves only that', async () => {
-    bridge.settings.mockResolvedValue({ ok: true, data: withModes() });
-    bridge.save.mockResolvedValue({
-      ok: true,
-      data: withModes({ revision: 'r2', permissions: { mode: 'full', from: 'picked' } }),
-    });
-    await open('permissions');
-    const section = screen.getByTestId('mu-section-permissions');
-    expect(
-      within(section)
-        .getAllByRole('radio')
-        .map((tile) => tile.getAttribute('data-testid'))
-    ).toEqual(['mu-permission-full', 'mu-permission-jev', 'mu-permission-ask']);
-    expect(screen.getByTestId('mu-permission-full')).toHaveTextContent('Runs everything without asking');
-    expect(screen.getByTestId('mu-permission-jev')).toHaveAttribute('aria-checked', 'true');
-    fireEvent.click(screen.getByTestId('mu-permission-full'));
-    expect(screen.getByTestId('mu-permission-full')).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Unsaved changes in: Permissions');
-    expect(within(screen.getByTestId('mu-nav-permissions')).getByLabelText('Unsaved changes')).toBeInTheDocument();
+  it('sets the mode a new conversation starts in on the permission feature’s own page, and never the picked one', async () => {
+    bridge.settings.mockResolvedValue({ ok: true, data: withModes({ permissions: { mode: 'ask', from: 'picked' } }) });
+    await open('moreFeatures');
+    // There is no page of its own for it any more: the mode is the feature's option, one click from its row.
+    expect(screen.queryByTestId('mu-nav-permissions')).not.toBeInTheDocument();
+    const row = screen.getByTestId('mu-feature-permissions');
+    expect(row).not.toHaveTextContent('chosen under Permissions');
+    fireEvent.click(within(row).getByTestId('mu-feature-open-permissions'));
+    const page = screen.getByTestId('mu-section-feature-permissions');
+    const mode = within(page).getByTestId('mu-option-permissions-mode');
+    expect(mode).toHaveTextContent('Mode of a new conversation');
+    const user = userEvent.setup();
+    await user.click(within(mode).getByLabelText('Mode of a new conversation'));
+    fireEvent.click(await screen.findByText('Full access', { selector: '.arco-select-option' }));
+    expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Unsaved changes in: More features');
     fireEvent.click(screen.getByText('Save'));
     await waitFor(() => expect(bridge.save).toHaveBeenCalled());
     const sent = bridge.save.mock.calls[0][0] as SaveSettings;
-    expect(sent.permissions).toEqual({ mode: 'full' });
-    // The feature itself is not touched: the pick has its own file.
-    expect(sent.features?.permissions).toEqual(withModes().features.permissions);
-    await waitFor(() => expect(screen.queryByTestId('mu-save-bar')).not.toBeInTheDocument());
-    expect(screen.getByTestId('mu-permission-full')).toHaveAttribute('aria-checked', 'true');
-  });
-
-  it('says when this mu has no permission modes, and when they are off in the features', async () => {
-    const { unmount } = render(<SettingsArea section='permissions' />, { wrapper });
-    expect(await screen.findByTestId('mu-section-permissions')).toHaveTextContent(
-      'This version of mu has no permission modes yet.'
-    );
-    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
-    unmount();
-    const off = withModes();
-    bridge.settings.mockResolvedValue({
-      ok: true,
-      data: { ...off, features: { ...off.features, permissions: { ...off.features.permissions, enabled: false } } },
-    });
-    render(<SettingsArea section='permissions' />, { wrapper });
-    expect(await screen.findByTestId('mu-section-permissions')).toHaveTextContent(
-      'Permission modes are off in Features'
-    );
+    expect(sent.features?.permissions.options).toEqual({ mode: 'full' });
+    // The mode picked with /permissions has a file of its own, which the settings never write.
+    expect(sent).not.toHaveProperty('permissions');
   });
 
   it('still draws when an older main process sends no permission default and no board model', async () => {
     const { permissions: _permissions, boardModel: _boardModel, ...older } = withModes();
     bridge.settings.mockResolvedValue({ ok: true, data: older as KyrnSettings });
-    const { unmount } = render(<SettingsArea section='permissions' />, { wrapper });
-    // The tiles are there, none picked: the page cannot say which mode new conversations start in.
-    expect(await screen.findByTestId('mu-permission-full')).toHaveAttribute('aria-checked', 'false');
-    expect(screen.queryByTestId('mu-save-bar')).not.toBeInTheDocument();
-    unmount();
     render(<SettingsArea section='defaultModel' />, { wrapper });
     expect(await screen.findByTestId('mu-board-model')).toHaveTextContent('Update mu');
     expect(screen.queryByTestId('mu-save-bar')).not.toBeInTheDocument();
   });
 
-  it('points from the features to where the mode and the board’s model are set', async () => {
+  it('points from the features to where the board’s model is set, and keeps the mode of a new conversation', async () => {
     bridge.settings.mockResolvedValue({ ok: true, data: withModes() });
-    await open('moreFeatures');
-    // Its one option is set elsewhere: the row says where, and has no page of options to open.
-    const permissions = screen.getByTestId('mu-feature-permissions');
-    expect(permissions).toHaveTextContent('The mode of a new conversation is chosen under Permissions.');
-    expect(within(permissions).queryByTestId('mu-feature-open-permissions')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByTestId('mu-nav-features'));
+    await open('features');
     fireEvent.click(screen.getByTestId('mu-feature-open-board'));
     const board = screen.getByTestId('mu-section-feature-board');
     expect(board).toHaveTextContent('The model that writes the board is chosen under Default model.');
@@ -1248,7 +1241,7 @@ describe('permissions', () => {
     expect(within(board).getByTestId('mu-option-board-defaultOn')).toBeInTheDocument();
   });
 
-  it('neither marks nor resets from the features an option set elsewhere', async () => {
+  it('neither marks nor resets from the features an option set elsewhere, and marks the mode as the feature’s own', async () => {
     const base = withModes();
     const features = {
       ...base.features,
@@ -1257,10 +1250,8 @@ describe('permissions', () => {
     };
     bridge.settings.mockResolvedValue({ ok: true, data: { ...base, features } });
     await open('moreFeatures');
-    // mu.json's mode is shown under Permissions: nothing on this row differs from the default.
-    const permissions = screen.getByTestId('mu-feature-permissions');
-    expect(within(permissions).queryByTestId('mu-modified')).not.toBeInTheDocument();
-    expect(within(permissions).queryByText('Restore defaults')).not.toBeInTheDocument();
+    // The mode differs from the feature's default, and it is this feature's option now.
+    expect(within(screen.getByTestId('mu-feature-permissions')).getByTestId('mu-modified')).toBeInTheDocument();
     fireEvent.click(screen.getByTestId('mu-nav-features'));
     fireEvent.click(screen.getByTestId('mu-feature-open-board'));
     const board = screen.getByTestId('mu-section-feature-board');
@@ -1292,24 +1283,23 @@ describe('permissions', () => {
 });
 
 describe('the kernel pages', () => {
-  it('shows the judge choice and nothing else, and on the next page the order by name and what each judge needs', async () => {
-    const { unmount } = render(<SettingsArea section='judges' />, { wrapper });
-    const page = await screen.findByTestId('mu-section-judges');
-    // The two choices, Jev and Laya, and no second way to pick a judge.
-    expect(within(page).getByTestId('mu-judge-choice-jev')).toBeInTheDocument();
-    expect(within(page).getByTestId('mu-judge-choice-local')).toBeInTheDocument();
-    expect(within(page).queryByTestId('mu-judge-tiers')).not.toBeInTheDocument();
-    expect(within(page).queryByLabelText('Order')).not.toBeInTheDocument();
-    unmount();
+  it('shows the judge choice first, and under it on the same page the order by name and what each judge needs', async () => {
     bridge.settings.mockResolvedValue({ ok: true, data: settings({ tiers: ['jev', 'laya'] }) });
-    render(<SettingsArea section='judgeTiers' />, { wrapper });
-    const tiers = await screen.findByTestId('mu-section-judgeTiers');
+    render(<SettingsArea section='judges' />, { wrapper });
+    const tiers = await screen.findByTestId('mu-section-judges');
+    // The two choices, Jev and Laya, and no second way to pick a judge.
+    const choice = within(tiers).getByTestId('mu-judge-choice-jev');
+    expect(within(tiers).getByTestId('mu-judge-choice-local')).toBeInTheDocument();
+    // The judge tiers are a group of this page, under the choice.
     const order = within(tiers).getByTestId('mu-judge-tiers');
+    expect(choice.compareDocumentPosition(order) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(order).getByRole('heading', { name: enMu.sections.judgeTiers })).toBeInTheDocument();
+    expect(order).toHaveTextContent(enMu.judges.orderHelp);
     // The order says the judges' names, never the profiles' ids.
     const tags = [...order.querySelectorAll('.arco-tag')].map((tag) => tag.textContent);
     expect(tags).toEqual([enMu.judges.choices.jev.title, enMu.judges.choices.local.title]);
     expect(order).not.toHaveTextContent(/\bjev\b|\blaya\b/);
-    // Jev, first: how it is reached and its model. Its key is the judges page's, the page that chose it.
+    // Jev, first: how it is reached and its model. Its key is asked for in the choice above, which chose it.
     const jev = within(tiers).getByTestId('mu-judge-tier-0');
     expect(jev).toHaveTextContent(`Tier 1: ${enMu.judges.choices.jev.title}`);
     expect(within(jev).getByLabelText(enMu.judges.type)).toBeInTheDocument();
@@ -1339,7 +1329,7 @@ describe('the kernel pages', () => {
       ok: true,
       data: settings({ judges: { ...settings().judges, 'jev-gateway': gateway } }),
     });
-    render(<SettingsArea section='judgeTiers' />, { wrapper });
+    render(<SettingsArea section='judges' />, { wrapper });
     const jev = await screen.findByTestId('mu-judge-tier-0');
     fireEvent.click(within(jev).getByLabelText(enMu.judges.type));
     fireEvent.click(await screen.findByText(enMu.judges.access.gateway, { selector: '.arco-select-option' }));
@@ -1349,21 +1339,22 @@ describe('the kernel pages', () => {
         'typesafe-ai/jev'
       )
     );
-    expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Judge tiers');
+    expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Unsaved changes in: Judges');
     fireEvent.click(screen.getByText('Save'));
     await waitFor(() => expect(bridge.save).toHaveBeenCalled());
     const sent = bridge.save.mock.calls[0][0] as SaveSettings;
     expect(sent.tiers).toEqual(['jev-gateway']);
   });
 
-  it('asks for the key of a Jev further down the order, which the judges page does not show', async () => {
+  it('asks for the key of a Jev further down the order, which the choice above does not show', async () => {
     bridge.settings.mockResolvedValue({ ok: true, data: settings({ tiers: ['laya', 'jev'], keys: {} }) });
-    render(<SettingsArea section='judgeTiers' />, { wrapper });
+    render(<SettingsArea section='judges' />, { wrapper });
     const jev = await screen.findByTestId('mu-judge-tier-1');
     fireEvent.change(within(jev).getByLabelText(enMu.apiKey), { target: { value: 'jev-key' } });
-    expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Unsaved changes in: Judge tiers');
-    // Laya, first, is installed and started on the judges page.
+    expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Unsaved changes in: Judges');
+    // Laya, first, is installed and started from the choice above: one panel for it on the page.
     expect(within(screen.getByTestId('mu-judge-tier-0')).queryByTestId('mu-laya')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('mu-laya')).toHaveLength(1);
   });
 
   it('puts the switches that carry the product on the features page, and every other feature on the next', async () => {
@@ -1455,7 +1446,7 @@ describe('one draft across the settings pages', () => {
     // Another page, drawn afresh: the draft is the same one.
     expect(await screen.findByTestId('mu-section-decisions-tools')).toBeInTheDocument();
     expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Unsaved changes in: Judges');
-    fireEvent.click(within(screen.getByTestId('mu-decision-tool.risk')).getByText('Active'));
+    fireEvent.click(within(screen.getByTestId('mu-decision-tool.risk')).getByText('On'));
     expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Unsaved changes in: Judges and Decision points');
 
     fireEvent.click(screen.getByRole('link', { name: 'appearance' }));
@@ -1522,6 +1513,25 @@ describe('one draft across the settings pages', () => {
     fireEvent.change(search, { target: { value: '' } });
     expect(screen.queryByTestId('mu-decision-hive.deliver')).not.toBeInTheDocument();
     expect(screen.getByTestId('mu-decision-input.preflight')).toBeInTheDocument();
+  });
+
+  it('puts the compaction settings on top of the context page: one page for context, still within a page', async () => {
+    bridge.settings.mockResolvedValue({ ok: true, data: realShaped() });
+    renderSettings('/settings/decisions-context');
+    const section = await screen.findByTestId('mu-section-decisions-context');
+    expect(within(section).getByRole('heading', { level: 1, name: 'Context' })).toBeInTheDocument();
+    const compaction = within(section).getByTestId('mu-context-rows');
+    const auto = within(compaction).getByRole('switch', { name: 'Automatic compaction' });
+    expect(within(compaction).getByLabelText('Context cap')).toBeInTheDocument();
+    // Then the points, under a heading of their own, with the note on where their default is.
+    const points = within(section).getByTestId('mu-decision-page-context');
+    expect(compaction.compareDocumentPosition(points) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(section).getByRole('heading', { level: 3, name: 'Decision points' })).toBeInTheDocument();
+    expect(rowsOf(points).length + 2).toBeLessThanOrEqual(PAGE_ROWS);
+    // A compaction change is the context's in the save bar; a point's is the decision points'.
+    fireEvent.click(auto);
+    fireEvent.click(within(points).getAllByText('On')[0]);
+    expect(screen.getByTestId('mu-save-bar')).toHaveTextContent('Unsaved changes in: Decision points and Context');
   });
 
   it('gives the lessons a page of their own, so the context group stays within a page', async () => {

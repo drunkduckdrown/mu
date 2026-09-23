@@ -86,7 +86,7 @@ const EnabledAssistantRow: React.FC<EnabledAssistantRowProps> = ({
       ref={setNodeRef}
       style={style}
       data-testid={`enabled-assistant-row-${assistant.id}`}
-      className='group flex cursor-pointer items-center justify-between gap-12px rounded-12px border border-solid border-transparent bg-base px-14px py-12px transition-all duration-180 hover:border-border-2'
+      className='group flex cursor-pointer items-center justify-between gap-12px bg-base px-8px py-12px transition-colors duration-180 hover:bg-fill-1'
       onClick={() => onOpenDetail(assistant)}
     >
       <div className='flex min-w-0 flex-1 items-center gap-12px'>
@@ -119,7 +119,7 @@ const EnabledAssistantRow: React.FC<EnabledAssistantRowProps> = ({
             <Tag
               size='small'
               bordered={false}
-              className='!shrink-0 !rounded-10px !bg-fill-2 !px-8px !py-1px !text-10px !font-600 !leading-16px !text-t-secondary'
+              className='!shrink-0 !rounded-4px !bg-fill-2 !px-8px !py-1px !text-10px !font-600 !leading-16px !text-t-secondary'
             >
               {sourceLabel}
             </Tag>
@@ -132,7 +132,7 @@ const EnabledAssistantRow: React.FC<EnabledAssistantRowProps> = ({
             type='text'
             size='small'
             data-testid={`btn-chat-${assistant.id}`}
-            className='!inline-flex !h-28px !items-center !justify-center !rounded-9px !bg-fill-2 !px-12px !leading-none !text-t-secondary !opacity-0 transition-all hover:!bg-fill-3 hover:!text-t-primary group-hover:!opacity-100'
+            className='!inline-flex !h-28px !items-center !justify-center !rounded-6px !bg-fill-2 !px-12px !leading-none !text-t-secondary !opacity-0 transition-all hover:!bg-fill-3 hover:!text-t-primary group-hover:!opacity-100'
             onClick={() => onStartChat(assistant)}
           >
             {t('settings.assistantGoChat', { defaultValue: 'Chat' })}
@@ -194,7 +194,7 @@ const EnabledAssistantsList: React.FC<EnabledAssistantsListProps> = ({
       </p>
 
       {enabledAssistants.length === 0 ? (
-        <div className='rounded-12px border border-dashed border-border-2 bg-base py-28px'>
+        <div className='settings-list py-28px'>
           <Empty
             description={t('settings.myAssistantsEmpty', {
               defaultValue: 'No assistants here yet. Enable an official assistant, or connect a local CLI tool.',
@@ -207,7 +207,7 @@ const EnabledAssistantsList: React.FC<EnabledAssistantsListProps> = ({
             items={enabledAssistants.map((assistant) => assistant.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className='space-y-8px'>
+            <div className='settings-list'>
               {enabledAssistants.map((assistant) => (
                 <EnabledAssistantRow
                   key={assistant.id}

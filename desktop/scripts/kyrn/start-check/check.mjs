@@ -1,14 +1,16 @@
 #!/usr/bin/env node
 // Checks, on this machine, the chain the desktop app uses to start mu, as the app and AionCore run it:
 //
-//   1. the harness is found (MU_ROOT / KYRN_ROOT, a checkout beside the desktop, or mu-agent from npm);
+//   1. the harness is found (MU_ROOT / KYRN_ROOT, a checkout beside the desktop, or mu-agent from npm; the copy a
+//      packaged app carries is found only inside one, by Electron's resources folder);
 //   2. PiRpc starts it as the adapter does (on Windows `node kyrn/bin/mu.mjs --mode rpc`, no shell), it answers
 //      get_commands, and closing it ends its whole process tree;
 //   3. the registration's command (scripts/kyrn/acp; on Windows acp.cmd through `cmd /d /c`, as AionCore wraps it)
 //      answers the ACP handshake and opens a session, which starts mu under the adapter, and ending the command's
 //      tree as AionCore does leaves nothing behind;
 //   4. with --packaged, step 3 for the packaged app: the adapter bundled by scripts/build-mcp-servers.js and
-//      resources/mu/acp(.cmd), laid out as in an installed app's resources folder.
+//      resources/mu/acp(.cmd), laid out as in an installed app's resources folder. There is no app binary in that
+//      folder, so MU_NODE runs them on this Node instead of the app's own.
 //
 // Everything runs in a throwaway home (HOME and USERPROFILE): ~/.mu is never touched, no model is called, no key is
 // needed. Exits 1 when a step fails.
@@ -202,10 +204,11 @@ try {
     for (const name of ['acp', 'acp.cmd'])
       copyFileSync(join(desktop, 'resources', 'mu', name), join(resources, 'mu', name));
     chmodSync(join(resources, 'mu', 'acp'), 0o755);
-    // An installed app has no checkout beside it: the harness comes from MU_ROOT here, from npm for a user.
+    // An installed app has no checkout beside it: the harness comes from MU_ROOT here, from its own copy for a user.
     const launch = join(resources, 'mu', windows ? 'acp.cmd' : 'acp');
-    if (windows) await acp('packaged resources/mu/acp.cmd', 'cmd.exe', ['/d', '/c', launch], { MU_ROOT: harness.root });
-    else await acp('packaged resources/mu/acp', launch, [], { MU_ROOT: harness.root });
+    const env = { MU_ROOT: harness.root, MU_NODE: process.execPath };
+    if (windows) await acp('packaged resources/mu/acp.cmd', 'cmd.exe', ['/d', '/c', launch], env);
+    else await acp('packaged resources/mu/acp', launch, [], env);
   }
 } finally {
   try {

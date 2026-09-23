@@ -9,16 +9,21 @@ import { muEnv } from './naming.ts';
  *
  * - repo: a checkout, which runs the TypeScript sources. On macOS, Linux and WSL it is started through its bash
  *   forwarder, which also picks a Node >= 22.19 (a Mac app's PATH is short, and often starts with an old one).
- * - package: the npm package `mu-agent` (`npm i -g mu-agent`), laid out like a checkout but carrying pi's bundle
- *   and the judgment layer as JavaScript. It keeps its keys in mu's home, never beside the package, which npm
- *   replaces on every update.
+ * - package: the npm package `mu-agent`, laid out like a checkout but carrying pi's bundle and the judgment layer as
+ *   JavaScript. The packaged app carries one inside it (`<resources>/harness/mu-agent`, see
+ *   scripts/kyrn/bundle-harness.mjs); `npm i -g mu-agent` installs another. It keeps its keys in mu's home, never
+ *   beside the package, which an update replaces.
  *
- * Windows has no bash: there both are started as `node <root>/kyrn/bin/mu.mjs`.
+ * Windows has no bash: there both are started as `node <root>/kyrn/bin/mu.mjs`. The package is started that way
+ * everywhere, on the app's own binary as Node when nothing else is named (piRpc.ts, launchCommand).
  */
 export type HarnessLayout = 'repo' | 'package';
 
-/** env: `MU_ROOT` / `KYRN_ROOT`. beside: a checkout next to the desktop's. global: an npm install on this machine. */
-export type HarnessSource = 'env' | 'beside' | 'global';
+/**
+ * env: `MU_ROOT` / `KYRN_ROOT`. bundled: the copy inside the packaged app. beside: a checkout next to the desktop's.
+ * global: an npm install on this machine.
+ */
+export type HarnessSource = 'env' | 'bundled' | 'beside' | 'global';
 
 export type Harness = { root: string; layout: HarnessLayout; source: HarnessSource };
 
@@ -31,6 +36,8 @@ export type HarnessDeps = {
   list: (dir: string) => string[];
   /** A path with its links resolved; the path itself when it cannot be. */
   real: (file: string) => string;
+  /** Electron's resources folder (`process.resourcesPath`), where the packaged app carries mu. Undefined in Node. */
+  resourcesPath: string | undefined;
 };
 
 export const PACKAGE_NAME = 'mu-agent';
@@ -63,6 +70,8 @@ const defaults = (): HarnessDeps => ({
       return file;
     }
   },
+  // Set by Electron, also when it runs as Node (the packaged adapter); plain Node has none.
+  resourcesPath: (process as { resourcesPath?: string }).resourcesPath,
 });
 
 const pathFor = (platform: NodeJS.Platform) => (platform === 'win32' ? path.win32 : path.posix);
@@ -132,10 +141,16 @@ function muOnPath(deps: HarnessDeps): string | undefined {
   return undefined;
 }
 
+/** Where the packaged app carries mu: the npm package with its dependencies, in its resources folder. */
+export function bundledHarnessRoot(resourcesPath: string, platform: NodeJS.Platform): string {
+  return pathFor(platform).join(resourcesPath, 'harness', PACKAGE_NAME);
+}
+
 /**
- * The harness this app runs. `MU_ROOT` / `KYRN_ROOT` wins when set, as in development. Then a checkout beside the
- * desktop's: `../KYRN` (two repositories side by side) or `..` (the MU monorepo, where the app is `desktop/`); a
- * packaged app has no desktop checkout and skips this. Then `mu-agent` installed with npm. Undefined when there is none.
+ * The harness this app runs. `MU_ROOT` / `KYRN_ROOT` wins when set, as in development. Then the copy the packaged app
+ * carries. Then a checkout beside the desktop's: `../KYRN` (two repositories side by side) or `..` (the MU monorepo,
+ * where the app is `desktop/`); a packaged app has no desktop checkout and skips this. Then `mu-agent` installed with
+ * npm. Undefined when there is none.
  */
 export function findHarness(desktopRoot: string | undefined, patch: Partial<HarnessDeps> = {}): Harness | undefined {
   const deps = { ...defaults(), ...patch };
@@ -143,6 +158,8 @@ export function findHarness(desktopRoot: string | undefined, patch: Partial<Harn
   const found = (root: string, source: HarnessSource): Harness => ({ root, layout: layoutOf(root, deps), source });
   const named = muEnv('ROOT', deps.env);
   if (named) return found(p.resolve(named), 'env');
+  const bundled = deps.resourcesPath ? bundledHarnessRoot(deps.resourcesPath, deps.platform) : undefined;
+  if (bundled && holdsMu(bundled, deps)) return found(bundled, 'bundled');
   const besides = desktopRoot ? [p.join(desktopRoot, '..', 'KYRN'), p.join(desktopRoot, '..')] : [];
   for (const beside of besides) {
     const root = p.resolve(beside);
@@ -158,8 +175,22 @@ export function findHarness(desktopRoot: string | undefined, patch: Partial<Harn
 }
 
 /**
- * What the adapter starts: the bash forwarder of a checkout on macOS, Linux and WSL (it picks a Node that can run
- * pi), else the Node launcher itself, which `PiRpc` runs with the adapter's own Node.
+ * Where mu should have been when none was found: in the packaged app (no desktop checkout, a resources folder) the
+ * copy it carries, which only a broken build lacks; in development the checkout beside the desktop's. Starting it
+ * fails, and the app shows mu as offline.
+ */
+export function expectedHarness(
+  desktopRoot: string | undefined,
+  resourcesPath: string | undefined,
+  platform: NodeJS.Platform = process.platform
+): Pick<Harness, 'root' | 'layout'> {
+  if (!desktopRoot && resourcesPath) return { root: bundledHarnessRoot(resourcesPath, platform), layout: 'package' };
+  return { root: pathFor(platform).resolve(desktopRoot ?? '.', '..', 'KYRN'), layout: 'repo' };
+}
+
+/**
+ * What the adapter and the sign-in start: the bash forwarder of a checkout on macOS, Linux and WSL (it picks a Node
+ * that can run pi), else the Node launcher itself, which `launchCommand` runs on this process's own Node or Electron.
  */
 export function launcherOf(harness: Pick<Harness, 'root' | 'layout'>, platform: NodeJS.Platform): string {
   const { join } = pathFor(platform);

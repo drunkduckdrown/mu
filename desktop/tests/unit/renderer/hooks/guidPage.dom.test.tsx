@@ -207,18 +207,6 @@ vi.mock('@/renderer/pages/guid/components/GuidModelSelector', () => ({
   default: () => <div data-testid='guid-model-selector' />,
 }));
 
-vi.mock('@/renderer/components/chat/SpeechInputButton', () => ({
-  default: () => null,
-}));
-
-vi.mock('@/renderer/hooks/system/useLiveTranscriptInsertion', () => ({
-  useLiveTranscriptInsertion: () => ({ handleLiveTranscript: vi.fn() }),
-}));
-
-vi.mock('@/renderer/hooks/system/useSpeechInput', () => ({
-  appendSpeechTranscript: (prev: string, next: string) => `${prev}${next}`,
-}));
-
 vi.mock('@/renderer/utils/platform', () => ({
   openExternalUrl: vi.fn(),
   resolveExtensionAssetUrl: vi.fn(),

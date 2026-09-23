@@ -47,6 +47,48 @@ describe('Native Hive event projection', () => {
     });
   });
 
+  it('folds the relations the judge recorded, once per pair, and reads the board summary of a snapshot', () => {
+    const events = [
+      ...hiveEvents,
+      activity('relation-repeat', 'hive.relation', { later: 'note-2', earlier: 'note-1', relation: 'supersedes' }),
+      activity('relation-self', 'hive.relation', { later: 'note-2', earlier: 'note-2', relation: 'contradicts' }),
+      activity('relation-odd', 'hive.relation', { later: 'note-3', earlier: 'note-1', relation: 'refutes' }),
+      activity('relation-late', 'hive.relation', {
+        later: 'note-3',
+        earlier: 'note-2',
+        relation: 'contradicts',
+        score: 'x',
+      }),
+    ];
+    expect(buildHiveRuns(events)[0].relations).toEqual([
+      {
+        id: 'relation',
+        later: 'note-2',
+        earlier: 'note-1',
+        relation: 'supersedes',
+        score: 0.9,
+        by: 'provider-cache',
+        at: 10000,
+      },
+      { id: 'relation-late', later: 'note-3', earlier: 'note-2', relation: 'contradicts', score: 0, by: '', at: 10000 },
+    ]);
+    const snapshot = parseSwarmSnapshot({
+      ...hiveSnapshot,
+      board: {
+        latest: [
+          { bee: 'prefix-mutations', to: ['provider-cache', 7], text: 'Prefix is stable.', state: 'superseded', at: 1 },
+          { bee: '', to: ['provider-cache'] },
+          { bee: 'provider-cache', to: 'not-a-list', text: 'Swapped key.', state: 'odd' },
+        ],
+      },
+    });
+    expect(snapshot?.latest).toEqual([
+      { bee: 'prefix-mutations', to: ['provider-cache'], text: 'Prefix is stable.', state: 'superseded' },
+      { bee: 'provider-cache', to: [], text: 'Swapped key.' },
+    ]);
+    expect(parseSwarmSnapshot(hiveSnapshot)?.latest).toEqual([]);
+  });
+
   it('never turns a passed gate into a confirmed delivery', () => {
     const runs = buildHiveRuns(hiveEvents.filter((event) => event.kind !== 'hive.delivery'));
     expect(runs[0].gates).toHaveLength(1);

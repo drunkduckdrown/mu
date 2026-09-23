@@ -36,9 +36,10 @@ Current limits: text/text-resource and raster image input; client-provided MCP s
 not imported, and free-text extension dialogs are cancelled rather than guessed.
 Built-in mu browser, hive, skills and tools still run inside mu.
 
-Where mu comes from (`process/agent/kyrn/harness.ts`): `MU_ROOT` / `KYRN_ROOT` when set; else a checkout beside
-this one (`../KYRN`, or `..` in the MU monorepo); else `mu-agent` installed with npm (`npm i -g mu-agent`), found from
-`mu` on PATH or in npm's usual global folders. The npm package keeps its keys in `~/.mu/.env` and its Laya venv in
+Where mu comes from (`process/agent/kyrn/harness.ts`): `MU_ROOT` / `KYRN_ROOT` when set; else the copy the packaged
+app carries (`<resources>/harness/mu-agent`, below); else a checkout beside this one (`../KYRN`, or `..` in the MU
+monorepo); else `mu-agent` installed with npm (`npm i -g mu-agent`), found from `mu` on PATH or in npm's usual global
+folders. The npm package, the app's copy included, keeps its keys in `~/.mu/.env` and its Laya venv in
 `~/.mu/local-judge`, and the settings follow it there.
 
 Windows has no bash. There the registration's command is `acp.cmd`, which runs `acp.mjs` with Node (22.19 or newer
@@ -47,13 +48,21 @@ conversation ends the harness's whole process tree with `taskkill /T`. macOS and
 checkout's bash forwarder: the registration is found by its command, so that path must not change there. Not run on
 a real Windows machine yet.
 
-The packaged app has no desktop sources and no tsx. It carries the adapter bundled into one file,
-`out/main/mu-acp.js` (unpacked from the asar, built by `scripts/build-mcp-servers.js` like the builtin MCP servers),
-and registers `resources/mu/acp` (`acp.cmd` on Windows) as the command. On macOS and Linux that script picks a Node
-that can run mu (22.19 or newer: `MU_NODE`, PATH, nvm, Homebrew, /usr/local), since a Mac app's PATH is short and
-often starts with an old Node. The harness comes from `MU_ROOT` / `KYRN_ROOT` or from npm (`npm i -g mu-agent`).
-Checked outside any checkout with the bundle and the script in a mock `Resources` folder: with Node 20 first on
-PATH it chose nvm's Node 24, answered the ACP handshake and opened a session; not yet in a real packaged build.
+The packaged app has no desktop sources and no tsx, and needs no Node on the machine. It carries the adapter bundled
+into one file, `out/main/mu-acp.js` (unpacked from the asar, built by `scripts/build-mcp-servers.js` like the builtin
+MCP servers), and mu itself: the npm package `mu-agent` with its dependencies in `<resources>/harness/mu-agent`. It
+registers `resources/mu/acp` (`acp.cmd` on Windows) as the command, which runs the adapter on the app's own binary
+as Node (`ELECTRON_RUN_AS_NODE=1`; Electron 37 carries Node 22.21), and the adapter starts mu the same way
+(`launchCommand` in `piRpc.ts`). `MU_NODE`, when set, runs both on that Node instead. mu drops the variable for
+what it starts (tools, servers) and gives it back only to its own sub-agents.
+
+`scripts/kyrn/bundle-harness.mjs` puts mu in `resources/harness` before electron-builder runs
+(`scripts/build-with-builder.js`), and `scripts/afterPack.js` checks the packaged app has it
+(`packages/shared-scripts/src/verify-bundled-harness.js`). Which mu: `MU_HARNESS_TARBALL`, a tarball packed from a
+harness checkout (`node kyrn/npm/build.mjs --pack`; the MU repository's CI packs it from the same commit), else
+`mu-agent` from the npm registry at the version pinned in the root `package.json` (`muAgentVersion`). Its
+dependencies are installed by npm for the target system and processor (`--os`, `--cpu`), without install scripts;
+npm is needed at build time only.
 
 WSL (`process/agent/kyrn/wsl.ts`): on Windows, a conversation whose folder is inside a WSL distribution
 (`\\wsl.localhost\<distro>\...`, or `\\wsl$\...`) gets its harness started inside that distribution:
@@ -282,11 +291,11 @@ provider, and not in the real Electron app.
   Laya), a summary. Everything is written in one save at the end, keys only as credentials. The OpenAI tile asks for
   Chat Completions or Responses; the judge page offers Jev and Laya only, the full tier editor stays under "高级设置".
 - **Signing in with a subscription** (ChatGPT Plus/Pro as pi's `openai-codex`, Claude Pro/Max as `anthropic`) runs pi's
-  own OAuth flow in a child process, `process/agent/kyrn/loginRunner.ts`, started by `LoginManager`
-  (`process/agent/kyrn/login.ts`) with the harness's tsx and `--tsconfig <KYRN_ROOT>/tsconfig.json` (pi runs from
-  source), and `MU_LOGIN_AGENT_DIR` = mu's agent dir. The credential lands where pi reads it, as `/login` in the terminal
-  does. The runner speaks JSON lines; it prints provider ids, credential types, the sign-in page address and model
-  names, never a credential. Only `https:` addresses are opened in the browser. pi's Codex question "browser or device
+  own OAuth flow in a child process, `mu auth status | login <provider> | logout <provider>` (the harness's
+  `packages/kyrn-judge/src/auth`), started by `LoginManager` (`process/agent/kyrn/login.ts`) through the harness's
+  launcher like a session, with `MU_AGENT_DIR` = mu's agent dir: the same for a checkout, npm's mu-agent and the copy
+  inside the packaged app. The credential lands where pi reads it, as `/login` in the terminal does. `mu auth` speaks
+  JSON lines; it prints provider ids, credential types, the sign-in page address and model names, never a credential. Only `https:` addresses are opened in the browser. pi's Codex question "browser or device
   code" is answered "browser" (the app is on the machine with the browser); the pasted-code field is offered only as the
   way out when the callback does not arrive (port busy, browser elsewhere). Sign-out deletes the provider's credential
   only when it is an OAuth one, never a key stored for the same provider. The account's first model is pi's own
@@ -297,7 +306,7 @@ provider, and not in the real Electron app.
   re-adding it means reusing another product's OAuth client, with the account risk that carries. Waiting on a decision.
 
 Verification: `tests/unit/kyrn/settings/login.test.ts` (the manager against a fake runner: page opening, answers, cancel,
-a newer sign-in replacing an older one, status, sign-out, tsx lookup), the guide and settings DOM tests with a mocked
+a newer sign-in replacing an older one, status, sign-out, `mu auth` started through a launcher), the guide and settings DOM tests with a mocked
 bridge. Against pi's real code with an empty temporary agent dir: `status`, `logout`, and `login` for both providers up
 to the sign-in page (auth URL emitted, callback server listening on 53692 / 1455, cancel closes it). A complete sign-in
 needs a person in the browser and was not run.

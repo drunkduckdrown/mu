@@ -378,7 +378,6 @@
   "model": "Modèle",
   "system": "Système",
   "conversations": "Conversations",
-  "voiceInput": "Saisie vocale",
   "about": "À propos",
   "advancedSettings": "Paramètres avancés",
   "addModel": "Ajouter un modèle",
@@ -502,30 +501,6 @@
   "imageGeneration": "Génération d'images",
   "imageGenerationToggle": "Activer l'outil de génération d'images",
   "imageGenerationDescription": "Choisir le modèle image configuré que l'outil doit utiliser par défaut.",
-  "speechToText": "Reconnaissance vocale",
-  "speechToTextDescription": "Configurer le fournisseur de saisie vocale utilisé par la boîte de chat.",
-  "speechToTextApiKey": "Clé API",
-  "speechToTextBaseUrl": "URL de base",
-  "speechToTextModel": "Modèle",
-  "speechToTextLanguage": "Langue par défaut",
-  "speechToTextRequired": "(obligatoire)",
-  "speechToTextOptional": "(facultatif)",
-  "speechToTextSource": "Service",
-  "speechToTextSourceOpenAI": "OpenAI (officiel)",
-  "speechToTextSourceDeepgram": "Deepgram (Officiel)",
-  "speechToTextSourceCustom": "Personnalisé (compatible OpenAI)",
-  "speechToTextLanguageAuto": "Détection automatique",
-  "speechToTextBaseUrlPlaceholder": "https://votre-hôte/v1",
-  "speechToTextBaseUrlInvalid": "Saisissez une URL http(s) valide(s)",
-  "speechToTextModelPlaceholder": "Sélectionnez ou saisissez un nom de modèle",
-  "speechToTextTest": "Enregistrer et tester",
-  "speechToTextTestStop": "Arrêt",
-  "speechToTextTestRecording": "Enregistrement… prononcez une courte phrase",
-  "speechToTextTestTranscribing": "Transcription…",
-  "speechToTextTestMissingKey": "Entrez la clé API avant de tester",
-  "speechToTextTestUploadHint": "Microphone indisponible : choisissez un fichier audio à tester",
-  "speechToTextStreamingBadge": "En direct",
-  "speechToTextWholeBadge": "Lot",
   "mcp": "Intégration MCP",
   "imageGenerationModel": "Modèle d'image",
   "imageGenSupportedTooltipTitle": "Modèles d'images actuellement pris en charge :",
@@ -1019,7 +994,8 @@
     "clearConfirmTitle": "Effacer les données de navigation ?",
     "clearConfirmContent": "Vous serez déconnecté de tous les sites du navigateur intégré. Cette action est irréversible.",
     "clearSuccess": "Données de navigation effacées",
-    "clearFailed": "Échec de l'effacement des données de navigation"
+    "clearFailed": "Échec de l'effacement des données de navigation",
+    "description": "Si l'agent peut utiliser le navigateur intégré, et l'effacement de ce que le navigateur conserve."
   },
   "archived": {
     "navLabel": "Conversations archivées",
@@ -1077,7 +1053,6 @@
     "noProviderMatch": "Aucun fournisseur ne propose {{model}}. Choisissez un autre modèle."
   },
   "promptTimeoutUnit": "s",
-  "speechToTextTestResultLine": "Résultat ({{elapsed}}) : {{text}}",
   "emojiCategories": {
     "recent": "Récents",
     "smileys": "Smileys",
@@ -1097,5 +1072,9 @@
     "noTabId": "Aucune page de paramètres n’a été indiquée."
   },
   "mcpAuthRequiredNamed": "{{name}} nécessite une connexion",
-  "mcpTestConnectionSuccessNamed": "{{name}} connecté"
+  "mcpTestConnectionSuccessNamed": "{{name}} connecté",
+  "appearanceDescription": "La langue, le thème, les polices et l'échelle.",
+  "systemDescription": "Le démarrage avec l'ordinateur, la réduction dans la barre système, les notifications et les dossiers où mu travaille et écrit ses journaux.",
+  "conversationsDescription": "Les délais d'attente, la taille maximale de l'aperçu, l'emplacement des téléversements et les messages entre conversations.",
+  "aboutDescription": "La version de mu, ses mises à jour et l'accès à ses journaux."
 }

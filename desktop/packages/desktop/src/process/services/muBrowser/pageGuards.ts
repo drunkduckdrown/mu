@@ -3,8 +3,8 @@ import type { BrowserRunNoticeKind } from '@/common/kyrn/browserRun';
 import { webAddress } from './protocol';
 
 /**
- * What an agent-driven page may and may not do (contract 3.4). The manual preview browser keeps its own settings;
- * nothing here touches it.
+ * What an agent-driven page may and may not do (contract 3.4). The pages the person browses in the work panel's
+ * browser keep their own settings; nothing here touches them.
  */
 export type Refusal = { kind: BrowserRunNoticeKind; detail: string };
 

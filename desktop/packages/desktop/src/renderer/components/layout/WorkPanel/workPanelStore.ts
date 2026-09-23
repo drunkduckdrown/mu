@@ -18,8 +18,13 @@ import { useCallback, useSyncExternalStore } from 'react';
  * the person has not seen gets a dot until they look at it.
  */
 
-/** The panel's tabs, in the order the strip shows them. */
-export const WORK_PANEL_TABS = ['board', 'judge', 'hive', 'lessons', 'files', 'preview', 'source'] as const;
+/**
+ * The panel's tabs, in the order the strip shows them: the kernel's views of the conversation, the project's
+ * workspace, then the browser. 文件, 预览 and 源码 are one workspace (文件 and 源码 share one explorer, and both open
+ * what they show in 预览), so 浏览器, the one tab about the web rather than the project, comes after them; appended
+ * at the end, it also leaves every older tab where the person already finds it.
+ */
+export const WORK_PANEL_TABS = ['board', 'judge', 'hive', 'lessons', 'files', 'preview', 'source', 'browser'] as const;
 export type WorkPanelTab = (typeof WORK_PANEL_TABS)[number];
 
 export const isWorkPanelTab = (value: unknown): value is WorkPanelTab =>
@@ -132,6 +137,14 @@ export function rememberWorkPanel(conversationId: string, patch: Partial<WorkPan
   emit();
 }
 
+/**
+ * An older build showed web pages in 预览. When the pages it was showing moved to 浏览器 (the browser store's
+ * `handOver`), a conversation whose panel was left on 预览 follows them there; open or closed stays as it was.
+ */
+export function handPreviewToBrowser(conversationId: string): void {
+  if (readWorkPanelMemory(conversationId).tab === 'preview') rememberWorkPanel(conversationId, { tab: 'browser' });
+}
+
 export function useWorkPanelMemory(conversationId: string | null): WorkPanelMemory {
   const snapshot = useCallback(() => readWorkPanelMemory(conversationId), [conversationId]);
   return useSyncExternalStore(subscribe, snapshot, snapshot);
@@ -150,8 +163,8 @@ function markUnread(conversationId: string, tab: WorkPanelTab, entry: News): voi
 }
 
 /**
- * Something new in a tab: a changed file, a page the agent opened. Seen at once when the person is looking at that
- * tab; otherwise the tab gets its dot.
+ * Something new in a tab: a changed file, a page the agent opened or browsed. Seen at once when the person is looking
+ * at that tab; otherwise the tab gets its dot.
  */
 export function bumpWorkPanelNews(conversationId: string, tab: WorkPanelTab): void {
   markUnread(conversationId, tab, news.get(conversationId) ?? NO_NEWS);

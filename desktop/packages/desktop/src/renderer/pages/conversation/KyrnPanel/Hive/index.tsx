@@ -9,7 +9,6 @@ import { str } from '../activity';
 import { buildHiveRuns } from './activity';
 import BeeAvatar from './BeeAvatar';
 import BeeInspector from './BeeInspector';
-import HiveGraph from './HiveGraph';
 import styles from './Hive.module.css';
 import { useClock } from '../clock';
 
@@ -97,7 +96,6 @@ export default function Hive({ events, focus }: { events: Activity[]; focus?: Hi
             {t('common.kyrn.hiveView.snapshot')} ·{' '}
             {t('common.kyrn.hiveView.updated', { time: clock(run.snapshot?.now || run.at) })}
           </div>
-          <HiveGraph bees={bees} deliveries={run.deliveries} selected={beeName} onSelect={selectBee} />
           {!run.snapshot &&
             run.assignments.map((bee, index) => (
               <div key={`${index}:${bee.name}`} className={styles.pendingBee}>

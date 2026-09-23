@@ -29,10 +29,8 @@ const SkillDetailPage = React.lazy(() => import('@renderer/pages/settings/Skills
 const ToolsSettings = React.lazy(() => import('@renderer/pages/settings/ToolsSettings'));
 const AssistantSettings = React.lazy(() => import('@renderer/pages/settings/AssistantSettings'));
 const AppearanceSettings = React.lazy(() => import('@renderer/pages/settings/AppearanceSettings'));
-const PetSettings = React.lazy(() => import('@renderer/pages/settings/PetSettings'));
 const SystemSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings'));
 const ConversationSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings/ConversationSettings'));
-const VoiceSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings/VoiceSettings'));
 const BrowserSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings/BrowserSettings'));
 const AboutSettings = React.lazy(() => import('@renderer/pages/settings/SystemSettings/AboutSettings'));
 const ArchivedSettings = React.lazy(() => import('@renderer/pages/settings/ArchivedSettings'));
@@ -97,17 +95,12 @@ const withRouteFallback = (Component: React.LazyExoticComponent<React.ComponentT
 /** The page each entry of the settings rail opens: mu's own sections are one area, routed by the path. */
 const SETTINGS_PAGE_ELEMENTS: Record<SettingsPageId, React.LazyExoticComponent<React.ComponentType>> = {
   appearance: AppearanceSettings,
-  pet: PetSettings,
   system: SystemSettings,
   conversations: ConversationSettings,
-  voice: VoiceSettings,
   providers: MuSettings,
   'default-model': MuSettings,
   judges: MuSettings,
-  'judge-tiers': MuSettings,
   features: MuSettings,
-  context: MuSettings,
-  permissions: MuSettings,
   'decisions-input': MuSettings,
   'decisions-context': MuSettings,
   'decisions-memory': MuSettings,

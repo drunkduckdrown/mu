@@ -153,10 +153,10 @@ const DevSettings: React.FC = () => {
   }
 
   return (
-    // The same white cards with a hairline as the rest of the page: dev builds only, but no grey boxes there either.
-    <div className='space-y-16px'>
+    // The same quiet lists as the rest of the page: dev builds only, but no boxes there either.
+    <div className='flex flex-col gap-16px'>
       {/* DevTools toggle */}
-      <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px'>
+      <div className='settings-list'>
         <PreferenceRow label={t('settings.devTools')}>
           <Button size='small' type={isDevToolsOpen ? 'primary' : 'secondary'} onClick={handleToggleDevTools}>
             {isDevToolsOpen ? t('settings.closeDevTools') : t('settings.openDevTools')}
@@ -165,9 +165,9 @@ const DevSettings: React.FC = () => {
       </div>
 
       {/* CDP section */}
-      <div className='px-16px md:px-24px py-16px bg-base border border-color-b-base rd-8px space-y-12px'>
-        <div className='text-14px font-medium text-t-primary mb-8px'>{t('settings.cdp.title')}</div>
-        <div className='space-y-12px'>
+      <section className='settings-group'>
+        <h3 className='settings-group__title'>{t('settings.cdp.title')}</h3>
+        <div className='settings-list'>
           {/* CDP remote debugging toggle */}
           <PreferenceRow label={t('settings.cdp.enable')} description={t('settings.cdp.enableDesc')}>
             <Switch
@@ -179,7 +179,7 @@ const DevSettings: React.FC = () => {
           </PreferenceRow>
 
           {status?.configEnabled && status?.port && (
-            <div className='space-y-8px'>
+            <div className='flex flex-col gap-8px py-12px'>
               <div className='flex items-center gap-8px'>
                 <div className='flex-1'>
                   <div className='text-12px text-t-tertiary'>{t('settings.cdp.currentPort')}</div>
@@ -209,7 +209,7 @@ const DevSettings: React.FC = () => {
                 <Collapse
                   bordered={false}
                   onChange={(_, keys) => setExpandedMcpKeys(keys as string[])}
-                  className='[&_.arco-collapse-item]:!border-none [&_.arco-collapse-item]:bg-[var(--fill-1)] [&_.arco-collapse-item]:rounded-8px [&_.arco-collapse-item]:mb-6px [&_.arco-collapse-item-header]:!px-12px [&_.arco-collapse-item-header]:!py-8px [&_.arco-collapse-item-header-title]:!flex-1 [&_.arco-collapse-item-content-box]:!px-12px [&_.arco-collapse-item-content-box]:!pt-0 [&_.arco-collapse-item-content-box]:!pb-8px'
+                  className='[&_.arco-collapse-item]:!border-none [&_.arco-collapse-item-header]:!px-0 [&_.arco-collapse-item-header]:!py-6px [&_.arco-collapse-item-header]:!bg-transparent [&_.arco-collapse-item-header-title]:!flex-1 [&_.arco-collapse-item-content]:!bg-transparent [&_.arco-collapse-item-content-box]:!px-0 [&_.arco-collapse-item-content-box]:!pt-0 [&_.arco-collapse-item-content-box]:!pb-8px'
                 >
                   <Collapse.Item
                     name='chrome-devtools'
@@ -305,25 +305,26 @@ const DevSettings: React.FC = () => {
           )}
 
           {status && !status.port && !status.configEnabled && (
-            <div className='text-12px text-t-tertiary py-8px'>{t('settings.cdp.disabledHint')}</div>
+            <div className='text-12px text-t-tertiary py-12px'>{t('settings.cdp.disabledHint')}</div>
           )}
 
           {hasPendingChange && (
-            <Alert
-              type='warning'
-              content={
-                <div className='flex items-center justify-between gap-12px'>
-                  <span>{t('settings.cdp.restartRequired')}</span>
-                  <Button size='small' type='primary' onClick={handleRestart}>
-                    {t('settings.restartNow')}
-                  </Button>
-                </div>
-              }
-              className='mt-8px'
-            />
+            <div className='py-12px'>
+              <Alert
+                type='warning'
+                content={
+                  <div className='flex items-center justify-between gap-12px'>
+                    <span>{t('settings.cdp.restartRequired')}</span>
+                    <Button size='small' type='primary' onClick={handleRestart}>
+                      {t('settings.restartNow')}
+                    </Button>
+                  </div>
+                }
+              />
+            </div>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 };

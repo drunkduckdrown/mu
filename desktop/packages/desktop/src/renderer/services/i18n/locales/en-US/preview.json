@@ -150,6 +150,8 @@
   "browser": {
     "newTab": "New tab",
     "addressPlaceholder": "Enter a URL or search",
+    "tabsLabel": "Open pages",
+    "closeTab": "Close {{title}}",
     "agentActiveTooltip": "The agent is operating this tab",
     "tabLimitReached": "Browser tab limit reached ({{count}}). The oldest tab was reused.",
     "agentFirstUseTitle": "The agent is using the in-app browser",

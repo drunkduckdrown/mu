@@ -460,8 +460,8 @@ const CssThemeSettings: React.FC = () => {
     <div className='space-y-12px'>
       {/* 标题栏 / Header */}
       <div className='flex items-start md:items-center justify-between gap-8px flex-wrap'>
-        <span className='text-14px text-t-secondary leading-22px'>{t('settings.cssTheme.selectOrCustomize')}</span>
-        <Button type='primary' size='small' className='!h-32px !rounded-8px !px-14px !m-0' onClick={handleAddTheme}>
+        <span className='text-12px text-t-secondary leading-18px'>{t('settings.cssTheme.selectOrCustomize')}</span>
+        <Button type='primary' size='small' className='!m-0' onClick={handleAddTheme}>
           {t('settings.cssTheme.addManually')}
         </Button>
       </div>
@@ -480,10 +480,11 @@ const CssThemeSettings: React.FC = () => {
             : { backgroundColor: previewPalette.appBg };
           const active = activeThemeId === theme.id;
           // Every card has a hairline, so a light preview keeps its edge on a white page; the chosen one also gets
-          // the accent ring (drawn inside, over the preview) and a check.
+          // a ring in the body text colour, drawn just outside the card so that it reads on a dark preview as well
+          // as a light one, and a check. No accent: the settings keep lavender for buttons and switches.
           if (active) {
-            cardStyle.outline = '2px solid var(--mu-accent-border)';
-            cardStyle.outlineOffset = '-2px';
+            cardStyle.outline = '2px solid var(--text-primary)';
+            cardStyle.outlineOffset = '2px';
           }
           return (
             <div
@@ -494,7 +495,7 @@ const CssThemeSettings: React.FC = () => {
               aria-checked={active}
               aria-label={themeLabel(theme)}
               tabIndex={0}
-              className={`relative cursor-pointer rounded-12px overflow-hidden border border-solid transition-colors duration-200 h-112px w-200px flex-shrink-0 ${active ? 'border-transparent' : 'border-[var(--border-base)] hover:border-[var(--bg-4)]'}`}
+              className={`relative cursor-pointer rounded-8px overflow-hidden border border-solid transition-colors duration-200 h-112px w-200px flex-shrink-0 ${active ? 'border-transparent' : 'border-[var(--border-base)] hover:border-[var(--bg-4)]'}`}
               style={cardStyle}
               onClick={() => handleSelectTheme(theme)}
               onKeyDown={(e) => {
@@ -529,11 +530,12 @@ const CssThemeSettings: React.FC = () => {
                 )}
               </div>
 
-              {/* The chosen card's check: dark on the light accent, readable on either preview. */}
+              {/* The chosen card's check: the page's own colour on the body text colour, with a ring of the page's
+                  colour around it so that it reads on either preview. */}
               {active && (
                 <span
-                  className='absolute top-8px end-8px flex items-center justify-center w-20px h-20px rounded-full bg-[var(--mu-accent-fill)] text-[var(--mu-accent-on)]'
-                  style={{ boxShadow: 'var(--mu-shadow-1)' }}
+                  className='absolute top-8px end-8px flex items-center justify-center w-20px h-20px rounded-full bg-[var(--text-primary)] text-[var(--bg-base)]'
+                  style={{ boxShadow: '0 0 0 1.5px var(--bg-base)' }}
                   aria-hidden='true'
                 >
                   <Check theme='outline' size='12' strokeWidth={5} fill='currentColor' />

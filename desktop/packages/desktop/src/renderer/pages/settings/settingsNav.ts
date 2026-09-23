@@ -2,7 +2,6 @@ import {
   Book,
   Brain,
   Browser,
-  Cat,
   Comments,
   Cpu,
   DocDetail,
@@ -11,9 +10,7 @@ import {
   Inbox,
   Info,
   Keyboard,
-  Layers,
   LinkCloud,
-  ListNumbers,
   Login,
   MoreApp,
   Notes,
@@ -21,13 +18,11 @@ import {
   PeoplesTwo,
   Platte,
   Refresh,
-  Shield,
   SwitchButton,
   System,
   Terminal,
   Tool,
   Toolkit,
-  Voice,
 } from '@icon-park/react';
 
 /**
@@ -75,17 +70,12 @@ export type FeaturePage = (typeof FEATURE_PAGES)[number];
 
 export type SettingsPageId =
   | 'appearance'
-  | 'pet'
   | 'system'
   | 'conversations'
-  | 'voice'
   | 'providers'
   | 'default-model'
   | 'judges'
-  | 'judge-tiers'
   | 'features'
-  | 'context'
-  | 'permissions'
   | `decisions-${DecisionPage}`
   | `more-features-${FeaturePage}`
   | 'skills'
@@ -163,7 +153,6 @@ export const SETTINGS_PAGES = [
     labelKey: 'settings.appearancePanel',
     Icon: Platte,
   },
-  { id: 'pet', group: 'preferences', path: 'pet', route: '/settings/pet', labelKey: 'pet.desktopPet', Icon: Cat },
   {
     id: 'system',
     group: 'preferences',
@@ -181,14 +170,6 @@ export const SETTINGS_PAGES = [
     Icon: Comments,
   },
   {
-    id: 'voice',
-    group: 'preferences',
-    path: 'voice',
-    route: '/settings/voice',
-    labelKey: 'settings.voiceInput',
-    Icon: Voice,
-  },
-  {
     id: 'providers',
     group: 'models',
     path: 'providers',
@@ -204,6 +185,7 @@ export const SETTINGS_PAGES = [
     labelKey: 'mu.sections.defaultModel',
     Icon: Cpu,
   },
+  // The judge to ask, and under it the order of several judges and every field of each.
   {
     id: 'judges',
     group: 'kernel',
@@ -211,15 +193,6 @@ export const SETTINGS_PAGES = [
     route: '/settings/judges',
     labelKey: 'mu.sections.judges',
     Icon: Gavel,
-  },
-  // The order of several judges and every field of each: the choice on the page above decides them for most people.
-  {
-    id: 'judge-tiers',
-    group: 'kernel',
-    path: 'judge-tiers',
-    route: '/settings/judge-tiers',
-    labelKey: 'mu.sections.judgeTiers',
-    Icon: ListNumbers,
   },
   {
     id: 'features',
@@ -229,22 +202,7 @@ export const SETTINGS_PAGES = [
     labelKey: 'mu.sections.features',
     Icon: SwitchButton,
   },
-  {
-    id: 'context',
-    group: 'kernel',
-    path: 'context',
-    route: '/settings/context',
-    labelKey: 'mu.sections.context',
-    Icon: Layers,
-  },
-  {
-    id: 'permissions',
-    group: 'kernel',
-    path: 'permissions',
-    route: '/settings/permissions',
-    labelKey: 'mu.sections.permissions',
-    Icon: Shield,
-  },
+  // The decision points' context page holds the compaction settings too: one page for context.
   ...DECISION_PAGES.map(decisionsEntry),
   ...FEATURE_PAGES.map(moreFeaturesEntry),
   {
@@ -294,6 +252,12 @@ export const SETTINGS_PAGES = [
 export const SETTINGS_HOME = '/settings/providers';
 
 /**
+ * The options of the permission modes feature, which hold the mode a new conversation starts in. The feature acts at
+ * the tools and safety decision points, so its switch is on that page of the more features.
+ */
+const PERMISSION_MODE_PAGE = '/settings/more-features-tools/permissions';
+
+/**
  * Every settings route that no longer exists, and the page that took it over. Old links — a deep link, a button
  * elsewhere in the app, the six pages of the previous settings — land here with their query string kept.
  */
@@ -307,11 +271,11 @@ export const RETIRED_SETTINGS_PATHS: Record<string, string> = {
   // mu's own sections when they lived under /settings/kyrn.
   '/settings/kyrn': '/settings/providers',
   '/settings/kyrn/models': '/settings/providers',
-  '/settings/kyrn/permissions': '/settings/permissions',
+  '/settings/kyrn/permissions': PERMISSION_MODE_PAGE,
   '/settings/kyrn/judges': '/settings/judges',
   '/settings/kyrn/decisions': '/settings/decisions-input',
   '/settings/kyrn/features': '/settings/features',
-  '/settings/kyrn/context': '/settings/context',
+  '/settings/kyrn/context': '/settings/decisions-context',
   '/settings/kyrn/:section': '/settings/providers',
   '/settings/model': '/settings/providers',
   // Runtime agents and the top-level assistants page: the assistants.
@@ -322,8 +286,15 @@ export const RETIRED_SETTINGS_PATHS: Record<string, string> = {
   '/settings/capabilities': '/settings/skills',
   '/settings/capabilities/skills/import-history': '/settings/skills/import-history',
   '/settings/display': '/settings/appearance',
-  // The web server mu no longer runs.
+  // Pages folded into others: the judge tiers are on the judges page, the compaction settings on the context page,
+  // and the mode of a new conversation is an option of the permission modes feature.
+  '/settings/judge-tiers': '/settings/judges',
+  '/settings/context': '/settings/decisions-context',
+  '/settings/permissions': PERMISSION_MODE_PAGE,
+  // The web server mu no longer runs, the voice input and the desktop pet it no longer has: the page each sat next to.
   '/settings/webui': '/settings/system',
+  '/settings/voice': '/settings/system',
+  '/settings/pet': '/settings/appearance',
 };
 
 /**
@@ -375,11 +346,14 @@ export const SETTINGS_ANCHOR_REMAP: Record<string, SettingsPageId> = {
   decisions: 'decisions-input',
   'more-features': 'more-features-input',
   'mu-models': 'providers',
-  'mu-permissions': 'permissions',
+  'mu-permissions': 'more-features-tools',
   'mu-judges': 'judges',
   'mu-decisions': 'decisions-input',
   'mu-features': 'features',
-  'mu-context': 'context',
+  'mu-context': 'decisions-context',
+  'judge-tiers': 'judges',
+  context: 'decisions-context',
+  permissions: 'more-features-tools',
   kyrn: 'providers',
   model: 'providers',
   agent: 'assistants',
@@ -387,6 +361,8 @@ export const SETTINGS_ANCHOR_REMAP: Record<string, SettingsPageId> = {
   capabilities: 'skills',
   display: 'appearance',
   webui: 'system',
+  voice: 'system',
+  pet: 'appearance',
 };
 
 /** The entries whose sub-pages are one feature's options each: `<route>/<feature>`, and `/<part>` past the first. */

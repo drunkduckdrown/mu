@@ -12,6 +12,8 @@ import { useCurrentProject } from '@/renderer/pages/conversation/explorer/curren
 import { ExplorerContainer, type ExplorerView } from '@/renderer/pages/conversation/explorer/ExplorerContainer';
 import { KernelBody, useKyrnActivity, type KernelTab } from '@/renderer/pages/conversation/KyrnPanel';
 import { PreviewPanel, usePreviewContext } from '@/renderer/pages/conversation/Preview';
+import BrowserPanel from '@/renderer/pages/conversation/Preview/browser/BrowserPanel';
+import { setBrowserMaximized, useBrowserMaximized } from '@/renderer/pages/conversation/Preview/browser/browserStore';
 import { useWorkPanel } from './useWorkPanel';
 import WorkPanelTabs, { workPanelBodyId, workPanelTabId } from './WorkPanelTabs';
 import { WORK_PANEL_DEFAULT_WIDTH, WORK_PANEL_MIN_WIDTH, type WorkPanelTab } from './workPanelStore';
@@ -246,9 +248,10 @@ const KERNEL_TABS: readonly KernelTab[] = ['board', 'judge', 'hive', 'lessons'];
 /**
  * The conversation page's right side: one docked panel whose tabs hold the kernel's view of the conversation (the
  * plain-language board, the judge's log, the sub-agents, the lessons learned for the project), the project's files,
- * the preview and source control. It sits beside the transcript and above the per-conversation subtree, so switching
- * conversations never remounts the explorer or the preview. Every tab stays mounted while another is shown, and a
- * closed panel keeps its width inside: nothing reloads, and a page in the preview keeps its size.
+ * the preview, source control and the in-app browser. It sits beside the transcript and above the per-conversation
+ * subtree, so switching conversations never remounts the explorer, the preview or the browser. Every tab stays
+ * mounted while another is shown, and a closed panel keeps its width inside: nothing reloads, and a web page keeps
+ * its size.
  */
 export default function WorkPanelHost({ rowWidth, isMobile }: { rowWidth: number; isMobile: boolean }) {
   const { t } = useTranslation();
@@ -257,12 +260,17 @@ export default function WorkPanelHost({ rowWidth, isMobile }: { rowWidth: number
   const activity = useKyrnActivity(conversationId);
   const { memory, unread, focus, select, close, resize } = useWorkPanel(conversationId, activity);
   const { isMaximized } = usePreviewContext();
+  const browserMaximized = useBrowserMaximized();
   const viewportWidth = useViewportWidth();
   const [live, setLive] = useState<number | null>(null);
   const geometry = panelGeometry(rowWidth, viewportWidth, isMobile, live ?? memory.width);
   const { open, tab: active } = memory;
   const hostRef = useRef<HTMLElement>(null);
-  const maximized = open && active === 'preview' && isMaximized && geometry.mode !== 'sheet';
+  // The preview and the browser can each fill the page (the transcript hidden), each by its own button.
+  const maximized =
+    open &&
+    geometry.mode !== 'sheet' &&
+    ((active === 'preview' && isMaximized) || (active === 'browser' && browserMaximized));
   const clearance = useComposerClearance(
     hostRef,
     Boolean(conversationId) && geometry.mode === 'float' && open && !maximized
@@ -352,6 +360,15 @@ export default function WorkPanelHost({ rowWidth, isMobile }: { rowWidth: number
               )
             )}
             {body('preview', active === 'preview', 'preview', <PreviewBody />)}
+            {body(
+              'browser',
+              active === 'browser',
+              'browser',
+              <BrowserPanel
+                maximized={maximized}
+                onToggleMaximize={geometry.mode === 'sheet' ? undefined : () => setBrowserMaximized(!browserMaximized)}
+              />
+            )}
           </div>
         </div>
       </aside>

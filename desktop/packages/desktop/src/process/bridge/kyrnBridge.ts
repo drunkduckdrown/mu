@@ -1,4 +1,4 @@
-import { basename, dirname, join, resolve } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { app, shell, utilityProcess } from 'electron';
 import { kyrnBridge } from '../../common/kyrn/bridge';
 import { KyrnError, kyrnFailure, type KyrnResult } from '../../common/kyrn/errors';
@@ -6,9 +6,9 @@ import type { KyrnCatalog } from '../../common/kyrn/types';
 import { httpRequest } from '../../common/adapter/httpBridge';
 import { SettingsStore } from '../agent/kyrn/settings';
 import { availableModels } from '../agent/kyrn/config/available';
-import { LoginManager, openable, spawnLoginRunner } from '../agent/kyrn/login';
+import { LoginManager, openable, spawnAuth } from '../agent/kyrn/login';
 import { testProvider } from '../agent/kyrn/config/connection';
-import { envFileOf, findHarness, manifestOf } from '../agent/kyrn/harness';
+import { envFileOf, expectedHarness, findHarness, launcherOf, manifestOf } from '../agent/kyrn/harness';
 import { LocalJudge } from '../agent/kyrn/localJudge';
 import { OnnxLocalJudge, openFolder, usesOnnxJudge } from '../agent/kyrn/localJudgeOnnx';
 import { LessonsStore, lessonsProject, type LessonsProject } from '../agent/kyrn/lessons';
@@ -59,11 +59,14 @@ const sessionOf = async (conversationId: string): Promise<string> => (await conv
 
 export function initKyrnBridge(): void {
   const desktopRoot = process.env.KYRN_DESKTOP_ROOT || process.cwd();
-  // KYRN_ROOT / MU_ROOT, a checkout beside this one, or mu-agent from npm; else the old default, which then reads
-  // as no harness (no manifest) and mu offline.
-  // A packaged app runs from no checkout, so nothing is looked for beside the folder it happens to start in.
+  // KYRN_ROOT / MU_ROOT, the copy the packaged app carries, a checkout beside this one, or mu-agent from npm. A
+  // packaged app runs from no checkout, so nothing is looked for beside the folder it happens to start in.
   const checkout = app.isPackaged && !process.env.KYRN_DESKTOP_ROOT ? undefined : desktopRoot;
-  const harness = findHarness(checkout) ?? { root: resolve(desktopRoot, '..', 'KYRN'), layout: 'repo' as const };
+  // None found: where it should be, which then reads as no harness (no manifest) and mu offline. For a packaged app
+  // that is its own copy, which only a broken build lacks.
+  const found = findHarness(checkout);
+  const harness = found ?? expectedHarness(checkout, process.resourcesPath);
+  console.log(`[mu] harness: ${found ? `${found.source}, ${found.layout}` : 'none found, expected'} at ${harness.root}`);
   const root = harness.root;
   const home = muHome();
   const agentDir = muEnv('AGENT_DIR') || join(home, 'agent');
@@ -96,7 +99,7 @@ export function initKyrnBridge(): void {
     })
   );
   kyrnBridge.testProvider.provider((input) => result(() => testProvider(input, settings.storedKey(input.id))));
-  const login = new LoginManager(spawnLoginRunner(root, agentDir, desktopRoot), (url) => {
+  const login = new LoginManager(spawnAuth(launcherOf(harness, process.platform), agentDir), (url) => {
     if (openable(url)) void shell.openExternal(url);
   });
   kyrnBridge.loginStart.provider(({ provider }) => result(() => login.start(provider)));

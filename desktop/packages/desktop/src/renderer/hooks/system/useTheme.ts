@@ -37,7 +37,7 @@ async function initActiveTheme(): Promise<Theme> {
     const resolved = resolveActiveTheme(activeId, [...BUILTIN_THEMES, ...userThemes], getSystemPrefersDark());
     applyTheme(resolved);
     cacheAppearance(resolved);
-    // Seed the main-process relay so other surfaces (markdown shadow DOM, pet windows) can pull it.
+    // Seed the main-process relay so other surfaces (the markdown shadow DOM) can pull it.
     void seedElectronTheme(resolved).catch(() => {});
     return resolved;
   } catch (e) {

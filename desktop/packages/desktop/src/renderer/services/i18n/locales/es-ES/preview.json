@@ -150,6 +150,8 @@
   "browser": {
     "newTab": "Nueva pestaña",
     "addressPlaceholder": "Escribe una URL o busca",
+    "tabsLabel": "Páginas abiertas",
+    "closeTab": "Cerrar {{title}}",
     "agentActiveTooltip": "El agente está operando esta pestaña",
     "tabLimitReached": "Se alcanzó el límite de pestañas ({{count}}). Se reutilizó la pestaña más antigua.",
     "agentFirstUseTitle": "El agente está usando el navegador integrado",

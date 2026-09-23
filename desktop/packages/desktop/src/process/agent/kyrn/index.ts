@@ -1,8 +1,8 @@
 import { AgentSideConnection, ndJsonStream } from '@agentclientprotocol/sdk';
 import { Readable, Writable } from 'node:stream';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { findHarness, launcherOf, MIN_NODE, nodeVersionOk } from './harness.ts';
+import { expectedHarness, findHarness, launcherOf, MIN_NODE, nodeVersionOk } from './harness.ts';
 import { KyrnAgent } from './KyrnAgent.ts';
 import { muHome } from './naming.ts';
 
@@ -18,11 +18,10 @@ if (!nodeVersionOk(process.versions.node)) {
   );
   process.exit(1);
 }
-// No harness found: the launcher of the old default place, whose failure to start the app reports as mu offline.
-const harness = findHarness(desktopRoot) ?? {
-  root: resolve(desktopRoot ?? process.cwd(), '..', 'KYRN'),
-  layout: 'repo' as const,
-};
+// No harness found: the launcher of the place it should be (in the packaged app its own copy), whose failure to
+// start the app reports as mu offline.
+const harness =
+  findHarness(desktopRoot) ?? expectedHarness(desktopRoot, (process as { resourcesPath?: string }).resourcesPath);
 let agent: KyrnAgent;
 const connection = new AgentSideConnection(
   (conn) => {

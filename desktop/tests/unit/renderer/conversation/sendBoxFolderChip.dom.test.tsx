@@ -121,19 +121,10 @@ vi.mock('@/renderer/hooks/file/useAbortUploadsOnConversationChange', () => ({
   useAbortUploadsOnConversationChange: vi.fn(),
 }));
 
-vi.mock('@/renderer/hooks/system/useLiveTranscriptInsertion', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/renderer/hooks/system/useLiveTranscriptInsertion')>();
-  return {
-    ...actual,
-    useLiveTranscriptInsertion: () => ({ handleLiveTranscript: vi.fn() }),
-  };
-});
-
 // NOTE: the emitter is intentionally NOT mocked — this test drives the real
 // append lane end to end.
 
 vi.mock('@/renderer/components/chat/BtwOverlay', () => ({ default: () => null }));
-vi.mock('@/renderer/components/chat/SpeechInputButton', () => ({ default: () => null }));
 vi.mock('@/renderer/components/media/UploadProgressBar', () => ({ default: () => null }));
 
 import SendBox from '@/renderer/components/chat/SendBox';

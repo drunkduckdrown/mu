@@ -8,11 +8,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { ipcBridge } from '@/common';
 import type { Activity } from '@/common/kyrn/types';
 import { onHiveFocus, type HiveFocusRequest } from '@/renderer/pages/conversation/KyrnPanel/focus';
+import { isBrowserMcpActivity } from '@/renderer/pages/conversation/Preview/browser/agentActivity';
+import { takeBrowserHandOver, useBrowserHandOver } from '@/renderer/pages/conversation/Preview/browser/browserStore';
 import { onPreviewOpened } from '@/renderer/pages/conversation/Preview/context/previewOpeners';
 import { WORKSPACE_TOGGLE_EVENT, dispatchWorkspaceStateEvent } from '@/renderer/utils/workspace/workspaceEvents';
 import { boardSignature, createEditWatcher, hiveSignature, judgeSignature, lessonsSignature } from './news';
 import {
   bumpWorkPanelNews,
+  handPreviewToBrowser,
   noteWorkPanelSignature,
   readWorkPanelMemory,
   rememberWorkPanel,
@@ -24,15 +27,17 @@ import {
 
 /**
  * The work panel's wiring for the current conversation. What opens it: the titlebar button and Cmd/Ctrl+J (both
- * the workspace toggle event), a sub-agent line clicked in the transcript (its hive tab), and a file or page the
- * person opens (its preview). What only marks a tab as new: a new board, a new verdict, a sub-agent starting or
- * ending, a lesson stored, recalled, followed, retired or merged, a file the agent changed, a page the agent opened.
- * Nothing else the agent does opens the panel; the one exception is mu's browser typing into its page or asking the
- * person to confirm a step on it, which is done where the person can see it (see `previewOpeners.ts`).
+ * the workspace toggle event), a sub-agent line clicked in the transcript (its hive tab), a file the person opens
+ * (its preview) and a web page the person opens (its browser). What only marks a tab as new: a new board, a new
+ * verdict, a sub-agent starting or ending, a lesson stored, recalled, followed, retired or merged, a file the agent
+ * changed, and on the browser a page the agent opened, a run of mu's starting in it, or the agent's browser tool
+ * at work. Nothing else the agent does opens the panel; the one exception is mu's browser typing into its page or
+ * asking the person to confirm a step on it, which is done where the person can see it (see `previewOpeners.ts`).
  */
 export function useWorkPanel(conversationId: string | null, kernel: { events: Activity[]; settled: boolean }) {
   const memory = useWorkPanelMemory(conversationId);
   const unread = useWorkPanelUnread(conversationId);
+  const handOver = useBrowserHandOver();
   const [focus, setFocus] = useState<HiveFocusRequest>();
 
   useEffect(() => {
@@ -49,16 +54,21 @@ export function useWorkPanel(conversationId: string | null, kernel: { events: Ac
       setFocus(request);
       rememberWorkPanel(conversationId, { open: true, tab: 'hive' });
     });
-    const stopPreview = onPreviewOpened((by) => {
-      if (by === 'agent') bumpWorkPanelNews(conversationId, 'preview');
-      else rememberWorkPanel(conversationId, { open: true, tab: 'preview' });
+    const stopOpened = onPreviewOpened((by, where) => {
+      if (by === 'agent') bumpWorkPanelNews(conversationId, where);
+      else rememberWorkPanel(conversationId, { open: true, tab: where });
     });
     return () => {
       window.removeEventListener(WORKSPACE_TOGGLE_EVENT, toggle);
       stopFocus();
-      stopPreview();
+      stopOpened();
     };
   }, [conversationId]);
+
+  // An older build's preview was showing a page when this project was last open: the panel follows it to 浏览器.
+  useEffect(() => {
+    if (conversationId && handOver && takeBrowserHandOver()) handPreviewToBrowser(conversationId);
+  }, [conversationId, handOver]);
 
   // The titlebar button shows whether the panel is open.
   useEffect(() => {
@@ -82,13 +92,16 @@ export function useWorkPanel(conversationId: string | null, kernel: { events: Ac
     noteWorkPanelSignature(conversationId, 'lessons', lessonsSignature(kernel.events));
   }, [conversationId, kernel.events, kernel.settled]);
 
-  // Files the agent changed, in any conversation: the dot waits there for the person's return.
+  // Files the agent changed and the agent's browser tool at work, in any conversation: the dot waits there for the
+  // person's return.
   useEffect(() => {
     const stream = ipcBridge.conversation?.responseStream;
     if (!stream?.on) return undefined;
     const edited = createEditWatcher();
     return stream.on((message) => {
-      if (message.conversation_id && edited(message)) bumpWorkPanelNews(message.conversation_id, 'files');
+      if (!message.conversation_id) return;
+      if (edited(message)) bumpWorkPanelNews(message.conversation_id, 'files');
+      if (isBrowserMcpActivity(message.type, message.data)) bumpWorkPanelNews(message.conversation_id, 'browser');
     });
   }, []);
 

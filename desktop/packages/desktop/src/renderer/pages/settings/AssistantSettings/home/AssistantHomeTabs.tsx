@@ -94,10 +94,15 @@ const AssistantHomeTabs: React.FC<AssistantHomeTabsProps> = ({
     });
   }, [assistants, i18n.language, normalizedSearchQuery]);
 
+  // Its own frame (the header stays out of the scroll body), with the settings frame's two classes so that the
+  // settings' look (settings.css: quiet lists, flat controls) reaches this page too.
   return (
-    <div data-testid='assistant-home-shell' className='flex h-full min-h-0 flex-col overflow-hidden bg-transparent'>
+    <div
+      data-testid='assistant-home-shell'
+      className='settings-page-wrapper flex h-full min-h-0 flex-col overflow-hidden bg-transparent'
+    >
       <div className={isMobile ? 'px-16px pt-14px' : classNames(SETTINGS_PAGE_GUTTER, SETTINGS_PAGE_TOP)}>
-        <div className={SETTINGS_PAGE_COLUMN}>
+        <div className={classNames('settings-page-content', SETTINGS_PAGE_COLUMN)}>
           <SettingsPageHeader
             sticky={false}
             data-testid='assistants-header'
@@ -162,7 +167,7 @@ const AssistantHomeTabs: React.FC<AssistantHomeTabsProps> = ({
           isMobile ? 'px-16px pb-14px pt-14px' : classNames(SETTINGS_PAGE_GUTTER, 'pb-24px pt-16px')
         )}
       >
-        <div className={SETTINGS_PAGE_COLUMN}>
+        <div className={classNames('settings-page-content', SETTINGS_PAGE_COLUMN)}>
           {tab === 'enabled' ? (
             <EnabledAssistantsList
               assistants={filteredAssistants}

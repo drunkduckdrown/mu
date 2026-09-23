@@ -15,6 +15,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   PREVIEW_SCOPE_KEY_PREFIX,
+  browserScopeStorageKey,
   clearPersistedPreviewScopes,
   listPersistedPreviewScopeKeys,
   previewScopeStorageKey,
@@ -63,6 +64,17 @@ describe('clearPersistedPreviewScopes', () => {
     clearPersistedPreviewScopes();
 
     expect(listPersistedPreviewScopeKeys()).toEqual([]);
+  });
+
+  it('removes the browser pages kept beside each scope too: their addresses are the previous account’s', () => {
+    seedScope('a');
+    localStorage.setItem(browserScopeStorageKey('a'), JSON.stringify({ tabs: [{ id: 'p', url: 'https://a.test/' }] }));
+    localStorage.setItem(browserScopeStorageKey('b'), JSON.stringify({ tabs: [] }));
+
+    clearPersistedPreviewScopes();
+
+    expect(localStorage.getItem(browserScopeStorageKey('a'))).toBeNull();
+    expect(localStorage.getItem(browserScopeStorageKey('b'))).toBeNull();
   });
 
   it('leaves unrelated storage untouched', () => {

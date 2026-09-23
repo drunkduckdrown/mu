@@ -152,6 +152,8 @@
   "browser": {
     "newTab": "Нова вкладка",
     "addressPlaceholder": "Введіть URL або пошуковий запит",
+    "tabsLabel": "Відкриті сторінки",
+    "closeTab": "Закрити «{{title}}»",
     "agentActiveTooltip": "Агент керує цією вкладкою",
     "tabLimitReached": "Досягнуто ліміт вкладок ({{count}}). Найстарішу вкладку використано повторно.",
     "agentFirstUseTitle": "Агент використовує вбудований браузер",

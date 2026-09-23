@@ -7,7 +7,7 @@
  * `url`, `detail`) is untrusted text: it is shown as plain text and nothing else.
  */
 
-/** The session partition of agent-driven tabs: apart from the app and from the manual preview browser. */
+/** The session partition of agent-driven tabs: apart from the app and from the pages the person browses. */
 export const MU_BROWSER_PARTITION = 'persist:mu-browser';
 
 /** How long the person has to answer a confirmation before it counts as a refusal. */

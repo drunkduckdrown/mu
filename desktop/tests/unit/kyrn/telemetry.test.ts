@@ -178,6 +178,7 @@ describe('KYRN durable activity', () => {
       writeFileSync(join(dir, 'gate.jsonl'), '{"gate":"publish","publish":false}\n');
       writeFileSync(join(dir, 'board.jsonl'), '{"id":"n","bee":"a","text":"Finding"}\n');
       writeFileSync(join(dir, 'deliveries.jsonl'), '{"note":"n","to":"b"}\n');
+      writeFileSync(join(dir, 'relations.jsonl'), '{"later":"m","earlier":"n","relation":"supersedes","by":"b"}\n');
       const transcript = join(dir, 'transcripts/a.jsonl');
       writeFileSync(transcript, '{"type":"turn_end"}\n');
       const event = {
@@ -200,6 +201,9 @@ describe('KYRN durable activity', () => {
       telemetry.capture(event);
       const events = activityPage(dir, session, 0).events;
       expect(events.filter((e) => e.kind === 'hive.delivery')).toHaveLength(1);
+      expect(events.filter((e) => e.kind === 'hive.relation').map((e) => e.payload)).toEqual([
+        { later: 'm', earlier: 'n', relation: 'supersedes', by: 'b' },
+      ]);
       expect(events.filter((e) => e.kind === 'bee.event')).toHaveLength(1);
       expect(events.find((e) => e.kind === 'hive.gate')?.payload.publish).toBe(false);
     } finally {

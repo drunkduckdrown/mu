@@ -24,6 +24,9 @@ const e2eUserDataDir = process.env.AIONUI_E2E_TEST === '1' ? process.env.AIONUI_
 if (e2eUserDataDir && e2eUserDataDir.trim() !== '') {
   fs.mkdirSync(e2eUserDataDir, { recursive: true });
   app.setPath('userData', e2eUserDataDir);
+  // AionCore writes its log into the logs folder (--log-dir), which would otherwise be the real ~/Library/Logs/mu,
+  // shared with every other mu on the machine.
+  app.setPath('logs', path.join(e2eUserDataDir, 'logs'));
 }
 
 // ============ Environment Separation ============

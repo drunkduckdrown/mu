@@ -19,16 +19,20 @@ export interface RpcPort {
 }
 
 /**
- * How the launcher is started. A Node launcher (`kyrn/bin/mu.mjs`, what Windows and the npm package use) runs with
- * this process's own Node, or `MU_NODE`: no shell and no `.cmd`, which Node refuses to spawn without one. Anything
- * else is an executable (the bash forwarder of a checkout).
+ * How the launcher is started. A Node launcher (`kyrn/bin/mu.mjs`, what Windows, the npm package and the copy inside
+ * the packaged app use) runs with this process's own Node, or `MU_NODE`: no shell and no `.cmd`, which Node refuses to
+ * spawn without one. In the app this process is Electron, whose binary runs a script as Node only with
+ * ELECTRON_RUN_AS_NODE: that is how the packaged app runs mu without a Node on the machine. Anything else is an
+ * executable (the bash forwarder of a checkout).
  */
 export function launchCommand(
   launcher: string,
   args: string[],
-  node: string = process.env.MU_NODE || process.execPath
-): { command: string; args: string[] } {
-  return /\.[cm]?js$/i.test(launcher) ? { command: node, args: [launcher, ...args] } : { command: launcher, args };
+  node: string = process.env.MU_NODE || process.execPath,
+  electron: boolean = Boolean(process.versions.electron)
+): { command: string; args: string[]; env: Record<string, string> } {
+  if (!/\.[cm]?js$/i.test(launcher)) return { command: launcher, args, env: {} };
+  return { command: node, args: [launcher, ...args], env: electron ? { ELECTRON_RUN_AS_NODE: '1' } : {} };
 }
 
 /**
@@ -73,6 +77,7 @@ export class PiRpc implements RpcPort {
     // A project inside WSL gets its harness inside WSL (Windows only).
     const location = process.platform === 'win32' ? wslLocation(cwd) : undefined;
     this.wsl = location !== undefined;
+    const launch = launchCommand(launcher, ['--mode', 'rpc', ...(session ? ['--session', session] : [])]);
     const start = location
       ? wslLaunch({
           location,
@@ -82,11 +87,7 @@ export class PiRpc implements RpcPort {
           inherited: process.env.WSLENV,
           home: homedir(),
         })
-      : {
-          ...launchCommand(launcher, ['--mode', 'rpc', ...(session ? ['--session', session] : [])]),
-          cwd,
-          env: env ?? {},
-        };
+      : { command: launch.command, args: launch.args, cwd, env: { ...launch.env, ...env } };
     this.child = spawn(start.command, start.args, {
       cwd: start.cwd,
       env: { ...process.env, ...start.env },
