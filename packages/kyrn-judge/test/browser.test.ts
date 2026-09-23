@@ -16,6 +16,7 @@ import { type BrowserStepInput, browserStep } from "../src/decisions/browser-ste
 import { createKyrnJudgeExtension } from "../src/extension/kyrn-judge.ts";
 import type { KyrnPresentationEvent } from "../src/extension/presentation.ts";
 import { Judge } from "../src/judge.ts";
+import { codeOf } from "../src/language.ts";
 import { MemoryLedger } from "../src/ledger.ts";
 import { MockJudgeProvider } from "../src/providers/mock.ts";
 import type { Answer, JudgeRequest } from "../src/types.ts";
@@ -207,10 +208,20 @@ describe.skipIf(!findChrome())("runBrowserTask (real Chrome, local fixture)", ()
 		const address = server.address();
 		url = `http://127.0.0.1:${typeof address === "object" && address ? address.port : 0}/`;
 		// A throwaway profile: the test never touches ~/.mu/browser-profile, let alone a personal one.
-		profileDir = mkdtempSync(join(tmpdir(), "kyrn-browser-test-"));
-		chrome = await launchChrome({ profileDir });
+		// A loaded CI runner can keep Chrome past the 15 s port deadline while the other test files run; a fresh
+		// profile gets two more tries before that counts as a failure.
+		for (let attempt = 1; ; attempt++) {
+			profileDir = mkdtempSync(join(tmpdir(), "kyrn-browser-test-"));
+			try {
+				chrome = await launchChrome({ profileDir });
+				break;
+			} catch (error) {
+				rmSync(profileDir, { recursive: true, force: true });
+				if (attempt === 3 || codeOf(error)?.code !== "devtools_port_timeout") throw error;
+			}
+		}
 		cdp = await CdpConnection.connect(chrome.endpoint);
-	}, 30_000);
+	}, 60_000);
 
 	afterAll(async () => {
 		cdp?.close();
