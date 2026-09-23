@@ -5,7 +5,7 @@ How much mu may do without asking. There are three modes, and you can switch bet
 | mode | id | what runs without asking | what asks |
 | --- | --- | --- | --- |
 | 完全访问 / Full access | `full` | everything | nothing |
-| JeV 审批 / JeV approves | `jev` | reading; editing files inside the project; whatever JeV is sure the task needs | whatever JeV is not sure of, thinks goes beyond the request, or thinks is unrelated |
+| Jev 审批 / Jev approves | `jev` | reading; editing files inside the project; whatever Jev is sure the task needs | whatever Jev is not sure of, thinks goes beyond the request, or thinks is unrelated |
 | 最小权限 / Minimal permissions | `ask` | reading only | every edit, command, outside action and sub-agent |
 
 Some things hold in every mode:
@@ -13,19 +13,19 @@ Some things hold in every mode:
 - **Hard constraints still apply.** What you said not to do is stopped by the constraint gate, even in full access. That gate is about your words, not about permission.
 - **Reading is never asked about.** This covers `read`, `grep`, `find`, `ls`, `todo`, `web_search`, `web_fetch`, background output, `sg_search`, the debugger's inspect/step/stop, and shell commands made only of read-only programs (`git status`, `cat … | grep … | head`).
 - **Unlisted tools are asked about.** A tool mu does not know (an MCP tool, for example) needs permission. A command counts as read-only only when every part of it is on the short read-only list.
-- **mu's own settings are always yours to decide.** Any call that touches the agent folder (`~/.mu/agent`, spelled as a path, with `~` or with `$HOME`) is asked every time. JeV cannot approve it, and "allow for this conversation" is not offered.
+- **mu's own settings are always yours to decide.** Any call that touches the agent folder (`~/.mu/agent`, spelled as a path, with `~` or with `$HOME`) is asked every time. Jev cannot approve it, and "allow for this conversation" is not offered.
 
-## What JeV is asked
+## What Jev is asked
 
-JeV mode puts one choice question, `tool.approval`, to JeV: what is `tool_call` for `task` and `user_message`? The answer is `needed`, `beyond`, `unrelated` or `unclear`.
+Jev mode puts one choice question, `tool.approval`, to Jev: what is `tool_call` for `task` and `user_message`? The answer is `needed`, `beyond`, `unrelated` or `unclear`.
 
 - Only `needed` at probability 0.8 or higher runs without you.
-- Anything else asks you, and the prompt says why ("JeV thinks this goes beyond what you asked for").
+- Anything else asks you, and the prompt says why ("Jev thinks this goes beyond what you asked for").
 - If there is no verdict at all (the judge is down, or its mode is `off`), you are asked.
 
-JeV's verdict counts even when the decision's own mode is `shadow`, because choosing JeV mode is the opt-in.
+Jev's verdict counts even when the decision's own mode is `shadow`, because choosing Jev mode is the opt-in.
 
-Commands that the risk rules flag work differently: `rm -rf`, force push, `sudo`, running a downloaded script and the rest of the guard's rules. In JeV mode they use the guard's `tool.risk` question and run only when JeV is sure you asked for them. In minimal mode the flag is shown in the question. A flagged command can only be allowed once, never for the whole conversation.
+Commands that the risk rules flag work differently: `rm -rf`, force push, `sudo`, running a downloaded script and the rest of the guard's rules. In Jev mode they use the guard's `tool.risk` question and run only when Jev is sure you asked for them. In minimal mode the flag is shown in the question. A flagged command can only be allowed once, never for the whole conversation.
 
 With permission modes on (the default), they take over the old guard. With `features.permissions: false` in mu.json, the guard works on its own as before.
 
@@ -37,7 +37,7 @@ A call that needs you shows one picker with fixed answers:
 - `Allow for this conversation（<scope>）` / 这次对话都允许（<scope>）. This is offered only when the call has a safe scope.
 - `Don't allow` / 不允许
 
-While the picker waits, the status line `mu.permissions.pending` says "Waiting for your permission: <summary>" / "等你授权：<summary>". It is cleared once you answer. The mode itself is always shown in the status line `mu.permissions` ("Permissions: JeV approves" / "权限：JeV 审批").
+While the picker waits, the status line `mu.permissions.pending` says "Waiting for your permission: <summary>" / "等你授权：<summary>". It is cleared once you answer. The mode itself is always shown in the status line `mu.permissions` ("Permissions: Jev approves" / "权限：Jev 审批").
 
 "For this conversation" covers:
 

@@ -67,7 +67,7 @@ The launch codes:
 | `lessons` | | checking lessons from earlier sessions |
 | `skills` | | choosing which skills this session needs |
 | `capabilities` | | choosing which capabilities this task needs |
-| `permission_review` | `summary` (a command or path, data) | JeV is reviewing: … (already localized) |
+| `permission_review` | `summary` (a command or path, data) | Jev is reviewing: … (already localized) |
 
 ## decision (the judge's reason)
 

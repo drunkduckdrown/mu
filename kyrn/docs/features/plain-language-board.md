@@ -84,7 +84,7 @@ Jev 不可用时按规则判断：看最后一步是什么（读文件 → 弄�
 
 ## 4. 给桌面端的接口
 
-展示事件（RPC 模式下走状态通道 `kyrn.presentation.v1`，和 JeV 面板一样）：
+展示事件（RPC 模式下走状态通道 `kyrn.presentation.v1`，和 Jev 面板一样）：
 
 `board.update`：
 

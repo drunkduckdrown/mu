@@ -5,7 +5,7 @@
 > 2026-09-20 · 构思稿，待讨论
 > 基座：[earendil-works/pi](https://github.com/earendil-works/pi)（MIT，原 badlogic/pi-mono）
 > 判断模型：`typesafe-ai/jev`，经 Vercel AI Gateway 调用
-> 写法说明：你原话里的 "JeV" 在各处通用写法是 Jev，本文统一写 Jev。
+> 写法说明：判断模型的名字统一写 Jev（大写 J，小写 e 和 v）。
 
 ## 0. 一句话
 

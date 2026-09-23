@@ -276,7 +276,7 @@ pi 只在代理启动时才把用户消息画进聊天区，而 `input` 处理�
 
 ## 10.6 一轮的编排（2026-09-22）：等待只算一次，影子从不等待，连接不断
 
-真实会话的账本（gpt-6-astra + jev-1.13，全部 active）里，一轮开始前的判定是串着等的：preflight 1.2 s → 技能披露 1.5 s → 能力披露 0.4 s，模型开跑前约 3 s；工具路径上每条命令等 JeV 审批 1–2 s，长输出的准入按块判定 1.4–5.6 s。pi 对每个事件的扩展处理器是顺序 await 的（`runner.emit`），`before_agent_start`、`tool_call`、`tool_result`、`turn_end`、`agent_end` 都在主循环上。改成：
+真实会话的账本（gpt-6-astra + jev-1.13，全部 active）里，一轮开始前的判定是串着等的：preflight 1.2 s → 技能披露 1.5 s → 能力披露 0.4 s，模型开跑前约 3 s；工具路径上每条命令等 Jev 审批 1–2 s，长输出的准入按块判定 1.4–5.6 s。pi 对每个事件的扩展处理器是顺序 await 的（`runner.emit`），`before_agent_start`、`tool_call`、`tool_result`、`turn_end`、`agent_end` 都在主循环上。改成：
 
 - **到达即问**。`runtime.atTurnStart(listener)`：记忆、技能、能力披露在消息到达、preflight 的问题发出之后立刻发出自己的问题（`startTurnWork`），`before_agent_start` 只是取回已经在路上的答案。一轮开始前的等待从"三者之和"变成"三者中最慢的"。技能列表从 `ctx.getSystemPromptOptions().skills` 取，和 pi 给系统提示的是同一份。
 - **一个起点**。`runtime.untilTurnDeadline(work, waitMs)`：所有回合前的等待都从 `turn.startedAt`（消息到达）起算，和任务框架原本的做法一致；一个功能等慢了，不会给下一个功能再续一段配额。
@@ -289,7 +289,7 @@ pi 只在代理启动时才把用户消息画进聊天区，而 `input` 处理�
 
 ## 10.7 内核深度优化（2026-09-23）：整批一问、HTTP/2、连接保温、每个内联等待都有上限
 
-先把 39 个真实会话的账本按决策点统计（p50 / p90 / 最大）：preflight 1.2 s / 5.0 s / 9.1 s（4 次超时），技能披露 1.2 s / 7.7 s / 9.5 s，准入 1.7 s / 20 s / 30 s，JeV 审批 1.2 s / 3.8 s / 8.9 s，完成核对 3.5 s / 5.2 s，遗忘 1.1 s / 10 s。尾部全是连接：从用户的网络到 api.typesafe.ai，curl 的 TLS 握手 1.4 s，HTTP/1.1 下 5 个并发问题各开一条冷连接要 3.9 s（连接池 4 条，准入并发 8 一半在排队）。实测（2026-09-23，脚本见 `kyrn/spikes` 风格）：
+先把 39 个真实会话的账本按决策点统计（p50 / p90 / 最大）：preflight 1.2 s / 5.0 s / 9.1 s（4 次超时），技能披露 1.2 s / 7.7 s / 9.5 s，准入 1.7 s / 20 s / 30 s，Jev 审批 1.2 s / 3.8 s / 8.9 s，完成核对 3.5 s / 5.2 s，遗忘 1.1 s / 10 s。尾部全是连接：从用户的网络到 api.typesafe.ai，curl 的 TLS 握手 1.4 s，HTTP/1.1 下 5 个并发问题各开一条冷连接要 3.9 s（连接池 4 条，准入并发 8 一半在排队）。实测（2026-09-23，脚本见 `kyrn/spikes` 风格）：
 
 | 场景 | HTTP/1.1 | HTTP/2 |
 |---|---|---|

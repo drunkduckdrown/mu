@@ -27,7 +27,7 @@ mu is built on [pi](https://github.com/earendil-works/pi). It hands the small qu
 
 Without one, mu works like pi with the extra tools.
 
-- **JeV** (hosted): set `AI_GATEWAY_API_KEY` (Vercel AI Gateway) or `TYPESAFE_API_KEY` in your environment, or put it in `~/.mu/.env` as `KEY=value`. mu reads that file as data and never prints it.
+- **Jev** (hosted): set `AI_GATEWAY_API_KEY` (Vercel AI Gateway) or `TYPESAFE_API_KEY` in your environment, or put it in `~/.mu/.env` as `KEY=value`. mu reads that file as data and never prints it.
 - **Laya** (local, macOS on Apple Silicon): `mu judge setup` installs it into `~/.mu/local-judge`. It downloads about 930 MB, only when you run that command.
 - **Any model you already use:** `/mu judge llm:<provider>/<model>`.
 
