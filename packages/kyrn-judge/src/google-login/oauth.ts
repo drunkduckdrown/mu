@@ -1,5 +1,11 @@
 import { createServer, type Server } from "node:http";
-import type { OAuthAuth, OAuthCredential, ProviderAuthInteraction } from "@earendil-works/pi-ai";
+import {
+	type OAuthAuth,
+	type OAuthCredential,
+	oauthErrorHtml,
+	oauthSuccessHtml,
+	type ProviderAuthInteraction,
+} from "@earendil-works/pi-ai";
 import { ANTIGRAVITY_ENDPOINTS, CLOUD_CODE_ENDPOINT } from "./endpoints.ts";
 
 /**
@@ -111,9 +117,6 @@ export async function pkce(): Promise<{ verifier: string; challenge: string }> {
 	return { verifier, challenge: base64url(new Uint8Array(digest)) };
 }
 
-const page = (title: string, body: string) =>
-	`<!doctype html><html><head><meta charset="utf-8"><title>${title}</title></head><body style="font-family:system-ui;margin:3rem;color:#3b2f4a;background:#fdf7fb"><h2>${title}</h2><p>${body}</p></body></html>`;
-
 /** The code of this sign-in, Google's refusal of it, or nothing (cancelled). */
 type Received = { code: string; state: string } | { declined: string } | undefined;
 
@@ -137,30 +140,29 @@ function listen(config: GoogleLoginConfig, state: string): Promise<Callback> {
 		});
 		const server = createServer((request, response) => {
 			const url = new URL(request.url ?? "/", `http://localhost:${config.callbackPort}`);
-			const send = (status: number, title: string, body: string) => {
+			// The same page every sign-in of mu ends on (pi-ai's), so the look does not depend on the provider.
+			const send = (status: number, html: string) => {
 				response.writeHead(status, { "Content-Type": "text/html; charset=utf-8" });
-				response.end(page(title, body));
+				response.end(html);
 			};
-			if (url.pathname !== config.callbackPath) return send(404, "Not found", "This is mu's sign-in callback.");
+			if (url.pathname !== config.callbackPath) {
+				return send(404, oauthErrorHtml("This address is mu's sign-in callback; there is no page here."));
+			}
 			const given = url.searchParams.get("state");
 			const error = url.searchParams.get("error");
 			if (error) {
 				const said = error.replace(/[^\w.-]/g, "").slice(0, 80) || "an error";
-				send(400, "Sign-in did not complete", `Google said: ${said}`);
+				send(400, oauthErrorHtml("Google did not complete the sign-in.", `Google said: ${said}`));
 				// Cancel on Google's page ends this sign-in; someone else's refusal does not.
 				if (given === state) settle({ declined: said });
 				return;
 			}
 			const code = url.searchParams.get("code");
-			if (!code || !given) return send(400, "Sign-in did not complete", "The code or the state is missing.");
+			if (!code || !given) return send(400, oauthErrorHtml("The code or the state is missing."));
 			if (given !== state) {
-				return send(
-					400,
-					"Not this sign-in",
-					"This address belongs to another sign-in. Use the tab mu opened last.",
-				);
+				return send(400, oauthErrorHtml("This address belongs to another sign-in. Use the tab mu opened last."));
 			}
-			send(200, "Signed in", "You can close this window and go back to mu.");
+			send(200, oauthSuccessHtml("You can close this window and go back to mu."));
 			settle({ code, state: given });
 		});
 		server.once("error", (error: NodeJS.ErrnoException) =>
