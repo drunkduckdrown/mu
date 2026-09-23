@@ -1,8 +1,20 @@
-import { readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { isBuiltin } from "node:module";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
-import { exactVersion, forbiddenFiles, rewriteMetaUrl, virtualModuleNames } from "../../../kyrn/npm/build.mjs";
+import { build, type Plugin } from "esbuild";
+import { createJiti } from "jiti";
+import { afterEach, describe, expect, it } from "vitest";
+import {
+	checkNativeImport,
+	exactVersion,
+	forbiddenFiles,
+	hostModulesChunk,
+	piHostPlugin,
+	rewriteMetaUrl,
+	virtualModuleNames,
+} from "../../../kyrn/npm/build.mjs";
 
 /**
  * The npm package mu-agent (kyrn/npm/build.mjs). Building it needs pi's bundle, so these check the decisions
@@ -10,8 +22,133 @@ import { exactVersion, forbiddenFiles, rewriteMetaUrl, virtualModuleNames } from
  */
 const repo = join(dirname(fileURLToPath(import.meta.url)), "../../..");
 
+const temporary: string[] = [];
+afterEach(() => {
+	for (const dir of temporary.splice(0)) rmSync(dir, { recursive: true, force: true });
+});
+
+function tempDir(): string {
+	const dir = mkdtempSync(join(tmpdir(), "mu-npm-package-"));
+	temporary.push(dir);
+	return dir;
+}
+
+function write(path: string, text: string): string {
+	mkdirSync(dirname(path), { recursive: true });
+	writeFileSync(path, text);
+	return path;
+}
+
+/**
+ * A package laid out like mu-agent, with a stand-in for pi's bundle: one chunk with a pi-tui class and a live
+ * binding, and the chunk that hands it to extensions as VIRTUAL_MODULES, written the way esbuild writes it.
+ */
+function fakePackage(): { root: string; hostImport: string; source: string } {
+	const root = tempDir();
+	write(
+		join(root, "dist/bundle/chunks/chunk-TUI.js"),
+		'export class Text { static from = "pi\'s bundle"; }\nexport let width = 80;\nexport function setWidth(value) { width = value; }\n',
+	);
+	write(
+		join(root, "dist/bundle/chunks/virtual-modules-TEST.js"),
+		'import * as tui from "./chunk-TUI.js";\nvar VIRTUAL_MODULES = { "@earendil-works/pi-tui": tui };\nexport{VIRTUAL_MODULES};\n',
+	);
+	// As in the package: without "type": "module" jiti takes a .js file with import statements for one to transpile.
+	write(join(root, "judge/package.json"), '{ "private": true, "type": "module" }\n');
+	const source = write(
+		join(root, "src/extension.js"),
+		'import { Text, setWidth, width } from "@earendil-works/pi-tui";\nexport default function extension() {\n\tsetWidth(120);\n\treturn { Text, width: () => width };\n}\n',
+	);
+	return { root, hostImport: "../../dist/bundle/chunks/virtual-modules-TEST.js", source };
+}
+
+async function bundle(source: string, outfile: string, plugin: Plugin): Promise<string[]> {
+	const result = await build({
+		entryPoints: [source],
+		outfile,
+		bundle: true,
+		format: "esm",
+		platform: "node",
+		target: "node22.19",
+		logLevel: "silent",
+		metafile: true,
+		plugins: [plugin],
+	});
+	return Object.values(result.metafile.outputs).flatMap((output) =>
+		output.imports.filter((imported) => imported.external && !isBuiltin(imported.path)).map((imported) => imported.path),
+	);
+}
+
+/** How mu 0.1.3 built it: pi's modules left as bare imports, for jiti to hand over. */
+const leftToJiti: Plugin = {
+	name: "left-to-jiti",
+	setup(builder) {
+		builder.onResolve({ filter: /^@earendil-works\// }, (args) => ({ path: args.path, external: true }));
+	},
+};
+
+/** pi's loader in its npm bundle (packages/coding-agent/src/core/extensions/loader.ts), with Babel replaced by a witness. */
+function loadLikePi(file: string, transpiled: string[]): Promise<unknown> {
+	const jiti = createJiti(import.meta.url, {
+		moduleCache: false,
+		fsCache: false,
+		tryNative: false,
+		virtualModules: { "@earendil-works/pi-tui": { Text: class Text {} } },
+		transform: (options) => {
+			transpiled.push(options.filename ?? "");
+			throw new Error("transpiled with Babel");
+		},
+	});
+	return jiti.import(file, { default: true });
+}
+
+describe("the judgment layer's bundle", () => {
+	// mu 0.1.3 on a 1 GB server: Node could not import the bundle, so jiti transpiled all 3 MB of it with Babel at
+	// every start. That took more than 500 MB of heap, and V8 aborted before the first frame.
+	it("is imported by pi's loader as it is, with pi's own modules, and never transpiled", async () => {
+		const { root, hostImport, source } = fakePackage();
+		const file = join(root, "judge/dist/kyrn-judge.js");
+		const provided = new Set(["@earendil-works/pi-tui"]);
+		expect(await bundle(source, file, piHostPlugin({ provided, hostImport }))).toEqual([hostImport]);
+		expect(readFileSync(file, "utf8")).not.toContain('from "@earendil-works/');
+
+		const transpiled: string[] = [];
+		const extension = (await loadLikePi(file, transpiled)) as () => { Text: { from?: string }; width: () => number };
+		expect(transpiled).toEqual([]);
+		const made = extension();
+		// pi's class from pi's bundle, not what jiti would have handed a transpiled module; and a binding that stays live.
+		expect(made.Text.from).toBe("pi's bundle");
+		expect(made.width()).toBe(120);
+		checkNativeImport(file);
+	});
+
+	it("was transpiled when pi's modules were left as bare imports, as in 0.1.3", async () => {
+		const { root, source } = fakePackage();
+		const file = join(root, "judge/dist/kyrn-judge.js");
+		expect(await bundle(source, file, leftToJiti)).toEqual(["@earendil-works/pi-tui"]);
+		const transpiled: string[] = [];
+		await expect(loadLikePi(file, transpiled)).rejects.toThrow("transpiled with Babel");
+		expect(transpiled).toEqual([file]);
+		expect(() => checkNativeImport(file)).toThrow("Node cannot import");
+	});
+
+	it("finds the one chunk of pi's bundle that exports VIRTUAL_MODULES", () => {
+		const bundleDir = tempDir();
+		write(join(bundleDir, "chunks/chunk-A1.js"), "var x = 1;\nexport{x};\n");
+		write(join(bundleDir, "chunks/chunk-B2.js"), 'import{VIRTUAL_MODULES}from"./virtual-modules-X1.js";\n');
+		write(join(bundleDir, "chunks/virtual-modules-X1.js"), "var VIRTUAL_MODULES = {};\nexport{VIRTUAL_MODULES};\n");
+		expect(hostModulesChunk(bundleDir)).toBe("virtual-modules-X1.js");
+
+		write(join(bundleDir, "chunks/chunk-C3.js"), "var VIRTUAL_MODULES = {};\nexport {\n  VIRTUAL_MODULES\n};\n");
+		expect(() => hostModulesChunk(bundleDir)).toThrow("found chunk-C3.js, virtual-modules-X1.js");
+		const empty = tempDir();
+		write(join(empty, "chunks/chunk-A1.js"), "export{};\n");
+		expect(() => hostModulesChunk(empty)).toThrow("found none");
+	});
+});
+
 describe("the npm package", () => {
-	it("leaves to pi exactly the modules pi hands to an extension, and no subpath of them", () => {
+	it("takes from pi exactly the modules pi hands to an extension, and no subpath of them", () => {
 		const names = virtualModuleNames(
 			readFileSync(join(repo, "packages/coding-agent/src/core/extensions/virtual-modules.ts"), "utf8"),
 		);

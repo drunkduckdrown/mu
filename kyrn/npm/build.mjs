@@ -324,19 +324,19 @@ function copyLauncher(out) {
  * Node cannot, pi's loader transpiles all of it with Babel at every start, which a 1 GB machine does not survive.
  * A child process with a small heap imports it, which also runs every module's top level against pi's modules.
  */
-function checkNativeImport(file) {
+export function checkNativeImport(file) {
 	const home = mkdtempSync(join(tmpdir(), "mu-build-"));
 	try {
 		const script = `const m = await import(${JSON.stringify(pathToFileURL(file).href)}); if (typeof m.default !== "function") throw new Error("the default export is not an extension factory");`;
 		const result = spawnSync(process.execPath, ["--max-old-space-size=128", "--input-type=module", "-e", script], {
 			cwd: home,
-			env: { PATH: process.env.PATH ?? "", HOME: home, USERPROFILE: home, PI_OFFLINE: "1" },
+			env: { ...process.env, HOME: home, USERPROFILE: home, PI_OFFLINE: "1" },
 			encoding: "utf8",
 			timeout: 60_000,
 		});
 		if (result.status !== 0) {
 			const why = (result.error?.message ?? result.stderr).trim().split("\n").slice(-6).join("\n");
-			throw new Error(`Node cannot import ${relative(repo, file)} by itself, so pi would transpile it at every start:\n${why}`);
+			throw new Error(`Node cannot import ${file} by itself, so pi would transpile it at every start:\n${why}`);
 		}
 	} finally {
 		rmSync(home, { recursive: true, force: true });
