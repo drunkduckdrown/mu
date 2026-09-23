@@ -68,6 +68,7 @@
   "processing": "İşleniyor...",
   "responseSentSuccessfully": "Yanıt başarıyla gönderildi",
   "permissionResponseFailed": "Yanıt gönderilemedi. Lütfen tekrar deneyin.",
+  "permissionNoLongerPending": "Bu istek artık yanıt beklemiyor.",
   "confirmation": {
     "applyChange": "Bu değişikliği uygula?",
     "allowExecution": "Yürütmeye izin ver?",

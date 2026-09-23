@@ -32,6 +32,23 @@ describe('pending confirmations recovery', () => {
     expect(hasPermissionMessageForCallId(list, 'tool-2')).toBe(false);
   });
 
+  it('counts an agent’s own ACP permission card, so reopening a conversation does not add a second one', () => {
+    const acp = {
+      id: 'acp-1',
+      type: 'acp_permission',
+      conversation_id: 'conv-1',
+      position: 'left',
+      content: {
+        session_id: 'session-1',
+        tool_call: { tool_call_id: 'permission:ui-1', title: 'mu wants to run a command' },
+        options: [{ option_id: 'mu:once', name: 'Allow once', kind: 'allow_once' }],
+      },
+    } as TMessage;
+
+    expect(hasPermissionMessageForCallId([acp], 'permission:ui-1')).toBe(true);
+    expect(hasPermissionMessageForCallId([acp], 'permission:ui-2')).toBe(false);
+  });
+
   it('removes recovered permission messages by confirmation id or call_id', () => {
     const list = [
       buildPendingConfirmationMessage('conv-1', confirmation),

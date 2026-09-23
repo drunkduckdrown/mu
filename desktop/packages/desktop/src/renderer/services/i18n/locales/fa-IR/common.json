@@ -322,6 +322,7 @@
         "preflight": "این درخواست چگونه باید پردازش شود؟",
         "interjection": "این میان‌گفته یک اصلاح است، یک درخواست تکمیلی یا یک پرسش جانبی؟",
         "admission": "کدام بخش‌های خروجی ابزار باید وارد زمینه شوند؟",
+        "testLog": "کدام بخش‌های گزارش آزمون باید به مدل برسند؟",
         "forget": "آیا هنوز به متن کامل خروجی قدیمی ابزار نیاز است؟",
         "compaction": "کدام نتایج قدیمی را می‌توان هرس کرد؟",
         "skills": "کدام مهارت‌ها به این وظیفه مربوط‌اند؟",
@@ -389,7 +390,12 @@
         "focus": "مورد در حال انجام",
         "needsUser": "به کاربر نیاز دارد",
         "update": "بازنویسی تابلو",
-        "relation": "رابطه"
+        "relation": "رابطه",
+        "operation": "گام بعدی",
+        "target": "عنصر",
+        "probability": "احتمال",
+        "omit": "بخش‌های حذف‌شدهٔ گزارش",
+        "key": "رویدادهایی که ارزش گفتن دارند"
       },
       "values": {
         "true": "بله",
@@ -459,7 +465,7 @@
         "constraint": "محدودیت تازه",
         "correction": "اصلاح",
         "subgoal": "زیرهدف تازه",
-        "unclear": "تغییر نامشخص",
+        "unclear": "نمی‌توان گفت",
         "hold": "نگه داشته شود",
         "no_answer": "پاسخی به‌موقع نرسید",
         "aborted": "لغو شد",
@@ -482,7 +488,19 @@
         "unrelated": "بی‌ارتباط",
         "preference": "قاعدهٔ همیشگی",
         "approve": "اجازهٔ اجرا",
-        "beyond": "بیش از آنچه خواستید"
+        "beyond": "بیش از آنچه خواستید",
+        "CLICK": "کلیک",
+        "TYPE_TEXT": "تایپ متن",
+        "SELECT": "انتخاب از فهرست",
+        "SCROLL_DOWN": "پیمایش به پایین",
+        "SCROLL_UP": "پیمایش به بالا",
+        "WAIT": "انتظار برای صفحه",
+        "DONE": "تمام شد",
+        "BLOCKED": "راهی برای ادامه نیست",
+        "listing": "نام فایل‌ها یا موارد یافته‌شده",
+        "content": "کد یا متن",
+        "log": "خروجی ساخت یا آزمون",
+        "data": "واقعیت‌های یافته‌شده"
       },
       "probabilityValue": "احتمال «بله»: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -508,17 +526,365 @@
         "try_hive": "Hive اگر گیر کرد",
         "try_delegate": "واگذاری بخش‌ها"
       },
-      "answerIds": {
-        "turn_type": "نوع وظیفه",
-        "is_side_question": "پرسش جانبی",
-        "needs_clarification": "برای اقدام بیش از حد مبهم",
-        "needs_files_changed": "نیاز به تغییر کد",
-        "needs_memory": "تجربه‌های گذشته کمک می‌کنند",
-        "swarm_worthy": "بخش‌های مستقل",
-        "plan_first": "بزرگ یا پرخطر",
-        "task_complexity": "دامنه",
-        "reasoning_depth": "عمق استدلال",
-        "tool_complexity": "استفاده از ابزار"
+      "answerWords": {
+        "preflight": {
+          "questions": {
+            "turn_type": "نوع وظیفه",
+            "is_side_question": "پرسش جانبی",
+            "needs_clarification": "برای اقدام بیش از حد مبهم",
+            "needs_files_changed": "نیاز به تغییر کد",
+            "needs_memory": "تجربه‌های گذشته کمک می‌کنند",
+            "swarm_worthy": "بخش‌های مستقل",
+            "plan_first": "بزرگ یا پرخطر",
+            "task_complexity": "دامنه",
+            "reasoning_depth": "عمق استدلال",
+            "tool_complexity": "استفاده از ابزار"
+          },
+          "answers": {
+            "chat": "گفتگو",
+            "chat_question": "پرسش مفهومی",
+            "quick_lookup": "جست‌وجوی سریع",
+            "single_edit": "ویرایش تکی",
+            "multi_step_task": "وظیفهٔ چندمرحله‌ای",
+            "research": "بررسی",
+            "design_discussion": "بحث طراحی",
+            "other": "چیز دیگری"
+          },
+          "levels": {
+            "task_complexity": {
+              "0": "فقط یک پرسش",
+              "1": "یک جای کد",
+              "2": "چند جای کد",
+              "3": "کل کد"
+            },
+            "reasoning_depth": {
+              "0": "یادآوری یا جست‌وجو",
+              "1": "توضیحی ساده",
+              "2": "تحلیلی دقیق",
+              "3": "استدلال عمیق"
+            },
+            "tool_complexity": {
+              "0": "هیچ",
+              "1": "یکی دو بار خواندن",
+              "2": "چند فراخوانی همراه با ویرایش",
+              "3": "فراخوانی‌های زیاد همراه با ساخت یا آزمون"
+            }
+          }
+        },
+        "interjection": {
+          "questions": {
+            "kind": "پیام از چه نوعی است"
+          },
+          "answers": {
+            "correction": "یک اصلاح",
+            "addition": "کار بیشتر برای بعد",
+            "side_question": "پرسشی بی‌ربط",
+            "other": "چیز دیگری"
+          }
+        },
+        "admission": {
+          "questions": {
+            "kind": "نوع خروجی",
+            "chunk": "بخش {{number}} خروجی"
+          },
+          "answers": {
+            "error": "یک خطا",
+            "result": "نتیجه‌ای مفید",
+            "progress": "خروجی پیشرفت",
+            "warning": "هشدارهای تکراری",
+            "passing": "بررسی‌های موفق",
+            "other": "چیز دیگری"
+          }
+        },
+        "testLog": {
+          "questions": {
+            "part": "بخش {{number}} گزارش"
+          },
+          "answers": {
+            "needed": "افزون بر خلاصه لازم است",
+            "not_needed": "خلاصه کافی است",
+            "unclear": "نمی‌توان گفت"
+          }
+        },
+        "forget": {
+          "questions": {
+            "still_needed": "خروجی کامل دوباره لازم می‌شود"
+          }
+        },
+        "compaction": {
+          "questions": {
+            "kind": "نوع نتیجه",
+            "result_needed": "نتیجهٔ کامل هنوز لازم است",
+            "call_matters": "خود فراخوانی هنوز مهم است"
+          },
+          "answers": {
+            "error": "یک خطا",
+            "listing": "نام فایل‌ها یا موارد یافته‌شده",
+            "content": "کد یا متن",
+            "log": "خروجی ساخت یا آزمون",
+            "data": "واقعیت‌های یافته‌شده",
+            "other": "چیز دیگری"
+          }
+        },
+        "skills": {
+          "questions": {
+            "skill": "مهارت {{number}} کمک می‌کند"
+          }
+        },
+        "locate": {
+          "questions": {
+            "path": "فایل {{number}} مرتبط است"
+          }
+        },
+        "routing": {
+          "questions": {
+            "agent": "نوع کار",
+            "difficulty": "دشواری کار",
+            "reasoning": "استدلال لازم"
+          },
+          "answers": {
+            "other": "هیچ‌کدام از این‌ها"
+          },
+          "levels": {
+            "difficulty": {
+              "0": "ماشینی",
+              "1": "روزمره",
+              "2": "نیازمند طراحی دقیق",
+              "3": "حتی برای متخصص دشوار"
+            },
+            "reasoning": {
+              "0": "تقریباً هیچ",
+              "1": "کمی",
+              "2": "زیاد",
+              "3": "عمیق و چندمرحله‌ای"
+            }
+          }
+        },
+        "publish": {
+          "questions": {
+            "share_worthy": "ارزش اشتراک دارد",
+            "kind": "نوع یادداشت"
+          },
+          "answers": {
+            "finding": "یک یافته",
+            "dead_end": "یک بن‌بست",
+            "decision": "یک تصمیم",
+            "blocker": "یک مانع",
+            "other": "پیشرفت عادی"
+          }
+        },
+        "deliver": {
+          "questions": {
+            "useful": "به زنبور گیرنده کمک می‌کند"
+          }
+        },
+        "browser": {
+          "questions": {
+            "operation": "گام بعدی",
+            "click_target": "روی چه کلیک شود",
+            "type_text_target": "کجا تایپ شود",
+            "select_target": "چه انتخاب شود"
+          },
+          "answers": {
+            "CLICK": "کلیک",
+            "TYPE_TEXT": "تایپ متن",
+            "SELECT": "انتخاب از فهرست",
+            "SCROLL_DOWN": "پیمایش به پایین",
+            "SCROLL_UP": "پیمایش به بالا",
+            "WAIT": "انتظار برای صفحه",
+            "DONE": "تمام شد",
+            "other": "راهی برای ادامه نیست",
+            "none": "هیچ‌کدام مناسب نیست"
+          }
+        },
+        "recall": {
+          "questions": {
+            "lesson": "درس {{number}} کاربرد دارد"
+          }
+        },
+        "capture": {
+          "questions": {
+            "correction": "اشتباهی را اصلاح می‌کند",
+            "preference": "قاعده‌ای ماندگار می‌گذارد"
+          }
+        },
+        "outcome": {
+          "questions": {
+            "way_out": "راه دیگری پیدا شد که جواب داد"
+          }
+        },
+        "worth": {
+          "questions": {
+            "lesson": "درس {{number}}"
+          },
+          "answers": {
+            "reusable": "باز هم به کار می‌آید",
+            "one_off": "فقط همین یک بار",
+            "already_known": "از پیش معلوم",
+            "unclear": "نمی‌توان گفت"
+          }
+        },
+        "merge": {
+          "questions": {
+            "kept": "درس نگه‌داشتهٔ {{number}}"
+          },
+          "answers": {
+            "same": "همان درس",
+            "refines": "درس تازه دقیق‌تر است",
+            "contradicts": "با هم در تناقض‌اند",
+            "unrelated": "دربارهٔ چیز دیگری است",
+            "unclear": "نمی‌توان گفت"
+          }
+        },
+        "applied": {
+          "questions": {
+            "lesson": "به درس {{number}} عمل شد"
+          }
+        },
+        "risk": {
+          "questions": {
+            "destructive": "حذف می‌کند یا برگشت‌پذیر نیست",
+            "requested": "شما خواستید"
+          }
+        },
+        "drift": {
+          "questions": {
+            "course": "جهت کار"
+          },
+          "answers": {
+            "on_track": "در مسیر درست",
+            "detour": "انحرافی لازم",
+            "drift": "در حال دور شدن",
+            "loop": "درجا زدن",
+            "other": "نمی‌توان گفت"
+          }
+        },
+        "completion": {
+          "questions": {
+            "claims_done": "می‌گوید کار تمام است",
+            "needs_check": "باید با اجرا بررسی شود"
+          }
+        },
+        "notify": {
+          "questions": {
+            "urgency": "عامل کی به آن نیاز دارد"
+          },
+          "answers": {
+            "now": "همین حالا",
+            "next_turn": "پس از گام فعلی",
+            "drop": "هرگز",
+            "other": "نمی‌توان گفت"
+          }
+        },
+        "cache": {
+          "questions": {
+            "finished": "گفتگو تمام شده است",
+            "open": "پرسشی منتظر شماست"
+          }
+        },
+        "rewind": {
+          "questions": {
+            "dead_end": "همان رویکرد باز شکست می‌خورد",
+            "progress": "پیشرفت دارد"
+          }
+        },
+        "goalMet": {
+          "questions": {
+            "achieved": "هدف کاملاً محقق شد",
+            "needs_user": "بدون شما نمی‌تواند ادامه دهد"
+          }
+        },
+        "outputDrift": {
+          "questions": {
+            "rule": "با قانون {{number}} مغایر است"
+          }
+        },
+        "taskFrame": {
+          "questions": {
+            "change": "تغییر در وظیفه"
+          },
+          "answers": {
+            "new_task": "وظیفه‌ای تازه",
+            "constraint": "قاعده‌ای تازه برای کار",
+            "correction": "رویکرد نادرست است",
+            "subgoal": "گام بعدی همان وظیفه",
+            "none": "بدون تغییر"
+          }
+        },
+        "constraint": {
+          "questions": {
+            "constraint": "با محدودیت {{number}} مغایر است"
+          }
+        },
+        "capabilities": {
+          "questions": {
+            "capability": "توانمندی {{number}} لازم است"
+          }
+        },
+        "diagnostics": {
+          "questions": {
+            "more_edits_coming": "ویرایش‌های بیشتری در راه است",
+            "warnings_are_style": "فقط هشدارهای سبک"
+          }
+        },
+        "patch": {
+          "questions": {
+            "within_task": "در محدودهٔ وظیفه می‌ماند",
+            "file": "وظیفه تغییر فایل {{number}} را لازم دارد"
+          }
+        },
+        "review": {
+          "questions": {
+            "bug": "یافتهٔ {{number}} یک باگ واقعی است",
+            "inScope": "یافتهٔ {{number}} دربارهٔ همین تغییر است"
+          }
+        },
+        "board": {
+          "questions": {
+            "phase": "عامل چه می‌کند",
+            "needs_user": "چیزی از شما لازم دارد",
+            "focus": "موردی که روی آن کار می‌شود",
+            "event": "رویداد {{number}}",
+            "changed": "خبر تازه‌ای برای شما هست"
+          },
+          "answers": {
+            "understanding": "در حال فهمیدن کار",
+            "planning": "در حال برنامه‌ریزی",
+            "changing": "در حال تغییر کد",
+            "checking": "در حال بررسی کار",
+            "fixing": "در حال رفع مشکلات بررسی",
+            "waiting": "منتظر شما",
+            "wrapping_up": "در حال جمع‌بندی",
+            "stuck": "به نظر گیر کرده",
+            "other": "نمی‌توان گفت",
+            "none": "هیچ‌کدام",
+            "key": "خبری که ارزش گفتن دارد",
+            "routine": "گامی عادی",
+            "unclear": "نمی‌توان گفت"
+          }
+        },
+        "relate": {
+          "questions": {
+            "relation": "اثر بر یافتهٔ قبلی"
+          },
+          "answers": {
+            "supersedes": "جایگزین آن می‌شود",
+            "contradicts": "با آن در تناقض است",
+            "supports": "آن را تأیید می‌کند",
+            "none": "ربطی به آن ندارد"
+          }
+        },
+        "approval": {
+          "questions": {
+            "verdict": "این گام چیست"
+          },
+          "answers": {
+            "needed": "برای کار لازم است",
+            "beyond": "بیش از آنچه خواستید",
+            "unrelated": "بخشی از کار نیست",
+            "unclear": "نمی‌توان گفت"
+          }
+        }
       },
       "log": {
         "thisTurn": "این نوبت",

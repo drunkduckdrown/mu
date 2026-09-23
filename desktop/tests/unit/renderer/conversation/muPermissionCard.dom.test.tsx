@@ -88,6 +88,18 @@ describe('mu’s permission card', () => {
     );
   });
 
+  it('reads mu’s codes as AionCore relays them, with the keys snake-cased', () => {
+    render(
+      <MessageAcpPermission
+        message={card({ kind: 'shell', reason: 'flagged', flag_code: 'force_push', grant_label: 'git push' })}
+      />
+    );
+    expect(screen.getByText('[ja] risky: [ja] force push')).toBeInTheDocument();
+    expect(screen.getByTestId('message-acp-permission-option-mu:session')).toHaveTextContent(
+      '[ja] this conversation (git push)'
+    );
+  });
+
   it('keeps mu’s own sentence for a code it has no wording for', () => {
     render(<MessageAcpPermission message={card({ kind: 'teleport', reason: 'flagged', flagCode: 'melts_cpu' })} />);
     expect(screen.getByText('mu 想运行命令，需要你授权')).toBeInTheDocument();

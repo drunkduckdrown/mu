@@ -5,10 +5,11 @@
  */
 
 import { Button, Card, Typography } from '@arco-design/web-react';
-import { Attention, CheckOne } from '@icon-park/react';
+import { Attention, CheckOne, Info } from '@icon-park/react';
 import classNames from 'classnames';
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { isBackendHttpError } from '@/common/adapter/httpBridge';
 import styles from './PermissionRequestPanel.module.css';
 import {
   getPermissionOptionsIdentity,
@@ -17,6 +18,19 @@ import {
 } from './permissionOptions';
 
 const { Text } = Typography;
+
+/**
+ * Whether an answer failed because nothing waits for it any more, so trying again cannot help: the backend no longer
+ * has the question (it was answered elsewhere, or the agent stopped and its questions went with it: "Pending ACP
+ * permission not found" or "expired"), or no agent runs for the conversation now (404 "No active agent").
+ */
+export function isAnswerNoLongerPending(error: unknown): boolean {
+  if (!isBackendHttpError(error)) return false;
+  const said = error.backendMessage;
+  return (
+    /pending acp permission (not found|expired)/i.test(said) || (error.status === 404 && /no active agent/i.test(said))
+  );
+}
 
 type PermissionRequestPanelProps = {
   requestKey: string;
@@ -48,6 +62,8 @@ export const PermissionRequestPanel: React.FC<PermissionRequestPanelProps> = ({
   const [isResponding, setIsResponding] = useState(false);
   const [hasResponded, setHasResponded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  /** The question is gone: its buttons go too. */
+  const [isGone, setIsGone] = useState(false);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const respondingRef = useRef(false);
   const requestEpochRef = useRef(0);
@@ -60,6 +76,7 @@ export const PermissionRequestPanel: React.FC<PermissionRequestPanelProps> = ({
     setIsResponding(false);
     setHasResponded(false);
     setHasError(false);
+    setIsGone(false);
     setSubmittingId(null);
   }, [requestKey]);
 
@@ -67,6 +84,7 @@ export const PermissionRequestPanel: React.FC<PermissionRequestPanelProps> = ({
     optionsEpochRef.current += 1;
     setHasError(false);
     setHasResponded(false);
+    setIsGone(false);
   }, [optionsIdentity]);
 
   // Every option submits on a single click (allow/reject, once or always,
@@ -76,7 +94,7 @@ export const PermissionRequestPanel: React.FC<PermissionRequestPanelProps> = ({
   // or the option set has changed underneath us.
   const submitOption = useCallback(
     async (option: PermissionPanelOption) => {
-      if (respondingRef.current || hasResponded || option.disabled) return;
+      if (respondingRef.current || hasResponded || isGone || option.disabled) return;
 
       const requestEpoch = requestEpochRef.current;
       const optionsEpoch = optionsEpochRef.current;
@@ -90,9 +108,10 @@ export const PermissionRequestPanel: React.FC<PermissionRequestPanelProps> = ({
         if (requestEpochRef.current === requestEpoch && optionsEpochRef.current === optionsEpoch) {
           setHasResponded(true);
         }
-      } catch {
+      } catch (error) {
         if (requestEpochRef.current === requestEpoch && optionsEpochRef.current === optionsEpoch) {
-          setHasError(true);
+          if (isAnswerNoLongerPending(error)) setIsGone(true);
+          else setHasError(true);
         }
       } finally {
         if (requestEpochRef.current === requestEpoch) {
@@ -102,7 +121,7 @@ export const PermissionRequestPanel: React.FC<PermissionRequestPanelProps> = ({
         }
       }
     },
-    [hasResponded, onConfirm]
+    [hasResponded, isGone, onConfirm]
   );
 
   return (
@@ -125,7 +144,7 @@ export const PermissionRequestPanel: React.FC<PermissionRequestPanelProps> = ({
           </div>
         )}
 
-        {!hasResponded && (
+        {!hasResponded && !isGone && (
           <>
             <fieldset className={styles.optionsFieldset} disabled={isResponding}>
               <legend id={optionsLabelId} className={styles.optionsLegend}>
@@ -169,6 +188,13 @@ export const PermissionRequestPanel: React.FC<PermissionRequestPanelProps> = ({
               </div>
             )}
           </>
+        )}
+
+        {isGone && (
+          <div className={styles.feedback} role='status' aria-live='polite' data-testid={`${testIdPrefix}-gone`}>
+            <Info theme='outline' size='16' aria-hidden='true' />
+            <span>{t('messages.permissionNoLongerPending')}</span>
+          </div>
         )}
 
         {hasResponded && (

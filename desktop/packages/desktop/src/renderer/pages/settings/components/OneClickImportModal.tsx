@@ -46,10 +46,23 @@ const getUnsupportedReasonDetail = (reason: string | undefined, t: ReturnType<ty
   return normalizedReason;
 };
 
+/** What happens to a server found: a neutral tag says it in words (the accent is for buttons only). */
 type ImportStatus = {
-  color: 'arcoblue' | 'green' | 'gray';
   label: string;
   detail?: string;
+};
+
+const renderStatusTag = (status: ImportStatus) => {
+  const tag = <Tag>{status.label}</Tag>;
+  if (!status.detail) {
+    return tag;
+  }
+
+  return (
+    <Tooltip content={status.detail} position='top'>
+      <span className='inline-flex'>{tag}</span>
+    </Tooltip>
+  );
 };
 
 interface OneClickImportModalProps {
@@ -98,22 +111,15 @@ const OneClickImportModal: React.FC<OneClickImportModalProps> = ({
   const getFetchStatus = React.useCallback(
     (server: DetectedMcpServer): ImportStatus => {
       if (existingNameSet.has(server.name)) {
-        return {
-          color: 'gray' as const,
-          label: t('settings.mcpImportSkippedAlreadyExists'),
-        };
+        return { label: t('settings.mcpImportSkippedAlreadyExists') };
       }
       if (!isEffectivelyImportable(server)) {
         return {
-          color: 'gray' as const,
           label: t('settings.mcpImportSkipped'),
           detail: getUnsupportedReasonDetail(server.import_skip_reason, t),
         };
       }
-      return {
-        color: 'arcoblue' as const,
-        label: t('settings.mcpStatusReady'),
-      };
+      return { label: t('settings.mcpStatusReady') };
     },
     [existingNameSet, isEffectivelyImportable, t]
   );
@@ -121,19 +127,12 @@ const OneClickImportModal: React.FC<OneClickImportModalProps> = ({
   const getImportResultStatus = React.useCallback(
     (server: DetectedMcpServer): ImportStatus => {
       if (importedNameSet.has(server.name)) {
-        return {
-          color: 'green' as const,
-          label: t('settings.mcpStatusImported'),
-        };
+        return { label: t('settings.mcpStatusImported') };
       }
       if (existingNameSet.has(server.name)) {
-        return {
-          color: 'gray' as const,
-          label: t('settings.mcpImportSkippedAlreadyExists'),
-        };
+        return { label: t('settings.mcpImportSkippedAlreadyExists') };
       }
       return {
-        color: 'gray' as const,
         label: t('settings.mcpImportSkipped'),
         detail: getUnsupportedReasonDetail(server.import_skip_reason, t),
       };
@@ -141,18 +140,20 @@ const OneClickImportModal: React.FC<OneClickImportModalProps> = ({
     [existingNameSet, importedNameSet, t]
   );
 
-  const renderStatusTag = (status: ImportStatus) => {
-    const tag = <Tag color={status.color}>{status.label}</Tag>;
-    if (!status.detail) {
-      return tag;
-    }
-
-    return (
-      <Tooltip content={status.detail} position='top'>
-        <span className='inline-flex'>{tag}</span>
-      </Tooltip>
-    );
-  };
+  // The servers found, a row each with what happens to it: a hairline above the first row and between the rows.
+  const renderServerList = (statusOf: (server: DetectedMcpServer) => ImportStatus) => (
+    <div className='max-h-[320px] overflow-y-auto border-t border-border-base'>
+      {orderedFetchedServers.map((server, index) => (
+        <div key={index} className={index > 0 ? 'py-3 border-t border-border-base' : 'py-3'}>
+          <div className='flex items-center justify-between gap-3'>
+            <div className='font-medium text-t-primary'>{server.name}</div>
+            {renderStatusTag(statusOf(server))}
+          </div>
+          {server.description && <div className='text-sm text-t-secondary mt-1'>{server.description}</div>}
+        </div>
+      ))}
+    </div>
+  );
 
   useEffect(() => {
     if (visible) {
@@ -282,7 +283,7 @@ const OneClickImportModal: React.FC<OneClickImportModalProps> = ({
     <div>
       {loadingImport ? (
         <div className='py-8'>
-          <div className='flex items-center gap-3 bg-fill-1 rounded-lg p-4'>
+          <div className='flex items-center gap-3'>
             <Spin size={20} />
             <div className='text-t-secondary text-sm'>{t('settings.mcpLoadingTools')}</div>
           </div>
@@ -294,29 +295,10 @@ const OneClickImportModal: React.FC<OneClickImportModalProps> = ({
             <span className='text-t-primary'>{t('settings.mcpToolsLoaded', { count: fetchedServers.length })}</span>
           </div>
           <div className='mb-3 flex flex-wrap gap-2'>
-            <Tag color='arcoblue'>{t('settings.mcpWillImportCount', { count: importableFetchedServers.length })}</Tag>
-            <Tag color='gray'>{t('settings.mcpSkippedCount', { count: skippedFetchedServers.length })}</Tag>
+            <Tag>{t('settings.mcpWillImportCount', { count: importableFetchedServers.length })}</Tag>
+            <Tag>{t('settings.mcpSkippedCount', { count: skippedFetchedServers.length })}</Tag>
           </div>
-          <div className='bg-base rounded-lg max-h-[320px] overflow-y-auto'>
-            {orderedFetchedServers.map((server, index) => {
-              const status = getFetchStatus(server);
-              return (
-                <div
-                  key={index}
-                  className='p-3'
-                  style={
-                    index < orderedFetchedServers.length - 1 ? { borderBottom: '1px solid var(--bg-3)' } : undefined
-                  }
-                >
-                  <div className='flex items-center justify-between gap-3'>
-                    <div className='font-medium text-t-primary'>{server.name}</div>
-                    {renderStatusTag(status)}
-                  </div>
-                  {server.description && <div className='text-sm text-t-secondary mt-1'>{server.description}</div>}
-                </div>
-              );
-            })}
-          </div>
+          {renderServerList(getFetchStatus)}
         </div>
       ) : (
         <div className='text-center py-8 text-t-secondary'>{t('settings.mcpNoServersFound')}</div>
@@ -333,33 +315,10 @@ const OneClickImportModal: React.FC<OneClickImportModalProps> = ({
           <span className='text-t-primary'>{t('settings.mcpImportedSuccess', { count: importedServers.length })}</span>
         </div>
         <div className='mb-3 flex flex-wrap gap-2'>
-          <Tag color='green'>{t('settings.mcpImportedCount', { count: importedServers.length })}</Tag>
-          <Tag color='gray'>
-            {t('settings.mcpSkippedCount', { count: fetchedServers.length - importedServers.length })}
-          </Tag>
+          <Tag>{t('settings.mcpImportedCount', { count: importedServers.length })}</Tag>
+          <Tag>{t('settings.mcpSkippedCount', { count: fetchedServers.length - importedServers.length })}</Tag>
         </div>
-        {fetchedServers.length > 0 ? (
-          <div className='bg-base rounded-lg max-h-[320px] overflow-y-auto'>
-            {orderedFetchedServers.map((server, index) => {
-              const status = getImportResultStatus(server);
-              return (
-                <div
-                  key={index}
-                  className='p-3'
-                  style={
-                    index < orderedFetchedServers.length - 1 ? { borderBottom: '1px solid var(--bg-3)' } : undefined
-                  }
-                >
-                  <div className='flex items-center justify-between gap-3'>
-                    <div className='font-medium text-t-primary'>{server.name}</div>
-                    {renderStatusTag(status)}
-                  </div>
-                  {server.description && <div className='text-sm text-t-secondary mt-1'>{server.description}</div>}
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
+        {fetchedServers.length > 0 ? renderServerList(getImportResultStatus) : null}
       </div>
     </div>
   );
@@ -423,14 +382,8 @@ const OneClickImportModal: React.FC<OneClickImportModalProps> = ({
 
         <div className='mb-6'>
           <AionSteps current={currentStep} size='small'>
-            <AionSteps.Step
-              title={t('settings.mcpStepSelectAgent')}
-              icon={currentStep > 1 ? <Check theme='filled' size={16} fill='#165dff' /> : undefined}
-            />
-            <AionSteps.Step
-              title={t('settings.mcpStepFetchTools')}
-              icon={currentStep > 2 ? <Check theme='filled' size={16} fill='#165dff' /> : undefined}
-            />
+            <AionSteps.Step title={t('settings.mcpStepSelectAgent')} />
+            <AionSteps.Step title={t('settings.mcpStepFetchTools')} />
             <AionSteps.Step title={t('settings.mcpStepImportSuccess')} />
           </AionSteps>
         </div>

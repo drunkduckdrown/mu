@@ -97,6 +97,41 @@ describe('modelMenu', () => {
     expect(groups[0].models[0].description).toBe('Balanced');
     expect(groups[1].models[0]).not.toHaveProperty('description');
   });
+
+  it('titles a provider set up by hand by the name it was given, and drops a description that is only its id', () => {
+    const names = new Map([['relay', 'Team relay']]);
+    const groups = modelMenu(
+      {
+        currentValue: null,
+        options: [
+          // mu describes each model by its provider's id.
+          { value: 'relay/large', label: 'Large', description: 'relay' },
+          { value: 'anthropic/claude-sonnet-4-5', label: 'Claude Sonnet 4.5', description: 'anthropic' },
+          { value: 'custom-2/small', label: 'Small', description: 'custom-2' },
+        ],
+      },
+      null,
+      {},
+      (id) => providerDisplayName(signInWords, id, names)
+    );
+    expect(groups.map((group) => group.title)).toEqual(['Team relay', 'Claude', 'custom-2']);
+    for (const group of groups) expect(group.models[0]).not.toHaveProperty('description');
+  });
+});
+
+describe('providerDisplayName', () => {
+  it('prefers the name a provider was given in the settings, then the product or maker, then the id', () => {
+    const names = new Map([
+      ['relay', 'Team relay'],
+      ['anthropic', 'Anthropic through the proxy'],
+    ]);
+    expect(providerDisplayName(signInWords, 'relay', names)).toBe('Team relay');
+    // A hand-written entry that reroutes a built-in provider goes by the name written for it.
+    expect(providerDisplayName(signInWords, 'anthropic', names)).toBe('Anthropic through the proxy');
+    expect(providerDisplayName(signInWords, 'anthropic')).toBe('Claude');
+    expect(providerDisplayName(signInWords, 'vercel-ai-gateway', names)).toBe('Vercel AI Gateway');
+    expect(providerDisplayName(signInWords, 'custom-2', names)).toBe('custom-2');
+  });
 });
 
 describe('filterModelMenu', () => {

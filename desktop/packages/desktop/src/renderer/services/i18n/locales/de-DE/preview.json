@@ -152,6 +152,7 @@
     "addressPlaceholder": "URL eingeben oder suchen",
     "tabsLabel": "Geöffnete Seiten",
     "closeTab": "{{title}} schließen",
+    "copyAddress": "Adresse kopieren",
     "agentActiveTooltip": "Der Agent bedient diesen Tab",
     "tabLimitReached": "Tab-Limit erreicht ({{count}}). Der älteste Tab wurde wiederverwendet.",
     "agentFirstUseTitle": "Der Agent nutzt den integrierten Browser",

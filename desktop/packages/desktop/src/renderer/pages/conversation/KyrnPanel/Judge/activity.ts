@@ -6,6 +6,7 @@ export const DECISIONS = {
   'input.preflight': 'preflight',
   'input.interjection': 'interjection',
   'tool.admission': 'admission',
+  'tool.admission.test-log': 'testLog',
   'context.forget': 'forget',
   'context.compact': 'compaction',
   'skills.disclosure': 'skills',
@@ -401,23 +402,45 @@ const capped = (name: string, values: string[]): JudgeFact =>
     ? { name, values: values.slice(0, FACT_LIMIT), more: values.length - FACT_LIMIT }
     : { name, values };
 
-/** Where the lessons judged followed or not are named: `applied` and `notApplied` hold their ids. */
-const LESSON_FIELDS = ['applied', 'notApplied'] as const;
+/** The outcome fields that hold lesson ids: the lessons brought into a turn, and the ones it followed or not. */
+export const LESSON_FIELDS: Partial<Record<JudgeStage, readonly string[]>> = {
+  recall: ['apply'],
+  applied: ['applied', 'notApplied'],
+};
 
 /**
- * The outcome as labelled fields. Names and values stay raw: the view translates the ones it knows.
- * Nothing here turns a verdict into a claim that the operation was carried out. `lessonText` names a lesson by its
- * words, one fact each: whether the lessons of a turn were followed is read by what they say, not by their ids.
+ * The outcome fields that list positions counted from 0: the rules an output or a call goes against, the board's news
+ * among what happened, the parts of a test log left out (`part_3`). A person counts from 1.
+ */
+const POSITIONS: Partial<Record<JudgeStage, string>> = {
+  outputDrift: 'broken',
+  constraint: 'broken',
+  board: 'key',
+  testLog: 'omit',
+};
+
+const position = (value: unknown): string => {
+  const index = typeof value === 'number' ? value : Number(/^part_(\d+)$/.exec(str(value))?.[1] ?? Number.NaN);
+  return Number.isSafeInteger(index) && index >= 0 ? String(index + 1) : scalar(value);
+};
+
+/**
+ * The outcome as labelled fields. Names and values stay raw: the view translates the ones it knows; positions are
+ * counted from 1. Nothing here turns a verdict into a claim that the operation was carried out. `lessonText` names a
+ * lesson by its words, one fact each: which lessons a turn was given or followed is read by what they say, not by ids.
  */
 export function resultFacts(card: JudgeCard, lessonText?: (id: string) => string): JudgeFact[] {
   const outcome = card.outcome;
-  if (card.stage === 'applied' && lessonText) {
+  const lessonFields = LESSON_FIELDS[card.stage];
+  if (lessonFields && lessonText) {
     const named = record(outcome);
-    return LESSON_FIELDS.flatMap((name) =>
-      (Array.isArray(named[name]) ? named[name] : [])
-        .filter((id): id is string => typeof id === 'string' && id !== '')
-        .map((id): JudgeFact => ({ name, values: [lessonText(id)], text: true }))
-    ).slice(0, FACT_LIMIT);
+    return lessonFields
+      .flatMap((name) =>
+        (Array.isArray(named[name]) ? named[name] : [])
+          .filter((id): id is string => typeof id === 'string' && id !== '')
+          .map((id): JudgeFact => ({ name, values: [lessonText(id)], text: true }))
+      )
+      .slice(0, FACT_LIMIT);
   }
   if (Array.isArray(outcome)) {
     const rows = list(outcome);
@@ -455,7 +478,11 @@ export function resultFacts(card: JudgeCard, lessonText?: (id: string) => string
               .filter(Boolean)
           ),
         ];
-      const values = Array.isArray(value) ? value.map(scalar).filter(Boolean) : scalar(value) ? [scalar(value)] : [];
+      const values = Array.isArray(value)
+        ? value.map(POSITIONS[card.stage] === name ? position : scalar).filter(Boolean)
+        : scalar(value)
+          ? [scalar(value)]
+          : [];
       return values.length ? [capped(name, values)] : [];
     })
     .slice(0, FACT_LIMIT);

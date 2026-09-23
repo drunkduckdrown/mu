@@ -24,10 +24,9 @@
   overflow: hidden;
 }
 
-/* The dark theme also gives every modal body a fill and a border of its own. */
+/* The dark theme also gives every modal body a fill of its own. */
 .wrap .palette.palette :global(.arco-modal-content) {
   padding: 0;
-  border: 0 !important;
   background-color: transparent !important;
 }
 

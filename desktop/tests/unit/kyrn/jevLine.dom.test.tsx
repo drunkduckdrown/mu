@@ -155,6 +155,42 @@ describe('reading Jev’s class from the tool call the adapter sends', () => {
     });
   });
 
+  it('takes the hints the main model was given, in their order, each once, and only the ones it has words for', () => {
+    // The verdict as the harness sends it again once the turn has started (presentation-codes.md, preflight.verdict).
+    expect(
+      jevLine(
+        jev({
+          title: 'Jev · multi_step_task',
+          rawOutput: {
+            turnType: 'multi_step_task',
+            state: 'applied',
+            preflight: 'verdict',
+            hintIds: ['plan_first', 'a_hint_from_a_newer_harness', 'try_delegate', 'plan_first'],
+          },
+        })
+      )
+    ).toEqual({
+      stage: 'classified',
+      turnType: 'multi_step_task',
+      state: 'applied',
+      byRule: false,
+      hints: ['plan_first', 'try_delegate'],
+    });
+    // The relay may have snake_cased the key; a rule's hint comes even when Jev gave no class.
+    expect(
+      jevLine(
+        jev({ title: 'Jev · Default', rawOutput: { turnType: 'unknown', state: 'none', hint_ids: ['answered'] } })
+      )
+    ).toEqual({ stage: 'fallback', hints: ['answered'] });
+    // No hint, no field: a line without hints reads as it always did.
+    expect(
+      jevLine(jev({ title: 'Jev · chat', rawOutput: { turnType: 'chat', state: 'applied', hintIds: [] } }))
+    ).toEqual({ stage: 'classified', turnType: 'chat', state: 'applied', byRule: false });
+    expect(
+      jevLine(jev({ title: 'Jev · Classifying', status: 'in_progress', rawOutput: { hintIds: ['plan_first'] } }))
+    ).toEqual({ stage: 'classifying' });
+  });
+
   it('is a fallback when no class came: the wait ended, the class is unknown, or there was no verdict', () => {
     expect(jevLine(jev({ title: 'Jev · Fallback' }))).toEqual({ stage: 'fallback' });
     expect(jevLine(jev({ title: 'Jev · Default', rawOutput: { turnType: 'unknown', state: 'applied' } }))).toEqual({
@@ -215,6 +251,44 @@ describe('the line, in the language of the app', () => {
     expect(screen.getByTestId('mu-jev-line')).toHaveTextContent('Jev 正在归类…');
   });
 
+  it('follows the line with the hints the main model was given, each with its whole sentence on hover', () => {
+    const planned = jev({
+      title: 'Jev · multi_step_task',
+      rawOutput: { turnType: 'multi_step_task', state: 'applied', hintIds: ['plan_first', 'try_delegate'] },
+    });
+    const zh = showLine('zh', planned);
+    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(
+      `Jev 归类为${zhCommon.kyrn.judgeView.values.multi_step_task}${zhCommon.kyrn.judgeView.hintChips.plan_first}${zhCommon.kyrn.judgeView.hintChips.try_delegate}`
+    );
+    const chips = screen.getAllByTestId('mu-jev-hint');
+    expect(chips.map((chip) => chip.getAttribute('data-hint'))).toEqual(['plan_first', 'try_delegate']);
+    expect(chips[0]).toHaveAttribute('title', zhCommon.kyrn.judgeView.hints.plan_first);
+    zh.unmount();
+
+    const en = showLine('en', planned);
+    expect(screen.getAllByTestId('mu-jev-hint').map((chip) => chip.textContent)).toEqual([
+      enCommon.kyrn.judgeView.hintChips.plan_first,
+      enCommon.kyrn.judgeView.hintChips.try_delegate,
+    ]);
+    en.unmount();
+
+    // A reply to the agent's own question gets its hint even when Jev gave no class.
+    const replied = showLine(
+      'en',
+      jev({
+        title: 'Jev · unknown',
+        rawOutput: { turnType: 'unknown', state: 'none', preflight: 'verdict', hintIds: ['answered'] },
+      })
+    );
+    expect(screen.getByTestId('mu-jev-line')).toHaveTextContent(
+      `No class from Jev this time; going on as usual${enCommon.kyrn.judgeView.hintChips.answered}`
+    );
+    replied.unmount();
+
+    showLine('en', jev({ title: 'Jev · chat', rawOutput: { turnType: 'chat', state: 'applied' } }));
+    expect(screen.queryByTestId('mu-jev-hint')).not.toBeInTheDocument();
+  });
+
   it('names a class it has no word for as "other", never by its raw id', () => {
     // A class a newer harness added, and a word that is a judge value but no class.
     for (const turnType of ['pair_programming', 'shadow']) {
@@ -254,5 +328,19 @@ describe('in the conversation', () => {
     render(<MessageList />, { wrapper: ({ children }) => <Wrapper messages={messages}>{children}</Wrapper> });
     expect(screen.getAllByTestId('mu-jev-line')).toHaveLength(1);
     expect(screen.getByTestId('tool-summary')).toHaveTextContent(/^bash-1,read-1$/);
+  });
+
+  it('shows a notice of the bridge as a line of its own too, never in the tool box', () => {
+    const messages: TMessage[] = [
+      call('bash-1', { title: 'bash' }),
+      call('mu:notice:1', {
+        sessionUpdate: 'tool_call',
+        title: 'mu did not get your answer, so it went on as if you had declined.',
+        raw_input: { notice: 'answer_lost' },
+      }),
+    ];
+    render(<MessageList />, { wrapper: ({ children }) => <Wrapper messages={messages}>{children}</Wrapper> });
+    expect(screen.getAllByTestId('mu-notice')).toHaveLength(1);
+    expect(screen.getByTestId('tool-summary')).toHaveTextContent(/^bash-1$/);
   });
 });

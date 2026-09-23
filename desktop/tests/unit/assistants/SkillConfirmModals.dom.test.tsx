@@ -9,11 +9,15 @@ import React from 'react';
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, cleanup } from '@testing-library/react';
+import { render, cleanup, screen } from '@testing-library/react';
 import { ConfigProvider } from '@arco-design/web-react';
 
 vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (k: string) => k, i18n: { language: 'en' } }),
+  // The key, and the name it was given when there is one.
+  useTranslation: () => ({
+    t: (k: string, options?: { name?: string | null }) => (options?.name ? `${k} [${options.name}]` : k),
+    i18n: { language: 'en' },
+  }),
 }));
 
 vi.mock('@arco-design/web-react', async () => {
@@ -67,6 +71,17 @@ describe('SkillConfirmModals', () => {
       <SkillConfirmModals {...defaultProps} deleteCustomSkillName='custom-skill' />
     );
     expect(container).toBeTruthy();
+  });
+
+  it('names the skill in each question', () => {
+    const { rerender } = renderWithProviders(<SkillConfirmModals {...defaultProps} deletePendingSkillName='skill-x' />);
+    expect(screen.getByText('settings.deletePendingSkillConfirm [skill-x]')).toBeInTheDocument();
+    rerender(
+      <ConfigProvider>
+        <SkillConfirmModals {...defaultProps} deleteCustomSkillName='custom-skill' />
+      </ConfigProvider>
+    );
+    expect(screen.getByText('settings.removeCustomSkillConfirm [custom-skill]')).toBeInTheDocument();
   });
 
   it('renders without crashing when both names are null (props branch)', () => {

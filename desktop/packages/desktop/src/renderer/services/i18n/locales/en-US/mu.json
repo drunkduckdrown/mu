@@ -567,6 +567,10 @@
     "timeout": "mu did not answer in time.",
     "processClosed": "mu has stopped. Send the message again to restart it."
   },
+  "notices": {
+    "answerLost": "mu did not get your answer, so it went on as if you had declined.",
+    "bashMissing": "mu needs Git for Windows to run commands. Once it is installed, send your message again. Download it here:"
+  },
   "errors": {
     "credential": "The key contains characters a key cannot have, such as spaces, quotes or line breaks. Paste it again.",
     "keyVariable": "{{name}} cannot hold a judge key. Use TYPESAFE_API_KEY, AI_GATEWAY_API_KEY, or a name that starts with MU_JUDGE_.",

@@ -11,6 +11,7 @@ import { filterModelMenu, modelMenu } from '@/renderer/pages/conversation/platfo
 import { iconColors } from '@/renderer/styles/colors';
 import { getModelDisplayLabel } from '@/renderer/utils/model/agentLogo';
 import type { AgentRuntimeDerivedOption } from '@/renderer/utils/model/agentRuntimeCatalog';
+import { useProviderNames } from '@/renderer/hooks/agent/useProviderNames';
 import { providerDisplayName } from '@/renderer/utils/model/providerName';
 import type { AcpModelInfo } from '../types';
 import { getAvailableModels } from '../utils/modelUtils';
@@ -71,6 +72,7 @@ const AcpModelChip: React.FC<AcpModelChipProps> = ({
   const [visible, setVisible] = useState(false);
   const [query, setQuery] = useState('');
   const current = selected ?? info.current_model_id;
+  const names = useProviderNames();
   const groups = useMemo(
     () =>
       filterModelMenu(
@@ -85,11 +87,11 @@ const AcpModelChip: React.FC<AcpModelChipProps> = ({
           },
           thoughtLevel,
           {},
-          (id) => providerDisplayName(t, id)
+          (id) => providerDisplayName(t, id, names)
         ),
         query
       ),
-    [current, info.available_models, thoughtLevel, query, t]
+    [current, info.available_models, thoughtLevel, query, t, names]
   );
 
   const pick = (model: string, level?: string) => {

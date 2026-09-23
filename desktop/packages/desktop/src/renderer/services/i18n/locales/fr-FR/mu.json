@@ -567,6 +567,10 @@
     "modelFailed": "La requête au modèle a échoué.",
     "turnRunning": "mu traite encore le message précédent. Attendez qu’il ait fini, ou arrêtez-le d’abord."
   },
+  "notices": {
+    "answerLost": "mu n’a pas reçu votre réponse et a continué comme si vous aviez refusé.",
+    "bashMissing": "mu a besoin de Git for Windows pour exécuter des commandes. Une fois qu’il est installé, renvoyez votre message. Téléchargez-le ici :"
+  },
   "errors": {
     "credential": "La clé contient des caractères interdits, comme des espaces, des guillemets ou des sauts de ligne. Collez-la à nouveau.",
     "keyVariable": "{{name}} ne peut pas contenir une clé de juge. Utilisez TYPESAFE_API_KEY, AI_GATEWAY_API_KEY ou un nom commençant par MU_JUDGE_.",

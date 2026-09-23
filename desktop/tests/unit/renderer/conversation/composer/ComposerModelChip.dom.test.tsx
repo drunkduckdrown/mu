@@ -13,14 +13,21 @@ import type { AcpConfigOptionDto, SetConfigOptionResponse } from '@/common/types
 import ComposerModelChip from '@/renderer/pages/conversation/platforms/acp/Composer/ComposerModelChip';
 import { resetEnsureConversationRuntimeStateForTests } from '@/renderer/pages/conversation/utils/ensureConversationRuntime';
 
-const { ensureRuntimeInvokeMock, setConfigOptionInvokeMock, modelLevelsInvokeMock, streamHandlers, messageErrorMock } =
-  vi.hoisted(() => ({
-    ensureRuntimeInvokeMock: vi.fn(),
-    setConfigOptionInvokeMock: vi.fn(),
-    modelLevelsInvokeMock: vi.fn(),
-    streamHandlers: [] as Array<(message: IResponseMessage) => void>,
-    messageErrorMock: vi.fn(),
-  }));
+const {
+  ensureRuntimeInvokeMock,
+  setConfigOptionInvokeMock,
+  modelLevelsInvokeMock,
+  settingsInvokeMock,
+  streamHandlers,
+  messageErrorMock,
+} = vi.hoisted(() => ({
+  ensureRuntimeInvokeMock: vi.fn(),
+  setConfigOptionInvokeMock: vi.fn(),
+  modelLevelsInvokeMock: vi.fn(),
+  settingsInvokeMock: vi.fn(),
+  streamHandlers: [] as Array<(message: IResponseMessage) => void>,
+  messageErrorMock: vi.fn(),
+}));
 
 // The bridge the chip reads and writes through: the session's config options, and mu's record of the levels each
 // model takes.
@@ -43,7 +50,7 @@ vi.mock('@/common', () => ({
 }));
 
 vi.mock('@/common/kyrn/bridge', () => ({
-  kyrnBridge: { modelLevels: { invoke: modelLevelsInvokeMock } },
+  kyrnBridge: { modelLevels: { invoke: modelLevelsInvokeMock }, settings: { invoke: settingsInvokeMock } },
   unwrap: <T,>(result: { ok: true; data: T }) => result.data,
 }));
 
@@ -217,6 +224,7 @@ describe('ComposerModelChip', () => {
       runtime: null,
     }));
     modelLevelsInvokeMock.mockResolvedValue({ ok: true, data: RECORDED });
+    settingsInvokeMock.mockResolvedValue({ ok: true, data: { models: { providers: [], foreign: [] } } });
   });
 
   it('reads the model and its thinking level from the session', async () => {
@@ -344,6 +352,26 @@ describe('ComposerModelChip', () => {
       'conversation.composer.modelBusy'
     );
     expect(screen.queryAllByTestId('composer-model-option')).toHaveLength(0);
+  });
+
+  it('titles a provider set up by hand by the name it was given in the settings', async () => {
+    server = [
+      {
+        ...optionsFor('anthropic/claude-sonnet-4-5', 'medium')[0],
+        // mu describes each model by its provider's id.
+        options: [...MODELS, { value: 'relay/large', name: 'Large', description: 'relay' }],
+      },
+      optionsFor('anthropic/claude-sonnet-4-5', 'medium')[1],
+    ];
+    settingsInvokeMock.mockResolvedValue({
+      ok: true,
+      data: { models: { providers: [{ id: 'relay', name: 'Team relay' }], foreign: [] } },
+    });
+    renderChip();
+    await waitFor(() => expect(screen.getByRole('group', { name: 'Team relay' })).toBeTruthy());
+    expect(screen.queryByRole('group', { name: 'relay' })).toBeNull();
+    // The provider's id is not repeated as the row's hint.
+    expect(modelRow('relay/large').querySelector('[data-tooltip]')).toBeNull();
   });
 
   it('tells the person when the session refuses the switch', async () => {

@@ -44,7 +44,6 @@ import type {
 } from '../types/platform/acpTypes';
 import type {
   CreateProviderRequest,
-  FetchModelsAnonymousRequest,
   FetchModelsResponse,
   ProviderHealthCheckRequest,
   ProviderHealthCheckResponse,
@@ -84,23 +83,11 @@ import type {
   TeamAssistant,
   TeamContextResetResponse,
 } from '../types/team/teamTypes';
-import type {
-  AutoUpdateReadyResult,
-  AutoUpdateStatus,
-  InstallerLastFailureMarker,
-  UpdateCheckRequest,
-  UpdateCheckResult,
-  UpdateDownloadCancelRequest,
-  UpdateDownloadProgressEvent,
-  UpdateDownloadRequest,
-  UpdateDownloadResult,
-} from '../update/updateTypes';
-import type { UpdateErrorInfo } from '../update/updateErrors';
+import type { UpdateAction, UpdateState } from '../update/updateTypes';
 import type { AgentMetadata } from '@/renderer/utils/model/agentTypes';
 import type { Theme } from '@/common/theme/types';
 import type { AttachFolderRequest, ProjectDetailDto, ProjectEntryDto } from '@/common/types/project';
 import type { ChatFileRef, ContentEncoding } from '@/common/types/chatFile';
-import type { ProtocolDetectionRequest, ProtocolDetectionResponse } from '../utils/protocolDetector';
 import { withTextsAsMu } from '../kyrn/displayName';
 import {
   buildCreateConversationBody,
@@ -762,38 +749,17 @@ export const application = {
 };
 
 // ---------------------------------------------------------------------------
-// Update — stays IPC (Electron-native auto-updater)
+// Update — stays IPC: the main process checks, downloads and installs (process/services/update)
 // ---------------------------------------------------------------------------
 
-/**
- * The response of an update step. On failure `errorInfo` says why (the renderer shows the translated text for it)
- * and `msg` carries the raw message, for logs and as a secondary detail.
- */
-export type IUpdateBridgeResponse<D = {}> = IBridgeResponse<D> & { errorInfo?: UpdateErrorInfo };
-
 export const update = {
-  open: bridge.buildEmitter<{ source?: 'menu' | 'about' | 'tray' }>('update.open'),
-  check: bridge.buildProvider<IUpdateBridgeResponse<UpdateCheckResult>, UpdateCheckRequest>('update.check'),
-  consumeInstallerLastFailure: bridge.buildProvider<IBridgeResponse<InstallerLastFailureMarker | null>, void>(
-    'update.installer-last-failure.consume'
-  ),
-  download: bridge.buildProvider<IUpdateBridgeResponse<UpdateDownloadResult>, UpdateDownloadRequest>('update.download'),
-  cancelDownload: bridge.buildProvider<IUpdateBridgeResponse, UpdateDownloadCancelRequest>('update.download.cancel'),
-  downloadProgress: bridge.buildEmitter<UpdateDownloadProgressEvent>('update.download.progress'),
-};
-
-export const autoUpdate = {
-  check: bridge.buildProvider<
-    IUpdateBridgeResponse<{ updateInfo?: { version: string; releaseDate?: string; releaseNotes?: string } }>,
-    { includePrerelease?: boolean }
-  >('auto-update.check'),
-  restoreDownloaded: bridge.buildProvider<IUpdateBridgeResponse<AutoUpdateReadyResult>, void>(
-    'auto-update.restore-downloaded'
-  ),
-  download: bridge.buildProvider<IUpdateBridgeResponse, void>('auto-update.download'),
-  cancelDownload: bridge.buildProvider<IUpdateBridgeResponse, void>('auto-update.download.cancel'),
-  quitAndInstall: bridge.buildProvider<void, void>('auto-update.quit-and-install'),
-  status: bridge.buildEmitter<AutoUpdateStatus>('auto-update.status'),
+  /** The menu's and the tray's "check for updates": the app opens 关于 (About) and checks there. */
+  open: bridge.buildEmitter<{ source: 'menu' | 'tray' }>('update.open'),
+  /** Every change of the update state. */
+  state: bridge.buildEmitter<UpdateState>('update.state'),
+  getState: bridge.buildProvider<UpdateState, void>('update.get-state'),
+  /** One step the person takes; answers with the state after it (a download goes on in the background). */
+  run: bridge.buildProvider<UpdateState, { action: UpdateAction }>('update.run'),
 };
 
 // ---------------------------------------------------------------------------
@@ -1120,14 +1086,6 @@ export const mode = {
     (p) => `/api/providers/${p.id}/models`,
     (p) => ({ try_fix: p.try_fix })
   ),
-  /**
-   * Pre-create form preview — anonymous fetch-models (T1b).
-   * Takes credentials in the body, no provider row required. Used by
-   * AddPlatformModal / EditModeModal / ApiKeyEditorModal while the
-   * dropdown is still being populated.
-   */
-  fetchModelList: httpPost<FetchModelsResponse, FetchModelsAnonymousRequest>('/api/providers/fetch-models'),
-  detectProtocol: httpPost<ProtocolDetectionResponse, ProtocolDetectionRequest>('/api/providers/detect-protocol'),
 };
 
 // ---------------------------------------------------------------------------

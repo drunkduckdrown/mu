@@ -9,10 +9,18 @@ import { Message } from '@arco-design/web-react';
 import type { RefInputType } from '@arco-design/web-react/es/Input/interface';
 import { useTranslation } from 'react-i18next';
 import type { WebviewNavigation, WebviewNavigationState } from '@/renderer/components/media/WebviewHost';
+import { copyText } from '@/renderer/utils/ui/clipboard';
 import { isPlatformPrimaryModifier } from '@/renderer/utils/ui/keyboardShortcuts';
 import BrowserChrome from './BrowserChrome';
 import BrowserTabLayer from './BrowserTabLayer';
-import { closeBrowserTab, openBrowserPage, switchBrowserTab, updateBrowserTab, useBrowser } from './browserStore';
+import {
+  closeBrowserTab,
+  closeOtherBrowserTabs,
+  openBrowserPage,
+  switchBrowserTab,
+  updateBrowserTab,
+  useBrowser,
+} from './browserStore';
 import { MAX_BROWSER_TABS, resolveAddressBarInput } from './constants';
 import styles from './BrowserPanel.module.css';
 
@@ -103,6 +111,15 @@ export default function BrowserPanel({
     requestAnimationFrame(() => address.current?.focus());
   }, []);
 
+  const copyAddress = (tabId: string) => {
+    const url = tabs.find((tab) => tab.id === tabId)?.url;
+    if (!url) return;
+    copyText(url).then(
+      () => message.success?.(t('common.copySuccess')),
+      () => message.error?.(t('common.copyFailed'))
+    );
+  };
+
   const submit = (input: string) => {
     const target = resolveAddressBarInput(input);
     if (!target) return;
@@ -123,6 +140,8 @@ export default function BrowserPanel({
         addressRef={address}
         onSelect={switchBrowserTab}
         onClose={closeBrowserTab}
+        onCloseOthers={closeOtherBrowserTabs}
+        onCopyAddress={copyAddress}
         onNewPage={newPage}
         onBack={() => inFront()?.back()}
         onForward={() => inFront()?.forward()}

@@ -438,11 +438,90 @@ describe('a judgment, opened', () => {
     // A hint without an id is shown as the main model was given it.
     expect(applied.getByText('An older hint without an id.')).toBeInTheDocument();
     fireEvent.click(applied.getByText(zh.details));
-    expect(applied.getByText(zh.answerIds.plan_first).parentElement).toHaveTextContent('判定为「是」的概率：80%');
+    const words = zh.answerWords.preflight;
+    expect(applied.getByText(words.questions.plan_first).parentElement).toHaveTextContent('判定为「是」的概率：80%');
     // "Task type" also names the verdict's own field; the answer row is the one with the judge's choice.
-    const turnType = applied.getAllByText(zh.answerIds.turn_type).map((label) => label.parentElement?.textContent);
-    expect(turnType).toContain(`${zh.answerIds.turn_type}${zh.values.research} · ${zh.values.research} 60%`);
+    const turnType = applied.getAllByText(words.questions.turn_type).map((label) => label.parentElement?.textContent);
+    expect(turnType).toContain(`${words.questions.turn_type}${words.answers.research} · ${words.answers.research} 60%`);
     expect(applied.queryByText('large or risky')).not.toBeInTheDocument();
+  });
+});
+
+/** A label and what follows it, for each place the label appears (a question and a result field can share one). */
+const labelled = (card: ReturnType<typeof within>, label: string) =>
+  card.getAllByText(label).map((node) => node.parentElement?.textContent);
+
+describe('a judgment’s answers, in words', () => {
+  it('names every decision point’s questions and answers, never by their ids', () => {
+    view([
+      event(
+        'decision',
+        ledger({
+          id: 'approval-1',
+          specId: 'tool.approval',
+          outcome: 'approve',
+          answers: {
+            verdict: { type: 'choice', choice: 'needed', probabilities: { needed: 0.8, unclear: 0.15, beyond: 0.05 } },
+          },
+        }),
+        turn('runtime-a', 1, 2)
+      ),
+      event(
+        'decision',
+        ledger({
+          id: 'browser-1',
+          specId: 'browser.step',
+          outcome: { operation: 'CLICK', target: '3', probability: 0.9 },
+          answers: {
+            operation: { type: 'choice', choice: 'CLICK', probabilities: { CLICK: 0.9, other: 0.1 } },
+            click_target: { type: 'choice', choice: '3', probabilities: { '3': 0.7, none: 0.3 } },
+          },
+        }),
+        turn('runtime-a', 1, 3)
+      ),
+      event(
+        'decision',
+        ledger({
+          id: 'routing-1',
+          specId: 'swarm.routing',
+          answers: {
+            skill_0: { type: 'boolean', probability: 0.5 },
+            difficulty: { type: 'score', score: 2.2 },
+          },
+        }),
+        turn('runtime-a', 1, 4)
+      ),
+    ]);
+
+    const words = copy.answerWords;
+    const [routing, browser, approval] = cards().map((card) => within(card));
+    for (const card of [routing, browser, approval]) fireEvent.click(card.getByText(copy.details));
+
+    const approvalWords = words.approval;
+    expect(labelled(approval, approvalWords.questions.verdict)).toContain(
+      `${approvalWords.questions.verdict}${approvalWords.answers.needed} · ${approvalWords.answers.needed} 80% · ` +
+        `${approvalWords.answers.unclear} 15% · ${approvalWords.answers.beyond} 5%`
+    );
+    const stepWords = words.browser;
+    expect(labelled(browser, stepWords.questions.operation)).toContain(
+      `${stepWords.questions.operation}${stepWords.answers.CLICK} · ${stepWords.answers.CLICK} 90% · ${stepWords.answers.other} 10%`
+    );
+    // An element number is what the page named it; "none" is said in words.
+    expect(labelled(browser, stepWords.questions.click_target)).toContain(
+      `${stepWords.questions.click_target}3 · 3 70% · ${stepWords.answers.none} 30%`
+    );
+    // The result says the step and its field in words too.
+    expect(labelled(browser, copy.fields.operation)).toContain(`${copy.fields.operation}${copy.values.CLICK}`);
+    expect(labelled(routing, words.routing.questions.difficulty)).toContain(
+      `${words.routing.questions.difficulty}${words.routing.levels.difficulty['2']} · Score: 2.20`
+    );
+    // An id the decision point's table does not have is read as words.
+    expect(routing.getByText('skill 0')).toBeInTheDocument();
+    for (const card of [routing, browser, approval]) {
+      const answers = card.getByText(copy.answers).nextElementSibling?.textContent ?? '';
+      for (const id of ['verdict', 'needed', 'unclear', 'operation', 'CLICK', 'click_target', 'difficulty', 'skill_0'])
+        expect(answers).not.toMatch(new RegExp(`\\b${id}\\b`));
+    }
   });
 });
 

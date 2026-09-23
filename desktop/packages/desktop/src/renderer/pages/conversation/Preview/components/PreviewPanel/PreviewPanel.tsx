@@ -41,7 +41,6 @@ import PDFPreview from '../viewers/PDFViewer';
 import OfficeDocPreview from '../viewers/OfficeDocViewer';
 import PptViewer from '../viewers/PptViewer';
 import CodeEditor from '../editors/CodeEditor';
-import URLViewer from '../viewers/URLViewer';
 import {
   PreviewTabs,
   PreviewToolbar,
@@ -492,19 +491,19 @@ const PreviewPanel: React.FC = () => {
     [messageApi, t]
   );
 
-  // 复制绝对路径（浏览器 tab 则是 URL）。
+  // 复制绝对路径。
   //
   // 两条路，取决于渲染进程手上到底有没有这个字符串：
-  //  - `filePath` / `url`：本进程就有，走 copyText。它比 navigator.clipboard 多
+  //  - `filePath`：本进程就有，走 copyText。它比 navigator.clipboard 多
   //    一层退路 —— WebUI 经 HTTP 访问时不是安全上下文，Clipboard API 不可用。
   //  - `projectRef`：Explorer 打开的项目文件，前端从不持有绝对路径，交给后端
   //    resolve 并由后端写剪贴板（与 Explorer 自己的「复制绝对路径」同一通道）。
   //    仅桌面端可用：远程 WebUI 不该看到宿主机的设备路径，所以映射那里已经把
   //    这项在非 Electron 下置灰，这里再挡一次，避免调用路径被别处复用时漏掉。
   //
-  // Copy the absolute path (a URL, for browser tabs). Two routes, depending on
-  // whether the renderer actually holds the string:
-  //  - `filePath` / `url`: it is right here, so copyText handles it — adding the
+  // Copy the absolute path. Two routes, depending on whether the renderer
+  // actually holds the string:
+  //  - `filePath`: it is right here, so copyText handles it — adding the
   //    fallback navigator.clipboard lacks when the WebUI is served over HTTP and
   //    is therefore not a secure context.
   //  - `projectRef`: an Explorer-opened project file, whose absolute path the
@@ -548,14 +547,11 @@ const PreviewPanel: React.FC = () => {
   // 在系统文件管理器中定位该文件（Finder / 资源管理器）。
   //
   // 与复制路径同样的两条路：项目文件交后端 resolve 后 showItemInFolder，前端已有
-  // 绝对路径的直接走 shell 通道。URL 走不到这里 —— canRevealInFolder 已把浏览器
-  // tab 排除，这里的 `url` 分支只是把这条不变量写进代码，而不是靠调用方自觉。
+  // 绝对路径的直接走 shell 通道。
   //
   // Locate the file in the OS file manager (Finder / Explorer). Same two routes as
   // copy-path: a project file is resolved backend-side and revealed there, while a
-  // path the renderer already holds goes straight through the shell channel. A URL
-  // never reaches this — canRevealInFolder excludes browser tabs — and the `url`
-  // branch below states that invariant in code rather than trusting callers.
+  // path the renderer already holds goes straight through the shell channel.
   const handleRevealInFolder = useCallback(
     (tabId: string) => {
       const tab = tabs.find((item) => item.id === tabId);
@@ -1135,9 +1131,6 @@ const PreviewPanel: React.FC = () => {
           workspace={metadata?.workspace}
         />
       );
-    } else if (content_type === 'url') {
-      // URL 预览模式 / URL preview mode
-      return <URLViewer url={content} title={metadata?.title} />;
     }
 
     return null;
@@ -1195,9 +1188,8 @@ const PreviewPanel: React.FC = () => {
           onToggleMaximize={layout?.isMobile ? undefined : toggleMaximized}
         />
 
-        {/* 工具栏（URL 类型不显示工具栏，因为不需要下载/编辑等功能）
-            Toolbar (hidden for the URL type — no download/edit needed) */}
-        {content_type !== 'url' && !metadata?.missingFile && (
+        {/* 工具栏 / Toolbar */}
+        {!metadata?.missingFile && (
           <PreviewToolbar
             content_type={content_type}
             isMarkdown={isMarkdown}

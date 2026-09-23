@@ -50,7 +50,7 @@
     "exportDialogBatchDescription": "将导出已选 {{count}} 个话题的会话记录（JSON + Markdown）及项目文件，并打包为 ZIP。",
     "exportTargetFolder": "导出到文件夹",
     "exportSelectFolder": "请选择导出文件夹",
-    "exportDialogHint": "目录选择与\"更换项目\"一致；确认后开始导出。",
+    "exportDialogHint": "目录选择与「更换项目」一致；确认后开始导出。",
     "exporting": "导出中...",
     "exportSuccess": "导出成功",
     "exportCanceled": "已取消导出",

@@ -2,9 +2,13 @@ import { AgentSideConnection, ndJsonStream } from '@agentclientprotocol/sdk';
 import { Readable, Writable } from 'node:stream';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { logUncaught } from './errorLog.ts';
 import { expectedHarness, findHarness, launcherOf, MIN_NODE, nodeVersionOk } from './harness.ts';
 import { KyrnAgent } from './KyrnAgent.ts';
 import { muHome } from './naming.ts';
+
+// Before anything else can fail: an error nothing handled is logged (see errorLog.ts).
+logUncaught();
 
 // Run from the desktop's sources (scripts/kyrn/acp) this file knows its checkout. Bundled into the packaged app
 // (out/main/mu-acp.js, see scripts/build-mcp-servers.js) there is none: `import.meta` is empty there.

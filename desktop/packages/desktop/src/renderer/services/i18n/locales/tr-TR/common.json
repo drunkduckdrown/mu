@@ -322,6 +322,7 @@
         "preflight": "Bu istek nasıl ele alınmalı?",
         "interjection": "Bu araya girme bir düzeltme mi, ek istek mi, yoksa yan soru mu?",
         "admission": "Araç çıktısının hangi parçaları bağlama girmeli?",
+        "testLog": "Bir test günlüğünün hangi parçaları modele ulaşmalı?",
         "forget": "Eski araç çıktısının tamamına hâlâ ihtiyaç var mı?",
         "compaction": "Hangi eski sonuçlar budanabilir?",
         "skills": "Bu görevle hangi beceriler ilgili?",
@@ -389,7 +390,12 @@
         "focus": "Üzerinde çalışılan öğe",
         "needsUser": "Kullanıcı gerekiyor",
         "update": "Panoyu yeniden yaz",
-        "relation": "İlişki"
+        "relation": "İlişki",
+        "operation": "Sonraki adım",
+        "target": "Öğe",
+        "probability": "Olasılık",
+        "omit": "Atlanan günlük parçaları",
+        "key": "Anlatmaya değer olaylar"
       },
       "values": {
         "true": "Evet",
@@ -459,7 +465,7 @@
         "constraint": "Yeni kısıt",
         "correction": "Düzeltme",
         "subgoal": "Yeni alt hedef",
-        "unclear": "Belirsiz değişiklik",
+        "unclear": "Belli değil",
         "hold": "Beklet",
         "no_answer": "Zamanında yanıt gelmedi",
         "aborted": "İptal edildi",
@@ -482,7 +488,19 @@
         "unrelated": "İlgisiz",
         "preference": "Kalıcı kural",
         "approve": "Çalışmasına izin ver",
-        "beyond": "İstediğinizden fazlası"
+        "beyond": "İstediğinizden fazlası",
+        "CLICK": "Tıkla",
+        "TYPE_TEXT": "Metin yaz",
+        "SELECT": "Listeden seç",
+        "SCROLL_DOWN": "Aşağı kaydır",
+        "SCROLL_UP": "Yukarı kaydır",
+        "WAIT": "Sayfayı bekle",
+        "DONE": "Bitti",
+        "BLOCKED": "İlerlemenin yolu yok",
+        "listing": "Dosya adları veya eşleşmeler",
+        "content": "Kod veya metin",
+        "log": "Derleme veya test çıktısı",
+        "data": "Bulunan bilgiler"
       },
       "probabilityValue": "Evet olasılığı: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -508,17 +526,365 @@
         "try_hive": "Takılırsa Hive",
         "try_delegate": "Parçaları devret"
       },
-      "answerIds": {
-        "turn_type": "Görev türü",
-        "is_side_question": "Yan soru",
-        "needs_clarification": "Başlamak için fazla belirsiz",
-        "needs_files_changed": "Kod değişikliği gerekiyor",
-        "needs_memory": "Geçmiş deneyimler işe yarar",
-        "swarm_worthy": "Bağımsız parçalar",
-        "plan_first": "Büyük veya riskli",
-        "task_complexity": "Kapsam",
-        "reasoning_depth": "Akıl yürütme derinliği",
-        "tool_complexity": "Araç kullanımı"
+      "answerWords": {
+        "preflight": {
+          "questions": {
+            "turn_type": "Görev türü",
+            "is_side_question": "Yan soru",
+            "needs_clarification": "Başlamak için fazla belirsiz",
+            "needs_files_changed": "Kod değişikliği gerekiyor",
+            "needs_memory": "Geçmiş deneyimler işe yarar",
+            "swarm_worthy": "Bağımsız parçalar",
+            "plan_first": "Büyük veya riskli",
+            "task_complexity": "Kapsam",
+            "reasoning_depth": "Akıl yürütme derinliği",
+            "tool_complexity": "Araç kullanımı"
+          },
+          "answers": {
+            "chat": "Sohbet",
+            "chat_question": "Kavram sorusu",
+            "quick_lookup": "Hızlı arama",
+            "single_edit": "Tek düzenleme",
+            "multi_step_task": "Çok adımlı görev",
+            "research": "Araştırma",
+            "design_discussion": "Tasarım tartışması",
+            "other": "Başka bir şey"
+          },
+          "levels": {
+            "task_complexity": {
+              "0": "Yalnızca bir soru",
+              "1": "Kodda tek bir yer",
+              "2": "Kodda birkaç yer",
+              "3": "Kod tabanının tamamı"
+            },
+            "reasoning_depth": {
+              "0": "Hatırlama veya bakma",
+              "1": "Basit bir açıklama",
+              "2": "Dikkatli bir analiz",
+              "3": "Derin akıl yürütme"
+            },
+            "tool_complexity": {
+              "0": "Hiç",
+              "1": "Bir iki okuma",
+              "2": "Düzenleme içeren birkaç çağrı",
+              "3": "Derleme veya test içeren çok sayıda çağrı"
+            }
+          }
+        },
+        "interjection": {
+          "questions": {
+            "kind": "Mesajın ne olduğu"
+          },
+          "answers": {
+            "correction": "Bir düzeltme",
+            "addition": "Sonrası için ek iş",
+            "side_question": "İlgisiz bir soru",
+            "other": "Başka bir şey"
+          }
+        },
+        "admission": {
+          "questions": {
+            "kind": "Çıktı türü",
+            "chunk": "Çıktı parçası {{number}}"
+          },
+          "answers": {
+            "error": "Bir hata",
+            "result": "Yararlı bir sonuç",
+            "progress": "İlerleme çıktısı",
+            "warning": "Tekrarlanan uyarılar",
+            "passing": "Geçen denetimler",
+            "other": "Başka bir şey"
+          }
+        },
+        "testLog": {
+          "questions": {
+            "part": "Günlük parçası {{number}}"
+          },
+          "answers": {
+            "needed": "Özetin yanında gerekli",
+            "not_needed": "Özet yeterli",
+            "unclear": "Belli değil"
+          }
+        },
+        "forget": {
+          "questions": {
+            "still_needed": "Tam çıktı yine gerekecek"
+          }
+        },
+        "compaction": {
+          "questions": {
+            "kind": "Sonuç türü",
+            "result_needed": "Tam sonuç hâlâ gerekli",
+            "call_matters": "Çağrının kendisi hâlâ önemli"
+          },
+          "answers": {
+            "error": "Bir hata",
+            "listing": "Dosya adları veya eşleşmeler",
+            "content": "Kod veya metin",
+            "log": "Derleme veya test çıktısı",
+            "data": "Bulunan bilgiler",
+            "other": "Başka bir şey"
+          }
+        },
+        "skills": {
+          "questions": {
+            "skill": "Beceri {{number}} işe yarar"
+          }
+        },
+        "locate": {
+          "questions": {
+            "path": "Dosya {{number}} ilgili"
+          }
+        },
+        "routing": {
+          "questions": {
+            "agent": "İşin türü",
+            "difficulty": "Görevin zorluğu",
+            "reasoning": "Gereken akıl yürütme"
+          },
+          "answers": {
+            "other": "Bunların hiçbiri"
+          },
+          "levels": {
+            "difficulty": {
+              "0": "Mekanik",
+              "1": "Rutin",
+              "2": "Dikkatli tasarım gerekir",
+              "3": "Bir uzman için bile zor"
+            },
+            "reasoning": {
+              "0": "Neredeyse hiç",
+              "1": "Biraz",
+              "2": "Çok",
+              "3": "Derin, birçok adımda"
+            }
+          }
+        },
+        "publish": {
+          "questions": {
+            "share_worthy": "Paylaşmaya değer",
+            "kind": "Not türü"
+          },
+          "answers": {
+            "finding": "Bir bulgu",
+            "dead_end": "Bir çıkmaz",
+            "decision": "Bir karar",
+            "blocker": "Bir engel",
+            "other": "Olağan ilerleme"
+          }
+        },
+        "deliver": {
+          "questions": {
+            "useful": "Alıcı arıya yardımcı olur"
+          }
+        },
+        "browser": {
+          "questions": {
+            "operation": "Sonraki adım",
+            "click_target": "Neye tıklanacak",
+            "type_text_target": "Nereye yazılacak",
+            "select_target": "Ne seçilecek"
+          },
+          "answers": {
+            "CLICK": "Tıkla",
+            "TYPE_TEXT": "Metin yaz",
+            "SELECT": "Listeden seç",
+            "SCROLL_DOWN": "Aşağı kaydır",
+            "SCROLL_UP": "Yukarı kaydır",
+            "WAIT": "Sayfayı bekle",
+            "DONE": "Bitti",
+            "other": "İlerlemenin yolu yok",
+            "none": "Hiçbiri uymuyor"
+          }
+        },
+        "recall": {
+          "questions": {
+            "lesson": "Ders {{number}} uygun"
+          }
+        },
+        "capture": {
+          "questions": {
+            "correction": "Bir hatayı düzeltiyor",
+            "preference": "Kalıcı bir kural koyuyor"
+          }
+        },
+        "outcome": {
+          "questions": {
+            "way_out": "İşe yarayan başka bir yol bulundu"
+          }
+        },
+        "worth": {
+          "questions": {
+            "lesson": "Ders {{number}}"
+          },
+          "answers": {
+            "reusable": "Yine işe yarar",
+            "one_off": "Yalnızca bu seferlik",
+            "already_known": "Zaten biliniyor",
+            "unclear": "Belli değil"
+          }
+        },
+        "merge": {
+          "questions": {
+            "kept": "Kayıtlı ders {{number}}"
+          },
+          "answers": {
+            "same": "Aynı ders",
+            "refines": "Yenisi daha kesin",
+            "contradicts": "Birbirleriyle çelişiyorlar",
+            "unrelated": "Başka bir konuda",
+            "unclear": "Belli değil"
+          }
+        },
+        "applied": {
+          "questions": {
+            "lesson": "Ders {{number}} uygulandı"
+          }
+        },
+        "risk": {
+          "questions": {
+            "destructive": "Siler veya geri alınamaz",
+            "requested": "Bunu siz istediniz"
+          }
+        },
+        "drift": {
+          "questions": {
+            "course": "İşin yönü"
+          },
+          "answers": {
+            "on_track": "Doğru yolda",
+            "detour": "Gerekli bir yan adım",
+            "drift": "Yoldan çıkıyor",
+            "loop": "Kısır döngüde",
+            "other": "Belli değil"
+          }
+        },
+        "completion": {
+          "questions": {
+            "claims_done": "İşin bittiğini söylüyor",
+            "needs_check": "Çalıştırılarak kontrol edilmeli"
+          }
+        },
+        "notify": {
+          "questions": {
+            "urgency": "Ajanın ne zaman bilmesi gerektiği"
+          },
+          "answers": {
+            "now": "Hemen",
+            "next_turn": "Geçerli adımdan sonra",
+            "drop": "Asla",
+            "other": "Belli değil"
+          }
+        },
+        "cache": {
+          "questions": {
+            "finished": "Konuşma bitti",
+            "open": "Sizi bekleyen bir soru var"
+          }
+        },
+        "rewind": {
+          "questions": {
+            "dead_end": "Aynı yaklaşım yine başarısız",
+            "progress": "İlerleme var"
+          }
+        },
+        "goalMet": {
+          "questions": {
+            "achieved": "Hedefe tamamen ulaşıldı",
+            "needs_user": "Siz olmadan devam edemez"
+          }
+        },
+        "outputDrift": {
+          "questions": {
+            "rule": "Kural {{number}} ile çelişiyor"
+          }
+        },
+        "taskFrame": {
+          "questions": {
+            "change": "Görevdeki değişiklik"
+          },
+          "answers": {
+            "new_task": "Yeni bir görev",
+            "constraint": "İş için yeni bir kural",
+            "correction": "Yaklaşım yanlış",
+            "subgoal": "Aynı görevin sonraki adımı",
+            "none": "Değişiklik yok"
+          }
+        },
+        "constraint": {
+          "questions": {
+            "constraint": "Kısıt {{number}} ile çelişiyor"
+          }
+        },
+        "capabilities": {
+          "questions": {
+            "capability": "Yetenek {{number}} gerekli"
+          }
+        },
+        "diagnostics": {
+          "questions": {
+            "more_edits_coming": "Başka düzenlemeler de gelecek",
+            "warnings_are_style": "Yalnızca stil uyarıları"
+          }
+        },
+        "patch": {
+          "questions": {
+            "within_task": "Görevin içinde kalıyor",
+            "file": "Görev, dosya {{number}} için değişiklik istiyor"
+          }
+        },
+        "review": {
+          "questions": {
+            "bug": "Bulgu {{number}} gerçek bir hata",
+            "inScope": "Bulgu {{number}} bu değişiklikle ilgili"
+          }
+        },
+        "board": {
+          "questions": {
+            "phase": "Ajanın ne yaptığı",
+            "needs_user": "Sizden bir şey gerekiyor",
+            "focus": "Üzerinde çalışılan madde",
+            "event": "Olay {{number}}",
+            "changed": "Size anlatılacak yeni bir şey var"
+          },
+          "answers": {
+            "understanding": "Görevi anlıyor",
+            "planning": "Plan yapıyor",
+            "changing": "Değişiklik yapıyor",
+            "checking": "İşi kontrol ediyor",
+            "fixing": "Kontrolde bulunanı düzeltiyor",
+            "waiting": "Sizi bekliyor",
+            "wrapping_up": "Topluyor",
+            "stuck": "Takılmış görünüyor",
+            "other": "Belli değil",
+            "none": "Hiçbiri",
+            "key": "Anlatmaya değer bir haber",
+            "routine": "Olağan bir adım",
+            "unclear": "Belli değil"
+          }
+        },
+        "relate": {
+          "questions": {
+            "relation": "Önceki bulguya etkisi"
+          },
+          "answers": {
+            "supersedes": "Onun yerini alıyor",
+            "contradicts": "Onunla çelişiyor",
+            "supports": "Onu destekliyor",
+            "none": "Onunla ilgisi yok"
+          }
+        },
+        "approval": {
+          "questions": {
+            "verdict": "Adımın ne olduğu"
+          },
+          "answers": {
+            "needed": "Görev için gerekli",
+            "beyond": "İstediğinizden fazlası",
+            "unrelated": "Görevin parçası değil",
+            "unclear": "Belli değil"
+          }
+        }
       },
       "log": {
         "thisTurn": "Bu tur",

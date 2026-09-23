@@ -112,6 +112,7 @@ const HorizontalFileList: React.FC<HorizontalFileListProps> = ({ children }) => 
     });
   };
 
+  // The scroll masks fade into the surface under the list: the composer's, which in mu is also the page's.
   return (
     <div className='relative min-w-0 max-w-full'>
       {/* 横向滚动容器，隐藏滚动条 */}
@@ -130,7 +131,7 @@ const HorizontalFileList: React.FC<HorizontalFileListProps> = ({ children }) => 
         <div
           className='absolute start-0 top-0 h-full flex items-center cursor-pointer'
           style={{
-            background: 'linear-gradient(to left, transparent, var(--dialog-fill-0) 30%)', // 左侧渐变遮罩
+            background: 'linear-gradient(to left, transparent, var(--mu-composer-bg, var(--dialog-fill-0)) 30%)', // 左侧渐变遮罩
             width: '60px',
             pointerEvents: 'none', // 遮罩层不响应点击
           }}
@@ -152,7 +153,7 @@ const HorizontalFileList: React.FC<HorizontalFileListProps> = ({ children }) => 
         <div
           className='absolute end-0 top-0 h-full flex items-center cursor-pointer'
           style={{
-            background: 'linear-gradient(to right, transparent, var(--dialog-fill-0) 30%)', // 右侧渐变遮罩
+            background: 'linear-gradient(to right, transparent, var(--mu-composer-bg, var(--dialog-fill-0)) 30%)', // 右侧渐变遮罩
             width: '60px',
             pointerEvents: 'none', // 遮罩层不响应点击
           }}

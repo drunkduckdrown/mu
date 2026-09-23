@@ -58,27 +58,12 @@ export interface UpdateProviderRequest {
   is_full_url?: boolean;
 }
 
-/**
- * Response for `POST /api/providers/:id/models` and
- * `POST /api/providers/fetch-models`.
- */
+/** Response for `POST /api/providers/:id/models`. */
 export interface FetchModelsResponse {
   /** Mixed-shape array: bare id strings or `{ id, name }` pairs. */
   models: Array<string | { id: string; name: string }>;
   /** Present when backend auto-corrected the provider's base_url. */
   fixed_base_url?: string;
-}
-
-/**
- * Anonymous fetch-models request used by the pre-create form flow.
- * No provider row needs to exist yet — credentials travel in the body.
- */
-export interface FetchModelsAnonymousRequest {
-  platform: string;
-  base_url?: string;
-  api_key: string;
-  bedrock_config?: IProvider['bedrock_config'];
-  try_fix?: boolean;
 }
 
 export type ProviderHealthCheckErrorKind =

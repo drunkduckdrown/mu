@@ -27,6 +27,8 @@ import MessageAcpTerminalOutput from '@renderer/pages/conversation/Messages/acp/
 import MessageAcpToolCall from '@renderer/pages/conversation/Messages/acp/MessageAcpToolCall';
 import MessageJevLine from '@renderer/pages/conversation/Messages/acp/MessageJevLine';
 import { jevLine } from '@renderer/pages/conversation/Messages/acp/jevLine';
+import MessageMuNotice from '@renderer/pages/conversation/Messages/acp/MessageMuNotice';
+import { muNotice } from '@renderer/pages/conversation/Messages/acp/muNotice';
 import classNames from 'classnames';
 import React, { createContext, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -401,7 +403,13 @@ const MessageItem: React.FC<{
           return <MessageQuestion message={message}></MessageQuestion>;
         case 'acp_tool_call': {
           const jev = jevLine(message);
-          return jev ? <MessageJevLine line={jev} /> : <MessageAcpToolCall message={message}></MessageAcpToolCall>;
+          if (jev) return <MessageJevLine line={jev} />;
+          const notice = muNotice(message);
+          return notice ? (
+            <MessageMuNotice notice={notice} />
+          ) : (
+            <MessageAcpToolCall message={message}></MessageAcpToolCall>
+          );
         }
         case 'acp_terminal_output':
           return <MessageAcpTerminalOutput message={message}></MessageAcpTerminalOutput>;
@@ -636,8 +644,8 @@ const MessageList: React.FC<{
         continue;
       }
       if (message.type === 'acp_tool_call') {
-        // Jev's class for the message is one line of its own, not a call in the tool box.
-        if (hasRenderableAcpDiff(message) || jevLine(message)) {
+        // Jev's class for the message and the bridge's notices are lines of their own, not calls in the tool box.
+        if (hasRenderableAcpDiff(message) || jevLine(message) || muNotice(message)) {
           pushStandaloneMessage(message);
           continue;
         }

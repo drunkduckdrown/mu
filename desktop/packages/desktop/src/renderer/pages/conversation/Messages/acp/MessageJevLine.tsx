@@ -5,7 +5,8 @@ import styles from './MessageJevLine.module.css';
 
 /**
  * Jev's classification of the message, as one quiet line in the person's own language ("Jev 归类为闲聊"), in place of
- * a tool call box. Shadow and late verdicts say they were not used; a rule's class says so.
+ * a tool call box. Shadow and late verdicts say they were not used; a rule's class says so. The hints the main model was
+ * given follow the line as small labels ("先计划"), each with its whole sentence on hover.
  */
 export default function MessageJevLine({ line }: { line: JevLine }) {
   const { t } = useTranslation();
@@ -23,6 +24,7 @@ export default function MessageJevLine({ line }: { line: JevLine }) {
           : said;
   }
   const muted = line.stage === 'fallback' || (line.stage === 'classified' && line.state !== 'applied');
+  const hints = line.stage === 'classifying' ? [] : (line.hints ?? []);
   return (
     <div className={styles.line} data-testid='mu-jev-line' data-stage={line.stage}>
       <span
@@ -30,6 +32,17 @@ export default function MessageJevLine({ line }: { line: JevLine }) {
         aria-hidden='true'
       />
       <span className={styles.text}>{text}</span>
+      {hints.map((id) => (
+        <span
+          key={id}
+          className={styles.hint}
+          title={t(`common.kyrn.judgeView.hints.${id}`)}
+          data-testid='mu-jev-hint'
+          data-hint={id}
+        >
+          {t(`common.kyrn.judgeView.hintChips.${id}`)}
+        </span>
+      ))}
     </div>
   );
 }

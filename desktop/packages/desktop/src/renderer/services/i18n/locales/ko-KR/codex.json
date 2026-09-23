@@ -6,16 +6,16 @@
     "connection_refused": "연결 거부됨, Codex 서비스가 올바르게 실행 중인지 확인하세요.",
     "unknown_error": "네트워크 연결 오류, 네트워크 설정을 확인하세요.",
     "retry_attempt": "재시도 시도 {{current}}...",
-    "cloudflare_blocked_title": "🚫 Cloudflare 보호에 의해 {{service}} 서비스 차단됨",
-    "network_timeout_title": "⏱️ 네트워크 연결 시간 초과",
-    "connection_refused_title": "❌ 서비스 연결 거부됨",
-    "unknown_error_title": "🔌 네트워크 연결 오류",
+    "cloudflare_blocked_title": "Cloudflare 보호에 의해 {{service}} 서비스 차단됨",
+    "network_timeout_title": "네트워크 연결 시간 초과",
+    "connection_refused_title": "서비스 연결 거부됨",
+    "unknown_error_title": "네트워크 연결 오류",
     "recovery_suggestions": "**제안된 해결 방법:**",
     "technical_info": "**기술 정보:**",
     "error_type": "오류 유형",
     "retry_count": "재시도 횟수",
     "error_details": "오류 세부사항",
-    "quick_switch_title": "💡 **빠른 전환 옵션:**",
+    "quick_switch_title": "**빠른 전환 옵션:**",
     "quick_switch_content": "현재 서비스에 네트워크 제한이 발생하면 다음을 수행할 수 있습니다:\n\n1. **즉시 AI 어시스턴트 전환**: 왼쪽 패널에서 다른 사용 가능한 어시스턴트 선택\n2. **서비스 상태 확인**: 지역에 따라 다른 AI 서비스 가용성이 다를 수 있음\n3. **네트워크 최적화**: 안정적인 네트워크 환경을 사용하여 연결 성공률 향상\n4. **나중에 재시도**: 네트워크 제한은 일반적으로 일시적임\n\n**팁**: 업무 연속성을 보장하기 위해 여러 AI 서비스를 대안으로 구성하는 것이 좋습니다.",
     "recovery_actions": {
       "cloudflare_blocked": [
@@ -41,8 +41,8 @@
     }
   },
   "thinking": {
-    "processing": "🤔 Codex가 생각 중입니다...",
-    "completed": "💭 생각 프로세스 완료",
+    "processing": "Codex가 생각 중입니다...",
+    "completed": "생각 프로세스 완료",
     "analyzing": "문제를 분석하고 솔루션을 구성하는 중...",
     "composing": "응답 내용 작성 중..."
   },

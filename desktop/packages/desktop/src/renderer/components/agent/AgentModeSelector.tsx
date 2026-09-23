@@ -13,7 +13,7 @@ import type { AgentModeOption } from '@/renderer/utils/model/agentTypes';
 import { useLayoutContext } from '@/renderer/hooks/context/LayoutContext';
 import { AgentLogoIcon } from './AgentBadge';
 import { Dropdown, Menu, Message, Tooltip } from '@arco-design/web-react';
-import { Down } from '@icon-park/react';
+import { Down, Time } from '@icon-park/react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RuntimeSelectorPill from './RuntimeSelectorPill';
@@ -249,13 +249,18 @@ const AgentModeSelector: React.FC<AgentModeSelectorProps> = ({
               data-mode-value={mode.value}
               data-testid={`aionrs-mode-option-${mode.value}`}
             >
-              {/* Fixed-width marker slot, three states now: ✓ = in force, ⏱ = accepted
-                  but applies next turn, blank = neither. Reusing this slot rather than a
+              {/* Fixed-width marker slot, three states now: ✓ = in force, a line clock = accepted
+                  but applies next turn, blank = neither. The clock is an icon, not the ⏱ character,
+                  which macOS draws as a colour emoji. Reusing this slot rather than a
                   trailing badge is deliberate — the menu is ~260px and its labels already
                   truncate, so a right-hand "下一轮生效" would overflow. The two markers
                   are mutually exclusive by construction. */}
-              <span aria-hidden='true' className='w-16px shrink-0 text-t-primary'>
-                {current_mode === mode.value ? '✓' : pendingMode === mode.value ? '⏱' : ''}
+              <span aria-hidden='true' className='w-16px shrink-0 flex items-center text-t-primary'>
+                {current_mode === mode.value ? (
+                  '✓'
+                ) : pendingMode === mode.value ? (
+                  <Time theme='outline' size='12' data-testid='mode-pending-mark' />
+                ) : null}
               </span>
               {mode.description ? (
                 <Tooltip content={mode.description} position='right'>

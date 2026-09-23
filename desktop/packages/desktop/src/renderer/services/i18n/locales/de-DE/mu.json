@@ -567,6 +567,10 @@
     "modelFailed": "Die Modellanfrage ist fehlgeschlagen.",
     "turnRunning": "mu arbeitet noch an der vorherigen Nachricht. Warte, bis es fertig ist, oder stoppe es zuerst."
   },
+  "notices": {
+    "answerLost": "mu hat deine Antwort nicht erhalten und so weitergemacht, als hättest du abgelehnt.",
+    "bashMissing": "mu braucht Git for Windows, um Befehle auszuführen. Sobald es installiert ist, sende deine Nachricht erneut. Hier herunterladen:"
+  },
   "errors": {
     "credential": "Der Schlüssel enthält Zeichen, die ein Schlüssel nicht haben darf, etwa Leerzeichen, Anführungszeichen oder Zeilenumbrüche. Füge ihn erneut ein.",
     "keyVariable": "{{name}} kann keinen Judge-Schlüssel enthalten. Verwende TYPESAFE_API_KEY, AI_GATEWAY_API_KEY oder einen Namen, der mit MU_JUDGE_ beginnt.",

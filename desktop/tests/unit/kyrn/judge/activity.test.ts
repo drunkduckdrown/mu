@@ -13,6 +13,7 @@ import {
   runtimeEvents,
   stageOf,
 } from '../../../../packages/desktop/src/renderer/pages/conversation/KyrnPanel/Judge/activity';
+import { JUDGE_QUESTIONS } from '../../../../packages/desktop/src/renderer/pages/conversation/KyrnPanel/Judge/questions';
 import common from '../../../../packages/desktop/src/renderer/services/i18n/locales/en-US/common.json';
 import zhCN from '../../../../packages/desktop/src/renderer/services/i18n/locales/zh-CN/common.json';
 import zhTW from '../../../../packages/desktop/src/renderer/services/i18n/locales/zh-TW/common.json';
@@ -312,6 +313,9 @@ describe('Jev judgment cards: Hive gates', () => {
   });
 });
 
+/** A lesson's words, as the log would look them up. */
+const lessonWords = (id: string) => `the lesson called ${id}`;
+
 describe('Jev judgment cards: readable result and details', () => {
   const card = (payload: Record<string, unknown>) =>
     judgeCards([event('decision', payload, turn('runtime-a', 1, 5))])[0];
@@ -352,6 +356,77 @@ describe('Jev judgment cards: readable result and details', () => {
       [{ name: 'hide', values: hidden.slice(0, 6), more: 3 }]
     );
     expect(resultFacts(card(ledger({ specId: 'turn.drift', outcome: undefined })))).toEqual([]);
+  });
+
+  it('counts positions from 1 where the harness records them from 0, and leaves other lists as recorded', () => {
+    expect(resultFacts(card(ledger({ specId: 'output.drift', outcome: { broken: [0, 2] } })))).toEqual([
+      { name: 'broken', values: ['1', '3'] },
+    ]);
+    expect(resultFacts(card(ledger({ specId: 'tool.constraint', outcome: { broken: [1] } })))).toEqual([
+      { name: 'broken', values: ['2'] },
+    ]);
+    expect(
+      resultFacts(card(ledger({ specId: 'tool.admission.test-log', outcome: { omit: ['part_0', 'part_3'] } })))
+    ).toEqual([{ name: 'omit', values: ['1', '4'] }]);
+    const board = resultFacts(
+      card(
+        ledger({
+          specId: 'board.read',
+          outcome: { phase: 'changing', focus: null, needsUser: false, update: true, key: [0, 4] },
+        })
+      )
+    );
+    expect(board).toContainEqual({ name: 'key', values: ['1', '5'] });
+    expect(board).toContainEqual({ name: 'phase', values: ['changing'] });
+    expect(resultFacts(card(ledger({ specId: 'review.triage', outcome: { priorities: ['P0', 'P2'] } })))).toEqual([
+      { name: 'priorities', values: ['P0', 'P2'] },
+    ]);
+  });
+
+  it('has words in every language for what the browser step, the compaction, the board and the test log record', () => {
+    const facts = [
+      ...resultFacts(
+        card(ledger({ specId: 'browser.step', outcome: { operation: 'SCROLL_DOWN', target: '3', probability: 0.9 } }))
+      ),
+      ...resultFacts(card(ledger({ specId: 'board.read', outcome: { key: [0] } }))),
+      ...resultFacts(card(ledger({ specId: 'tool.admission.test-log', outcome: { omit: ['part_1'] } }))),
+    ];
+    const fields = facts.map((fact) => fact.name);
+    expect(fields).toEqual(['operation', 'target', 'probability', 'key', 'omit']);
+    const choices = (specId: keyof typeof JUDGE_QUESTIONS, id: string) =>
+      JUDGE_QUESTIONS[specId].flatMap((question) =>
+        question.id === id && question.type === 'choice' ? question.answers : []
+      );
+    // The operations and kinds as the outcome records them: the browser's "no way forward" is `BLOCKED` there.
+    const values = [
+      ...choices('browser.step', 'operation').filter((operation) => operation !== 'other'),
+      'BLOCKED',
+      ...choices('context.compact', 'kind'),
+    ];
+    expect(values).toContain('SCROLL_DOWN');
+
+    const localeRoot = fileURLToPath(
+      new URL('../../../../packages/desktop/src/renderer/services/i18n/locales/', import.meta.url)
+    );
+    for (const language of SUPPORTED_LANGUAGES) {
+      const view = JSON.parse(readFileSync(join(localeRoot, language, 'common.json'), 'utf8')).kyrn.judgeView;
+      for (const field of fields) expect(view.fields[field], `${language} fields.${field}`).toBeTruthy();
+      for (const value of values) expect(view.values[value], `${language} values.${value}`).toBeTruthy();
+      expect(view.questions.testLog, `${language} questions.testLog`).toBeTruthy();
+    }
+  });
+
+  it('names the lessons brought into a turn by their words, as it does the ones followed', () => {
+    expect(resultFacts(card(ledger({ specId: 'memory.recall', outcome: { apply: ['a', 'b'] } })), lessonWords)).toEqual(
+      [
+        { name: 'apply', values: ['the lesson called a'], text: true },
+        { name: 'apply', values: ['the lesson called b'], text: true },
+      ]
+    );
+    // Without the lessons' words, the ids stay a plain list.
+    expect(resultFacts(card(ledger({ specId: 'memory.recall', outcome: { apply: ['a', 'b'] } })))).toEqual([
+      { name: 'apply', values: ['a', 'b'] },
+    ]);
   });
 
   it('words what the experience library decided in every language: verdicts as values, the followed as fields', () => {
@@ -482,8 +557,13 @@ describe('Jev judgment cards: what the view can translate', () => {
       'swarm.patch',
       'review.triage',
       'board.read',
+      'hive.relate',
+      'tool.approval',
+      'tool.admission.test-log',
     ];
     expect(harness.map(stageOf)).not.toContain('other');
+    expect(new Set(harness.map(stageOf)).size).toBe(harness.length);
+    expect(Object.keys(DECISIONS).toSorted()).toEqual(harness.toSorted());
     expect(stageOf('memory.future')).toBe('other');
     for (const locale of [common, zhCN, zhTW]) {
       const questions = locale.kyrn.judgeView.questions as Record<string, string>;

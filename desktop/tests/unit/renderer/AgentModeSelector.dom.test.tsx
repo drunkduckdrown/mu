@@ -32,6 +32,7 @@ vi.mock('@icon-park/react', () => ({
   Down: () => <span aria-hidden='true'>v</span>,
   Loading: ({ className }: { className?: string }) => <span aria-hidden='true' className={className} />,
   Robot: ({ className }: { className?: string }) => <span aria-hidden='true' className={className} />,
+  Time: (props: { 'data-testid'?: string }) => <span aria-hidden='true' data-testid={props['data-testid']} />,
 }));
 
 vi.mock('@arco-design/web-react', () => {
@@ -173,6 +174,9 @@ describe('AgentModeSelector', () => {
 
     await waitFor(() => expect(screen.getByText('默认 → 全自动')).toBeInTheDocument());
     expect(screen.getByTestId('mode-selector')).toHaveAttribute('data-current-mode', 'default');
+    // The menu marks the pending mode with the line clock icon, never the stopwatch emoji.
+    expect(screen.getByTestId('mode-pending-mark')).toBeInTheDocument();
+    expect(document.body.textContent).not.toContain('\u23f1');
   });
 
   // Picking a mode the backend defers must NOT be reported as a failure, and must not

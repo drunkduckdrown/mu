@@ -6,13 +6,13 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import type { AutoUpdateStatus } from './autoUpdaterService';
+import type { UpdateState } from '@/common/update/updateTypes';
 
 const AUTO_UPDATE_DIAGNOSTICS_FILE = 'auto-update-diagnostics.json';
 const MAX_AUTO_UPDATE_EVENTS = 20;
 
 export type AutoUpdateDiagnosticStatus =
-  | AutoUpdateStatus['status']
+  | UpdateState['phase']
   | 'quit-and-install'
   | 'native-update-ready'
   | 'native-update-error'
@@ -25,8 +25,6 @@ export type AutoUpdateDiagnosticEvent = {
   platform?: NodeJS.Platform;
   progressPercent?: number;
   status: AutoUpdateDiagnosticStatus;
-  total?: number;
-  transferred?: number;
   version?: string;
 };
 
@@ -87,15 +85,13 @@ export function appendAutoUpdateDiagnosticEvent(
   };
 }
 
-function eventFromStatus(status: AutoUpdateStatus, at: string): AutoUpdateDiagnosticEvent {
+function eventFromState(state: UpdateState, at: string): AutoUpdateDiagnosticEvent {
   return {
     at,
-    error: status.error,
-    progressPercent: status.progress?.percent,
-    status: status.status,
-    total: status.progress?.total,
-    transferred: status.progress?.transferred,
-    version: status.version,
+    error: state.error?.code,
+    progressPercent: state.percent,
+    status: state.phase,
+    version: state.version,
   };
 }
 
@@ -117,9 +113,10 @@ function updateAutoUpdateDiagnostics(event: AutoUpdateDiagnosticEvent, options: 
   );
 }
 
-export function recordAutoUpdateStatus(status: AutoUpdateStatus, options: AutoUpdateDiagnosticOptions): void {
+/** A new phase of the update state (auto-update-diagnostics.json in the app's data folder keeps the last 20). */
+export function recordUpdateState(state: UpdateState, options: AutoUpdateDiagnosticOptions): void {
   const at = (options.now ?? (() => new Date()))().toISOString();
-  updateAutoUpdateDiagnostics(eventFromStatus(status, at), options);
+  updateAutoUpdateDiagnostics(eventFromState(state, at), options);
 }
 
 export function recordAutoUpdateQuitAndInstall(options: AutoUpdateDiagnosticOptions): void {

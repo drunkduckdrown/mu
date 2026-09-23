@@ -68,6 +68,7 @@
   "processing": "Wird verarbeitet...",
   "responseSentSuccessfully": "Antwort erfolgreich gesendet",
   "permissionResponseFailed": "Antwort konnte nicht gesendet werden. Bitte erneut versuchen.",
+  "permissionNoLongerPending": "Diese Anfrage wartet nicht mehr auf eine Antwort.",
   "confirmation": {
     "applyChange": "Diese Änderung anwenden?",
     "allowExecution": "Ausführung erlauben?",

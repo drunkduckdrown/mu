@@ -19,6 +19,19 @@
   white-space: nowrap;
 }
 
+/* A hint the main model was given: a small label with a hairline, never a colour. The line gives way before it does. */
+.hint {
+  flex: none;
+  box-sizing: border-box;
+  padding: 0 5px;
+  border: 1px solid var(--border-base);
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
 .dot,
 .dotBusy,
 .dotMuted {

@@ -8,7 +8,6 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createInstance, type i18n as I18n } from 'i18next';
 import enPreview from '@/renderer/services/i18n/locales/en-US/preview.json';
 import zhPreview from '@/renderer/services/i18n/locales/zh-CN/preview.json';
-import { BROWSER_TAB_FALLBACK_TITLE } from '@/renderer/pages/conversation/Preview/browser/constants';
 import { fallbackTabTitle, previewTabDisplayTitle } from '@/renderer/pages/conversation/Preview/context/tabTitle';
 
 let i18n: I18n;
@@ -26,7 +25,6 @@ const shown = (title: string, content_type: Parameters<typeof fallbackTabTitle>[
 
 describe('the title stored for a tab without a name', () => {
   it('is a fixed sentinel per type, never a translated word', () => {
-    expect(fallbackTabTitle('browser')).toBe(BROWSER_TAB_FALLBACK_TITLE);
     expect(fallbackTabTitle('image')).toBe('Image');
     expect(fallbackTabTitle('diff')).toBe('Diff');
     expect(fallbackTabTitle('markdown')).toBe('Markdown');
@@ -39,12 +37,9 @@ describe('the title stored for a tab without a name', () => {
 describe('the title the tab strip shows', () => {
   it('shows the reader’s word for a sentinel, and follows a language switch', async () => {
     await i18n.changeLanguage('en-US');
-    expect(shown(BROWSER_TAB_FALLBACK_TITLE, 'browser')).toBe('New tab');
-    expect(shown('', 'browser')).toBe('New tab');
     expect(shown('Image', 'image')).toBe('Image');
 
     await i18n.changeLanguage('zh-CN');
-    expect(shown(BROWSER_TAB_FALLBACK_TITLE, 'browser')).toBe('新建标签页');
     expect(shown('Image', 'image')).toBe('图片');
     expect(shown('Code', 'code')).toBe('代码');
     expect(shown('Preview', 'pdf')).toBe('预览');
@@ -54,7 +49,7 @@ describe('the title the tab strip shows', () => {
 
   it('leaves a real name alone, even one that looks like another type’s sentinel', async () => {
     await i18n.changeLanguage('zh-CN');
-    expect(shown('Example Domain', 'browser')).toBe('Example Domain');
+    expect(shown('Example Domain', 'markdown')).toBe('Example Domain');
     expect(shown('report.pdf', 'pdf')).toBe('report.pdf');
     expect(shown('typescript', 'code')).toBe('typescript');
     // "Image" is only a sentinel on an image tab.

@@ -5,41 +5,36 @@
  */
 
 /**
- * Why an update step failed. The main process sends this code next to the raw message (kept for logs and as a
- * detail); the renderer shows the translated `update.errors.*` text for it, in the current app language.
+ * Why an update step failed. The main process puts this code in the update state (the raw message goes to the log);
+ * the renderer shows the translated `update.errors.*` sentence for it, in the current app language.
  */
 export type UpdateErrorCode =
   /** The update server could not be reached (offline, DNS, refused, reset…). */
   | 'network'
   /** The update server did not answer in time. */
   | 'timeout'
-  /** No update information is published for this system (the channel file answers 404). */
+  /**
+   * The newest release cannot update this system automatically: its update feed or update file answers 404 (a
+   * release built without them, or without this architecture). Shown beside the offer of the release's installer.
+   */
   | 'noUpdateInfo'
   /** The update server answered with an HTTP error (`status`). */
   | 'serverError'
   /** The update information could not be read. */
   | 'invalidMetadata'
-  | 'invalidUrl'
-  | 'httpsOnly'
-  /** A download or redirect pointed at a host outside the allowlist (`host`). */
-  | 'hostNotAllowed'
-  | 'redirectNoLocation'
-  | 'tooManyRedirects'
-  | 'downloadNoBody'
-  | 'missingUrl'
-  | 'missingDownloadId'
-  /** electron-updater returned no result: an unpackaged build without the forced dev update config. */
-  | 'checkUnavailable'
+  /** A check failed for another reason. */
+  | 'checkFailed'
+  /** The update or its installer could not be downloaded, a download the host allowlist refused included. */
+  | 'downloadFailed'
+  /** The downloaded update could not be handed over to be installed. */
   | 'prepareInstallFailed'
-  | 'prepareInstallTimeout'
-  | 'unknown';
+  /** macOS did not get the downloaded update ready in time. */
+  | 'prepareInstallTimeout';
 
 export type UpdateErrorInfo = {
   code: UpdateErrorCode;
   /** HTTP status, for `serverError`. */
   status?: number;
-  /** The refused host, for `hostNotAllowed`. */
-  host?: string;
 };
 
 /** An error that already knows its code; its message is the plain English detail for logs. */
@@ -73,8 +68,11 @@ function describe(error: unknown, depth = 0): string {
   return `${own} ${describe(cause, depth + 1)}`.trim();
 }
 
-/** The code for any error an update step can meet (our own UpdateError, electron-updater's, Node's fetch). */
-export function classifyUpdateError(error: unknown): UpdateErrorInfo {
+/**
+ * The code for any error an update step can meet (our own UpdateError, electron-updater's, Node's fetch). `fallback`
+ * names the step that failed, for an error that says nothing more specific.
+ */
+export function classifyUpdateError(error: unknown, fallback: UpdateErrorCode): UpdateErrorInfo {
   if (error instanceof UpdateError) return error.info;
   const text = describe(error);
   const statusMatch = HTTP_STATUS_PATTERN.exec(text);
@@ -86,10 +84,10 @@ export function classifyUpdateError(error: unknown): UpdateErrorInfo {
   // timeout ruled out, does it mean the file is missing.
   if (/Cannot find (?:channel )?"?[\w.-]+\.ya?ml/i.test(text)) return { code: 'noUpdateInfo' };
   if (status !== undefined && status >= 400) return { code: 'serverError', status };
-  return { code: 'unknown' };
+  return { code: fallback };
 }
 
-/** The raw message of an error, for logs and as the secondary detail under a translated headline. */
+/** The raw message of an error, for logs. */
 export function updateErrorDetail(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }

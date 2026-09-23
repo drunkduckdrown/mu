@@ -322,6 +322,7 @@
         "preflight": "這則請求應該如何處理？",
         "interjection": "這次插話是糾正、後續要求，還是旁支問題？",
         "admission": "哪些工具輸出片段應該進入上下文？",
+        "testLog": "測試日誌的哪些部分應該交給模型？",
         "forget": "這段舊的工具輸出還需要保留全文嗎？",
         "compaction": "哪些舊結果可以裁剪？",
         "skills": "哪些技能與目前任務相關？",
@@ -389,7 +390,12 @@
         "focus": "正在處理的驗收項目",
         "needsUser": "需要使用者",
         "update": "重寫看板",
-        "relation": "關係"
+        "relation": "關係",
+        "operation": "下一步",
+        "target": "目標元素",
+        "probability": "機率",
+        "omit": "省略的日誌段",
+        "key": "值得告訴你的事件"
       },
       "values": {
         "true": "是",
@@ -459,7 +465,7 @@
         "constraint": "新約束",
         "correction": "糾正",
         "subgoal": "新子目標",
-        "unclear": "變化不明確",
+        "unclear": "說不準",
         "hold": "暫緩",
         "no_answer": "未及時得到回答",
         "aborted": "已取消",
@@ -482,7 +488,19 @@
         "unrelated": "無關",
         "preference": "長期規則",
         "approve": "放行",
-        "beyond": "超出你的要求"
+        "beyond": "超出你的要求",
+        "CLICK": "點擊",
+        "TYPE_TEXT": "輸入文字",
+        "SELECT": "從清單中選擇",
+        "SCROLL_DOWN": "向下捲動",
+        "SCROLL_UP": "向上捲動",
+        "WAIT": "等頁面更新",
+        "DONE": "已完成",
+        "BLOCKED": "無法繼續",
+        "listing": "檔名或搜尋比對",
+        "content": "程式碼或文字",
+        "log": "建置或測試輸出",
+        "data": "查到的事實"
       },
       "probabilityValue": "判定為「是」的機率：{{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -508,17 +526,365 @@
         "try_hive": "卡住就用蜂群",
         "try_delegate": "分頭委派"
       },
-      "answerIds": {
-        "turn_type": "任務類型",
-        "is_side_question": "題外問題",
-        "needs_clarification": "太模糊，無法直接動手",
-        "needs_files_changed": "需要修改程式碼",
-        "needs_memory": "以往的筆記有幫助",
-        "swarm_worthy": "可拆成獨立部分",
-        "plan_first": "改動大或有風險",
-        "task_complexity": "涉及範圍",
-        "reasoning_depth": "推理深度",
-        "tool_complexity": "工具使用量"
+      "answerWords": {
+        "preflight": {
+          "questions": {
+            "turn_type": "任務類型",
+            "is_side_question": "題外問題",
+            "needs_clarification": "太模糊，無法直接動手",
+            "needs_files_changed": "需要修改程式碼",
+            "needs_memory": "以往的筆記有幫助",
+            "swarm_worthy": "可拆成獨立部分",
+            "plan_first": "改動大或有風險",
+            "task_complexity": "涉及範圍",
+            "reasoning_depth": "推理深度",
+            "tool_complexity": "工具使用量"
+          },
+          "answers": {
+            "chat": "閒聊",
+            "chat_question": "概念問答",
+            "quick_lookup": "快速查找",
+            "single_edit": "單處修改",
+            "multi_step_task": "多步驟任務",
+            "research": "調查研究",
+            "design_discussion": "方案討論",
+            "other": "其他情況"
+          },
+          "levels": {
+            "task_complexity": {
+              "0": "只是提問",
+              "1": "程式碼中的一處",
+              "2": "程式碼中的多處",
+              "3": "整個程式碼庫"
+            },
+            "reasoning_depth": {
+              "0": "回想或查找",
+              "1": "簡單解釋",
+              "2": "細緻分析",
+              "3": "深入推理"
+            },
+            "tool_complexity": {
+              "0": "不用工具",
+              "1": "一兩次讀取",
+              "2": "多次呼叫並修改檔案",
+              "3": "大量呼叫並建置或測試"
+            }
+          }
+        },
+        "interjection": {
+          "questions": {
+            "kind": "訊息屬於哪種"
+          },
+          "answers": {
+            "correction": "糾正",
+            "addition": "追加的後續工作",
+            "side_question": "無關的提問",
+            "other": "其他情況"
+          }
+        },
+        "admission": {
+          "questions": {
+            "kind": "輸出類型",
+            "chunk": "輸出第 {{number}} 段"
+          },
+          "answers": {
+            "error": "錯誤",
+            "result": "有用的結果",
+            "progress": "過程輸出",
+            "warning": "重複的警告",
+            "passing": "通過的檢查",
+            "other": "其他情況"
+          }
+        },
+        "testLog": {
+          "questions": {
+            "part": "日誌第 {{number}} 段"
+          },
+          "answers": {
+            "needed": "摘要之外還需要",
+            "not_needed": "有摘要就夠了",
+            "unclear": "說不準"
+          }
+        },
+        "forget": {
+          "questions": {
+            "still_needed": "還要再用到完整輸出"
+          }
+        },
+        "compaction": {
+          "questions": {
+            "kind": "結果類型",
+            "result_needed": "還需要完整結果",
+            "call_matters": "這次呼叫本身還重要"
+          },
+          "answers": {
+            "error": "錯誤",
+            "listing": "檔名或搜尋比對",
+            "content": "程式碼或文字",
+            "log": "建置或測試輸出",
+            "data": "查到的事實",
+            "other": "其他情況"
+          }
+        },
+        "skills": {
+          "questions": {
+            "skill": "技能 {{number}} 有幫助"
+          }
+        },
+        "locate": {
+          "questions": {
+            "path": "檔案 {{number}} 相關"
+          }
+        },
+        "routing": {
+          "questions": {
+            "agent": "工作類型",
+            "difficulty": "任務難度",
+            "reasoning": "需要多少推理"
+          },
+          "answers": {
+            "other": "都不是"
+          },
+          "levels": {
+            "difficulty": {
+              "0": "機械性工作",
+              "1": "例行工作",
+              "2": "需要仔細設計",
+              "3": "專家也覺得難"
+            },
+            "reasoning": {
+              "0": "幾乎不需要",
+              "1": "需要一些",
+              "2": "需要很多",
+              "3": "多步深入推理"
+            }
+          }
+        },
+        "publish": {
+          "questions": {
+            "share_worthy": "值得分享",
+            "kind": "筆記類型"
+          },
+          "answers": {
+            "finding": "發現",
+            "dead_end": "死路",
+            "decision": "決定",
+            "blocker": "阻塞",
+            "other": "例行進展"
+          }
+        },
+        "deliver": {
+          "questions": {
+            "useful": "對接收的蜂群成員有幫助"
+          }
+        },
+        "browser": {
+          "questions": {
+            "operation": "下一步",
+            "click_target": "點哪裡",
+            "type_text_target": "在哪裡輸入",
+            "select_target": "選哪一項"
+          },
+          "answers": {
+            "CLICK": "點擊",
+            "TYPE_TEXT": "輸入文字",
+            "SELECT": "從清單中選擇",
+            "SCROLL_DOWN": "向下捲動",
+            "SCROLL_UP": "向上捲動",
+            "WAIT": "等頁面更新",
+            "DONE": "已完成",
+            "other": "無法繼續",
+            "none": "都不合適"
+          }
+        },
+        "recall": {
+          "questions": {
+            "lesson": "經驗 {{number}} 適用"
+          }
+        },
+        "capture": {
+          "questions": {
+            "correction": "糾正了一個錯誤",
+            "preference": "定下一條長期規則"
+          }
+        },
+        "outcome": {
+          "questions": {
+            "way_out": "找到了另一條行得通的路"
+          }
+        },
+        "worth": {
+          "questions": {
+            "lesson": "經驗 {{number}}"
+          },
+          "answers": {
+            "reusable": "之後還用得上",
+            "one_off": "只關這一次",
+            "already_known": "早就知道",
+            "unclear": "說不準"
+          }
+        },
+        "merge": {
+          "questions": {
+            "kept": "既有經驗 {{number}}"
+          },
+          "answers": {
+            "same": "同一則經驗",
+            "refines": "新的說得更準",
+            "contradicts": "互相矛盾",
+            "unrelated": "說的是別的事",
+            "unclear": "說不準"
+          }
+        },
+        "applied": {
+          "questions": {
+            "lesson": "經驗 {{number}} 照做了"
+          }
+        },
+        "risk": {
+          "questions": {
+            "destructive": "會刪除或無法復原",
+            "requested": "是你要求的"
+          }
+        },
+        "drift": {
+          "questions": {
+            "course": "工作方向"
+          },
+          "answers": {
+            "on_track": "在正軌上",
+            "detour": "必要的繞路",
+            "drift": "偏離了",
+            "loop": "在原地打轉",
+            "other": "說不準"
+          }
+        },
+        "completion": {
+          "questions": {
+            "claims_done": "說工作已完成",
+            "needs_check": "應該執行驗證"
+          }
+        },
+        "notify": {
+          "questions": {
+            "urgency": "模型何時需要知道"
+          },
+          "answers": {
+            "now": "立即",
+            "next_turn": "目前這步做完後",
+            "drop": "不用告知",
+            "other": "說不準"
+          }
+        },
+        "cache": {
+          "questions": {
+            "finished": "對話已結束",
+            "open": "有問題在等你回答"
+          }
+        },
+        "rewind": {
+          "questions": {
+            "dead_end": "同一做法反覆失敗",
+            "progress": "正在取得進展"
+          }
+        },
+        "goalMet": {
+          "questions": {
+            "achieved": "目標已完全達成",
+            "needs_user": "沒有你無法繼續"
+          }
+        },
+        "outputDrift": {
+          "questions": {
+            "rule": "違反規則 {{number}}"
+          }
+        },
+        "taskFrame": {
+          "questions": {
+            "change": "對任務的改變"
+          },
+          "answers": {
+            "new_task": "新任務",
+            "constraint": "為工作加了一條規則",
+            "correction": "目前做法不對",
+            "subgoal": "同一任務的下一步",
+            "none": "沒有改變"
+          }
+        },
+        "constraint": {
+          "questions": {
+            "constraint": "違反約束 {{number}}"
+          }
+        },
+        "capabilities": {
+          "questions": {
+            "capability": "需要能力 {{number}}"
+          }
+        },
+        "diagnostics": {
+          "questions": {
+            "more_edits_coming": "後面還有修改",
+            "warnings_are_style": "只有風格類警告"
+          }
+        },
+        "patch": {
+          "questions": {
+            "within_task": "沒有超出任務範圍",
+            "file": "任務需要改檔案 {{number}}"
+          }
+        },
+        "review": {
+          "questions": {
+            "bug": "發現 {{number}} 是真問題",
+            "inScope": "發現 {{number}} 與這次改動有關"
+          }
+        },
+        "board": {
+          "questions": {
+            "phase": "正在做什麼",
+            "needs_user": "需要你提供什麼",
+            "focus": "正在做的事項",
+            "event": "事件 {{number}}",
+            "changed": "有新情況要告訴你"
+          },
+          "answers": {
+            "understanding": "在弄懂任務",
+            "planning": "在想怎麼做",
+            "changing": "在改程式碼",
+            "checking": "在檢查",
+            "fixing": "在修問題",
+            "waiting": "在等你",
+            "wrapping_up": "在收尾",
+            "stuck": "好像卡住了",
+            "other": "說不準",
+            "none": "都不是",
+            "key": "值得告訴你的消息",
+            "routine": "例行步驟",
+            "unclear": "說不準"
+          }
+        },
+        "relate": {
+          "questions": {
+            "relation": "對之前發現的影響"
+          },
+          "answers": {
+            "supersedes": "取代了它",
+            "contradicts": "與它矛盾",
+            "supports": "佐證它",
+            "none": "與它無關"
+          }
+        },
+        "approval": {
+          "questions": {
+            "verdict": "這一步屬於哪種"
+          },
+          "answers": {
+            "needed": "任務需要的一步",
+            "beyond": "超出你的要求",
+            "unrelated": "與任務無關",
+            "unclear": "說不準"
+          }
+        }
       },
       "log": {
         "thisTurn": "本輪",

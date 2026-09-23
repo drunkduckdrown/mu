@@ -152,6 +152,7 @@
     "addressPlaceholder": "输入网址或搜索内容",
     "tabsLabel": "已打开的网页",
     "closeTab": "关闭「{{title}}」",
+    "copyAddress": "复制网址",
     "agentActiveTooltip": "Agent 正在操作此标签页",
     "tabLimitReached": "标签页数量已达上限（{{count}} 个），已复用最早打开的标签页。",
     "agentFirstUseTitle": "Agent 正在使用应用内浏览器",

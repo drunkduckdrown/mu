@@ -7,17 +7,7 @@
 import { act, render, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import ThemedLogo, {
-  detectTintableLogo,
-  isTintableLogoCandidate,
-  ProviderLogo,
-} from '@/renderer/components/agent/ThemedLogo';
-
-vi.mock('@icon-park/react', () => ({
-  LinkCloud: ({ className }: { className?: string }) => (
-    <span data-testid='link-cloud-fallback' className={className} />
-  ),
-}));
+import ThemedLogo, { detectTintableLogo, isTintableLogoCandidate } from '@/renderer/components/agent/ThemedLogo';
 
 /**
  * The module keeps a per-URL detection cache for the whole session, so each
@@ -160,23 +150,5 @@ describe('ThemedLogo', () => {
     await flushDetection();
     const mask = container.querySelector('span[role="img"]');
     expect(mask?.getAttribute('title')).toBe('OpenAI Logo');
-  });
-});
-
-describe('ProviderLogo', () => {
-  it('renders the shared cloud fallback when the platform has no logo', () => {
-    render(<ProviderLogo logo={null} name='Custom' />);
-    expect(screen.getByTestId('link-cloud-fallback')).toBeInTheDocument();
-  });
-
-  it('renders the platform logo image when provided', async () => {
-    stubFetch(() => Promise.resolve(svgResponse('<svg fill="#3186FF"></svg>')));
-    const { container } = render(<ProviderLogo logo={uniqueSvgUrl()} name='Gemini' size={18} />);
-
-    await flushDetection();
-
-    const img = container.querySelector('img');
-    expect(img?.getAttribute('alt')).toBe('Gemini');
-    expect(img?.style.width).toBe('18px');
   });
 });

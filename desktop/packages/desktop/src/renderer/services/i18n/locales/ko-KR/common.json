@@ -322,6 +322,7 @@
         "preflight": "이 요청을 어떻게 처리해야 하는가?",
         "interjection": "이 끼어들기는 수정인가, 후속 요청인가, 곁가지 질문인가?",
         "admission": "도구 출력의 어느 부분을 컨텍스트에 넣어야 하는가?",
+        "testLog": "테스트 로그의 어느 부분이 모델에 전달되어야 하는가?",
         "forget": "오래된 도구 출력의 전문이 아직 필요한가?",
         "compaction": "어떤 오래된 결과를 잘라낼 수 있는가?",
         "skills": "이 작업과 관련된 스킬은 무엇인가?",
@@ -389,7 +390,12 @@
         "focus": "진행 중인 항목",
         "needsUser": "사용자 개입 필요",
         "update": "보드 다시 쓰기",
-        "relation": "관계"
+        "relation": "관계",
+        "operation": "다음 단계",
+        "target": "대상 요소",
+        "probability": "확률",
+        "omit": "생략한 로그 부분",
+        "key": "알릴 만한 사건"
       },
       "values": {
         "true": "예",
@@ -459,7 +465,7 @@
         "constraint": "새 제약 조건",
         "correction": "정정",
         "subgoal": "새 하위 목표",
-        "unclear": "불분명한 변경",
+        "unclear": "판단할 수 없음",
         "hold": "보류",
         "no_answer": "시간 내 응답 없음",
         "aborted": "취소됨",
@@ -482,7 +488,19 @@
         "unrelated": "관련 없음",
         "preference": "지속 규칙",
         "approve": "실행 허용",
-        "beyond": "요청보다 많음"
+        "beyond": "요청보다 많음",
+        "CLICK": "클릭",
+        "TYPE_TEXT": "텍스트 입력",
+        "SELECT": "목록에서 선택",
+        "SCROLL_DOWN": "아래로 스크롤",
+        "SCROLL_UP": "위로 스크롤",
+        "WAIT": "페이지 기다리기",
+        "DONE": "완료",
+        "BLOCKED": "더 나아갈 방법 없음",
+        "listing": "파일 이름이나 검색 결과",
+        "content": "코드나 글",
+        "log": "빌드나 테스트 출력",
+        "data": "찾아본 사실"
       },
       "probabilityValue": "'예'일 확률: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -508,17 +526,365 @@
         "try_hive": "막히면 Hive",
         "try_delegate": "나눠서 위임"
       },
-      "answerIds": {
-        "turn_type": "작업 유형",
-        "is_side_question": "곁가지 질문",
-        "needs_clarification": "진행하기엔 너무 모호함",
-        "needs_files_changed": "코드 변경 필요",
-        "needs_memory": "과거 경험이 도움이 됨",
-        "swarm_worthy": "독립된 부분으로 나눌 수 있음",
-        "plan_first": "크거나 위험함",
-        "task_complexity": "범위",
-        "reasoning_depth": "사고 깊이",
-        "tool_complexity": "도구 사용량"
+      "answerWords": {
+        "preflight": {
+          "questions": {
+            "turn_type": "작업 유형",
+            "is_side_question": "곁가지 질문",
+            "needs_clarification": "진행하기엔 너무 모호함",
+            "needs_files_changed": "코드 변경 필요",
+            "needs_memory": "과거 경험이 도움이 됨",
+            "swarm_worthy": "독립된 부분으로 나눌 수 있음",
+            "plan_first": "크거나 위험함",
+            "task_complexity": "범위",
+            "reasoning_depth": "사고 깊이",
+            "tool_complexity": "도구 사용량"
+          },
+          "answers": {
+            "chat": "대화",
+            "chat_question": "개념 질문",
+            "quick_lookup": "빠른 조회",
+            "single_edit": "단일 수정",
+            "multi_step_task": "여러 단계 작업",
+            "research": "조사",
+            "design_discussion": "설계 논의",
+            "other": "그 밖의 것"
+          },
+          "levels": {
+            "task_complexity": {
+              "0": "질문일 뿐",
+              "1": "코드의 한 곳",
+              "2": "코드의 여러 곳",
+              "3": "코드베이스 전체"
+            },
+            "reasoning_depth": {
+              "0": "기억하거나 찾아보기",
+              "1": "간단한 설명",
+              "2": "꼼꼼한 분석",
+              "3": "깊은 추론"
+            },
+            "tool_complexity": {
+              "0": "없음",
+              "1": "한두 번 읽기",
+              "2": "수정을 포함한 여러 번의 호출",
+              "3": "빌드나 테스트를 포함한 많은 호출"
+            }
+          }
+        },
+        "interjection": {
+          "questions": {
+            "kind": "메시지의 종류"
+          },
+          "answers": {
+            "correction": "정정",
+            "addition": "나중에 할 추가 작업",
+            "side_question": "관련 없는 질문",
+            "other": "그 밖의 것"
+          }
+        },
+        "admission": {
+          "questions": {
+            "kind": "출력 종류",
+            "chunk": "출력 {{number}}번째 부분"
+          },
+          "answers": {
+            "error": "오류",
+            "result": "유용한 결과",
+            "progress": "진행 출력",
+            "warning": "반복되는 경고",
+            "passing": "통과한 검사",
+            "other": "그 밖의 것"
+          }
+        },
+        "testLog": {
+          "questions": {
+            "part": "로그 {{number}}번째 부분"
+          },
+          "answers": {
+            "needed": "요약 외에도 필요",
+            "not_needed": "요약으로 충분",
+            "unclear": "판단할 수 없음"
+          }
+        },
+        "forget": {
+          "questions": {
+            "still_needed": "전체 출력이 다시 필요함"
+          }
+        },
+        "compaction": {
+          "questions": {
+            "kind": "결과 종류",
+            "result_needed": "전체 결과가 아직 필요함",
+            "call_matters": "호출 자체가 아직 중요함"
+          },
+          "answers": {
+            "error": "오류",
+            "listing": "파일 이름이나 검색 결과",
+            "content": "코드나 글",
+            "log": "빌드나 테스트 출력",
+            "data": "찾아본 사실",
+            "other": "그 밖의 것"
+          }
+        },
+        "skills": {
+          "questions": {
+            "skill": "{{number}}번 스킬이 도움이 됨"
+          }
+        },
+        "locate": {
+          "questions": {
+            "path": "{{number}}번 파일이 관련됨"
+          }
+        },
+        "routing": {
+          "questions": {
+            "agent": "작업 종류",
+            "difficulty": "작업 난이도",
+            "reasoning": "필요한 추론"
+          },
+          "answers": {
+            "other": "해당 없음"
+          },
+          "levels": {
+            "difficulty": {
+              "0": "기계적",
+              "1": "일상적",
+              "2": "신중한 설계가 필요함",
+              "3": "전문가에게도 어려움"
+            },
+            "reasoning": {
+              "0": "거의 없음",
+              "1": "조금",
+              "2": "많이",
+              "3": "여러 단계의 깊은 추론"
+            }
+          }
+        },
+        "publish": {
+          "questions": {
+            "share_worthy": "공유할 가치가 있음",
+            "kind": "노트 종류"
+          },
+          "answers": {
+            "finding": "발견",
+            "dead_end": "막다른 길",
+            "decision": "결정",
+            "blocker": "차단 요소",
+            "other": "일상적인 진행"
+          }
+        },
+        "deliver": {
+          "questions": {
+            "useful": "받는 벌에게 도움이 됨"
+          }
+        },
+        "browser": {
+          "questions": {
+            "operation": "다음 단계",
+            "click_target": "클릭할 대상",
+            "type_text_target": "입력할 곳",
+            "select_target": "고를 항목"
+          },
+          "answers": {
+            "CLICK": "클릭",
+            "TYPE_TEXT": "텍스트 입력",
+            "SELECT": "목록에서 선택",
+            "SCROLL_DOWN": "아래로 스크롤",
+            "SCROLL_UP": "위로 스크롤",
+            "WAIT": "페이지 기다리기",
+            "DONE": "완료",
+            "other": "더 나아갈 방법 없음",
+            "none": "맞는 것이 없음"
+          }
+        },
+        "recall": {
+          "questions": {
+            "lesson": "{{number}}번 교훈이 해당됨"
+          }
+        },
+        "capture": {
+          "questions": {
+            "correction": "실수를 바로잡음",
+            "preference": "계속 지킬 규칙을 정함"
+          }
+        },
+        "outcome": {
+          "questions": {
+            "way_out": "통하는 다른 방법을 찾음"
+          }
+        },
+        "worth": {
+          "questions": {
+            "lesson": "{{number}}번 교훈"
+          },
+          "answers": {
+            "reusable": "다시 쓸모 있음",
+            "one_off": "이번 한 번뿐",
+            "already_known": "이미 알려짐",
+            "unclear": "판단할 수 없음"
+          }
+        },
+        "merge": {
+          "questions": {
+            "kept": "저장된 {{number}}번 교훈"
+          },
+          "answers": {
+            "same": "같은 교훈",
+            "refines": "새 교훈이 더 정확함",
+            "contradicts": "서로 모순됨",
+            "unrelated": "다른 내용",
+            "unclear": "판단할 수 없음"
+          }
+        },
+        "applied": {
+          "questions": {
+            "lesson": "{{number}}번 교훈을 따름"
+          }
+        },
+        "risk": {
+          "questions": {
+            "destructive": "삭제하거나 되돌릴 수 없음",
+            "requested": "요청하신 일"
+          }
+        },
+        "drift": {
+          "questions": {
+            "course": "작업 방향"
+          },
+          "answers": {
+            "on_track": "정상 진행",
+            "detour": "필요한 우회",
+            "drift": "벗어나는 중",
+            "loop": "제자리걸음",
+            "other": "판단할 수 없음"
+          }
+        },
+        "completion": {
+          "questions": {
+            "claims_done": "작업이 끝났다고 말함",
+            "needs_check": "실행해서 확인해야 함"
+          }
+        },
+        "notify": {
+          "questions": {
+            "urgency": "에이전트가 알아야 할 때"
+          },
+          "answers": {
+            "now": "바로",
+            "next_turn": "현재 단계가 끝난 뒤",
+            "drop": "알리지 않음",
+            "other": "판단할 수 없음"
+          }
+        },
+        "cache": {
+          "questions": {
+            "finished": "대화가 끝남",
+            "open": "답을 기다리는 질문이 있음"
+          }
+        },
+        "rewind": {
+          "questions": {
+            "dead_end": "같은 방법이 또 실패함",
+            "progress": "진전이 있음"
+          }
+        },
+        "goalMet": {
+          "questions": {
+            "achieved": "목표를 완전히 달성함",
+            "needs_user": "사용자 없이는 계속할 수 없음"
+          }
+        },
+        "outputDrift": {
+          "questions": {
+            "rule": "{{number}}번 규칙에 어긋남"
+          }
+        },
+        "taskFrame": {
+          "questions": {
+            "change": "작업의 변화"
+          },
+          "answers": {
+            "new_task": "새 작업",
+            "constraint": "작업의 새 규칙",
+            "correction": "접근 방식이 틀림",
+            "subgoal": "같은 작업의 다음 단계",
+            "none": "변화 없음"
+          }
+        },
+        "constraint": {
+          "questions": {
+            "constraint": "{{number}}번 제약 조건에 어긋남"
+          }
+        },
+        "capabilities": {
+          "questions": {
+            "capability": "{{number}}번 기능이 필요함"
+          }
+        },
+        "diagnostics": {
+          "questions": {
+            "more_edits_coming": "수정이 더 이어짐",
+            "warnings_are_style": "스타일 경고뿐"
+          }
+        },
+        "patch": {
+          "questions": {
+            "within_task": "작업 범위 안에 있음",
+            "file": "작업상 {{number}}번 파일을 바꿔야 함"
+          }
+        },
+        "review": {
+          "questions": {
+            "bug": "{{number}}번 지적은 실제 버그",
+            "inScope": "{{number}}번 지적은 이번 변경에 관한 것"
+          }
+        },
+        "board": {
+          "questions": {
+            "phase": "에이전트가 하는 일",
+            "needs_user": "사용자에게서 필요한 것이 있음",
+            "focus": "진행 중인 항목",
+            "event": "{{number}}번 사건",
+            "changed": "알릴 새 소식이 있음"
+          },
+          "answers": {
+            "understanding": "작업을 파악하는 중",
+            "planning": "방법을 구상하는 중",
+            "changing": "코드를 바꾸는 중",
+            "checking": "작업을 확인하는 중",
+            "fixing": "확인에서 나온 문제를 고치는 중",
+            "waiting": "응답을 기다리는 중",
+            "wrapping_up": "마무리하는 중",
+            "stuck": "막힌 것 같습니다",
+            "other": "판단할 수 없음",
+            "none": "해당 없음",
+            "key": "알릴 만한 소식",
+            "routine": "일상적인 단계",
+            "unclear": "판단할 수 없음"
+          }
+        },
+        "relate": {
+          "questions": {
+            "relation": "이전 발견에 미치는 영향"
+          },
+          "answers": {
+            "supersedes": "대체함",
+            "contradicts": "모순됨",
+            "supports": "뒷받침함",
+            "none": "관련 없음"
+          }
+        },
+        "approval": {
+          "questions": {
+            "verdict": "이 단계의 성격"
+          },
+          "answers": {
+            "needed": "작업에 필요함",
+            "beyond": "요청보다 많음",
+            "unrelated": "작업과 관련 없음",
+            "unclear": "판단할 수 없음"
+          }
+        }
       },
       "log": {
         "thisTurn": "이번 턴",

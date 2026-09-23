@@ -1,4 +1,5 @@
 import type { TMessage } from '@/common/chat/chatLib';
+import { isPreflightHintId, type PreflightHintId } from '@/renderer/pages/conversation/KyrnPanel/Judge/wording';
 import { readJevPreflightRow } from '@/renderer/utils/chat/jevPreflight';
 
 /**
@@ -6,13 +7,17 @@ import { readJevPreflightRow } from '@/renderer/utils/chat/jevPreflight';
  * (`process/agent/kyrn/events.ts`) sends it as a tool call with the id `jev:<runtime>:<turn>` and marks its stage in
  * `rawOutput.preflight` (pending, verdict with the verdict's fields, fallback). Conversations recorded before that
  * carry only the English title ("Jev · Classifying", "Jev · <turn type>", "Jev · Fallback"), which is read instead.
+ *
+ * `hints` are the hints the main model was given with the verdict (`hintIds`, see the harness's
+ * kyrn/docs/features/presentation-codes.md), in their order; present only when there are some. The harness sends the
+ * verdict again once the turn has started, with them; a rule's hint (`answered`) can come with no class at all.
  */
 export type JevLine =
   | { stage: 'classifying' }
   /** A class it answered with; `state` as the harness names it (applied, shadow, late), `byRule` when no judge had to read it. */
-  | { stage: 'classified'; turnType: string; state: string; byRule: boolean }
+  | { stage: 'classified'; turnType: string; state: string; byRule: boolean; hints?: PreflightHintId[] }
   /** No class this time: the turn goes on as it would without Jev. */
-  | { stage: 'fallback' };
+  | { stage: 'fallback'; hints?: PreflightHintId[] };
 
 const JEV_ID = /^jev:/;
 
@@ -37,6 +42,19 @@ const record = (value: unknown): Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
 const str = (value: unknown): string => (typeof value === 'string' ? value : '');
 
+/**
+ * The hints a verdict names, each once and in its order. Only the ids this build has words for: the conversation shows
+ * no raw code, and the judge tab still lists an id a newer harness adds. The relay may have snake_cased the key.
+ */
+function hintsOf(verdict: Record<string, unknown>): { hints?: PreflightHintId[] } {
+  const ids = verdict.hintIds ?? verdict.hint_ids;
+  if (!Array.isArray(ids)) return {};
+  const hints = [
+    ...new Set(ids.filter((id): id is PreflightHintId => typeof id === 'string' && isPreflightHintId(id))),
+  ];
+  return hints.length ? { hints } : {};
+}
+
 export function jevLine(message: TMessage): JevLine | undefined {
   if (message.type !== 'acp_tool_call') return undefined;
   const update = record(message.content?.update);
@@ -49,6 +67,6 @@ export function jevLine(message: TMessage): JevLine | undefined {
   const verdict = record(raw);
   const turnType = row?.state === 'verdict' ? (row.turnType ?? '') : '';
   const state = str(verdict.state) || 'applied';
-  if (!turnType || turnType === 'unknown' || state === 'none') return { stage: 'fallback' };
-  return { stage: 'classified', turnType, state, byRule: verdict.by === 'rule' };
+  if (!turnType || turnType === 'unknown' || state === 'none') return { stage: 'fallback', ...hintsOf(verdict) };
+  return { stage: 'classified', turnType, state, byRule: verdict.by === 'rule', ...hintsOf(verdict) };
 }

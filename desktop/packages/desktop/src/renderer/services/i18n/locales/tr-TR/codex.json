@@ -6,16 +6,16 @@
     "connection_refused": "Bağlantı reddedildi, lütfen Codex servisinin düzgün çalışıp çalışmadığını kontrol edin.",
     "unknown_error": "Ağ bağlantı hatası, lütfen ağ ayarlarını kontrol edin.",
     "retry_attempt": "{{current}}. deneme yapılıyor...",
-    "cloudflare_blocked_title": "🚫 {{service}} servisi Cloudflare koruması tarafından engellendi",
-    "network_timeout_title": "⏱️ Ağ bağlantısı zaman aşımı",
-    "connection_refused_title": "❌ Servis bağlantısı reddedildi",
-    "unknown_error_title": "🔌 Ağ bağlantı hatası",
+    "cloudflare_blocked_title": "{{service}} servisi Cloudflare koruması tarafından engellendi",
+    "network_timeout_title": "Ağ bağlantısı zaman aşımı",
+    "connection_refused_title": "Servis bağlantısı reddedildi",
+    "unknown_error_title": "Ağ bağlantı hatası",
     "recovery_suggestions": "**Çözüm Önerileri:**",
     "technical_info": "**Teknik Bilgiler:**",
     "error_type": "Hata Türü",
     "retry_count": "Deneme Sayısı",
     "error_details": "Hata Detayları",
-    "quick_switch_title": "💡 **Hızlı Geçiş Seçenekleri:**",
+    "quick_switch_title": "**Hızlı Geçiş Seçenekleri:**",
     "quick_switch_content": "Mevcut servis ağ kısıtlamalarıyla karşılaştığında şunları yapabilirsiniz:\n\n1. **AI Asistanını Hemen Değiştir**: Sol panelden diğer mevcut asistanları seçin\n2. **Servis Durumunu Kontrol Et**: Farklı AI servislerinin kullanılabilirliği bölgeye göre değişebilir\n3. **Ağ Optimizasyonu**: Bağlantı başarı oranını artırmak için kararlı bir ağ ortamı kullanın\n4. **Daha Sonra Tekrar Dene**: Ağ kısıtlamaları genellikle geçicidir\n\n**İpucu**: İş sürekliliğini sağlamak için alternatif olarak birden fazla AI servisi yapılandırmanız önerilir.",
     "recovery_actions": {
       "cloudflare_blocked": [
@@ -46,8 +46,8 @@
     }
   },
   "thinking": {
-    "processing": "🤔 Codex düşünüyor...",
-    "completed": "💭 Düşünme süreci tamamlandı",
+    "processing": "Codex düşünüyor...",
+    "completed": "Düşünme süreci tamamlandı",
     "analyzing": "Sorun analiz ediliyor ve çözümler formüle ediliyor...",
     "composing": "Yanıt içeriği oluşturuluyor..."
   },

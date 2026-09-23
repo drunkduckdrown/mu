@@ -11,9 +11,6 @@ import type { PreviewContentType } from '../../types';
  * 怎么复制这个 tab 的绝对路径。
  *
  * `filePath` —— 渲染进程手上就有后端主机上的绝对路径。
- * `url` —— 浏览器 tab 的地址。可以复制，但它**不是文件系统路径**：这一支之所以
- *   与 filePath 分开，就是为了「打开所在目录」永远不会把一个 URL 交给
- *   showItemInFolder。
  * `projectRef` —— 渲染进程**从来拿不到**项目文件的绝对路径（见 ipcBridge.fs 的
  *   注释：前端不构造也不接收绝对路径），必须回后端 resolve 并由后端完成动作。
  *   这条路仅限 Electron 桌面端：远程 WebUI 不该看到宿主机的设备路径。
@@ -21,9 +18,6 @@ import type { PreviewContentType } from '../../types';
  * How to address a tab's absolute location.
  *
  * `filePath` — the renderer already holds an absolute path on the backend host.
- * `url` — a browser tab's address. Copyable, but NOT a filesystem path: this
- *   variant is split from filePath precisely so that "show in folder" can never
- *   hand a URL to showItemInFolder.
  * `projectRef` — the renderer NEVER receives a project file's absolute path (see
  *   the ipcBridge.fs comments: the front end neither builds nor receives one), so
  *   the action has to go back to the backend, which resolves the ref and performs
@@ -32,15 +26,15 @@ import type { PreviewContentType } from '../../types';
  */
 export type PreviewTabAbsolutePath =
   | { kind: 'filePath'; value: string }
-  | { kind: 'url'; value: string }
   | { kind: 'projectRef'; pe_id: string; relative_path: string };
 
 /**
- * 一个 tab 可复制的地址。两者都是可选的：浏览器 tab 没有相对路径，
+ * 一个 tab 可复制的地址。两者都是可选的：不在 workspace 内的文件没有相对路径，
  * 而没有任何可寻址身份的 tab 两者皆无。
  *
- * The addresses a tab can copy. Both are optional: a browser tab has no
- * workspace-relative path, and a tab with no addressable identity has neither.
+ * The addresses a tab can copy. Both are optional: a file outside the workspace
+ * has no workspace-relative path, and a tab with no addressable identity has
+ * neither.
  */
 export interface PreviewTabPaths {
   absolute?: PreviewTabAbsolutePath;
@@ -126,16 +120,6 @@ const toWorkspaceRelative = (absolute: string, workspace?: string): string | und
  * context menu.
  */
 export const previewTabPaths = (tab: PreviewTabPathSource): PreviewTabPaths => {
-  // 浏览器 tab 指向的是 URL 而非文件：URL 是唯一值得复制的东西，
-  // 「相对于 workspace」对它没有意义。
-  //
-  // A browser tab addresses a URL rather than a file: the URL is the only thing
-  // worth copying, and "relative to the workspace" means nothing for it.
-  if (tab.content_type === 'browser') {
-    const url = tab.content?.trim();
-    return url ? { absolute: { kind: 'url', value: url } } : {};
-  }
-
   const ref = tab.metadata?.fileRef;
   const filePath = tab.metadata?.file_path?.trim() || undefined;
   const workspace = tab.metadata?.workspace;
@@ -175,15 +159,14 @@ export const previewTabPaths = (tab: PreviewTabPathSource): PreviewTabPaths => {
  *
  * 只有 `projectRef` 那条路受环境限制：它靠后端解析出宿主机的设备路径并写剪贴板，
  * 远程 WebUI 不该拿到那种路径，所以非桌面端置灰。渲染进程自己就有字符串的
- * `text` 那条路（含浏览器 tab 的 URL）在哪儿都能复制。
+ * `filePath` 那条路在哪儿都能复制。
  *
  * Whether the copy-path entry is available in the current runtime.
  *
  * Only the `projectRef` route is environment-bound: it has the backend resolve a
  * device path on the host machine and write the clipboard, and a remote WebUI must
- * not be handed such a path — so it greys out off the desktop. The `text` route,
- * where the renderer already holds the string (including a browser tab's URL),
- * copies anywhere.
+ * not be handed such a path — so it greys out off the desktop. The `filePath`
+ * route, where the renderer already holds the string, copies anywhere.
  */
 export const canCopyAbsolutePath = (absolute: PreviewTabAbsolutePath | undefined, isDesktop: boolean): boolean => {
   if (!absolute) return false;
@@ -194,16 +177,13 @@ export const canCopyAbsolutePath = (absolute: PreviewTabAbsolutePath | undefined
  * 「打开文件所在目录」这一项在当前运行环境下是否可用。
  *
  * 一律要求 Electron 桌面端：这个动作打开的是**后端主机**的文件管理器，从远程
- * WebUI 触发只会在别人机器上弹出窗口。浏览器 tab 也不适用 —— URL 没有所在目录。
+ * WebUI 触发只会在别人机器上弹出窗口。
  *
  * Whether the show-in-folder entry is available in the current runtime.
  *
  * Always requires the Electron desktop: the action opens a file manager on the
  * BACKEND host, so triggering it from a remote WebUI would pop a window open on
- * someone else's machine. Browser tabs are excluded too — a URL has no
- * containing folder.
+ * someone else's machine.
  */
-export const canRevealInFolder = (absolute: PreviewTabAbsolutePath | undefined, isDesktop: boolean): boolean => {
-  if (!absolute || !isDesktop) return false;
-  return absolute.kind !== 'url';
-};
+export const canRevealInFolder = (absolute: PreviewTabAbsolutePath | undefined, isDesktop: boolean): boolean =>
+  Boolean(absolute) && isDesktop;

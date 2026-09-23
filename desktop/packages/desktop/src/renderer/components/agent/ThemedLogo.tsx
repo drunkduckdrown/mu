@@ -19,7 +19,6 @@
  * `currentColor`) and cached per URL — no manual logo lists to maintain.
  */
 
-import { LinkCloud } from '@icon-park/react';
 import React, { useEffect, useState } from 'react';
 
 /**
@@ -150,23 +149,5 @@ const ThemedLogo: React.FC<ThemedLogoProps> = ({ src, alt, className, style, tit
 
   return <img src={src} alt={alt} title={title} className={className} style={style} />;
 };
-
-/**
- * Provider/platform logo with the shared cloud fallback. Extracted from the
- * copies previously duplicated in AddPlatformModal and EditModeModal.
- */
-export const ProviderLogo: React.FC<{ logo: string | null; name: string; size?: number }> = ({
-  logo,
-  name,
-  size = 20,
-}) => (
-  <ThemedLogo
-    src={logo}
-    alt={name}
-    className='object-contain shrink-0'
-    style={{ width: size, height: size }}
-    fallback={<LinkCloud theme='outline' size={size} className='text-t-secondary flex shrink-0' />}
-  />
-);
 
 export default ThemedLogo;

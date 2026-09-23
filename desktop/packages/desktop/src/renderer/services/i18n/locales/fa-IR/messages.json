@@ -68,6 +68,7 @@
   "processing": "در حال پردازش...",
   "responseSentSuccessfully": "پاسخ با موفقیت ارسال شد",
   "permissionResponseFailed": "ارسال پاسخ ممکن نشد. دوباره تلاش کنید.",
+  "permissionNoLongerPending": "این درخواست دیگر منتظر پاسخ نیست.",
   "confirmation": {
     "applyChange": "این تغییر اعمال شود؟",
     "allowExecution": "اجرا مجاز باشد؟",

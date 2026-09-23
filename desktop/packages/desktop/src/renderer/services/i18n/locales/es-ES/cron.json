@@ -178,7 +178,7 @@
   },
   "error": {
     "alreadyExists": "Esta conversación ya tiene una tarea programada \"{{name}}\" (ID: {{id}}). Actualiza la tarea existente en lugar de crear una nueva.",
-    "missedJob": "⏰ La tarea programada \"{{name}}\" no se ejecutó durante el modo de suspensión del sistema.\nHora programada: {{time}}\nEl temporizador se reinició y se ejecutará en la próxima hora programada.",
+    "missedJob": "La tarea programada \"{{name}}\" no se ejecutó durante el modo de suspensión del sistema.\nHora programada: {{time}}\nEl temporizador se reinició y se ejecutará en la próxima hora programada.",
     "jobNotFound": "Tarea no encontrada: {{id}}",
     "conversationNotFound": "Conversación no encontrada",
     "scheduledTimePassed": "La hora programada ya pasó",

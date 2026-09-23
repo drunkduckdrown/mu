@@ -71,6 +71,7 @@
   "processing": "Обробка...",
   "responseSentSuccessfully": "Відповідь надіслано успішно",
   "permissionResponseFailed": "Не вдалося надіслати відповідь. Спробуйте ще раз.",
+  "permissionNoLongerPending": "Цей запит більше не чекає на відповідь.",
   "confirmation": {
     "applyChange": "Застосувати цю зміну?",
     "allowExecution": "Дозволити виконання?",

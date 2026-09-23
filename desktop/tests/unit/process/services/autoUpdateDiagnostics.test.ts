@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appendAutoUpdateDiagnosticEvent } from '@/process/services/autoUpdateDiagnostics';
+import { appendAutoUpdateDiagnosticEvent } from '@/process/services/update/autoUpdateDiagnostics';
 
 describe('appendAutoUpdateDiagnosticEvent', () => {
   it('records macOS native updater readiness events with platform and elapsed time', () => {
@@ -35,7 +35,7 @@ describe('appendAutoUpdateDiagnosticEvent', () => {
       },
       {
         at: '2026-05-30T08:00:00.000Z',
-        status: 'downloaded',
+        status: 'ready',
         version: '2.1.8',
       }
     );
@@ -50,7 +50,7 @@ describe('appendAutoUpdateDiagnosticEvent', () => {
       events: [
         {
           at: '2026-05-30T08:00:00.000Z',
-          status: 'downloaded',
+          status: 'ready',
           version: '2.1.8',
         },
         {

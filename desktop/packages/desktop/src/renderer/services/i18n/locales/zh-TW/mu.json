@@ -567,6 +567,10 @@
     "timeout": "mu 沒有及時回應。",
     "processClosed": "mu 已停止，重新傳送訊息即可重新啟動。"
   },
+  "notices": {
+    "answerLost": "mu 沒有收到你的回答，已按不同意處理。",
+    "bashMissing": "mu 執行命令需要 Git for Windows，安裝好後重新傳送訊息即可。下載網址："
+  },
   "errors": {
     "credential": "金鑰中有不允許的字元（如空格、引號或換行），請重新貼上。",
     "keyVariable": "{{name}} 不能用來存判定器的金鑰。請用 TYPESAFE_API_KEY、AI_GATEWAY_API_KEY，或以 MU_JUDGE_ 開頭的變數名稱。",

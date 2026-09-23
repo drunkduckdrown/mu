@@ -10,7 +10,7 @@ import Titlebar from '@/renderer/components/layout/Titlebar';
 import MuMark from '@renderer/components/brand/MuMark';
 import { Layout as ArcoLayout, Message, Tooltip } from '@arco-design/web-react';
 import classNames from 'classnames';
-import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { setGlobalNavigate } from '@/renderer/utils/navigation';
@@ -84,8 +84,6 @@ const useDebug = () => {
 
   return { onClick };
 };
-
-const UpdateModal = React.lazy(() => import('@/renderer/components/settings/UpdateModal'));
 
 const DEFAULT_SIDER_WIDTH = 260;
 /**
@@ -308,24 +306,23 @@ const Layout: React.FC<{
       }
     };
 
-    // Handle check update request from tray / 托盘请求检查更新
-    const handleCheckUpdate = () => {
-      window.dispatchEvent(new CustomEvent('aionui-open-update-modal', { detail: { source: 'tray' } }));
-    };
-
     // Listen for tray events / 监听托盘事件
     window.addEventListener('tray:navigate-to-guid', handleNavigateToGuid as EventListener);
     window.addEventListener('tray:navigate-to-conversation', handleNavigateToConversation as EventListener);
     window.addEventListener('tray:open-about', handleOpenAbout as EventListener);
     window.addEventListener('tray:pause-all-tasks', handlePauseAllTasks as EventListener);
-    window.addEventListener('tray:check-update', handleCheckUpdate as EventListener);
+    // The menu's and the tray's "check for updates": the update row of 关于 (About) shows the check and its answer.
+    const removeUpdateOpenListener = ipcBridge.update.open.on(() => {
+      void navigate('/settings/about');
+      void ipcBridge.update.run.invoke({ action: 'check' });
+    });
 
     return () => {
       window.removeEventListener('tray:navigate-to-guid', handleNavigateToGuid as EventListener);
       window.removeEventListener('tray:navigate-to-conversation', handleNavigateToConversation as EventListener);
       window.removeEventListener('tray:open-about', handleOpenAbout as EventListener);
       window.removeEventListener('tray:pause-all-tasks', handlePauseAllTasks as EventListener);
-      window.removeEventListener('tray:check-update', handleCheckUpdate as EventListener);
+      removeUpdateOpenListener();
     };
   }, [navigate]);
 
@@ -465,9 +462,6 @@ const Layout: React.FC<{
                 }
               >
                 <Outlet />
-                <Suspense fallback={null}>
-                  <UpdateModal />
-                </Suspense>
               </ArcoLayout.Content>
               {workspaceAvailable && <WorkPanelHost rowWidth={mainRowWidth} isMobile={isMobile} />}
             </div>

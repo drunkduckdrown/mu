@@ -14,6 +14,7 @@ import {
   type SetSessionConfigOptionResponse,
   type SetSessionModelRequest,
   type SessionConfigOption,
+  type SessionUpdate,
 } from '@agentclientprotocol/sdk';
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
@@ -67,6 +68,13 @@ type Session = {
   request?: PermissionRequest;
   /** Mode switches from the app in flight: mu's own "switched" note is not shown as a reply then. */
   switching: number;
+  /**
+   * mu's process has stopped (a crash, a kill). The conversation's next call starts a new one on the same session file
+   * (`live`); a turn that was running fails with `processExited`.
+   */
+  stopped?: boolean;
+  /** The conversation was told that Git for Windows is missing: once is enough. */
+  bashMissingSaid?: boolean;
 };
 type RpcFactory = (
   cwd: string,
@@ -95,6 +103,33 @@ export const MU_TURN_ERRORS = {
   wrongProject: 'Session belongs to a different project',
   notPersisted: 'mu did not persist the session',
 } as const;
+
+/**
+ * One-line notices the bridge adds to a conversation, by code. The bridge has no i18n: a notice is a tool call whose id
+ * starts with `mu:notice:` and whose input carries the code (`rawInput.notice`); the desktop shows it as one line in
+ * the reader's language (`renderer/pages/conversation/Messages/acp/muNotice.ts`, which a test keeps in step with this
+ * list). The English text is its title, for other clients.
+ */
+export const MU_NOTICES = {
+  /** A question of mu's got no usable answer (the app failed to ask, or answered with none of the choices). */
+  answer_lost: 'mu did not get your answer, so it went on as if you had declined.',
+  /** A command failed because mu found no bash on Windows: Git for Windows is missing (see `bashMissing`). */
+  bash_missing:
+    'mu needs Git for Windows to run commands. Once it is installed, send your message again. Download it here: https://git-scm.com/download/win',
+} as const;
+export type MuNoticeCode = keyof typeof MU_NOTICES;
+
+/**
+ * A shell call that failed because mu found no bash, which on Windows means Git for Windows is missing. The words are
+ * pi's (`getShellConfig` in the harness's `packages/coding-agent/src/utils/shell.ts`, whose test keeps the first line).
+ */
+export function bashMissing(event: JsonRecord): boolean {
+  return (
+    event.type === 'tool_execution_end' &&
+    event.isError === true &&
+    /No bash shell found/.test(messageText(asRecord(event.result).content))
+  );
+}
 
 /**
  * The language the app shows, as the desktop last wrote it to `<mu home>/app-language` for the harness, or undefined
@@ -135,6 +170,8 @@ export class KyrnAgent implements Agent {
   private factory: RpcFactory;
   private home: string | undefined;
   private sessions = new Map<string, Session>();
+  /** Sessions whose stopped mu is being started again (`live`). */
+  private reviving = new Map<string, Promise<void>>();
   /**
    * @param home the user's home directory, whose mu home holds the app language; tests pass a temporary one
    */
@@ -176,7 +213,9 @@ export class KyrnAgent implements Agent {
     return state;
   }
   private refresh(id: string): void {
-    const session = this.session(id);
+    const session = this.sessions.get(id);
+    // An old process can still speak while it is being ended, after its session was replaced or closed.
+    if (!session || session.stopped) return;
     session.dirty = true;
     if (session.refreshing) return;
     session.refreshing = (async () => {
@@ -230,6 +269,7 @@ export class KyrnAgent implements Agent {
       if (event.type === 'agent_start') session.started = true;
       if (event.type === 'agent_settled') session.settled?.();
       if (event.type === 'kyrn_rpc_closed') {
+        session.stopped = true;
         session.error = new Error(MU_TURN_ERRORS.processExited);
         session.settled?.();
       }
@@ -244,6 +284,15 @@ export class KyrnAgent implements Agent {
         event.method === 'notify' &&
         event.notifyType === 'info';
       const updates = quiet ? [] : mapEvent(event);
+      // No bash on Windows: pi's error (English, with options meant for developers) makes way for one line in the
+      // reader's language with the download link, said once below.
+      const noBash = bashMissing(event);
+      if (noBash)
+        for (const update of updates)
+          if (update.sessionUpdate === 'tool_call_update') {
+            update.content = [];
+            update.rawOutput = { notice: 'bash_missing' };
+          }
       for (const update of updates) {
         if (update.sessionUpdate === 'agent_thought_chunk' && update.content.type === 'text')
           session.thought += update.content.text;
@@ -297,13 +346,17 @@ export class KyrnAgent implements Agent {
         ['confirm', 'select', 'input', 'editor'].includes(text(event.method))
       ) {
         // Permissions are out-of-band so a pending dialog cannot block cancellation or streaming.
-        void this.permission(id, event).catch(() => session.rpc.respond({ id: event.id, cancelled: true }));
+        void this.permission(id, session, event);
         return;
       }
       for (const update of updates)
         session.queue = session.queue
           .then(() => this.connection.sessionUpdate({ sessionId: id, update }))
           .catch((): void => {});
+      if (noBash && !session.bashMissingSaid) {
+        session.bashMissingSaid = true;
+        this.notice(id, session, 'bash_missing');
+      }
     };
     session.rpc = this.factory(cwd, file, onEvent, id, {
       ...harnessEnv(id, this.home),
@@ -322,6 +375,33 @@ export class KyrnAgent implements Agent {
       this.sessions.delete(id);
       throw error;
     }
+  }
+  /**
+   * The session with a running mu. One whose mu stopped (it crashed, or was killed) gets a new process on the same session
+   * file, in the mode it was in, so the conversation goes on instead of failing every call after that. A new process
+   * that does not start leaves the session as it was, for the next call to try again.
+   */
+  private async live(id: string): Promise<Session> {
+    await this.reviving.get(id);
+    const session = this.session(id);
+    if (!session.stopped) return session;
+    if (!session.file) throw new Error(MU_TURN_ERRORS.processExited);
+    const revival = (async () => {
+      this.sessions.delete(id);
+      session.rpc.close();
+      try {
+        await this.attach(id, session.cwd, session.file, session.permissions?.mode);
+      } catch (error) {
+        if (!this.sessions.has(id)) this.sessions.set(id, session);
+        throw error;
+      }
+    })().finally(() => this.reviving.delete(id));
+    this.reviving.set(id, revival);
+    await revival;
+    const revived = this.session(id);
+    // The send box learns the new process's options (the same model and mode, read again).
+    this.announce(id, revived);
+    return revived;
   }
   /** Keeps what mu says about permissions: its modes for the send box, its next question for the card. */
   private permissionEvent(id: string, session: Session, event: JsonRecord): void {
@@ -502,7 +582,7 @@ export class KyrnAgent implements Agent {
     if (saved.cwd !== cwd) throw new Error(MU_TURN_ERRORS.wrongProject);
     const permissions = text(saved.permissions);
     await this.attach(params.sessionId, cwd, text(saved.file), isModeId(permissions) ? permissions : undefined);
-    const messages = await this.session(params.sessionId).rpc.send({ type: 'get_messages' });
+    const messages = await (await this.live(params.sessionId)).rpc.send({ type: 'get_messages' });
     for (const item of array(messages.messages).map(asRecord)) {
       if (!['user', 'assistant'].includes(text(item.role))) continue;
       const thought = item.role === 'assistant' ? messageThinking(item.content) : '';
@@ -534,7 +614,7 @@ export class KyrnAgent implements Agent {
     return { configOptions };
   }
   async setSessionConfigOption(params: SetSessionConfigOptionRequest): Promise<SetSessionConfigOptionResponse> {
-    const session = this.session(params.sessionId);
+    const session = await this.live(params.sessionId);
     if (params.configId === 'mode') return this.switchPermissions(params.sessionId, String(params.value));
     if (session.busy) throw new Error(MU_TURN_ERRORS.busyConfig);
     const options = await this.options(params.sessionId);
@@ -562,8 +642,7 @@ export class KyrnAgent implements Agent {
     return {};
   }
   async prompt(params: PromptRequest): Promise<PromptResponse> {
-    const session = this.session(params.sessionId);
-    if (session.busy) throw new Error(MU_TURN_ERRORS.turnRunning);
+    if (this.session(params.sessionId).busy) throw new Error(MU_TURN_ERRORS.turnRunning);
     const images: { type: 'image'; data: string; mimeType: string }[] = [];
     const parts = params.prompt.map((block) => {
       if (block.type === 'text') return block.text;
@@ -577,6 +656,10 @@ export class KyrnAgent implements Agent {
       if (block.type === 'resource_link') return `${block.name}: ${block.uri}`;
       throw new Error(MU_TURN_ERRORS.contentUnsupported);
     });
+    const found = this.session(params.sessionId);
+    // Only a conversation whose mu stopped waits for a new one; any other sends the prompt at once, as before.
+    const session = found.stopped || this.reviving.has(params.sessionId) ? await this.live(params.sessionId) : found;
+    if (session.busy) throw new Error(MU_TURN_ERRORS.turnRunning);
     session.busy = true;
     session.cancelled = false;
     session.error = undefined;
@@ -595,9 +678,15 @@ export class KyrnAgent implements Agent {
       const state = await this.state(params.sessionId);
       if (session.started || state.isStreaming || state.isCompacting) await completed;
       await session.queue;
+      // A mu that stopped during the turn answers nothing more; the turn failed, and says why.
+      if (session.stopped) throw new Error(MU_TURN_ERRORS.processExited);
       await this.state(params.sessionId);
       if (session.error) throw session.error;
       return { stopReason: session.cancelled ? 'cancelled' : 'end_turn' };
+    } catch (error) {
+      // Whatever failed first (the prompt, a state read), a mu that stopped is the reason.
+      if (session.stopped) throw new Error(MU_TURN_ERRORS.processExited, { cause: error });
+      throw error;
     } finally {
       session.busy = false;
       session.settled = undefined;
@@ -606,12 +695,54 @@ export class KyrnAgent implements Agent {
   async cancel(params: CancelNotification): Promise<void> {
     const session = this.session(params.sessionId);
     session.cancelled = true;
+    // A mu that stopped runs nothing that could be stopped.
+    if (session.stopped) return;
     await session.rpc.send({ type: 'abort' });
   }
-  private async permission(id: string, event: JsonRecord): Promise<void> {
-    const session = this.session(id);
+  /** One line in the conversation, in the reader's language (see MU_NOTICES). */
+  private notice(id: string, session: Session, code: MuNoticeCode): void {
+    const update: SessionUpdate = {
+      sessionUpdate: 'tool_call',
+      toolCallId: `mu:notice:${randomUUID()}`,
+      title: MU_NOTICES[code],
+      kind: 'other',
+      status: 'completed',
+      rawInput: { notice: code },
+    };
+    session.queue = session.queue
+      .then(() => this.connection.sessionUpdate({ sessionId: id, update }))
+      .catch((): void => {});
+  }
+  /**
+   * Asks the app one of mu's questions and answers mu exactly once, whatever happens: a failure to ask, an answer that
+   * is none of the choices, or an error here all end as "cancelled" (for a permission, not allowed), with a line in the
+   * conversation that says so. mu is never left waiting on a question the app can no longer answer.
+   */
+  private async permission(id: string, session: Session, event: JsonRecord): Promise<void> {
+    let answered = false;
+    const answer = (response: JsonRecord): void => {
+      if (answered) return;
+      answered = true;
+      session.rpc.respond({ id: event.id, ...response });
+    };
+    try {
+      await this.ask(id, session, event, answer);
+    } catch {
+      // The app could not ask, or answering failed here.
+    }
+    if (answered) return;
+    answer({ cancelled: true });
+    this.notice(id, session, 'answer_lost');
+  }
+  /** The question as the app shows it, and the answer back to mu; returns without answering when there is none to give. */
+  private async ask(
+    id: string,
+    session: Session,
+    event: JsonRecord,
+    answer: (response: JsonRecord) => void
+  ): Promise<void> {
     if (!['confirm', 'select'].includes(text(event.method))) {
-      session.rpc.respond({ id: event.id, cancelled: true });
+      answer({ cancelled: true });
       return;
     }
     const confirm = event.method === 'confirm';
@@ -645,20 +776,18 @@ export class KyrnAgent implements Agent {
             kind: request ? answerKind(i, choices.length) : ('allow_once' as const),
           })),
     });
+    // Stopped, or dismissed: no answer is an answer too.
     if (result.outcome.outcome === 'cancelled' || session.cancelled) {
-      session.rpc.respond({ id: event.id, cancelled: true });
+      answer({ cancelled: true });
       return;
     }
     const { optionId } = result.outcome;
     if (confirm) {
-      if (optionId === 'allow' || optionId === 'reject')
-        session.rpc.respond({ id: event.id, confirmed: optionId === 'allow' });
-      else session.rpc.respond({ id: event.id, cancelled: true });
+      if (optionId === 'allow' || optionId === 'reject') answer({ confirmed: optionId === 'allow' });
       return;
     }
     const index = answerIndex(request, optionId, choices.length);
-    if (index < 0) session.rpc.respond({ id: event.id, cancelled: true });
-    else session.rpc.respond({ id: event.id, value: choices[index] });
+    if (index >= 0) answer({ value: choices[index] });
   }
   close(): void {
     for (const session of this.sessions.values()) session.rpc.close();

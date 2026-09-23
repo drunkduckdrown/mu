@@ -6,16 +6,16 @@
     "connection_refused": "連線被拒絕，請確認 Codex 服務是否正常運行。",
     "unknown_error": "發生網路連線錯誤，請檢查網路設定。",
     "retry_attempt": "正在重試第 {{current}} 次...",
-    "cloudflare_blocked_title": "🚫 由於 Cloudflare 保護，{{service}} 服務被封鎖",
-    "network_timeout_title": "⏱️ 網路連線逾時",
-    "connection_refused_title": "❌ 服務連線被拒絕",
-    "unknown_error_title": "🔌 網路連線錯誤",
+    "cloudflare_blocked_title": "由於 Cloudflare 保護，{{service}} 服務被封鎖",
+    "network_timeout_title": "網路連線逾時",
+    "connection_refused_title": "服務連線被拒絕",
+    "unknown_error_title": "網路連線錯誤",
     "recovery_suggestions": "**建議解法：**",
     "technical_info": "**技術資訊：**",
     "error_type": "錯誤類型",
     "retry_count": "重試次數",
     "error_details": "錯誤詳情",
-    "quick_switch_title": "💡 **快速切換選項：**",
+    "quick_switch_title": "**快速切換選項：**",
     "quick_switch_content": "當前服務遇到網路限制時，你可以：\n\n1. **立即切換 AI 助手**：從左側面板選擇其他可用助手\n2. **檢查服務狀態**：不同地區的服務可用性可能不同\n3. **網路優化**：使用穩定的網路環境以提升連線成功率\n4. **稍後重試**：網路限制通常是暫時的\n\n**提示**：建議配置多個備用的 AI 服務以確保工作不中斷。",
     "recovery_actions": {
       "cloudflare_blocked": [
@@ -46,8 +46,8 @@
     }
   },
   "thinking": {
-    "processing": "🤔 Codex 正在思考...",
-    "completed": "💭 思考過程完成",
+    "processing": "Codex 正在思考...",
+    "completed": "思考過程完成",
     "analyzing": "正在分析問題和制定解決方案...",
     "composing": "正在整理回覆內容..."
   },

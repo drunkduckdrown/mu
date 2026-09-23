@@ -322,6 +322,7 @@
         "preflight": "Wie soll diese Anfrage behandelt werden?",
         "interjection": "Ist dieser Einwurf eine Korrektur, eine Anschlussbitte oder eine Nebenfrage?",
         "admission": "Welche Teile der Tool-Ausgabe sollen in den Kontext?",
+        "testLog": "Welche Teile eines Testlogs sollen das Modell erreichen?",
         "forget": "Wird die alte Tool-Ausgabe noch vollständig gebraucht?",
         "compaction": "Welche alten Ergebnisse können gekürzt werden?",
         "skills": "Welche Skills sind für diese Aufgabe relevant?",
@@ -389,7 +390,12 @@
         "focus": "Prüfpunkt in Arbeit",
         "needsUser": "Braucht den Nutzer",
         "update": "Board neu schreiben",
-        "relation": "Beziehung"
+        "relation": "Beziehung",
+        "operation": "Nächster Schritt",
+        "target": "Element",
+        "probability": "Wahrscheinlichkeit",
+        "omit": "Ausgelassene Log-Teile",
+        "key": "Erzählenswerte Ereignisse"
       },
       "values": {
         "true": "Ja",
@@ -459,7 +465,7 @@
         "constraint": "Neue Vorgabe",
         "correction": "Korrektur",
         "subgoal": "Neues Teilziel",
-        "unclear": "Unklare Änderung",
+        "unclear": "Lässt sich nicht sagen",
         "hold": "Zurückhalten",
         "no_answer": "Keine rechtzeitige Antwort",
         "aborted": "Abgebrochen",
@@ -482,7 +488,19 @@
         "unrelated": "Kein Bezug",
         "preference": "Dauerhafte Regel",
         "approve": "Freigeben",
-        "beyond": "Mehr als verlangt"
+        "beyond": "Mehr als verlangt",
+        "CLICK": "Klicken",
+        "TYPE_TEXT": "Text eingeben",
+        "SELECT": "Aus einer Liste wählen",
+        "SCROLL_DOWN": "Nach unten scrollen",
+        "SCROLL_UP": "Nach oben scrollen",
+        "WAIT": "Auf die Seite warten",
+        "DONE": "Fertig",
+        "BLOCKED": "Kein Weg weiter",
+        "listing": "Dateinamen oder Treffer",
+        "content": "Code oder Text",
+        "log": "Build- oder Testausgabe",
+        "data": "Nachgeschlagene Fakten"
       },
       "probabilityValue": "Wahrscheinlichkeit für „Ja“: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -508,17 +526,365 @@
         "try_hive": "Hive bei Stillstand",
         "try_delegate": "Teile delegieren"
       },
-      "answerIds": {
-        "turn_type": "Aufgabentyp",
-        "is_side_question": "Nebenfrage",
-        "needs_clarification": "Zu unklar, um loszulegen",
-        "needs_files_changed": "Braucht eine Codeänderung",
-        "needs_memory": "Frühere Notizen würden helfen",
-        "swarm_worthy": "Unabhängige Teile",
-        "plan_first": "Groß oder riskant",
-        "task_complexity": "Umfang",
-        "reasoning_depth": "Denktiefe",
-        "tool_complexity": "Tool-Nutzung"
+      "answerWords": {
+        "preflight": {
+          "questions": {
+            "turn_type": "Aufgabentyp",
+            "is_side_question": "Nebenfrage",
+            "needs_clarification": "Zu unklar, um loszulegen",
+            "needs_files_changed": "Braucht eine Codeänderung",
+            "needs_memory": "Frühere Notizen würden helfen",
+            "swarm_worthy": "Unabhängige Teile",
+            "plan_first": "Groß oder riskant",
+            "task_complexity": "Umfang",
+            "reasoning_depth": "Denktiefe",
+            "tool_complexity": "Tool-Nutzung"
+          },
+          "answers": {
+            "chat": "Unterhaltung",
+            "chat_question": "Konzeptfrage",
+            "quick_lookup": "Schnelle Suche",
+            "single_edit": "Einzelne Änderung",
+            "multi_step_task": "Mehrstufige Aufgabe",
+            "research": "Untersuchung",
+            "design_discussion": "Designdiskussion",
+            "other": "Etwas anderes"
+          },
+          "levels": {
+            "task_complexity": {
+              "0": "Eine Frage",
+              "1": "Eine Stelle im Code",
+              "2": "Mehrere Stellen im Code",
+              "3": "Die ganze Codebasis"
+            },
+            "reasoning_depth": {
+              "0": "Erinnern oder nachschlagen",
+              "1": "Eine einfache Erklärung",
+              "2": "Sorgfältige Analyse",
+              "3": "Tiefes Nachdenken"
+            },
+            "tool_complexity": {
+              "0": "Keine",
+              "1": "Ein oder zwei Lesezugriffe",
+              "2": "Mehrere Aufrufe mit Änderungen",
+              "3": "Viele Aufrufe mit Builds oder Tests"
+            }
+          }
+        },
+        "interjection": {
+          "questions": {
+            "kind": "Was die Nachricht ist"
+          },
+          "answers": {
+            "correction": "Eine Korrektur",
+            "addition": "Mehr Arbeit für später",
+            "side_question": "Eine Frage, die nicht dazugehört",
+            "other": "Etwas anderes"
+          }
+        },
+        "admission": {
+          "questions": {
+            "kind": "Art der Ausgabe",
+            "chunk": "Ausgabeteil {{number}}"
+          },
+          "answers": {
+            "error": "Ein Fehler",
+            "result": "Ein nützliches Ergebnis",
+            "progress": "Fortschrittsausgabe",
+            "warning": "Wiederholte Warnungen",
+            "passing": "Bestandene Prüfungen",
+            "other": "Etwas anderes"
+          }
+        },
+        "testLog": {
+          "questions": {
+            "part": "Log-Teil {{number}}"
+          },
+          "answers": {
+            "needed": "Neben der Zusammenfassung nötig",
+            "not_needed": "Die Zusammenfassung reicht",
+            "unclear": "Lässt sich nicht sagen"
+          }
+        },
+        "forget": {
+          "questions": {
+            "still_needed": "Volle Ausgabe wird wieder gebraucht"
+          }
+        },
+        "compaction": {
+          "questions": {
+            "kind": "Art des Ergebnisses",
+            "result_needed": "Volles Ergebnis noch nötig",
+            "call_matters": "Der Aufruf selbst zählt noch"
+          },
+          "answers": {
+            "error": "Ein Fehler",
+            "listing": "Dateinamen oder Treffer",
+            "content": "Code oder Text",
+            "log": "Build- oder Testausgabe",
+            "data": "Nachgeschlagene Fakten",
+            "other": "Etwas anderes"
+          }
+        },
+        "skills": {
+          "questions": {
+            "skill": "Skill {{number}} würde helfen"
+          }
+        },
+        "locate": {
+          "questions": {
+            "path": "Datei {{number}} ist relevant"
+          }
+        },
+        "routing": {
+          "questions": {
+            "agent": "Art der Arbeit",
+            "difficulty": "Wie schwer die Aufgabe ist",
+            "reasoning": "Nötiges Nachdenken"
+          },
+          "answers": {
+            "other": "Nichts davon"
+          },
+          "levels": {
+            "difficulty": {
+              "0": "Mechanisch",
+              "1": "Routine",
+              "2": "Braucht sorgfältiges Design",
+              "3": "Selbst für Fachleute schwer"
+            },
+            "reasoning": {
+              "0": "Fast keines",
+              "1": "Etwas",
+              "2": "Viel",
+              "3": "Tief, über viele Schritte"
+            }
+          }
+        },
+        "publish": {
+          "questions": {
+            "share_worthy": "Teilen lohnt sich",
+            "kind": "Art der Notiz"
+          },
+          "answers": {
+            "finding": "Eine Erkenntnis",
+            "dead_end": "Eine Sackgasse",
+            "decision": "Eine Entscheidung",
+            "blocker": "Ein Hindernis",
+            "other": "Routinefortschritt"
+          }
+        },
+        "deliver": {
+          "questions": {
+            "useful": "Hilft der empfangenden Biene"
+          }
+        },
+        "browser": {
+          "questions": {
+            "operation": "Nächster Schritt",
+            "click_target": "Was angeklickt wird",
+            "type_text_target": "Wo getippt wird",
+            "select_target": "Was ausgewählt wird"
+          },
+          "answers": {
+            "CLICK": "Klicken",
+            "TYPE_TEXT": "Text eingeben",
+            "SELECT": "Aus einer Liste wählen",
+            "SCROLL_DOWN": "Nach unten scrollen",
+            "SCROLL_UP": "Nach oben scrollen",
+            "WAIT": "Auf die Seite warten",
+            "DONE": "Fertig",
+            "other": "Kein Weg weiter",
+            "none": "Nichts passt"
+          }
+        },
+        "recall": {
+          "questions": {
+            "lesson": "Lektion {{number}} passt"
+          }
+        },
+        "capture": {
+          "questions": {
+            "correction": "Korrigiert einen Fehler",
+            "preference": "Nennt eine feste Regel"
+          }
+        },
+        "outcome": {
+          "questions": {
+            "way_out": "Einen anderen Weg gefunden, der klappte"
+          }
+        },
+        "worth": {
+          "questions": {
+            "lesson": "Lektion {{number}}"
+          },
+          "answers": {
+            "reusable": "Wieder nützlich",
+            "one_off": "Nur dieses Mal",
+            "already_known": "Schon bekannt",
+            "unclear": "Lässt sich nicht sagen"
+          }
+        },
+        "merge": {
+          "questions": {
+            "kept": "Gespeicherte Lektion {{number}}"
+          },
+          "answers": {
+            "same": "Dieselbe Lektion",
+            "refines": "Die neue ist genauer",
+            "contradicts": "Sie widersprechen sich",
+            "unrelated": "Handelt von etwas anderem",
+            "unclear": "Lässt sich nicht sagen"
+          }
+        },
+        "applied": {
+          "questions": {
+            "lesson": "Lektion {{number}} befolgt"
+          }
+        },
+        "risk": {
+          "questions": {
+            "destructive": "Löscht oder ist nicht umkehrbar",
+            "requested": "Du hast darum gebeten"
+          }
+        },
+        "drift": {
+          "questions": {
+            "course": "Richtung der Arbeit"
+          },
+          "answers": {
+            "on_track": "Auf Kurs",
+            "detour": "Ein nötiger Umweg",
+            "drift": "Driftet ab",
+            "loop": "Dreht sich im Kreis",
+            "other": "Lässt sich nicht sagen"
+          }
+        },
+        "completion": {
+          "questions": {
+            "claims_done": "Sagt, die Arbeit sei fertig",
+            "needs_check": "Sollte durch Ausführen geprüft werden"
+          }
+        },
+        "notify": {
+          "questions": {
+            "urgency": "Wann der Agent es braucht"
+          },
+          "answers": {
+            "now": "Sofort",
+            "next_turn": "Nach dem aktuellen Schritt",
+            "drop": "Nie",
+            "other": "Lässt sich nicht sagen"
+          }
+        },
+        "cache": {
+          "questions": {
+            "finished": "Das Gespräch ist vorbei",
+            "open": "Eine Frage wartet auf dich"
+          }
+        },
+        "rewind": {
+          "questions": {
+            "dead_end": "Derselbe Ansatz scheitert erneut",
+            "progress": "Kommt voran"
+          }
+        },
+        "goalMet": {
+          "questions": {
+            "achieved": "Ziel vollständig erreicht",
+            "needs_user": "Ohne dich geht es nicht weiter"
+          }
+        },
+        "outputDrift": {
+          "questions": {
+            "rule": "Verstößt gegen Regel {{number}}"
+          }
+        },
+        "taskFrame": {
+          "questions": {
+            "change": "Änderung an der Aufgabe"
+          },
+          "answers": {
+            "new_task": "Eine neue Aufgabe",
+            "constraint": "Eine neue Regel für die Arbeit",
+            "correction": "Der Ansatz ist falsch",
+            "subgoal": "Nächster Schritt derselben Aufgabe",
+            "none": "Keine Änderung"
+          }
+        },
+        "constraint": {
+          "questions": {
+            "constraint": "Verstößt gegen Vorgabe {{number}}"
+          }
+        },
+        "capabilities": {
+          "questions": {
+            "capability": "Fähigkeit {{number}} wird gebraucht"
+          }
+        },
+        "diagnostics": {
+          "questions": {
+            "more_edits_coming": "Weitere Änderungen folgen",
+            "warnings_are_style": "Nur Stilwarnungen"
+          }
+        },
+        "patch": {
+          "questions": {
+            "within_task": "Bleibt im Rahmen der Aufgabe",
+            "file": "Datei {{number}} muss für die Aufgabe geändert werden"
+          }
+        },
+        "review": {
+          "questions": {
+            "bug": "Befund {{number}} ist ein echter Fehler",
+            "inScope": "Befund {{number}} betrifft diese Änderung"
+          }
+        },
+        "board": {
+          "questions": {
+            "phase": "Was der Agent gerade tut",
+            "needs_user": "Braucht etwas von dir",
+            "focus": "Punkt in Arbeit",
+            "event": "Ereignis {{number}}",
+            "changed": "Es gibt Neues für dich"
+          },
+          "answers": {
+            "understanding": "Versteht die Aufgabe",
+            "planning": "Plant",
+            "changing": "Ändert Code",
+            "checking": "Prüft die Arbeit",
+            "fixing": "Behebt, was die Prüfung fand",
+            "waiting": "Wartet auf dich",
+            "wrapping_up": "Schließt ab",
+            "stuck": "Scheint festzustecken",
+            "other": "Lässt sich nicht sagen",
+            "none": "Keiner davon",
+            "key": "Eine Neuigkeit, die sich zu erzählen lohnt",
+            "routine": "Ein Routineschritt",
+            "unclear": "Lässt sich nicht sagen"
+          }
+        },
+        "relate": {
+          "questions": {
+            "relation": "Wirkung auf die frühere Erkenntnis"
+          },
+          "answers": {
+            "supersedes": "Ersetzt sie",
+            "contradicts": "Widerspricht ihr",
+            "supports": "Stützt sie",
+            "none": "Hat keinen Bezug zu ihr"
+          }
+        },
+        "approval": {
+          "questions": {
+            "verdict": "Was der Schritt ist"
+          },
+          "answers": {
+            "needed": "Für die Aufgabe nötig",
+            "beyond": "Mehr als verlangt",
+            "unrelated": "Gehört nicht zur Aufgabe",
+            "unclear": "Lässt sich nicht sagen"
+          }
+        }
       },
       "log": {
         "thisTurn": "Dieser Durchgang",

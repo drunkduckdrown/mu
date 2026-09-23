@@ -5,9 +5,9 @@
  */
 
 /**
- * The new-conversation card and the send box are one look: the same surface and hairline in both themes, focus as a
- * darker hairline and a lifted shadow rather than the accent, a dashed outline for a file held over them. The
- * project strip under the card's input is the card's own surface below a hairline, not a tinted tray.
+ * The new-conversation card and the send box are one look: the page's own surface and a hairline in both themes,
+ * focus as a darker hairline and a lifted shadow rather than the accent, a dashed outline for a file held over them.
+ * The project strip under the card's input is the card's own surface below a hairline, not a tinted tray.
  */
 
 import { readFileSync } from 'node:fs';
@@ -33,10 +33,16 @@ function body(css: string, selector: string): string {
 }
 
 describe('the two message inputs', () => {
-  it('share one surface: white in light, a shade above the page in dark', () => {
-    expect(body(scheme, "[data-color-scheme='mu']")).toContain('--mu-composer-bg: #ffffff');
-    expect(body(scheme, "[data-color-scheme='mu'][data-theme='dark']")).toContain('--mu-composer-bg: #1a1a1a');
+  it('share one surface, the page’s own in both themes, and a hairline marks them as fields', () => {
+    const light = body(scheme, "[data-color-scheme='mu']");
+    const dark = body(scheme, "[data-color-scheme='mu'][data-theme='dark']");
+    expect(light).toContain('--mu-composer-bg: #ffffff');
+    expect(light).toContain('--bg-1: #ffffff');
+    expect(dark).toContain('--mu-composer-bg: var(--bg-1)');
+    expect(dark).toContain('--bg-1: #111111');
+    expect(dark).toContain('--mu-input-border: #333333');
     expect(body(sendbox, '.sendbox-panel')).toContain('background-color: var(--mu-composer-bg');
+    expect(body(sendbox, '.sendbox-panel')).toContain('border: 1px solid var(--mu-input-border');
     expect(body(guid, '.guidInputCardWrap')).toContain('background: var(--mu-composer-bg');
   });
 

@@ -6,7 +6,8 @@
 
 /**
  * The work panel's 浏览器 tab as the person uses it: its pages as tabs, one address field for the page in front (an
- * address or words to search for), back, forward and reload, a new blank page, closing, and filling the page.
+ * address or words to search for), back, forward and reload, a new blank page, closing, each tab's right-click menu,
+ * and filling the page.
  * jsdom has no `<webview>`: each page is a stand-in that reports its navigation and records the controls it gets.
  */
 
@@ -25,6 +26,7 @@ const pages = vi.hoisted(() => ({
   /** Each page by the address it opened at: its partition, how it reports, and the controls it was given. */
   byUrl: new Map<string, { partition?: string; report: (state: Navigation) => void; controls: Controls }>(),
 }));
+const { copyTextMock } = vi.hoisted(() => ({ copyTextMock: vi.fn() }));
 
 vi.mock('@/renderer/components/media/WebviewHost', () => ({
   default: function FakeWebview(props: {
@@ -58,6 +60,7 @@ vi.mock('@/common/kyrn/browserBridge', () => ({
   },
 }));
 vi.mock('@/renderer/utils/platform', () => ({ isMacOS: () => true, isElectronDesktop: () => true }));
+vi.mock('@/renderer/utils/ui/clipboard', () => ({ copyText: copyTextMock }));
 
 import BrowserPanel from '@/renderer/pages/conversation/Preview/browser/BrowserPanel';
 import {
@@ -106,6 +109,7 @@ beforeEach(() => {
   localStorage.clear();
   resetBrowserStoreForTest();
   pages.byUrl.clear();
+  copyTextMock.mockReset().mockResolvedValue(undefined);
 });
 afterEach(() => {
   cleanup();
@@ -213,6 +217,47 @@ describe('the browser’s pages', () => {
     show();
     fireEvent(page('one.test'), new MouseEvent('auxclick', { bubbles: true, button: 1 }));
     expect(browserNow().tabs.map((tab) => tab.url)).toEqual(['https://two.test/']);
+  });
+
+  it('offers to close a page, to close the others and to copy its address on a right click of its tab', async () => {
+    open('https://one.test/');
+    open('https://two.test/');
+    open('https://three.test/');
+    show();
+    const menuItem = async (tab: string, name: string) => {
+      fireEvent.contextMenu(page(tab));
+      return screen.findByRole('menuitem', { name });
+    };
+
+    fireEvent.click(await menuItem('two.test', preview.browser.copyAddress));
+    expect(copyTextMock).toHaveBeenCalledWith('https://two.test/');
+    expect(await screen.findByText(common.copySuccess)).toBeInTheDocument();
+
+    fireEvent.click(await menuItem('three.test', preview.close));
+    expect(browserNow().tabs.map((tab) => tab.url)).toEqual(['https://one.test/', 'https://two.test/']);
+
+    fireEvent.click(await menuItem('one.test', preview.closeOthers));
+    expect(browserNow().tabs.map((tab) => tab.url)).toEqual(['https://one.test/']);
+    expect(page('one.test')).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('offers no copy on a blank page, nor closing the others when there are none, and says when a copy fails', async () => {
+    open();
+    show();
+    // The blank page's tab, in front: the plus beside it has the same name.
+    fireEvent.contextMenu(pageTabs().getByRole('button', { current: 'page' }));
+    const copy = await screen.findByRole('menuitem', { name: preview.browser.copyAddress });
+    expect(copy.className).toMatch(/-disabled/);
+    expect(screen.getByRole('menuitem', { name: preview.closeOthers }).className).toMatch(/-disabled/);
+    fireEvent.click(copy);
+    expect(copyTextMock).not.toHaveBeenCalled();
+
+    act(() => updateBrowserTab(browserNow().tabs[0].id, { url: 'https://moved.test/' }));
+    copyTextMock.mockRejectedValue(new Error('no clipboard'));
+    fireEvent.contextMenu(page('moved.test'));
+    fireEvent.click(await screen.findByRole('menuitem', { name: preview.browser.copyAddress }));
+    expect(copyTextMock).toHaveBeenCalledWith('https://moved.test/');
+    expect(await screen.findByText(common.copyFailed)).toBeInTheDocument();
   });
 
   it('marks the pages while the agent’s browser tool drives them', () => {

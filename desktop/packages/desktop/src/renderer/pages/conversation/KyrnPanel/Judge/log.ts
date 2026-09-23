@@ -3,7 +3,7 @@ import type { Activity } from '@/common/kyrn/types';
 import { formatNumber } from '@/renderer/services/i18n/format';
 import { isTurnType } from '@/renderer/pages/conversation/Messages/acp/jevLine';
 import { record, str } from '../activity';
-import { judgeCards, runtimeEvents, type JudgeCard } from './activity';
+import { judgeCards, LESSON_FIELDS, runtimeEvents, type JudgeCard } from './activity';
 import { eventLines } from './eventLine';
 
 /**
@@ -145,7 +145,7 @@ const NAMES_LESSONS: ReadonlySet<string> = new Set(['memory.recalled', 'memory.a
 
 /** Whether a line names lessons by id, so that the log needs their words (`lessonText`) to say which. */
 export const namesLessons = (item: LogItem): boolean =>
-  item.type === 'judgment' ? item.card.stage === 'applied' : NAMES_LESSONS.has(item.event.kind);
+  item.type === 'judgment' ? LESSON_FIELDS[item.card.stage] !== undefined : NAMES_LESSONS.has(item.event.kind);
 
 /**
  * Every line of an event, for its opened view: the coded words, or the text it carried. An event that names lessons

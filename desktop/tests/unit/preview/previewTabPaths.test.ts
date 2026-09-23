@@ -5,8 +5,8 @@
  *
  * Path resolution behind the tab context menu's copy-path entries. The risky
  * part is not the happy path but deciding when a path is NOT copyable: a tab
- * whose absolute path never reached the renderer, a file that merely shares a
- * prefix with the workspace root, or a browser tab that has no file at all.
+ * whose absolute path never reached the renderer, or a file that merely shares a
+ * prefix with the workspace root.
  * Getting those wrong hands the user a confidently wrong path.
  */
 
@@ -154,24 +154,6 @@ describe('previewTabPaths — project refs', () => {
   });
 });
 
-describe('previewTabPaths — browser tabs', () => {
-  it('copies the URL as the tab address', () => {
-    const paths = previewTabPaths(tab({ content: 'https://example.com/docs', content_type: 'browser' }));
-    expect(paths.absolute).toEqual({ kind: 'url', value: 'https://example.com/docs' });
-  });
-
-  it('offers no relative path, which is meaningless for a URL', () => {
-    const paths = previewTabPaths(
-      tab({ content: 'https://example.com/docs', content_type: 'browser', metadata: { workspace: '/repo' } })
-    );
-    expect(paths.relative).toBeUndefined();
-  });
-
-  it('returns nothing copyable for a blank browser tab', () => {
-    expect(previewTabPaths(tab({ content: '   ', content_type: 'browser' }))).toEqual({});
-  });
-});
-
 describe('canCopyAbsolutePath — runtime gate', () => {
   it('offers a backend-resolved path on the desktop', () => {
     expect(canCopyAbsolutePath({ kind: 'projectRef', pe_id: 'pe-1', relative_path: 'a.ts' }, true)).toBe(true);
@@ -198,11 +180,6 @@ describe('canRevealInFolder — runtime gate', () => {
 
   it('reveals a path the renderer already holds on the desktop', () => {
     expect(canRevealInFolder({ kind: 'filePath', value: '/repo/a.ts' }, true)).toBe(true);
-  });
-
-  it('refuses a browser tab, whose URL has no containing folder', () => {
-    // The split that makes this possible: a URL must never reach showItemInFolder.
-    expect(canRevealInFolder({ kind: 'url', value: 'https://example.com' }, true)).toBe(false);
   });
 
   it('refuses off the desktop, where the file manager would open on another machine', () => {

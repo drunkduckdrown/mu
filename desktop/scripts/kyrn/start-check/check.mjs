@@ -11,16 +11,21 @@
 //   4. with --packaged, step 3 for the packaged app: the adapter bundled by scripts/build-mcp-servers.js and
 //      resources/mu/acp(.cmd), laid out as in an installed app's resources folder. There is no app binary in that
 //      folder, so MU_NODE runs them on this Node instead of the app's own.
+//   5. with --permission, mu's permission round trip through the same command: a stub model (a local HTTP server
+//      speaking the OpenAI chat API) asks for a file write, mu in minimal permissions asks, and the check answers as
+//      the app does: allow once, don't allow, and an answer that is none of the choices (mu must hear "no" and the
+//      conversation must get the answer-lost line). A plain message after that must still work, on the same adapter.
 //
 // Everything runs in a throwaway home (HOME and USERPROFILE): ~/.mu is never touched, no model is called, no key is
 // needed. Exits 1 when a step fails.
 //
-//   node scripts/kyrn/start-check/check.mjs [--packaged]
+//   node scripts/kyrn/start-check/check.mjs [--packaged] [--permission]
 //
 // Needs Node 22.19 or newer (it loads the adapter's TypeScript with Node's type stripping), the harness's
 // dependencies (npm ci in its checkout) and the desktop's (bun install).
 import { execFileSync, spawn } from 'node:child_process';
-import { chmodSync, copyFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { createInterface } from 'node:readline';
@@ -29,6 +34,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const desktop = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const windows = process.platform === 'win32';
 const packaged = process.argv.includes('--packaged');
+const permission = process.argv.includes('--permission');
 const home = mkdtempSync(join(tmpdir(), 'mu-start-check-'));
 // Before the adapter's modules load: they read the home when called.
 process.env.HOME = home;
@@ -164,6 +170,199 @@ async function acp(name, command, args, extraEnv = {}) {
   report(`${name}: ending it leaves nothing behind`, await gone(pids), `${pids.length} processes`);
 }
 
+/**
+ * A model for mu that needs no key: an OpenAI-style chat endpoint on this machine. A user message with
+ * `PERMISSION_CHECK <file>` gets a call of mu's write tool for that file; after the tool's result, and for anything
+ * else, a line of text.
+ */
+async function stubModel() {
+  const server = createServer((request, response) => {
+    let body = '';
+    request.on('data', (chunk) => {
+      body += chunk;
+    });
+    request.on('end', () => {
+      let messages = [];
+      try {
+        messages = JSON.parse(body).messages ?? [];
+      } catch {}
+      const last = messages.at(-1) ?? {};
+      const said = JSON.stringify([...messages].reverse().find((message) => message.role === 'user')?.content ?? '');
+      const file = /PERMISSION_CHECK (\S+?\.txt)/.exec(said)?.[1];
+      const chunk = (delta, finish = null) =>
+        `data: ${JSON.stringify({ id: 'stub', object: 'chat.completion.chunk', created: 0, model: 'stub', choices: [{ index: 0, delta, finish_reason: finish }] })}\n\n`;
+      response.writeHead(200, { 'content-type': 'text/event-stream' });
+      if (file && last.role !== 'tool') {
+        const call = { name: 'write', arguments: JSON.stringify({ path: file, content: 'written by mu\n' }) };
+        response.write(
+          chunk({ role: 'assistant', tool_calls: [{ index: 0, id: 'call_1', type: 'function', function: call }] })
+        );
+        response.write(chunk({}, 'tool_calls'));
+      } else {
+        response.write(chunk({ role: 'assistant', content: last.role === 'tool' ? 'Done after the tool.' : 'Hello.' }));
+        response.write(chunk({}, 'stop'));
+      }
+      response.end('data: [DONE]\n\n');
+    });
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const agentDir = join(home, '.mu', 'agent');
+  mkdirSync(agentDir, { recursive: true });
+  const model = { id: 'stub', name: 'Stub', reasoning: false, input: ['text'], contextWindow: 128000, maxTokens: 4096 };
+  writeFileSync(
+    join(agentDir, 'models.json'),
+    JSON.stringify({
+      providers: {
+        stub: {
+          baseUrl: `http://127.0.0.1:${server.address().port}/v1`,
+          api: 'openai-completions',
+          apiKey: 'stub',
+          compat: { supportsDeveloperRole: false, supportsReasoningEffort: false },
+          models: [model],
+        },
+      },
+    })
+  );
+  writeFileSync(join(agentDir, 'settings.json'), JSON.stringify({ defaultProvider: 'stub', defaultModel: 'stub' }));
+  return server;
+}
+
+/**
+ * mu's permission round trip through an ACP command, answered as the app answers it (see step 5 above). The adapter
+ * must stay the same process throughout: a failed answer never ends it.
+ */
+async function permissionRoundTrip(name, command, args, extraEnv = {}) {
+  const server = await stubModel();
+  const project = join(home, 'permission-project');
+  mkdirSync(project, { recursive: true });
+  const child = spawn(command, args, {
+    cwd: project,
+    env: {
+      ...process.env,
+      // Minimal permissions: every write asks. The mock judge needs no key; the answers come in Chinese.
+      MU_PERMISSIONS: 'ask',
+      MU_JUDGE: 'mock',
+      MU_LANG: 'zh-CN',
+      PI_OFFLINE: '1',
+      PI_TELEMETRY: '0',
+      ...extraEnv,
+    },
+    stdio: ['pipe', 'pipe', 'pipe'],
+    detached: !windows,
+    windowsHide: true,
+  });
+  let stderr = '';
+  child.stderr.on('data', (chunk) => {
+    stderr = `${stderr}${chunk}`.slice(-4000);
+  });
+  const waiting = new Map();
+  const asked = [];
+  const updates = [];
+  /** What the next question of mu gets: an option id, or `undefined` for one that is none of the choices. */
+  let reply = 'mu:once';
+  const write = (message) => child.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', ...message })}\n`);
+  createInterface({ input: child.stdout }).on('line', (line) => {
+    let message;
+    try {
+      message = JSON.parse(line);
+    } catch {
+      return;
+    }
+    if (message.method === 'session/request_permission') {
+      asked.push(message.params);
+      write({ id: message.id, result: { outcome: { outcome: 'selected', optionId: reply ?? 'no-such-answer' } } });
+      return;
+    }
+    if (message.method === 'session/update') {
+      updates.push(message.params.update);
+      return;
+    }
+    waiting.get(message.id)?.(message);
+  });
+  let exitCode;
+  const exited = new Promise((resolve) =>
+    child.on('exit', (code) => {
+      exitCode = code;
+      resolve(code);
+    })
+  );
+  let next = 1;
+  const call = (method, params, ms) => {
+    const id = next++;
+    return within(
+      Promise.race([
+        new Promise((resolve) => {
+          waiting.set(id, resolve);
+          write({ id, method, params });
+        }),
+        exited.then((code) => {
+          throw new Error(`the adapter exited with ${code}${stderr ? `: ${stderr.trim().split('\n').pop()}` : ''}`);
+        }),
+      ]),
+      ms,
+      method
+    );
+  };
+  const noticed = () =>
+    updates
+      .filter((update) => String(update.toolCallId ?? '').startsWith('mu:notice:'))
+      .map((update) => update.rawInput);
+  try {
+    await call('initialize', { protocolVersion: 1, clientCapabilities: {} }, 60000);
+    const session = await call('session/new', { cwd: project, mcpServers: [] }, 180000);
+    if (session.error) throw new Error(`session/new: ${session.error.message}`);
+    const sessionId = session.result.sessionId;
+    const turn = async (text) => {
+      const answered = await call('session/prompt', { sessionId, prompt: [{ type: 'text', text }] }, 180000);
+      if (answered.error) throw new Error(`${text}: ${answered.error.message}`);
+      return answered.result?.stopReason;
+    };
+
+    reply = 'mu:once';
+    let stop = await turn('PERMISSION_CHECK allowed.txt');
+    const card = asked.at(-1);
+    report(
+      `${name}: mu asks, with its answers by id`,
+      card?.toolCall?.toolCallId?.startsWith('permission:') &&
+        card.options.map((option) => option.optionId).join(',') === 'mu:once,mu:session,mu:deny' &&
+        card.options[0].name === '允许这一次',
+      JSON.stringify(card?.options?.map((option) => `${option.optionId}=${option.name}`))
+    );
+    report(
+      `${name}: "allow once" runs the call`,
+      stop === 'end_turn' && existsSync(join(project, 'allowed.txt')),
+      stop
+    );
+
+    reply = 'mu:deny';
+    stop = await turn('PERMISSION_CHECK denied.txt');
+    report(
+      `${name}: "don't allow" stops the call`,
+      stop === 'end_turn' && asked.length === 2 && !existsSync(join(project, 'denied.txt')),
+      stop
+    );
+
+    reply = undefined;
+    stop = await turn('PERMISSION_CHECK lost.txt');
+    report(
+      `${name}: an answer that is none of the choices is a "no", said in the conversation`,
+      stop === 'end_turn' &&
+        !existsSync(join(project, 'lost.txt')) &&
+        noticed().some((input) => input?.notice === 'answer_lost'),
+      `${stop}, notices ${JSON.stringify(noticed())}`
+    );
+
+    stop = await turn('hello');
+    report(`${name}: the conversation goes on`, stop === 'end_turn' && exitCode === undefined, stop);
+  } catch (error) {
+    report(`${name}: permission round trip`, false, error.message);
+  }
+  const pids = tree(child.pid);
+  endAsAionCore(child);
+  server.close();
+  report(`${name}: ending it leaves nothing behind`, await gone(pids), `${pids.length} processes`);
+}
+
 try {
   // 1. The harness.
   const harness = findHarness(desktop);
@@ -209,6 +408,12 @@ try {
     const env = { MU_ROOT: harness.root, MU_NODE: process.execPath };
     if (windows) await acp('packaged resources/mu/acp.cmd', 'cmd.exe', ['/d', '/c', launch], env);
     else await acp('packaged resources/mu/acp', launch, [], env);
+  }
+
+  // 5. The permission round trip, through the registration's command.
+  if (permission) {
+    if (windows) await permissionRoundTrip('permission via acp.cmd', 'cmd.exe', ['/d', '/c', join(scripts, 'acp.cmd')]);
+    else await permissionRoundTrip('permission via acp', join(scripts, 'acp'), []);
   }
 } finally {
   try {

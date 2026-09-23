@@ -173,7 +173,7 @@
   },
   "error": {
     "alreadyExists": "Esta conversa já possui uma tarefa agendada \"{{name}}\" (ID: {{id}}). Por favor, atualize a tarefa existente em vez de criar uma nova.",
-    "missedJob": "⏰ A tarefa agendada \"{{name}}\" não foi executada durante a suspensão do sistema.\nHorário agendado: {{time}}\nO temporizador foi reiniciado e será executado no próximo horário agendado.",
+    "missedJob": "A tarefa agendada \"{{name}}\" não foi executada durante a suspensão do sistema.\nHorário agendado: {{time}}\nO temporizador foi reiniciado e será executado no próximo horário agendado.",
     "jobNotFound": "Tarefa não encontrada: {{id}}",
     "conversationNotFound": "Conversa não encontrada",
     "scheduledTimePassed": "O tempo agendado já passou",

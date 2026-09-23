@@ -567,6 +567,10 @@
     "modelFailed": "Falló la solicitud al modelo.",
     "turnRunning": "mu sigue trabajando en el mensaje anterior. Espera o detenlo primero."
   },
+  "notices": {
+    "answerLost": "mu no recibió tu respuesta y siguió como si la hubieras rechazado.",
+    "bashMissing": "mu necesita Git for Windows para ejecutar comandos. Cuando esté instalado, vuelve a enviar tu mensaje. Descárgalo aquí:"
+  },
   "errors": {
     "credential": "La clave contiene caracteres no permitidos, como espacios, comillas o saltos de línea. Vuelve a pegarla.",
     "keyVariable": "{{name}} no puede guardar una clave del juez. Usa TYPESAFE_API_KEY, AI_GATEWAY_API_KEY o un nombre que empiece por MU_JUDGE_.",

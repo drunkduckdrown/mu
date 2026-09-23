@@ -152,6 +152,7 @@
     "addressPlaceholder": "Bir URL girin veya arama yapın",
     "tabsLabel": "Açık sayfalar",
     "closeTab": "{{title}} sekmesini kapat",
+    "copyAddress": "Adresi Kopyala",
     "agentActiveTooltip": "Aracı bu sekmeyi kullanıyor",
     "tabLimitReached": "Sekme sınırına ulaşıldı ({{count}}). En eski sekme yeniden kullanıldı.",
     "agentFirstUseTitle": "Aracı uygulama içi tarayıcıyı kullanıyor",

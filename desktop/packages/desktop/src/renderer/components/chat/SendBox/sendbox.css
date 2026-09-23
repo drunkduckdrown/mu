@@ -1,8 +1,8 @@
 /* Sendbox component styles */
 
-/* The composer: one floating pill, white on a light page and a shade above the page on a dark one (the same
-   surface as the new-conversation card), a hairline around it and a soft neutral shadow under it. Focus darkens
-   the hairline and lifts the shadow; nothing in the box is tinted. The send button is the only colour in it. */
+/* The composer: one floating pill on the page's own surface (the same surface as the new-conversation card), so
+   the hairline around it marks it as a field, with a soft neutral shadow under it. Focus darkens the hairline and
+   lifts the shadow; nothing in the box is tinted. The send button is the only colour in it. */
 .sendbox-panel {
   background-color: var(--mu-composer-bg, var(--fill-white-to-black));
   border: 1px solid var(--mu-input-border, var(--color-border-2));

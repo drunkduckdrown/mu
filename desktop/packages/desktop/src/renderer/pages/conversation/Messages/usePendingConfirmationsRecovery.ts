@@ -46,10 +46,16 @@ export function buildPendingConfirmationMessage(
   };
 }
 
+/**
+ * Whether the conversation already shows a card for this pending call: a permission, an ACP permission (keyed by its
+ * tool call, as the mu bridge's `permission:<id>`), or a question. Without the ACP kind, reopening a conversation while
+ * an agent waits added a second card for the same question, and whichever card was answered second failed.
+ */
 export function hasPermissionMessageForCallId(list: TMessage[], callId: string): boolean {
   return list.some(
     (message) =>
       (message.type === 'permission' && message.content?.call_id === callId) ||
+      (message.type === 'acp_permission' && message.content?.tool_call?.tool_call_id === callId) ||
       (message.type === 'ask' && message.content?.request_id === callId)
   );
 }

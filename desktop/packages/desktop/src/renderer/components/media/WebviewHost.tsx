@@ -86,7 +86,8 @@ const MIN_ZOOM_FACTOR = 0.75;
 const MAX_ZOOM_FACTOR = 1.5;
 
 /**
- * Shared webview host component — extracted from URLViewer.
+ * Shared webview host component: the in-app browser's pages (through `BrowserViewer`), the office preview and
+ * extension settings pages run in it.
  *
  * Features:
  * - Link/window.open/form interception → internal navigation

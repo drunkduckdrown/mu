@@ -173,7 +173,7 @@
   },
   "error": {
     "alreadyExists": "Dieses Gespräch hat bereits eine geplante Aufgabe \"{{name}}\" (ID: {{id}}). Bitte aktualisiere die bestehende Aufgabe anstatt eine neue zu erstellen.",
-    "missedJob": "⏰ Geplante Aufgabe \"{{name}}\" wurde während des Systemschlafs nicht ausgeführt.\nGeplante Zeit: {{time}}\nDer Timer wurde neu gestartet und wird zur nächsten geplanten Zeit ausgeführt.",
+    "missedJob": "Geplante Aufgabe \"{{name}}\" wurde während des Systemschlafs nicht ausgeführt.\nGeplante Zeit: {{time}}\nDer Timer wurde neu gestartet und wird zur nächsten geplanten Zeit ausgeführt.",
     "jobNotFound": "Aufgabe nicht gefunden: {{id}}",
     "conversationNotFound": "Gespräch nicht gefunden",
     "scheduledTimePassed": "Geplante Zeit ist abgelaufen",

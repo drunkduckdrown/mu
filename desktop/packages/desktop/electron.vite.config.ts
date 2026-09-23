@@ -6,12 +6,9 @@ import UnoCSS from 'unocss/vite';
 import unoConfig from '../../uno.config.ts';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
-// The fork's version, from the repo-root package.json: what the updater compares against.
+// The app's version, from the repo-root package.json: the one electron-builder packages (app.getVersion()), which a
+// release tag sets and the updater compares with the releases.
 const rootPackageJson = JSON.parse(readFileSync(resolve(__dirname, '../../package.json'), 'utf-8')) as {
-  version: string;
-};
-// mu's own version, from packages/desktop/package.json: what the app says it is (关于).
-const desktopPackageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8')) as {
   version: string;
 };
 
@@ -273,10 +270,8 @@ export default defineConfig(({ mode }) => {
         'process.env.NODE_ENV': JSON.stringify(mode),
         'process.env.env': JSON.stringify(process.env.env),
         'process.env.AIONUI_MULTI_INSTANCE': JSON.stringify(process.env.AIONUI_MULTI_INSTANCE ?? ''),
-        // The fork's version (root package.json), for the update check's fallback.
+        // The app's version (root package.json), shown on 关于 until the main process says which version runs.
         __APP_VERSION__: JSON.stringify(rootPackageJson.version),
-        // mu's own version (packages/desktop/package.json), shown on 关于.
-        __MU_VERSION__: JSON.stringify(desktopPackageJson.version),
         global: 'globalThis',
       },
       optimizeDeps: {

@@ -4,8 +4,9 @@
  * The page is neutral: the content surface is white with black text in light, near-black with white
  * text in dark. The titlebar and the sidebar take the faintest grey (--bg-2), set apart by hairlines, so
  * the structure shows without the page looking grey. Boxes on the page are white with a hairline, not grey
- * fills. Both message inputs share one surface (--mu-composer-bg): white in light, a shade above the page in
- * dark. The brand colours only mark what can be acted on or what is chosen:
+ * fills. Both message inputs share one surface (--mu-composer-bg), the page's own in both appearances, so their
+ * hairline alone marks them as fields. In dark, dialogs sit on the card surface (--dialog-fill-0, #1a1a1a) inside
+ * a hairline. The brand colours only mark what can be acted on or what is chosen:
  * primary buttons and the send button (a light lavender fill, a pink-to-lavender wash, dark text on
  * both), the selected row's thin bar, focus rings, selection, links and small dots. The judge keeps
  * pink as its mark, on a tint that is all but white.
@@ -262,7 +263,8 @@
 
   --mu-scrim: rgba(0, 0, 0, 0.6);
 
-  --mu-composer-bg: #1a1a1a;
+  /* The page's own surface, whatever colour the page takes; the hairline marks the field. */
+  --mu-composer-bg: var(--bg-1);
   --mu-input-border: #333333;
   --mu-input-border-active: var(--mu-accent-border);
   --mu-input-shadow-active: 0 0 0 3px rgba(180, 162, 250, 0.18), 0 8px 28px rgba(0, 0, 0, 0.5);
@@ -338,7 +340,8 @@
   --fill: #1a1a1a;
   --inverse: #ffffff;
 
-  --dialog-fill-0: #333333;
+  /* The card surface, a shade above the page; arco-override.css draws the hairline round it. */
+  --dialog-fill-0: #1a1a1a;
   --text-0: #ffffff;
   --text-white: #ffffff;
   --fill-0: rgba(255, 255, 255, 0.08);

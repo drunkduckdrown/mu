@@ -4,102 +4,43 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Button, Switch, Message } from '@arco-design/web-react';
+import { Button, Message } from '@arco-design/web-react';
 import { FolderOpen, Github, Right } from '@icon-park/react';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import MuMark from '@renderer/components/brand/MuMark';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
 import { useSettingsViewMode } from '../settingsViewContext';
 import { isElectronDesktop, openExternalUrl } from '@/renderer/utils/platform';
-import { ipcBridge } from '@/common';
-import {
-  describeUpdateError,
-  getIncludePrerelease,
-  runUpdateCheck,
-} from '@/renderer/components/settings/checkForUpdatesShared';
-import { UPDATE_AVAILABLE_EVENT } from '@/renderer/components/settings/useUpdateNotificationController';
-import {
-  getUpdateReadyState,
-  setUpdateReadyState,
-  subscribeUpdateReadyState,
-  type UpdateReadyState,
-} from '@/renderer/components/settings/updateReadyState';
+import type { UpdatePhase } from '@/common/update/updateTypes';
+import { useUpdateState } from '@/renderer/hooks/system/useUpdateState';
+import { updateDetails, updateHeadline, updateMainAction } from '@/renderer/components/settings/updateText';
 
-// Both are injected by electron.vite.config.ts `define:`. __MU_VERSION__ is mu's own version
-// (packages/desktop/package.json), the one shown here; __APP_VERSION__ is the fork's (the repo-root
-// package.json), the update check's fallback when the main process cannot say.
+// Injected by electron.vite.config.ts `define:`: the app's version (the repository root's package.json), shown until
+// the main process says which version runs.
 declare const __APP_VERSION__: string;
-declare const __MU_VERSION__: string;
 
 const MU_REPO_URL = 'https://github.com/qybaihe/mu';
 const MU_RELEASES_URL = 'https://github.com/qybaihe/mu/releases';
 
+/** While these run, another check has nothing to add. */
+const BUSY_PHASES: ReadonlySet<UpdatePhase> = new Set(['downloading', 'installing', 'downloadingInstaller']);
+
 type LinkItem = { title: string; icon: React.ReactNode; open: () => void };
 
 const AboutModalContent: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const viewMode = useSettingsViewMode();
   const isPageMode = viewMode === 'page';
   const isElectron = isElectronDesktop();
 
-  const [includePrerelease, setIncludePrerelease] = useState(false);
-  const [updateReadyState, setLocalUpdateReadyState] = useState<UpdateReadyState>(() => getUpdateReadyState());
-  const [checking, setChecking] = useState(false);
-
-  useEffect(() => {
-    const saved = localStorage.getItem('update.includePrerelease');
-    setIncludePrerelease(saved === 'true');
-  }, []);
-
-  useEffect(() => subscribeUpdateReadyState(setLocalUpdateReadyState), []);
-
-  const handlePrereleaseChange = (val: boolean) => {
-    setIncludePrerelease(val);
-    localStorage.setItem('update.includePrerelease', String(val));
-  };
+  const { state: update, run } = useUpdateState();
 
   const openLink = async (url: string) => {
     try {
       await openExternalUrl(url);
     } catch (error) {
       console.log('Failed to open link:', error);
-    }
-  };
-
-  const checkUpdate = async () => {
-    if (updateReadyState.ready) {
-      if (updateReadyState.preparing) return;
-      if (updateReadyState.filePath) {
-        void ipcBridge.shell.openFile.invoke(updateReadyState.filePath);
-        return;
-      }
-      setUpdateReadyState({ ...updateReadyState, preparing: true });
-      void ipcBridge.autoUpdate.quitAndInstall.invoke().catch(() => {
-        Message.error(t('update.errors.prepareInstallFailed'));
-        setUpdateReadyState({ ...updateReadyState, preparing: false });
-      });
-      return;
-    }
-
-    if (checking) return;
-    setChecking(true);
-    try {
-      const outcome = await runUpdateCheck({
-        includePrerelease: getIncludePrerelease(),
-        fallbackVersion: __APP_VERSION__,
-      });
-      if (outcome.kind === 'available') {
-        // Only reveal the bottom-right card once an update is confirmed; hand
-        // over the already-fetched outcome so the card skips the checking flash.
-        window.dispatchEvent(new CustomEvent(UPDATE_AVAILABLE_EVENT, { detail: outcome }));
-      } else if (outcome.kind === 'upToDate') {
-        Message.info(t('update.alreadyLatest'));
-      } else {
-        Message.error(describeUpdateError(t, outcome.error, 'update.checkFailed'));
-      }
-    } finally {
-      setChecking(false);
     }
   };
 
@@ -131,7 +72,15 @@ const AboutModalContent: React.FC = () => {
       : []),
   ];
 
-  const version = `v${__MU_VERSION__}`;
+  const version = `v${update?.currentVersion ?? __APP_VERSION__}`;
+  const checking = update?.checking ?? false;
+  // The last check's answer, and what the update in hand is; nothing while a new check runs over an old answer.
+  const status =
+    update && !(checking && ['idle', 'upToDate', 'failed'].includes(update.phase))
+      ? updateHeadline(t, i18n.language, update)
+      : null;
+  const details = update ? updateDetails(t, update) : [];
+  const main = update ? updateMainAction(t, update) : null;
   const rowClass = 'flex min-h-48px items-center justify-between gap-24px py-10px';
   const rowTitleClass = 'text-14px font-500 text-t-primary';
 
@@ -162,32 +111,57 @@ const AboutModalContent: React.FC = () => {
 
       <div className='settings-list'>
         {isElectron ? (
-          <>
-            <div className={rowClass}>
+          <div className={rowClass}>
+            <div className='flex min-w-0 flex-col gap-2px'>
               <span className={rowTitleClass} data-testid='about-version'>
                 {t('update.currentVersion', { version })}
               </span>
-              <Button
-                type={updateReadyState.ready ? 'primary' : 'secondary'}
-                size='small'
-                loading={checking || updateReadyState.preparing}
-                disabled={updateReadyState.preparing}
-                onClick={() => void checkUpdate()}
-              >
-                {updateReadyState.preparing
-                  ? t('update.preparingInstall')
-                  : updateReadyState.ready
-                    ? t('settings.updateReadyInstall', { version: updateReadyState.version })
-                    : checking
-                      ? t('settings.checkingForUpdates')
-                      : t('settings.checkForUpdates')}
-              </Button>
+              {status ? (
+                <span className='text-12px leading-18px text-t-secondary' data-testid='about-update-status'>
+                  {status}
+                </span>
+              ) : null}
+              {details.map((line) => (
+                <span key={line} className='text-12px leading-18px text-t-secondary'>
+                  {line}
+                </span>
+              ))}
             </div>
-            <div className={rowClass}>
-              <span className={rowTitleClass}>{t('settings.includePrereleaseUpdates')}</span>
-              <Switch size='small' checked={includePrerelease} onChange={handlePrereleaseChange} />
+            <div className='flex shrink-0 items-center gap-8px'>
+              {/* 稍后 puts off a found update: the sidebar notice goes until the next check; 下载 stays here. */}
+              {update?.phase === 'found' && !update.dismissed ? (
+                <Button type='text' size='small' onClick={() => void run('later')}>
+                  {t('update.later')}
+                </Button>
+              ) : null}
+              {update?.phase === 'installerReady' ? (
+                <Button type='text' size='small' onClick={() => void run('showInstaller')}>
+                  {t('update.showInFolder')}
+                </Button>
+              ) : null}
+              {main ? (
+                <Button
+                  type='primary'
+                  size='small'
+                  loading={main.busy}
+                  disabled={main.busy}
+                  onClick={() => void run(main.action)}
+                >
+                  {main.label}
+                </Button>
+              ) : (
+                <Button
+                  type='secondary'
+                  size='small'
+                  loading={checking}
+                  disabled={checking || (update ? BUSY_PHASES.has(update.phase) : false)}
+                  onClick={() => void run('check')}
+                >
+                  {checking ? t('settings.checkingForUpdates') : t('settings.checkForUpdates')}
+                </Button>
+              )}
             </div>
-          </>
+          </div>
         ) : null}
         {linkItems.map((item) => (
           <div

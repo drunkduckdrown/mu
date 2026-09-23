@@ -567,6 +567,10 @@
     "modelFailed": "モデルへのリクエストが失敗しました。",
     "turnRunning": "mu はまだ前のメッセージを処理中です。完了を待つか、先に停止してください。"
   },
+  "notices": {
+    "answerLost": "mu は回答を受け取れなかったため、同意しなかったものとして続けました。",
+    "bashMissing": "mu がコマンドを実行するには Git for Windows が必要です。インストールしたら、メッセージをもう一度送信してください。ダウンロード先："
+  },
   "errors": {
     "credential": "キーに使用できない文字（スペース、引用符、改行など）が含まれています。もう一度貼り付けてください。",
     "keyVariable": "{{name}} には判定器のキーを保存できません。TYPESAFE_API_KEY、AI_GATEWAY_API_KEY、または MU_JUDGE_ で始まる名前を使用してください。",

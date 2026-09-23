@@ -68,6 +68,7 @@
   "processing": "Processando...",
   "responseSentSuccessfully": "Resposta enviada com sucesso",
   "permissionResponseFailed": "Não foi possível enviar a resposta. Tente novamente.",
+  "permissionNoLongerPending": "Esta solicitação não está mais aguardando resposta.",
   "confirmation": {
     "applyChange": "Aplicar esta alteração?",
     "allowExecution": "Permitir execução?",

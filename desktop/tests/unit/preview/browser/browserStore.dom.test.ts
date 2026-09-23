@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   browserNow,
   closeBrowserTab,
+  closeOtherBrowserTabs,
   markBrowserAgentActive,
   openBrowserPage,
   resetBrowserStoreForTest,
@@ -195,6 +196,21 @@ describe('closing and switching pages', () => {
     switchBrowserTab('no-such-page');
     switchBrowserTab(a as string);
     expect(browserNow().activeTabId).toBe(a);
+  });
+
+  it('closes every other page, the one kept coming to the front, and keeps that for the next start', () => {
+    switchBrowserScope('project-a');
+    const [a, b] = ['https://a.test/', 'https://b.test/', 'https://c.test/'].map((url) => openBrowserPage(url));
+    closeOtherBrowserTabs(b as string);
+    expect(urls()).toEqual(['https://b.test/']);
+    expect(browserNow().activeTabId).toBe(b);
+    expect(stored('project-a')).toMatchObject({ tabs: [{ id: b, url: 'https://b.test/' }], activeTabId: b });
+
+    const before = browserNow();
+    closeOtherBrowserTabs(b as string);
+    closeOtherBrowserTabs(a as string);
+    closeOtherBrowserTabs('no-such-page');
+    expect(browserNow()).toBe(before);
   });
 });
 

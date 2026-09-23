@@ -152,6 +152,7 @@
     "addressPlaceholder": "Enter a URL or search",
     "tabsLabel": "Open pages",
     "closeTab": "Close {{title}}",
+    "copyAddress": "Copy Address",
     "agentActiveTooltip": "The agent is operating this tab",
     "tabLimitReached": "Browser tab limit reached ({{count}}). The oldest tab was reused.",
     "agentFirstUseTitle": "The agent is using the in-app browser",

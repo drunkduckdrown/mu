@@ -21,7 +21,7 @@ import { injectBackgroundCssBlock } from './backgroundUtils.ts';
 /** CodeMirror 编辑器样式 / CodeMirror editor styles */
 const CODE_MIRROR_STYLE: CSSProperties = {
   fontSize: '13px',
-  border: '1px solid var(--color-border-2)',
+  border: '1px solid var(--border-base)',
   borderRadius: '6px',
   overflow: 'hidden',
 } as const;
@@ -133,7 +133,7 @@ const CssThemeModal: React.FC<CssThemeModalProps> = ({ visible, theme, onClose, 
           <div className='flex justify-between items-center'>
             <div>
               {onDelete && (
-                <Button type='text' icon={<Delete theme='outline' size='14' />} onClick={onDelete}>
+                <Button type='text' status='danger' icon={<Delete theme='outline' size='14' />} onClick={onDelete}>
                   {t('common.delete')}
                 </Button>
               )}
@@ -158,12 +158,12 @@ const CssThemeModal: React.FC<CssThemeModalProps> = ({ visible, theme, onClose, 
     >
       <div className='space-y-20px'>
         {/* 封面和名称行 / Cover and name row */}
-        <div className='flex gap-16px p-16px bg-[var(--fill-1)] rounded-12px'>
+        <div className='flex gap-16px'>
           {/* 封面上传 / Cover upload */}
           <div className='flex-shrink-0'>
             <div className='text-13px text-t-secondary mb-8px'>{t('settings.cssTheme.previewCover')}</div>
             <div
-              className='w-120px h-80px rounded-8px border border-dashed border-border-2 flex flex-col items-center justify-center cursor-pointer hover:border-[var(--color-primary)] transition-colors overflow-hidden bg-[var(--fill-0)]'
+              className='w-120px h-80px rounded-8px border border-dashed border-border-base flex flex-col items-center justify-center cursor-pointer hover:border-[var(--color-text-3)] transition-colors overflow-hidden'
               onClick={handleCoverUpload}
             >
               {cover ? (
@@ -184,12 +184,7 @@ const CssThemeModal: React.FC<CssThemeModalProps> = ({ visible, theme, onClose, 
                 <span className='text-[var(--color-danger)]'>*</span>
                 {t('settings.cssTheme.name')}
               </div>
-              <Input
-                value={name}
-                onChange={setName}
-                placeholder={t('settings.cssTheme.namePlaceholder')}
-                className='!bg-[var(--fill-0)]'
-              />
+              <Input value={name} onChange={setName} placeholder={t('settings.cssTheme.namePlaceholder')} />
             </div>
             {/* 外观模式选择 / Appearance mode selector */}
             <div>

@@ -33,6 +33,7 @@ import { resolveBinaryPath } from '@process/backend';
 import { wasLaunchedAtLogin } from '@process/bridge/applicationBridge';
 import { applyStartupAppLanguage, onAppLanguageApplied } from '@process/services/i18n';
 import { setupApplicationMenu } from './process/utils/appMenu';
+import { getUpdateService } from './process/services/update';
 import { initializeZoomFactor, setupZoomForWindow } from './process/utils/zoom';
 import { hydrateWindowsProcessPath } from './process/startup/windowsPath';
 import { registerWindowsAppUserModelId } from './process/startup/windowsAppUserModelId';
@@ -493,40 +494,6 @@ const createWindow = ({ showOnReady = true }: { showOnReady?: boolean } = {}): v
   registerWindowMaximizeListeners(mainWindow);
   attachWindowBoundsPersistence(mainWindow, (bounds) => ProcessConfig.set('window.bounds', bounds));
 
-  // Initialize auto-updater service (skip when disabled via env, e.g. E2E / CI)
-  // 初始化自动更新服务（通过环境变量禁用时跳过，例如 E2E / CI 场景）
-  // mu does not update itself yet: its builds are unsigned GitHub pre-releases without an update feed, and
-  // updateFeed.ts refuses to build one until mu hosts its own. Checking by hand (About) looks at mu's own releases
-  // (updateBridge.ts). Turn this on only together with a feed of mu's own.
-  const MU_SELF_UPDATE = false;
-  const isCiRuntime = process.env.CI === 'true' || process.env.CI === '1' || process.env.GITHUB_ACTIONS === 'true';
-  const disableAutoUpdater =
-    !MU_SELF_UPDATE ||
-    process.env.AIONUI_DISABLE_AUTO_UPDATE === '1' ||
-    process.env.AIONUI_E2E_TEST === '1' ||
-    isCiRuntime;
-  if (!disableAutoUpdater) {
-    Promise.all([import('./process/services/autoUpdaterService'), import('./process/bridge/updateBridge')])
-      .then(([{ autoUpdaterService }, { createAutoUpdateStatusBroadcast }]) => {
-        // Create status broadcast callback that emits via ipcBridge (pure emitter, no window binding)
-        const statusBroadcast = createAutoUpdateStatusBroadcast();
-        autoUpdaterService.initialize(statusBroadcast);
-        autoUpdaterService.setBeforeQuitAndInstall(async () => {
-          await backendManager.stop();
-        });
-        // Check for updates after 3 seconds delay
-        // 3秒后检查更新
-        setTimeout(() => {
-          void autoUpdaterService.checkForUpdatesAndNotify();
-        }, 3000);
-      })
-      .catch((error) => {
-        console.error('[App] Failed to initialize autoUpdaterService:', error);
-      });
-  } else {
-    console.log('[AionUi] Auto-updater disabled (mu does not update itself yet, or the env/CI guard)');
-  }
-
   // Load the renderer: dev server URL in development, built HTML file in production
   const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
   const fallbackFile = path.join(__dirname, '../renderer/index.html');
@@ -879,6 +846,27 @@ const handleAppReady = async (): Promise<void> => {
     createWindow({ showOnReady: showMainWindowOnReady });
     appReadyDone = true;
     mark('createWindow');
+
+    // mu updates itself from the releases of github.com/qybaihe/mu (process/services/update): a check a little after
+    // the start and then every 6 hours, besides the one on 关于 (About). A build run from its sources and automated
+    // runs (CI, E2E, AIONUI_DISABLE_AUTO_UPDATE=1) check only when asked.
+    const updates = getUpdateService();
+    updates.setInstallHooks({
+      beforeInstall: async () => {
+        // The installer quits mu: its windows must close, not hide in the tray, and the backend must let go of the
+        // files the installer replaces.
+        setIsQuitting(true);
+        await backendManager.stop();
+      },
+      relaunch: () => {
+        app.relaunch();
+        app.exit(0);
+      },
+    });
+    const isCiRuntime = process.env.CI === 'true' || process.env.CI === '1' || process.env.GITHUB_ACTIONS === 'true';
+    if (app.isPackaged && !isE2ETestMode && !isCiRuntime && process.env.AIONUI_DISABLE_AUTO_UPDATE !== '1') {
+      updates.start();
+    }
 
     // The application menu and the tray keep built text: rebuild both whenever the main process switches language
     // (at startup just below, and whenever the renderer changes the app language).

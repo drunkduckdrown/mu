@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Button, Input } from '@arco-design/web-react';
+import { Button, Dropdown, Input, Menu } from '@arco-design/web-react';
 import type { RefInputType } from '@arco-design/web-react/es/Input/interface';
 import { Close, Earth, FullScreen, Left, Loading, OffScreen, Plus, Refresh, Right } from '@icon-park/react';
 import type { TFunction } from 'i18next';
@@ -24,6 +24,10 @@ export type BrowserChromeProps = {
   addressRef?: React.Ref<RefInputType>;
   onSelect: (tabId: string) => void;
   onClose: (tabId: string) => void;
+  /** Close every page but this one (from its tab's right-click menu). */
+  onCloseOthers: (tabId: string) => void;
+  /** Copy the page's address (from its tab's right-click menu). */
+  onCopyAddress: (tabId: string) => void;
   onNewPage: () => void;
   onBack: () => void;
   onForward: () => void;
@@ -59,7 +63,7 @@ function PageIcon({ favicon }: { favicon?: string }) {
  * and reload for the page in front, under the pages or beside them as the width allows (`BrowserPanel.module.css`).
  * With no page open there is only the address line, and the address opens the first page. The field shows where the
  * page is; what the person types stays until they press Enter (an address, or words to search for), Escape or leave
- * the field.
+ * the field. A right click on a page's tab offers to close it, to close the others, and to copy its address.
  */
 export default function BrowserChrome({
   tabs,
@@ -68,6 +72,8 @@ export default function BrowserChrome({
   addressRef,
   onSelect,
   onClose,
+  onCloseOthers,
+  onCopyAddress,
   onNewPage,
   onBack,
   onForward,
@@ -108,6 +114,27 @@ export default function BrowserChrome({
 
   const maximizeLabel = maximized ? t('preview.restorePanel') : t('preview.maximizePanel');
 
+  // A page's right-click menu. The Menu is the droplist's direct child, or Arco gives it the tall navigation look.
+  const pageMenu = (tab: BrowserTab) => (
+    <Menu
+      onClickMenuItem={(key) => {
+        if (key === 'close') onClose(tab.id);
+        else if (key === 'closeOthers') onCloseOthers(tab.id);
+        else if (key === 'copyAddress') onCopyAddress(tab.id);
+      }}
+    >
+      <Menu.Item key='close'>{t('preview.close')}</Menu.Item>
+      <Menu.Item key='closeOthers' disabled={tabs.length < 2}>
+        {t('preview.closeOthers')}
+      </Menu.Item>
+      <div className={styles.pageMenuDivider} role='separator' aria-hidden='true' />
+      {/* A blank page has no address to copy. */}
+      <Menu.Item key='copyAddress' disabled={!tab.url || tab.url === BROWSER_BLANK_URL}>
+        {t('preview.browser.copyAddress')}
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
     <div className={styles.chrome}>
       <div className={styles.bar} data-empty={tabs.length ? undefined : 'true'}>
@@ -126,37 +153,39 @@ export default function BrowserChrome({
               const selected = tab.id === activeTabId;
               const title = browserPageTitle(tab, t);
               return (
-                <div key={tab.id} className={styles.page} data-active={selected ? 'true' : 'false'}>
-                  <Button
-                    type='text'
-                    className={styles.pageButton}
-                    aria-current={selected ? 'page' : undefined}
-                    title={title}
-                    data-browser-tab={tab.id}
-                    onClick={() => onSelect(tab.id)}
-                    onAuxClick={(event) => {
-                      // A middle click closes the page, as in any browser.
-                      if (event.button !== 1) return;
-                      event.preventDefault();
-                      onClose(tab.id);
-                    }}
-                  >
-                    <PageIcon favicon={tab.favicon} />
-                    <span className={styles.title}>{title}</span>
-                    {tab.agentActive ? (
-                      <span className={styles.driving} title={t('preview.browser.agentActiveTooltip')} />
-                    ) : null}
-                  </Button>
-                  <Button
-                    type='text'
-                    size='mini'
-                    className={styles.pageClose}
-                    icon={<Close size={12} />}
-                    aria-label={t('preview.browser.closeTab', { title })}
-                    title={t('preview.browser.closeTab', { title })}
-                    onClick={() => onClose(tab.id)}
-                  />
-                </div>
+                <Dropdown key={tab.id} trigger='contextMenu' position='bl' droplist={pageMenu(tab)}>
+                  <div className={styles.page} data-active={selected ? 'true' : 'false'}>
+                    <Button
+                      type='text'
+                      className={styles.pageButton}
+                      aria-current={selected ? 'page' : undefined}
+                      title={title}
+                      data-browser-tab={tab.id}
+                      onClick={() => onSelect(tab.id)}
+                      onAuxClick={(event) => {
+                        // A middle click closes the page, as in any browser.
+                        if (event.button !== 1) return;
+                        event.preventDefault();
+                        onClose(tab.id);
+                      }}
+                    >
+                      <PageIcon favicon={tab.favicon} />
+                      <span className={styles.title}>{title}</span>
+                      {tab.agentActive ? (
+                        <span className={styles.driving} title={t('preview.browser.agentActiveTooltip')} />
+                      ) : null}
+                    </Button>
+                    <Button
+                      type='text'
+                      size='mini'
+                      className={styles.pageClose}
+                      icon={<Close size={12} />}
+                      aria-label={t('preview.browser.closeTab', { title })}
+                      title={t('preview.browser.closeTab', { title })}
+                      onClick={() => onClose(tab.id)}
+                    />
+                  </div>
+                </Dropdown>
               );
             })}
             <Button

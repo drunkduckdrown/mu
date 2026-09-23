@@ -567,6 +567,10 @@
     "modelFailed": "Model isteği başarısız oldu.",
     "turnRunning": "mu hâlâ önceki mesaj üzerinde çalışıyor. Bekleyin ya da önce durdurun."
   },
+  "notices": {
+    "answerLost": "mu yanıtınızı alamadı; reddetmişsiniz gibi devam etti.",
+    "bashMissing": "mu'nun komut çalıştırabilmesi için Git for Windows gerekiyor. Kurulduktan sonra mesajınızı tekrar gönderin. İndirme adresi:"
+  },
   "errors": {
     "credential": "Anahtar, bir anahtarda bulunamayacak karakterler (boşluk, tırnak işareti veya satır sonu gibi) içeriyor. Yeniden yapıştırın.",
     "keyVariable": "{{name}} bir hakem anahtarı tutamaz. TYPESAFE_API_KEY, AI_GATEWAY_API_KEY veya MU_JUDGE_ ile başlayan bir ad kullanın.",

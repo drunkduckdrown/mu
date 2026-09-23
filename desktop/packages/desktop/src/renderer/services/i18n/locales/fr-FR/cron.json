@@ -173,7 +173,7 @@
   },
   "error": {
     "alreadyExists": "Cette conversation a déjà une tâche planifiée \"{{name}}\" (ID : {{id}}). Veuillez mettre à jour la tâche existante plutôt que d'en créer une nouvelle.",
-    "missedJob": "⏰ La tâche planifiée \"{{name}}\" n'a pas été exécutée pendant la mise en veille du système.\nHeure prévue : {{time}}\nLe minuteur a été redémarré et s'exécutera à la prochaine heure prévue.",
+    "missedJob": "La tâche planifiée \"{{name}}\" n'a pas été exécutée pendant la mise en veille du système.\nHeure prévue : {{time}}\nLe minuteur a été redémarré et s'exécutera à la prochaine heure prévue.",
     "jobNotFound": "Tâche introuvable : {{id}}",
     "conversationNotFound": "Conversation introuvable",
     "scheduledTimePassed": "L'heure planifiée est dépassée",

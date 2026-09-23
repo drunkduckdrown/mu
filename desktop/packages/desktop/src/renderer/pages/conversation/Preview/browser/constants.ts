@@ -25,8 +25,8 @@ export const BROWSER_BLANK_URL = 'about:blank';
  * 浏览器 tab 的占位标题，页面标题就绪后会被替换。
  * Placeholder title for a browser tab, replaced once the page title arrives.
  *
- * A stored sentinel, never shown as it is: the tab strip renders the reader's "New tab" in its place (see
- * `previewTabDisplayTitle`), so a tab opened before a language switch follows the switch. The English spelling stays
+ * A stored sentinel, never shown as it is: the browser's tab row renders the reader's "New tab" in its place (see
+ * `browserPageTitle`), so a tab opened before a language switch follows the switch. The English spelling stays
  * because tabs persisted by earlier builds carry exactly this string.
  */
 export const BROWSER_TAB_FALLBACK_TITLE = 'New Tab';

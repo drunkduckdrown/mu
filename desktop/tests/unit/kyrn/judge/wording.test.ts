@@ -4,13 +4,14 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createInstance, type TFunction } from 'i18next';
 import {
   answerLabel,
+  answerValue,
   hintChips,
   hintLines,
   JUDGE_ERROR_KINDS,
   JUDGE_REASONS,
   PREFLIGHT_HINT_IDS,
-  PREFLIGHT_QUESTION_IDS,
   reasonText,
+  scoreLevel,
 } from '../../../../packages/desktop/src/renderer/pages/conversation/KyrnPanel/Judge/wording';
 import common from '../../../../packages/desktop/src/renderer/services/i18n/locales/en-US/common.json';
 import zhCN from '../../../../packages/desktop/src/renderer/services/i18n/locales/zh-CN/common.json';
@@ -94,20 +95,59 @@ describe('Jev card wording: hints and answers', () => {
     expect(hintLines(en, [], [])).toEqual([]);
   });
 
-  it('names the preflight’s questions and leaves other ids as recorded', () => {
-    expect(answerLabel(en, 'preflight', 'turn_type')).toBe(copy.answerIds.turn_type);
-    expect(answerLabel(chinese, 'preflight', 'needs_clarification')).toBe(zh.answerIds.needs_clarification);
-    expect(answerLabel(chinese, 'rewind', 'dead_end')).toBe('dead_end');
-    expect(answerLabel(en, 'preflight', 'Turn type')).toBe('Turn type');
-    // Another decision point's question that shares an id is not named as the preflight's.
-    expect(answerLabel(chinese, 'drift', 'plan_first')).toBe('plan_first');
+  it('names each question by its own decision point, and one asked per item with the item counted from 1', () => {
+    const words = copy.answerWords;
+    expect(answerLabel(en, 'en-US', 'preflight', 'turn_type')).toBe(words.preflight.questions.turn_type);
+    expect(answerLabel(chinese, 'zh-CN', 'preflight', 'needs_clarification')).toBe(
+      zh.answerWords.preflight.questions.needs_clarification
+    );
+    expect(answerLabel(en, 'en-US', 'rewind', 'dead_end')).toBe(words.rewind.questions.dead_end);
+    expect(answerLabel(en, 'en-US', 'approval', 'verdict')).toBe(words.approval.questions.verdict);
+    expect(answerLabel(en, 'en-US', 'relate', 'relation')).toBe(words.relate.questions.relation);
+    // Two decision points ask a `correction`, each its own question.
+    expect(answerLabel(en, 'en-US', 'capture', 'correction')).toBe(words.capture.questions.correction);
+    expect(answerLabel(en, 'en-US', 'skills', 'skill_0')).toBe('Skill 1 would help');
+    expect(answerLabel(en, 'en-US', 'worth', 'worth_2')).toBe('Lesson 2');
+    expect(answerLabel(en, 'en-US', 'admission', 'k12')).toBe('Output part 12');
+    expect(answerLabel(chinese, 'zh-CN', 'board', 'event_0')).toBe('事件 1');
   });
 
-  it('has words for every hint and question id in each reference language', () => {
+  it('reads an id it has no words for as words, never as the id', () => {
+    // A question a newer harness adds, a decision point this build does not know, an older record's English label.
+    expect(answerLabel(en, 'en-US', 'drift', 'plan_first')).toBe('plan first');
+    expect(answerLabel(en, 'en-US', 'other', 'still_to_come')).toBe('still to come');
+    expect(answerLabel(en, 'en-US', 'preflight', 'Turn type')).toBe('Turn type');
+  });
+
+  it('says a choice’s answers in the decision point’s words, and leaves an answer named at run time to the view', () => {
+    const words = copy.answerWords;
+    expect(answerValue(en, 'approval', 'verdict', 'needed')).toBe(words.approval.answers.needed);
+    expect(answerValue(en, 'approval', 'verdict', 'unclear')).toBe(words.approval.answers.unclear);
+    expect(answerValue(chinese, 'relate', 'relation', 'supersedes')).toBe(zh.answerWords.relate.answers.supersedes);
+    expect(answerValue(en, 'browser', 'operation', 'SCROLL_DOWN')).toBe(words.browser.answers.SCROLL_DOWN);
+    expect(answerValue(en, 'admission', 'k2', 'passing')).toBe(words.admission.answers.passing);
+    expect(answerValue(en, 'board', 'event_3', 'key')).toBe(words.board.answers.key);
+    // An element number, a role, an answer a newer harness adds, a question that is no choice.
+    expect(answerValue(en, 'browser', 'click_target', '3')).toBeUndefined();
+    expect(answerValue(en, 'routing', 'agent', 'scout')).toBeUndefined();
+    expect(answerValue(en, 'drift', 'course', 'sideways')).toBeUndefined();
+    expect(answerValue(en, 'risk', 'destructive', 'true')).toBeUndefined();
+  });
+
+  it('says the step a score lands on, as the harness rounds it', () => {
+    const levels = copy.answerWords.preflight.levels.task_complexity;
+    expect(scoreLevel(en, 'preflight', 'task_complexity', 1.91)).toBe(levels['2']);
+    expect(scoreLevel(en, 'preflight', 'task_complexity', 0.2)).toBe(levels['0']);
+    expect(scoreLevel(en, 'preflight', 'task_complexity', 7)).toBe(levels['3']);
+    expect(scoreLevel(en, 'routing', 'reasoning', 1)).toBe(copy.answerWords.routing.levels.reasoning['1']);
+    expect(scoreLevel(en, 'preflight', 'plan_first', 1)).toBeUndefined();
+    expect(scoreLevel(en, 'other', 'fit', 1)).toBeUndefined();
+  });
+
+  it('has words for every hint in each reference language', () => {
     for (const locale of [common, zhCN, zhTW]) {
       const view = locale.kyrn.judgeView;
       for (const id of PREFLIGHT_HINT_IDS) expect((view.hints as Record<string, string>)[id]).toBeTruthy();
-      for (const id of PREFLIGHT_QUESTION_IDS) expect((view.answerIds as Record<string, string>)[id]).toBeTruthy();
     }
   });
 });

@@ -6,16 +6,16 @@
     "connection_refused": "Connexion refusée, veuillez vérifier que le service Codex fonctionne correctement.",
     "unknown_error": "Erreur de connexion réseau, veuillez vérifier les paramètres réseau.",
     "retry_attempt": "Tentative de reconnexion {{current}}...",
-    "cloudflare_blocked_title": "🚫 Service {{service}} bloqué par la protection Cloudflare",
-    "network_timeout_title": "⏱️ Délai de connexion réseau dépassé",
-    "connection_refused_title": "❌ Connexion au service refusée",
-    "unknown_error_title": "🔌 Erreur de connexion réseau",
+    "cloudflare_blocked_title": "Service {{service}} bloqué par la protection Cloudflare",
+    "network_timeout_title": "Délai de connexion réseau dépassé",
+    "connection_refused_title": "Connexion au service refusée",
+    "unknown_error_title": "Erreur de connexion réseau",
     "recovery_suggestions": "**Solutions suggérées :**",
     "technical_info": "**Informations techniques :**",
     "error_type": "Type d'erreur",
     "retry_count": "Nombre de tentatives",
     "error_details": "Détails de l'erreur",
-    "quick_switch_title": "💡 **Options de basculement rapide :**",
+    "quick_switch_title": "**Options de basculement rapide :**",
     "quick_switch_content": "Quand le service actuel rencontre des restrictions réseau, vous pouvez :\n\n1. **Changer d'assistant IA immédiatement** : Sélectionnez d'autres assistants disponibles dans le panneau gauche\n2. **Vérifier la disponibilité du service** : La disponibilité des différents services IA peut varier selon la région\n3. **Optimisation réseau** : Utilisez un environnement réseau stable pour améliorer le taux de succès\n4. **Réessayer plus tard** : Les restrictions réseau sont généralement temporaires\n\n**Conseil** : Il est recommandé de configurer plusieurs services IA alternatifs pour assurer la continuité du travail.",
     "recovery_actions": {
       "cloudflare_blocked": [
@@ -46,8 +46,8 @@
     }
   },
   "thinking": {
-    "processing": "🤔 Codex réfléchit...",
-    "completed": "💭 Processus de réflexion terminé",
+    "processing": "Codex réfléchit...",
+    "completed": "Processus de réflexion terminé",
     "analyzing": "Analyse du problème et formulation des solutions...",
     "composing": "Rédaction du contenu de la réponse..."
   },

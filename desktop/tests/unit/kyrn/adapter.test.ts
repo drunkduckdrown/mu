@@ -9,6 +9,7 @@ import type {
 } from '@agentclientprotocol/sdk';
 import {
   KyrnAgent,
+  MU_NOTICES,
   MU_TURN_ERRORS,
   harnessEnv,
   readAppLanguage,
@@ -43,7 +44,7 @@ const tick = () => new Promise((resolve) => setImmediate(resolve));
 type FixtureOptions = {
   /** The user's home the bridge reads the app language from; a temporary one. */
   home?: string;
-  permission?: (request: RequestPermissionRequest) => RequestPermissionResponse;
+  permission?: (request: RequestPermissionRequest) => RequestPermissionResponse | Promise<RequestPermissionResponse>;
   /** The permission mode mu starts in, announced before its first answer as mu does; unset: mu reports none. */
   mode?: string;
   /** mu understands `/permissions <id> --here` and says so (`conversationSwitch`). */
@@ -54,6 +55,9 @@ type FixtureOptions = {
   models?: JsonRecord[];
 };
 
+/** Error text of a fixture mu that has stopped, as PiRpc's. */
+const CLOSED = 'mu process is closed';
+
 function fixture(options: FixtureOptions = {}) {
   const store = mkdtempSync(join(tmpdir(), 'kyrn-acp-'));
   // Never the real home: the bridge reads the app language from `<home>/.mu`.
@@ -63,6 +67,12 @@ function fixture(options: FixtureOptions = {}) {
   const permissions: RequestPermissionRequest[] = [];
   const responses: JsonRecord[] = [];
   const envs: (Readonly<Record<string, string>> | undefined)[] = [];
+  /** The session file each mu process was started on. */
+  const files: (string | undefined)[] = [];
+  /** How many of the next mu processes fail to start. */
+  let failStarts = 0;
+  /** Stops the current mu process, as a crash does. */
+  let stop: () => void = noop;
   let emit: (event: JsonRecord) => void = noop;
   let finish: () => void = noop;
   let thinking = 'medium';
@@ -86,10 +96,18 @@ function fixture(options: FixtureOptions = {}) {
     },
     'fixture',
     store,
-    (_cwd, _file, listener, servedSession, env) => {
+    (_cwd, file, listener, servedSession, env) => {
       emit = listener;
       served.push(servedSession);
       envs.push(env);
+      files.push(file);
+      const failing = failStarts > 0;
+      if (failing) failStarts -= 1;
+      let down = false;
+      stop = () => {
+        down = true;
+        listener({ type: 'kyrn_rpc_closed' });
+      };
       const handed = env?.MU_PERMISSIONS;
       launched.push(handed);
       // A new mu process announces its mode again; one handed a mode starts in it (no session entry here).
@@ -97,6 +115,8 @@ function fixture(options: FixtureOptions = {}) {
       if (handed) mode = handed;
       return {
         send: async (command) => {
+          if (failing) throw new Error('mu failed to start');
+          if (down) throw new Error(CLOSED);
           commands.push(command);
           switch (command.type) {
             case 'get_state':
@@ -157,10 +177,11 @@ function fixture(options: FixtureOptions = {}) {
           }
         },
         respond: (response) => {
-          responses.push(response);
+          if (!down) responses.push(response);
         },
         close: () => {
           closed = true;
+          down = true;
         },
       };
     },
@@ -176,12 +197,25 @@ function fixture(options: FixtureOptions = {}) {
     responses,
     store,
     launched,
+    files,
+    /** mu's process stops, as a crash does: kyrn_rpc_closed, and every command fails from then on. */
+    stop: () => stop(),
+    /** The next `count` mu processes fail to start. */
+    failStarts: (count: number) => {
+      failStarts = count;
+    },
     /** mu's default changed elsewhere, e.g. in another conversation. */
     setMode: (value: string) => {
       mode = value;
     },
-    answer: (value: RequestPermissionResponse) => {
+    answer: (value: RequestPermissionResponse | Promise<RequestPermissionResponse>) => {
       answer = () => value;
+    },
+    /** The app fails to ask (its connection is gone, say). */
+    failAsking: () => {
+      answer = () => {
+        throw new Error('ACP connection closed');
+      };
     },
     setTokens: (value: number | null) => {
       tokens = value;
@@ -317,6 +351,68 @@ describe('KYRN ACP bridge', () => {
         { type: 'text', text: 'Final only' },
         { type: 'text', text: 'Streamed' },
       ]);
+    } finally {
+      f.cleanup();
+    }
+  });
+  it('says once, in a line of its own, that Git for Windows is missing, instead of pi’s error', async () => {
+    const f = fixture();
+    try {
+      const { sessionId } = await f.agent.newSession({ cwd: tmpdir(), mcpServers: [] });
+      const running = f.agent.prompt({ sessionId, prompt: [{ type: 'text', text: 'Test' }] });
+      // pi's words when it finds no bash on Windows (getShellConfig), for a bash call and for a background one.
+      const noBash =
+        'No bash shell found. Options:\n  1. Install Git for Windows: https://git-scm.com/download/win\n' +
+        '  2. Add your bash to PATH (Cygwin, MSYS2, etc.)\n  3. Set shellPath in settings.json\n\n' +
+        'Searched Git Bash in:\n  C:\\Program Files\\Git\\bin\\bash.exe';
+      for (const [toolCallId, toolName] of [
+        ['call-1', 'bash'],
+        ['call-2', 'bg_start'],
+      ]) {
+        f.emit({ type: 'tool_execution_start', toolCallId, toolName, args: { command: 'ls' } });
+        f.emit({
+          type: 'tool_execution_end',
+          toolCallId,
+          toolName,
+          isError: true,
+          result: { content: [{ type: 'text', text: noBash }], details: {} },
+        });
+      }
+      // Any other failure keeps its words.
+      f.emit({ type: 'tool_execution_start', toolCallId: 'call-3', toolName: 'bash', args: { command: 'false' } });
+      f.emit({
+        type: 'tool_execution_end',
+        toolCallId: 'call-3',
+        toolName: 'bash',
+        isError: true,
+        result: { content: [{ type: 'text', text: 'Command exited with code 1' }] },
+      });
+      f.finish();
+      await running;
+      const seen = f.updates.map((each) => each.update);
+      expect(JSON.stringify(seen)).not.toContain('No bash shell found');
+      const notices = seen.filter(
+        (update) => update.sessionUpdate === 'tool_call' && update.toolCallId.startsWith('mu:notice:')
+      );
+      expect(notices).toEqual([
+        expect.objectContaining({
+          title: MU_NOTICES.bash_missing,
+          status: 'completed',
+          rawInput: { notice: 'bash_missing' },
+        }),
+      ]);
+      // The line comes right after the call that failed.
+      const failed = seen.findIndex(
+        (update) => update.sessionUpdate === 'tool_call_update' && update.toolCallId === 'call-1'
+      );
+      expect(seen[failed]).toMatchObject({ status: 'failed', content: [], rawOutput: { notice: 'bash_missing' } });
+      expect(seen[failed + 1]).toBe(notices[0]);
+      expect(
+        seen.find((update) => update.sessionUpdate === 'tool_call_update' && update.toolCallId === 'call-3')
+      ).toMatchObject({
+        status: 'failed',
+        content: [{ type: 'content', content: { type: 'text', text: 'Command exited with code 1' } }],
+      });
     } finally {
       f.cleanup();
     }
@@ -734,6 +830,149 @@ describe('KYRN ACP bridge', () => {
         { id: 's1', value: 'Drop' },
         { id: 's2', cancelled: true },
       ]);
+    } finally {
+      f.cleanup();
+    }
+  });
+
+  it('fails a turn whose mu stopped with the error the desktop explains, and starts mu again for the next message', async () => {
+    const f = fixture({ mode: 'ask' });
+    try {
+      const { sessionId } = await f.agent.newSession({ cwd: tmpdir(), mcpServers: [] });
+      const running = f.agent.prompt({ sessionId, prompt: [{ type: 'text', text: 'Test' }] });
+      await vi.waitFor(() => expect(f.commands.filter((command) => command.type === 'prompt')).toHaveLength(1));
+      f.stop();
+      await expect(running).rejects.toThrow(MU_TURN_ERRORS.processExited);
+      // Stopping what no longer runs is no error.
+      await expect(f.agent.cancel({ sessionId })).resolves.toBeUndefined();
+      // The next message: a new mu on the same session file, in the mode the conversation was in.
+      const next = f.agent.prompt({ sessionId, prompt: [{ type: 'text', text: 'Again' }] });
+      await vi.waitFor(() => expect(f.commands.filter((command) => command.type === 'prompt')).toHaveLength(2));
+      f.finish();
+      await expect(next).resolves.toEqual({ stopReason: 'end_turn' });
+      expect(f.files).toEqual([undefined, '/fixture/session.jsonl']);
+      expect(f.launched).toEqual([undefined, 'ask']);
+    } finally {
+      f.cleanup();
+    }
+  });
+
+  it('goes on after mu stopped between turns: a setting or a message starts it again, with no error', async () => {
+    const f = fixture();
+    try {
+      const { sessionId } = await f.agent.newSession({ cwd: tmpdir(), mcpServers: [] });
+      f.stop();
+      const changed = await f.agent.setSessionConfigOption({ sessionId, configId: 'thinking', value: 'high' });
+      expect(changed.configOptions?.[1]).toMatchObject({ currentValue: 'high' });
+      expect(f.files).toEqual([undefined, '/fixture/session.jsonl']);
+      // The send box hears the new process's options.
+      await vi.waitFor(() =>
+        expect(f.updates.some((each) => each.update.sessionUpdate === 'config_option_update')).toBe(true)
+      );
+    } finally {
+      f.cleanup();
+    }
+  });
+
+  it('keeps a conversation whose new mu did not start, and tries again on the next call', async () => {
+    const f = fixture();
+    try {
+      const { sessionId } = await f.agent.newSession({ cwd: tmpdir(), mcpServers: [] });
+      f.stop();
+      f.failStarts(1);
+      await expect(f.agent.prompt({ sessionId, prompt: [{ type: 'text', text: 'Test' }] })).rejects.toThrow(
+        'mu failed to start'
+      );
+      const next = f.agent.prompt({ sessionId, prompt: [{ type: 'text', text: 'Again' }] });
+      await vi.waitFor(() => expect(f.commands.filter((command) => command.type === 'prompt')).toHaveLength(1));
+      f.finish();
+      await expect(next).resolves.toEqual({ stopReason: 'end_turn' });
+      expect(f.files).toEqual([undefined, '/fixture/session.jsonl', '/fixture/session.jsonl']);
+    } finally {
+      f.cleanup();
+    }
+  });
+
+  it('answers mu exactly once, and says so in the conversation when the app could not ask or no choice came back', async () => {
+    const f = fixture({ mode: 'jev' });
+    try {
+      const { sessionId } = await f.agent.newSession({ cwd: tmpdir(), mcpServers: [] });
+      const answers = ['允许这一次', '不允许'];
+      const ask = (id: string) => {
+        f.emit(
+          shown('permissions.request', {
+            id: `permission-${id}`,
+            mode: 'jev',
+            tool: 'bash',
+            kind: 'shell',
+            summary: 'rm -rf build',
+            reason: 'flagged',
+            flag: 'recursive or forced delete',
+            flagCode: 'recursive_or_forced_delete',
+            answers,
+            answerIds: ['once', 'deny'],
+          })
+        );
+        f.emit({ type: 'extension_ui_request', id, method: 'select', title: 'mu 想运行命令', options: answers });
+      };
+      const notices = () =>
+        f.updates.filter(
+          (each) => each.update.sessionUpdate === 'tool_call' && each.update.toolCallId.startsWith('mu:notice:')
+        );
+      // The app could not ask: mu hears "no" and the conversation says why.
+      f.failAsking();
+      ask('ui-1');
+      // An answer that is none of the choices.
+      await tick();
+      f.answer({ outcome: { outcome: 'selected', optionId: 'mu:always' } });
+      ask('ui-2');
+      await tick();
+      // A choice, and a dismissal: answered as given, nothing to say.
+      f.answer({ outcome: { outcome: 'selected', optionId: 'mu:once' } });
+      ask('ui-3');
+      await tick();
+      f.answer({ outcome: { outcome: 'cancelled' } });
+      ask('ui-4');
+      await vi.waitFor(() => expect(f.responses).toHaveLength(4));
+      expect(f.responses).toEqual([
+        { id: 'ui-1', cancelled: true },
+        { id: 'ui-2', cancelled: true },
+        { id: 'ui-3', value: answers[0] },
+        { id: 'ui-4', cancelled: true },
+      ]);
+      await vi.waitFor(() => expect(notices()).toHaveLength(2));
+      expect(notices()[0]).toMatchObject({
+        sessionId,
+        update: {
+          sessionUpdate: 'tool_call',
+          title: MU_NOTICES.answer_lost,
+          status: 'completed',
+          rawInput: { notice: 'answer_lost' },
+        },
+      });
+    } finally {
+      f.cleanup();
+    }
+  });
+
+  it('lets an answer to a mu that stopped meanwhile go nowhere, with nothing else to say', async () => {
+    const f = fixture({ mode: 'jev' });
+    try {
+      await f.agent.newSession({ cwd: tmpdir(), mcpServers: [] });
+      let release: (value: RequestPermissionResponse) => void = noop;
+      f.answer(
+        new Promise<RequestPermissionResponse>((resolve) => {
+          release = resolve;
+        })
+      );
+      f.emit({ type: 'extension_ui_request', id: 'ui-1', method: 'select', title: 'Pick', options: ['Keep', 'Drop'] });
+      await tick();
+      f.stop();
+      release({ outcome: { outcome: 'selected', optionId: '0' } });
+      await tick();
+      await tick();
+      expect(f.responses).toEqual([]);
+      expect(f.updates.some((each) => JSON.stringify(each.update).includes('mu:notice:'))).toBe(false);
     } finally {
       f.cleanup();
     }

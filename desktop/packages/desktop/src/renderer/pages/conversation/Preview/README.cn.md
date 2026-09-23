@@ -63,8 +63,7 @@ preview/
 │   │   ├── PDFViewer.tsx              # PDF 查看
 │   │   ├── OfficeDocViewer.tsx        # Office 文档查看（Word、PPT）
 │   │   ├── ExcelViewer.tsx            # Excel 查看
-│   │   ├── HTMLViewer.tsx             # HTML 渲染
-│   │   └── URLViewer.tsx              # URL 网页查看
+│   │   └── HTMLViewer.tsx             # HTML 渲染
 │   ├── editors/                       # 编辑器组件
 │   │   ├── MarkdownEditor.tsx         # Markdown 编辑器
 │   │   ├── CodeEditor.tsx             # 代码编辑器（CodeMirror 6）

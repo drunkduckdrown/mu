@@ -45,7 +45,8 @@ const providerOf = (value: string): string => {
 /**
  * The picker's rows: every model on offer, by provider, each with the thinking levels it takes. The model in use takes
  * the levels reported right now; any other takes what the adapter recorded for it. A provider is titled by
- * `providerName` (its name, where the id is all the value says).
+ * `providerName` (its name, where the id is all the value says). mu describes each model by its provider's id, which
+ * the title already says in words: such a description is left out.
  */
 export function modelMenu(
   model: ModelChoices,
@@ -64,7 +65,7 @@ export function modelMenu(
     group.models.push({
       value: option.value,
       label: option.label || option.value,
-      ...(option.description ? { description: option.description } : {}),
+      ...(option.description && option.description !== key ? { description: option.description } : {}),
       levels,
     });
     groups.set(key, group);

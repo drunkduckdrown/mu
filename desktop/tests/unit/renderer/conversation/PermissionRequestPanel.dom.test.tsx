@@ -7,6 +7,8 @@
 import React from 'react';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { BackendHttpError } from '@/common/adapter/httpBridge';
+import { isAnswerNoLongerPending } from '@/renderer/pages/conversation/Messages/components/MessagePermission/PermissionRequestPanel';
 import {
   classifyAcpPermission,
   classifyLegacyPermission,
@@ -231,6 +233,37 @@ describe('PermissionRequestPanel', () => {
     expect(await screen.findByTestId('message-permission-status')).toBeInTheDocument();
     expect(onConfirm).toHaveBeenNthCalledWith(1, 'reject');
     expect(onConfirm).toHaveBeenNthCalledWith(2, 'reject');
+  });
+
+  it('drops the buttons and says so when the question no longer waits for an answer', async () => {
+    // What AionCore answers once the agent's question is gone, as the backend bridge raises it.
+    const gone = new BackendHttpError({
+      method: 'POST',
+      path: '/api/conversations/c/confirmations/permission%3Aui-1/confirm',
+      status: 400,
+      body: { success: false, code: 'BAD_REQUEST', error: 'Pending ACP permission not found: permission:ui-1' },
+    });
+    const onConfirm = vi.fn().mockRejectedValue(gone);
+    renderPanel({ onConfirm });
+
+    fireEvent.click(getOptionButton('message-permission-option-once'));
+    expect(await screen.findByTestId('message-permission-gone')).toHaveTextContent(
+      'messages.permissionNoLongerPending'
+    );
+    expect(screen.queryByTestId('message-permission-options')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('message-permission-error')).not.toBeInTheDocument();
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('tells a question that is gone from a failure worth retrying', () => {
+    const failure = (status: number, error: string) =>
+      new BackendHttpError({ method: 'POST', path: '/confirm', status, body: { success: false, code: 'X', error } });
+    expect(isAnswerNoLongerPending(failure(400, 'Pending ACP permission not found: permission:ui-1'))).toBe(true);
+    expect(isAnswerNoLongerPending(failure(400, 'Pending ACP permission expired: permission:ui-1'))).toBe(true);
+    expect(isAnswerNoLongerPending(failure(404, 'No active agent for this conversation'))).toBe(true);
+    expect(isAnswerNoLongerPending(failure(404, 'Conversation c not found'))).toBe(false);
+    expect(isAnswerNoLongerPending(failure(500, 'Internal server error.'))).toBe(false);
+    expect(isAnswerNoLongerPending(new Error('Pending ACP permission not found'))).toBe(false);
   });
 
   it('shows an empty state and no buttons when there are no options', () => {

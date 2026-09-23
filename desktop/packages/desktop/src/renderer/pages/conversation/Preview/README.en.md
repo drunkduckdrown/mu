@@ -63,8 +63,7 @@ preview/
 │   │   ├── PDFViewer.tsx              # PDF viewer
 │   │   ├── OfficeDocViewer.tsx        # Office document viewer (Word, PPT)
 │   │   ├── ExcelViewer.tsx            # Excel viewer
-│   │   ├── HTMLViewer.tsx             # HTML rendering
-│   │   └── URLViewer.tsx              # URL web page viewer
+│   │   └── HTMLViewer.tsx             # HTML rendering
 │   ├── editors/                       # Editor components
 │   │   ├── MarkdownEditor.tsx         # Markdown editor
 │   │   ├── CodeEditor.tsx             # Code editor (CodeMirror 6)

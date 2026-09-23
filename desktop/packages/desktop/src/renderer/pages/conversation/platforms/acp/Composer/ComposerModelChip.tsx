@@ -7,6 +7,7 @@
 import RuntimeSelectorPill from '@/renderer/components/agent/RuntimeSelectorPill';
 import { composeRuntimeSelectorLabel } from '@/renderer/components/agent/runtimeSelectorOptions';
 import { useAcpConfigOptions, type AcpConfigOptionsPort } from '@/renderer/hooks/agent/useAcpConfigOptions';
+import { useProviderNames } from '@/renderer/hooks/agent/useProviderNames';
 import { iconColors } from '@/renderer/styles/colors';
 import { providerDisplayName } from '@/renderer/utils/model/providerName';
 import { Dropdown, Message, Tooltip } from '@arco-design/web-react';
@@ -43,15 +44,16 @@ const ComposerModelChip: React.FC<{
   });
   const revision = model ? `${model.currentValue ?? ''}|${model.options.length}` : '';
   const recorded = useModelLevels(conversation_id, Boolean(model), revision);
+  const names = useProviderNames();
   const groups = useMemo(
     () =>
       model
         ? filterModelMenu(
-            modelMenu(model, thoughtLevel, recorded, (id) => providerDisplayName(t, id)),
+            modelMenu(model, thoughtLevel, recorded, (id) => providerDisplayName(t, id, names)),
             query
           )
         : [],
-    [model, thoughtLevel, recorded, query, t]
+    [model, thoughtLevel, recorded, query, t, names]
   );
 
   if (!model || model.options.length === 0) return null;

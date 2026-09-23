@@ -8,7 +8,7 @@ import { formatNameList } from '@/renderer/services/i18n/list';
 import { thinkingLevelLabel } from '@/renderer/utils/model/thinkingLevel';
 import { answerRows, resultFacts, type JudgeAnswer, type JudgeCard, type JudgeFact, type JudgeState } from './activity';
 import styles from './Judge.module.css';
-import { answerLabel, hintLines, reasonText } from './wording';
+import { answerLabel, answerValue, hintLines, reasonText, scoreLevel } from './wording';
 import { useClock } from '../clock';
 
 const KEY = 'common.kyrn.judgeView';
@@ -103,27 +103,34 @@ export default function JudgeCardView({
     </li>
   );
 
-  const answer = (row: JudgeAnswer) => (
-    <li key={row.id} className={styles.answer}>
-      <span className={styles.answerId}>{answerLabel(t, card.stage, row.id)}</span>
-      {row.type === 'boolean' && t(`${KEY}.probabilityValue`, { percent: percent(row.probability) })}
-      {row.type === 'score' &&
-        t(`${KEY}.scoreValue`, {
-          value: formatNumber(row.score, language, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
-        })}
-      {row.type === 'text' && row.text}
-      {row.type === 'choice' &&
-        [
-          label('values', row.choice),
-          ...row.options.map((option) =>
-            t(`${KEY}.optionProbability`, {
-              option: label('values', option.name),
-              percent: percent(option.probability),
-            })
-          ),
-        ].join(' · ')}
-    </li>
-  );
+  // A question and its answers in the decision point's own words; an answer it has none for (an element, a role or an
+  // item named at run time) is shown as recorded, numbers in the app language.
+  const answer = (row: JudgeAnswer) => {
+    const said = (value: string): string => answerValue(t, card.stage, row.id, value) ?? label('values', value);
+    return (
+      <li key={row.id} className={styles.answer}>
+        <span className={styles.answerId}>{answerLabel(t, language, card.stage, row.id)}</span>
+        {row.type === 'boolean' && t(`${KEY}.probabilityValue`, { percent: percent(row.probability) })}
+        {row.type === 'score' &&
+          [
+            scoreLevel(t, card.stage, row.id, row.score),
+            t(`${KEY}.scoreValue`, {
+              value: formatNumber(row.score, language, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            }),
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        {row.type === 'text' && row.text}
+        {row.type === 'choice' &&
+          [
+            said(row.choice),
+            ...row.options.map((option) =>
+              t(`${KEY}.optionProbability`, { option: said(option.name), percent: percent(option.probability) })
+            ),
+          ].join(' · ')}
+      </li>
+    );
+  };
 
   return (
     <article className={plain ? styles.plainCard : styles.card} data-state={card.state} data-testid='judge-card'>

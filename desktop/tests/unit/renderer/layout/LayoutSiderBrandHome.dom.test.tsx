@@ -35,6 +35,10 @@ const featureMocks = vi.hoisted(() => ({
 const runtimeMocks = vi.hoisted(() => ({
   deferredFailure: undefined as undefined | ((event: IRuntimeStatusEvent) => void),
 }));
+const updateMocks = vi.hoisted(() => ({
+  open: undefined as undefined | ((event: { source: 'menu' | 'tray' }) => void),
+  run: vi.fn(() => Promise.resolve()),
+}));
 vi.mock('react-router-dom', () => ({
   useNavigate: () => navigate,
   useLocation: () => ({ pathname: currentPathname, search: '', hash: '' }),
@@ -51,6 +55,17 @@ vi.mock('@/common', () => ({
       logStream: { on: () => () => {} },
     },
     task: { stopAll: { invoke: () => Promise.resolve({ success: false }) } },
+    update: {
+      open: {
+        on: (callback: (event: { source: 'menu' | 'tray' }) => void) => {
+          updateMocks.open = callback;
+          return () => {
+            updateMocks.open = undefined;
+          };
+        },
+      },
+      run: { invoke: updateMocks.run },
+    },
     runtime: {
       deferredFailure: {
         on: (callback: (event: IRuntimeStatusEvent) => void) => {
@@ -71,7 +86,6 @@ vi.mock('@/common/config/constants', () => ({
   },
 }));
 vi.mock('@/renderer/components/layout/Titlebar', () => ({ default: () => null }));
-vi.mock('@/renderer/components/settings/UpdateModal', () => ({ default: () => null }));
 vi.mock('@renderer/hooks/system/useDeepLink', () => ({ useDeepLink: () => {} }));
 vi.mock('@renderer/hooks/system/notification/useNotificationClick', () => ({ useNotificationClick: () => {} }));
 vi.mock('@renderer/hooks/file/useDirectorySelection', () => ({
@@ -291,22 +305,18 @@ describe('Layout sider brand Home button', () => {
     expect(info).toHaveBeenCalledWith('common.nodeRuntime.toolNote');
   });
 
-  it('opens the update notification directly for tray update checks', () => {
+  it('opens 关于 and checks there when the menu or the tray asks to check for updates', () => {
     platformMocks.isElectronDesktopMock.mockReturnValue(true);
-    const openListener = vi.fn();
-    window.addEventListener('aionui-open-update-modal', openListener);
+    renderLayout();
 
-    try {
-      renderLayout();
+    act(() => updateMocks.open?.({ source: 'tray' }));
 
-      window.dispatchEvent(new Event('tray:check-update'));
+    expect(navigate).toHaveBeenCalledWith('/settings/about');
+    expect(updateMocks.run).toHaveBeenCalledWith({ action: 'check' });
+  });
 
-      expect(navigate).not.toHaveBeenCalled();
-      expect(openListener).toHaveBeenCalledTimes(1);
-      const event = openListener.mock.calls[0][0] as CustomEvent;
-      expect(event.detail).toEqual({ source: 'tray' });
-    } finally {
-      window.removeEventListener('aionui-open-update-modal', openListener);
-    }
+  it('listens for no update requests outside the desktop app', () => {
+    renderLayout();
+    expect(updateMocks.open).toBeUndefined();
   });
 });

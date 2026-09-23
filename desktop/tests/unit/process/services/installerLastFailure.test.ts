@@ -19,7 +19,7 @@ afterEach(async () => {
 describe('installerLastFailure service', () => {
   it('consumes a valid installer-last-failure marker once from the AppData AionUi directory', async () => {
     const { consumeInstallerLastFailure, getInstallerLastFailureMarkerPath } =
-      await import('@/process/services/installerLastFailure');
+      await import('@/process/services/update/installerLastFailure');
     const appDataDir = makeAppDataDir();
     const markerPath = getInstallerLastFailureMarkerPath(appDataDir);
 
@@ -60,7 +60,7 @@ describe('installerLastFailure service', () => {
 
   it('does not consume malformed marker JSON', async () => {
     const { consumeInstallerLastFailure, getInstallerLastFailureMarkerPath } =
-      await import('@/process/services/installerLastFailure');
+      await import('@/process/services/update/installerLastFailure');
     const appDataDir = makeAppDataDir();
     const markerPath = getInstallerLastFailureMarkerPath(appDataDir);
 
@@ -73,7 +73,7 @@ describe('installerLastFailure service', () => {
 
   it('consumes a valid UTF-8 BOM-prefixed marker written by Windows PowerShell', async () => {
     const { consumeInstallerLastFailure, getInstallerLastFailureMarkerPath } =
-      await import('@/process/services/installerLastFailure');
+      await import('@/process/services/update/installerLastFailure');
     const appDataDir = makeAppDataDir();
     const markerPath = getInstallerLastFailureMarkerPath(appDataDir);
 

@@ -6,11 +6,9 @@
 
 import type { TFunction } from 'i18next';
 import type { PreviewContentType } from '@/common/types/office/preview';
-import { BROWSER_TAB_FALLBACK_TITLE } from '../browser/constants';
 
 /**
- * The title a tab gets when it has no name of its own: no file name was given, or a browser tab's page has not
- * reported a title yet.
+ * The title a tab gets when it has no name of its own: no file name was given.
  *
  * These are stored with the tab and persisted, so they are sentinels, never display text: a word stored at open time
  * would stay in the language of that moment. `previewTabDisplayTitle` shows the reader's word in their place each time
@@ -22,7 +20,6 @@ const FALLBACK_TITLES = {
   diff: 'Diff',
   code: 'Code',
   image: 'Image',
-  browser: BROWSER_TAB_FALLBACK_TITLE,
   other: 'Preview',
 } as const;
 
@@ -32,7 +29,6 @@ export function fallbackTabTitle(type: PreviewContentType, language?: string): s
     case 'markdown':
     case 'diff':
     case 'image':
-    case 'browser':
       return FALLBACK_TITLES[type];
     case 'code':
       return language || FALLBACK_TITLES.code;
@@ -44,7 +40,6 @@ export function fallbackTabTitle(type: PreviewContentType, language?: string): s
 /** A tab's title as the tab strip shows it: its own name, or the reader's word for a tab that has none. */
 export function previewTabDisplayTitle(tab: { title: string; content_type: PreviewContentType }, t: TFunction): string {
   const { title, content_type: type } = tab;
-  if (type === 'browser') return title && title !== FALLBACK_TITLES.browser ? title : t('preview.browser.newTab');
   if (title && title !== fallbackTabTitle(type)) return title;
   switch (type) {
     case 'markdown':

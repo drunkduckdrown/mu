@@ -6,16 +6,16 @@
     "connection_refused": "Conexión rechazada, verifica si el servicio Codex está funcionando correctamente.",
     "unknown_error": "Error de conexión de red, verifica la configuración de red.",
     "retry_attempt": "Reintento {{current}}...",
-    "cloudflare_blocked_title": "🚫 Servicio {{service}} bloqueado por la protección de Cloudflare",
-    "network_timeout_title": "⏱️ Tiempo de conexión agotado",
-    "connection_refused_title": "❌ Conexión al servicio rechazada",
-    "unknown_error_title": "🔌 Error de conexión de red",
+    "cloudflare_blocked_title": "Servicio {{service}} bloqueado por la protección de Cloudflare",
+    "network_timeout_title": "Tiempo de conexión agotado",
+    "connection_refused_title": "Conexión al servicio rechazada",
+    "unknown_error_title": "Error de conexión de red",
     "recovery_suggestions": "**Soluciones sugeridas:**",
     "technical_info": "**Información técnica:**",
     "error_type": "Tipo de error",
     "retry_count": "Número de reintentos",
     "error_details": "Detalles del error",
-    "quick_switch_title": "💡 **Opciones de cambio rápido:**",
+    "quick_switch_title": "**Opciones de cambio rápido:**",
     "quick_switch_content": "Cuando el servicio actual tiene restricciones de red, puedes:\n\n1. **Cambiar de asistente IA inmediatamente**: Selecciona otros asistentes disponibles en el panel izquierdo\n2. **Verificar estado del servicio**: La disponibilidad de los servicios de IA puede variar según la región\n3. **Optimización de red**: Usa un entorno de red estable para mejorar la tasa de éxito\n4. **Reintentar más tarde**: Las restricciones de red suelen ser temporales\n\n**Consejo**: Se recomienda configurar múltiples servicios de IA como alternativas para garantizar la continuidad del trabajo.",
     "recovery_actions": {
       "cloudflare_blocked": [
@@ -46,8 +46,8 @@
     }
   },
   "thinking": {
-    "processing": "🤔 Codex está pensando...",
-    "completed": "💭 Proceso de pensamiento completado",
+    "processing": "Codex está pensando...",
+    "completed": "Proceso de pensamiento completado",
     "analyzing": "Analizando el problema y formulando soluciones...",
     "composing": "Redactando el contenido de la respuesta..."
   },

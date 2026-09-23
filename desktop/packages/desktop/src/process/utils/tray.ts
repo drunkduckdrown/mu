@@ -208,7 +208,8 @@ const buildTrayContextMenu = async (): Promise<Electron.Menu> => {
     label: i18n.t('common.tray.checkUpdate'),
     click: () => {
       showAndFocusMainWindow();
-      mainWindowRef?.webContents.send('tray:check-update');
+      // As the menu's "check for updates": the app opens 关于 (About) and checks there.
+      ipcBridge.update.open.emit({ source: 'tray' });
     },
   });
   template.push({ type: 'separator' });

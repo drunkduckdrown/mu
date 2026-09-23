@@ -242,11 +242,14 @@ removePackageScripts: true
 electronDownload:
   cache: ${env.ELECTRON_CACHE}
 
-# mu's releases. No update feed is published (no latest*.yml): the builds are unsigned pre-releases, which
-# electron-updater cannot install, and the app does not look for updates (see autoUpdaterService).
+# mu's releases: the pre-releases of github.com/qybaihe/mu, which the app updates itself from (electron-updater's
+# GitHub provider, see process/services/update). Beside the installers electron-builder writes the update feed:
+# latest-mac.yml, latest.yml (Windows), latest-linux.yml / latest-linux-arm64.yml and the .blockmap files; the
+# release job of the public repository's desktop.yml merges the per-arch ones and attaches them. It also writes
+# app-update.yml into the app. The builds run with --publish=never: the release job publishes, not electron-builder.
 publish:
   provider: github
   owner: qybaihe
-  repo: MU
-  publishAutoUpdate: false
+  repo: mu
+  publishAutoUpdate: true
   releaseType: prerelease

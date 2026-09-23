@@ -182,6 +182,13 @@
   color: var(--text-primary);
 }
 
+/* A page's right-click menu: a hairline between closing and copying. */
+.pageMenuDivider {
+  height: 1px;
+  margin: 4px 8px;
+  background-color: var(--border-base);
+}
+
 .newPage:global(.arco-btn) {
   flex: none;
   align-self: center;

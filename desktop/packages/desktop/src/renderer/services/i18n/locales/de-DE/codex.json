@@ -6,16 +6,16 @@
     "connection_refused": "Verbindung abgelehnt, bitte prüfe ob der Codex-Dienst ordnungsgemäß läuft.",
     "unknown_error": "Netzwerkverbindungsfehler, bitte überprüfe deine Netzwerkeinstellungen.",
     "retry_attempt": "Erneuter Versuch {{current}}...",
-    "cloudflare_blocked_title": "🚫 {{service}}-Dienst durch Cloudflare-Schutz blockiert",
-    "network_timeout_title": "⏱️ Netzwerkverbindung zeitüberschreitung",
-    "connection_refused_title": "❌ Dienst-Verbindung abgelehnt",
-    "unknown_error_title": "🔌 Netzwerkverbindungsfehler",
+    "cloudflare_blocked_title": "{{service}}-Dienst durch Cloudflare-Schutz blockiert",
+    "network_timeout_title": "Netzwerkverbindung zeitüberschreitung",
+    "connection_refused_title": "Dienst-Verbindung abgelehnt",
+    "unknown_error_title": "Netzwerkverbindungsfehler",
     "recovery_suggestions": "**Lösungsvorschläge:**",
     "technical_info": "**Technische Informationen:**",
     "error_type": "Fehlertyp",
     "retry_count": "Anzahl Versuche",
     "error_details": "Fehlerdetails",
-    "quick_switch_title": "💡 **Schnellwechsel-Optionen:**",
+    "quick_switch_title": "**Schnellwechsel-Optionen:**",
     "quick_switch_content": "Wenn der aktuelle Dienst auf Netzwerkbeschränkungen stößt, kannst du:\n\n1. **Sofort zum KI-Assistenten wechseln**: Wähle andere verfügbare Assistenten im linken Panel\n2. **Dienststatus prüfen**: Die Verfügbarkeit verschiedener KI-Dienste kann je nach Region variieren\n3. **Netzwerk optimieren**: Verwende eine stabile Netzwerkumgebung für bessere Verbindungsqualität\n4. **Später erneut versuchen**: Netzwerkbeschränkungen sind meist vorübergehend\n\n**Tipp**: Es wird empfohlen, mehrere KI-Dienste als Alternativen zu konfigurieren, um die Arbeitskontinuität sicherzustellen.",
     "recovery_actions": {
       "cloudflare_blocked": [
@@ -46,8 +46,8 @@
     }
   },
   "thinking": {
-    "processing": "🤔 Codex denkt nach...",
-    "completed": "💭 Denkprozess abgeschlossen",
+    "processing": "Codex denkt nach...",
+    "completed": "Denkprozess abgeschlossen",
     "analyzing": "Problem wird analysiert und Lösungen werden erarbeitet...",
     "composing": "Antwort wird formuliert..."
   },

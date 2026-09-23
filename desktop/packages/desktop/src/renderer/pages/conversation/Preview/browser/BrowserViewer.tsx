@@ -45,16 +45,16 @@ export interface BrowserViewerProps {
 /**
  * 应用内浏览器视图 / In-app browser view.
  *
- * 与 URLViewer 的区别在三点，也正是它单独存在的理由：
+ * 在 WebviewHost 之上多做三件事：
  * 1. 使用共享的持久化 partition，登录态跨 tab / 跨项目保留；
  * 2. 地址栏支持「输入关键词直接搜索」，不只是补 https://；
  * 3. 把地址 / 标题 / 图标回写给 tab，使会话重启后能恢复。
  *
- * Differs from URLViewer in exactly the three ways that justify a separate
- * component: a shared persistent partition (sign-in survives), keyword search in
- * the address bar, and writing address/title/favicon back onto the owning tab so
- * the browser can be restored after a restart. In the work panel's browser the
- * address bar is the browser's own, above all its pages (`onNavigationChange`).
+ * Adds three things to the bare WebviewHost: a shared persistent partition
+ * (sign-in survives), keyword search in the address bar, and writing
+ * address/title/favicon back onto the owning tab so the browser can be restored
+ * after a restart. In the work panel's browser the address bar is the browser's
+ * own, above all its pages (`onNavigationChange`).
  */
 const BrowserViewer: React.FC<BrowserViewerProps> = ({
   url,

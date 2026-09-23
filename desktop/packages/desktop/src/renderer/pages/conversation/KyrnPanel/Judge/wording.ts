@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next';
-import { formatDuration } from '@/renderer/services/i18n/format';
-import type { JudgeStage, ReasonParams } from './activity';
+import { formatDuration, formatNumber } from '@/renderer/services/i18n/format';
+import { DECISIONS, type JudgeStage, type ReasonParams } from './activity';
+import { findQuestion, JUDGE_QUESTIONS, questionKey, type JudgeQuestion } from './questions';
 
 const KEY = 'common.kyrn.judgeView';
 
@@ -40,21 +41,12 @@ export const PREFLIGHT_HINT_IDS = [
   'try_delegate',
 ] as const;
 
-/** What the preflight asks the judge, by question id. Other decision points keep their ids as recorded. */
-export const PREFLIGHT_QUESTION_IDS = [
-  'turn_type',
-  'is_side_question',
-  'needs_clarification',
-  'needs_files_changed',
-  'needs_memory',
-  'swarm_worthy',
-  'plan_first',
-  'task_complexity',
-  'reasoning_depth',
-  'tool_complexity',
-] as const;
+export type PreflightHintId = (typeof PREFLIGHT_HINT_IDS)[number];
 
 const known = <T extends string>(ids: readonly T[], id: string): id is T => (ids as readonly string[]).includes(id);
+
+/** Whether this build has words for a hint id (`hints.<id>`, `hintChips.<id>`). */
+export const isPreflightHintId = (id: string): id is PreflightHintId => known(PREFLIGHT_HINT_IDS, id);
 
 /**
  * A recorded reason in the app language. A code this build has no words for is shown in the recorded English
@@ -99,10 +91,40 @@ export function hintChips(t: TFunction, hintIds: readonly string[]): { id: strin
     .map((id) => ({ id, label: known(PREFLIGHT_HINT_IDS, id) ? t(`${KEY}.hintChips.${id}`) : id }));
 }
 
+/** Each decision point's questions by its stage, from the table by spec id. */
+const QUESTIONS = new Map<JudgeStage, readonly JudgeQuestion[]>(
+  (Object.keys(DECISIONS) as (keyof typeof DECISIONS)[]).map((specId) => [DECISIONS[specId], JUDGE_QUESTIONS[specId]])
+);
+
+const questionOf = (stage: JudgeStage, id: string) => findQuestion(QUESTIONS.get(stage) ?? [], id);
+
 /**
- * The name of the question an answer belongs to. Only the preflight's ids have words here, so another decision
- * point's question that happens to share an id is not misnamed; any other id stays as recorded.
+ * The name of the question an answer belongs to, by its decision point (`questions.ts`), so a question another point
+ * asks under the same id keeps its own name. A question asked once per item says which item, counted from 1. An id
+ * this build has no words for (a newer harness, an unknown decision point) is read as words, not shown as an id.
  */
-export function answerLabel(t: TFunction, stage: JudgeStage, id: string): string {
-  return stage === 'preflight' && known(PREFLIGHT_QUESTION_IDS, id) ? t(`${KEY}.answerIds.${id}`) : id;
+export function answerLabel(t: TFunction, language: string, stage: JudgeStage, id: string): string {
+  const found = questionOf(stage, id);
+  if (!found) return id.replaceAll('_', ' ').trim() || id;
+  const words = `${KEY}.answerWords.${stage}.questions.${questionKey(found.question)}`;
+  return found.number === undefined ? t(words) : t(words, { number: formatNumber(found.number, language) });
+}
+
+/**
+ * An answer to a choice in the app language, by the words its decision point gives it; undefined for an answer it
+ * has none for (an element, a role or an item named at run time, or an answer a newer harness adds).
+ */
+export function answerValue(t: TFunction, stage: JudgeStage, id: string, value: string): string | undefined {
+  const question = questionOf(stage, id)?.question;
+  return question?.type === 'choice' && question.answers.includes(value)
+    ? t(`${KEY}.answerWords.${stage}.answers.${value}`)
+    : undefined;
+}
+
+/** The step a score lands on, in words: the nearest step, as the harness rounds it. Undefined for an unknown score. */
+export function scoreLevel(t: TFunction, stage: JudgeStage, id: string, score: number): string | undefined {
+  const question = questionOf(stage, id)?.question;
+  if (question?.type !== 'score') return undefined;
+  const step = Math.min(question.levels - 1, Math.max(0, Math.round(score)));
+  return t(`${KEY}.answerWords.${stage}.levels.${questionKey(question)}.${step}`);
 }

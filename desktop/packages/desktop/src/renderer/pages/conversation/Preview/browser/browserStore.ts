@@ -270,6 +270,13 @@ export function closeBrowserTab(id: string): void {
   set({ ...state, tabs, activeTabId });
 }
 
+/** Close every page but this one, which comes to the front. */
+export function closeOtherBrowserTabs(id: string): void {
+  const tab = state.tabs.find((item) => item.id === id);
+  if (!tab || (state.tabs.length === 1 && state.activeTabId === id)) return;
+  set({ ...state, tabs: [tab], activeTabId: id });
+}
+
 /**
  * What a page reported about itself: where it went, its title, its icon. An empty title is ignored, so a page that
  * has not named itself yet keeps the last name; a page on another site drops the old site's icon until its own one

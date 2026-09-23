@@ -322,6 +322,7 @@
         "preflight": "このリクエストをどう扱うべきか？",
         "interjection": "この割り込みは訂正、追加依頼、それとも脇道の質問か？",
         "admission": "ツール出力のどの部分をコンテキストに入れるべきか？",
+        "testLog": "テストログのどの部分をモデルに渡すべきか？",
         "forget": "古いツール出力の全文はまだ必要か？",
         "compaction": "どの古い結果を削れるか？",
         "skills": "このタスクに関連するスキルはどれか？",
@@ -389,7 +390,12 @@
         "focus": "対応中の項目",
         "needsUser": "ユーザー対応が必要",
         "update": "ボードを書き直す",
-        "relation": "関係"
+        "relation": "関係",
+        "operation": "次のステップ",
+        "target": "対象の要素",
+        "probability": "確率",
+        "omit": "省いたログの部分",
+        "key": "伝える価値のある出来事"
       },
       "values": {
         "true": "はい",
@@ -459,7 +465,7 @@
         "constraint": "新しい制約",
         "correction": "訂正",
         "subgoal": "新しいサブ目標",
-        "unclear": "不明確な変更",
+        "unclear": "判断できない",
         "hold": "保留",
         "no_answer": "時間内に回答なし",
         "aborted": "キャンセル済み",
@@ -482,7 +488,19 @@
         "unrelated": "無関係",
         "preference": "恒久ルール",
         "approve": "実行を許可",
-        "beyond": "求められた以上"
+        "beyond": "求められた以上",
+        "CLICK": "クリック",
+        "TYPE_TEXT": "文字を入力",
+        "SELECT": "リストから選ぶ",
+        "SCROLL_DOWN": "下へスクロール",
+        "SCROLL_UP": "上へスクロール",
+        "WAIT": "ページの更新を待つ",
+        "DONE": "完了",
+        "BLOCKED": "先に進めない",
+        "listing": "ファイル名や検索の一致",
+        "content": "コードや文章",
+        "log": "ビルドやテストの出力",
+        "data": "調べた事実"
       },
       "probabilityValue": "「はい」の確率: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -508,17 +526,365 @@
         "try_hive": "詰まれば Hive",
         "try_delegate": "分けて委任"
       },
-      "answerIds": {
-        "turn_type": "タスクの種類",
-        "is_side_question": "脇道の質問",
-        "needs_clarification": "曖昧で着手できない",
-        "needs_files_changed": "コードの変更が必要",
-        "needs_memory": "過去の経験が役立つ",
-        "swarm_worthy": "独立した部分に分けられる",
-        "plan_first": "大規模またはリスクが高い",
-        "task_complexity": "作業範囲",
-        "reasoning_depth": "推論の深さ",
-        "tool_complexity": "ツールの使用量"
+      "answerWords": {
+        "preflight": {
+          "questions": {
+            "turn_type": "タスクの種類",
+            "is_side_question": "脇道の質問",
+            "needs_clarification": "曖昧で着手できない",
+            "needs_files_changed": "コードの変更が必要",
+            "needs_memory": "過去の経験が役立つ",
+            "swarm_worthy": "独立した部分に分けられる",
+            "plan_first": "大規模またはリスクが高い",
+            "task_complexity": "作業範囲",
+            "reasoning_depth": "推論の深さ",
+            "tool_complexity": "ツールの使用量"
+          },
+          "answers": {
+            "chat": "会話",
+            "chat_question": "概念の質問",
+            "quick_lookup": "簡単な検索",
+            "single_edit": "単一の編集",
+            "multi_step_task": "複数ステップのタスク",
+            "research": "調査",
+            "design_discussion": "設計の議論",
+            "other": "その他"
+          },
+          "levels": {
+            "task_complexity": {
+              "0": "質問だけ",
+              "1": "コードの1か所",
+              "2": "コードの複数か所",
+              "3": "コードベース全体"
+            },
+            "reasoning_depth": {
+              "0": "思い出す・調べる",
+              "1": "簡単な説明",
+              "2": "丁寧な分析",
+              "3": "深い推論"
+            },
+            "tool_complexity": {
+              "0": "なし",
+              "1": "1〜2回の読み取り",
+              "2": "編集を含む数回の呼び出し",
+              "3": "ビルドやテストを含む多数の呼び出し"
+            }
+          }
+        },
+        "interjection": {
+          "questions": {
+            "kind": "メッセージの種類"
+          },
+          "answers": {
+            "correction": "訂正",
+            "addition": "あとでやる追加の作業",
+            "side_question": "関係のない質問",
+            "other": "その他"
+          }
+        },
+        "admission": {
+          "questions": {
+            "kind": "出力の種類",
+            "chunk": "出力の第{{number}}部分"
+          },
+          "answers": {
+            "error": "エラー",
+            "result": "有用な結果",
+            "progress": "進行中の出力",
+            "warning": "繰り返される警告",
+            "passing": "合格したチェック",
+            "other": "その他"
+          }
+        },
+        "testLog": {
+          "questions": {
+            "part": "ログの第{{number}}部分"
+          },
+          "answers": {
+            "needed": "要約のほかにも必要",
+            "not_needed": "要約で足りる",
+            "unclear": "判断できない"
+          }
+        },
+        "forget": {
+          "questions": {
+            "still_needed": "出力全文がまた必要"
+          }
+        },
+        "compaction": {
+          "questions": {
+            "kind": "結果の種類",
+            "result_needed": "結果の全文がまだ必要",
+            "call_matters": "呼び出し自体がまだ重要"
+          },
+          "answers": {
+            "error": "エラー",
+            "listing": "ファイル名や検索の一致",
+            "content": "コードや文章",
+            "log": "ビルドやテストの出力",
+            "data": "調べた事実",
+            "other": "その他"
+          }
+        },
+        "skills": {
+          "questions": {
+            "skill": "スキル{{number}}が役立つ"
+          }
+        },
+        "locate": {
+          "questions": {
+            "path": "ファイル{{number}}が関係する"
+          }
+        },
+        "routing": {
+          "questions": {
+            "agent": "作業の種類",
+            "difficulty": "タスクの難しさ",
+            "reasoning": "必要な推論"
+          },
+          "answers": {
+            "other": "どれでもない"
+          },
+          "levels": {
+            "difficulty": {
+              "0": "機械的",
+              "1": "定型的",
+              "2": "慎重な設計が必要",
+              "3": "専門家でも難しい"
+            },
+            "reasoning": {
+              "0": "ほぼ不要",
+              "1": "少し",
+              "2": "多い",
+              "3": "多段階の深い推論"
+            }
+          }
+        },
+        "publish": {
+          "questions": {
+            "share_worthy": "共有する価値がある",
+            "kind": "メモの種類"
+          },
+          "answers": {
+            "finding": "発見",
+            "dead_end": "行き止まり",
+            "decision": "決定",
+            "blocker": "ブロッカー",
+            "other": "通常の進捗"
+          }
+        },
+        "deliver": {
+          "questions": {
+            "useful": "受け取るビーの役に立つ"
+          }
+        },
+        "browser": {
+          "questions": {
+            "operation": "次のステップ",
+            "click_target": "クリックする対象",
+            "type_text_target": "入力する場所",
+            "select_target": "選ぶ項目"
+          },
+          "answers": {
+            "CLICK": "クリック",
+            "TYPE_TEXT": "文字を入力",
+            "SELECT": "リストから選ぶ",
+            "SCROLL_DOWN": "下へスクロール",
+            "SCROLL_UP": "上へスクロール",
+            "WAIT": "ページの更新を待つ",
+            "DONE": "完了",
+            "other": "先に進めない",
+            "none": "当てはまるものがない"
+          }
+        },
+        "recall": {
+          "questions": {
+            "lesson": "教訓{{number}}が当てはまる"
+          }
+        },
+        "capture": {
+          "questions": {
+            "correction": "誤りを正している",
+            "preference": "続けて守るルールを示している"
+          }
+        },
+        "outcome": {
+          "questions": {
+            "way_out": "うまくいく別の方法が見つかった"
+          }
+        },
+        "worth": {
+          "questions": {
+            "lesson": "教訓{{number}}"
+          },
+          "answers": {
+            "reusable": "また役立つ",
+            "one_off": "今回限り",
+            "already_known": "既知",
+            "unclear": "判断できない"
+          }
+        },
+        "merge": {
+          "questions": {
+            "kept": "既存の教訓{{number}}"
+          },
+          "answers": {
+            "same": "同じ教訓",
+            "refines": "新しい方がより正確",
+            "contradicts": "互いに矛盾する",
+            "unrelated": "別の内容",
+            "unclear": "判断できない"
+          }
+        },
+        "applied": {
+          "questions": {
+            "lesson": "教訓{{number}}が守られた"
+          }
+        },
+        "risk": {
+          "questions": {
+            "destructive": "削除する、または元に戻せない",
+            "requested": "あなたが頼んだこと"
+          }
+        },
+        "drift": {
+          "questions": {
+            "course": "作業の方向"
+          },
+          "answers": {
+            "on_track": "順調",
+            "detour": "必要な寄り道",
+            "drift": "逸れつつある",
+            "loop": "堂々巡り",
+            "other": "判断できない"
+          }
+        },
+        "completion": {
+          "questions": {
+            "claims_done": "作業が完了したと言っている",
+            "needs_check": "実行して確かめるべき"
+          }
+        },
+        "notify": {
+          "questions": {
+            "urgency": "エージェントがいつ知るべきか"
+          },
+          "answers": {
+            "now": "すぐに",
+            "next_turn": "今のステップの後",
+            "drop": "知らせない",
+            "other": "判断できない"
+          }
+        },
+        "cache": {
+          "questions": {
+            "finished": "会話が終わった",
+            "open": "あなたへの質問が待っている"
+          }
+        },
+        "rewind": {
+          "questions": {
+            "dead_end": "同じやり方がまた失敗している",
+            "progress": "前進している"
+          }
+        },
+        "goalMet": {
+          "questions": {
+            "achieved": "目標を完全に達成",
+            "needs_user": "あなたなしでは続けられない"
+          }
+        },
+        "outputDrift": {
+          "questions": {
+            "rule": "ルール{{number}}に反する"
+          }
+        },
+        "taskFrame": {
+          "questions": {
+            "change": "タスクへの変化"
+          },
+          "answers": {
+            "new_task": "新しいタスク",
+            "constraint": "作業の新しいルール",
+            "correction": "やり方が間違っている",
+            "subgoal": "同じタスクの次のステップ",
+            "none": "変化なし"
+          }
+        },
+        "constraint": {
+          "questions": {
+            "constraint": "制約{{number}}に反する"
+          }
+        },
+        "capabilities": {
+          "questions": {
+            "capability": "ケイパビリティ{{number}}が必要"
+          }
+        },
+        "diagnostics": {
+          "questions": {
+            "more_edits_coming": "まだ編集が続く",
+            "warnings_are_style": "スタイルの警告だけ"
+          }
+        },
+        "patch": {
+          "questions": {
+            "within_task": "タスクの範囲内",
+            "file": "タスクにファイル{{number}}の変更が必要"
+          }
+        },
+        "review": {
+          "questions": {
+            "bug": "指摘{{number}}は本物のバグ",
+            "inScope": "指摘{{number}}はこの変更に関係する"
+          }
+        },
+        "board": {
+          "questions": {
+            "phase": "エージェントがしていること",
+            "needs_user": "あなたから何かが必要",
+            "focus": "取り組み中の項目",
+            "event": "出来事{{number}}",
+            "changed": "伝えるべき新しいことがある"
+          },
+          "answers": {
+            "understanding": "タスクを理解中",
+            "planning": "進め方を検討中",
+            "changing": "コードを変更中",
+            "checking": "作業を確認中",
+            "fixing": "確認で見つかった問題を修正中",
+            "waiting": "あなたを待っています",
+            "wrapping_up": "仕上げ中",
+            "stuck": "行き詰まっているようです",
+            "other": "判断できない",
+            "none": "どれでもない",
+            "key": "伝える価値のある知らせ",
+            "routine": "いつもの手順",
+            "unclear": "判断できない"
+          }
+        },
+        "relate": {
+          "questions": {
+            "relation": "以前の発見への影響"
+          },
+          "answers": {
+            "supersedes": "置き換える",
+            "contradicts": "矛盾する",
+            "supports": "裏付ける",
+            "none": "関係しない"
+          }
+        },
+        "approval": {
+          "questions": {
+            "verdict": "このステップの性質"
+          },
+          "answers": {
+            "needed": "タスクに必要",
+            "beyond": "求められた以上",
+            "unrelated": "タスクと関係ない",
+            "unclear": "判断できない"
+          }
+        }
       },
       "log": {
         "thisTurn": "このターン",

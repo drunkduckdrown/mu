@@ -322,6 +322,7 @@
         "preflight": "How should this request be handled?",
         "interjection": "Is this interruption a correction, follow-up or side question?",
         "admission": "Which tool-output chunks should enter context?",
+        "testLog": "Which parts of a test log should reach the model?",
         "forget": "Is the full old tool output still needed?",
         "compaction": "Which old results can be pruned?",
         "skills": "Which skills are relevant to this task?",
@@ -389,7 +390,12 @@
         "focus": "Item in progress",
         "needsUser": "Needs the user",
         "update": "Rewrite the board",
-        "relation": "Relation"
+        "relation": "Relation",
+        "operation": "Next step",
+        "target": "Element",
+        "probability": "Probability",
+        "omit": "Log parts left out",
+        "key": "Events worth telling"
       },
       "values": {
         "true": "Yes",
@@ -459,7 +465,7 @@
         "constraint": "New constraint",
         "correction": "Correction",
         "subgoal": "New subgoal",
-        "unclear": "Unclear change",
+        "unclear": "Can’t tell",
         "hold": "Hold back",
         "no_answer": "No answer in time",
         "aborted": "Cancelled",
@@ -482,7 +488,19 @@
         "unrelated": "Unrelated",
         "preference": "Standing rule",
         "approve": "Let it run",
-        "beyond": "More than you asked for"
+        "beyond": "More than you asked for",
+        "CLICK": "Click",
+        "TYPE_TEXT": "Type text",
+        "SELECT": "Pick from a list",
+        "SCROLL_DOWN": "Scroll down",
+        "SCROLL_UP": "Scroll up",
+        "WAIT": "Wait for the page",
+        "DONE": "Finished",
+        "BLOCKED": "No way forward",
+        "listing": "File names or matches",
+        "content": "Code or text",
+        "log": "Build or test output",
+        "data": "Looked-up facts"
       },
       "probabilityValue": "Probability of yes: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -508,17 +526,365 @@
         "try_hive": "Hive if stuck",
         "try_delegate": "Delegate parts"
       },
-      "answerIds": {
-        "turn_type": "Task type",
-        "is_side_question": "Side question",
-        "needs_clarification": "Too vague to act on",
-        "needs_files_changed": "Needs a code change",
-        "needs_memory": "Past notes would help",
-        "swarm_worthy": "Independent parts",
-        "plan_first": "Large or risky",
-        "task_complexity": "Scope",
-        "reasoning_depth": "Reasoning depth",
-        "tool_complexity": "Tool use"
+      "answerWords": {
+        "preflight": {
+          "questions": {
+            "turn_type": "Task type",
+            "is_side_question": "Side question",
+            "needs_clarification": "Too vague to act on",
+            "needs_files_changed": "Needs a code change",
+            "needs_memory": "Past notes would help",
+            "swarm_worthy": "Independent parts",
+            "plan_first": "Large or risky",
+            "task_complexity": "Scope",
+            "reasoning_depth": "Reasoning depth",
+            "tool_complexity": "Tool use"
+          },
+          "answers": {
+            "chat": "Conversation",
+            "chat_question": "Concept question",
+            "quick_lookup": "Quick lookup",
+            "single_edit": "Single edit",
+            "multi_step_task": "Multi-step task",
+            "research": "Investigation",
+            "design_discussion": "Design discussion",
+            "other": "Something else"
+          },
+          "levels": {
+            "task_complexity": {
+              "0": "A question",
+              "1": "One place in the code",
+              "2": "Several places in the code",
+              "3": "The whole codebase"
+            },
+            "reasoning_depth": {
+              "0": "Recall or lookup",
+              "1": "A plain explanation",
+              "2": "Careful analysis",
+              "3": "Deep reasoning"
+            },
+            "tool_complexity": {
+              "0": "None",
+              "1": "One or two reads",
+              "2": "Several calls with edits",
+              "3": "Many calls with builds or tests"
+            }
+          }
+        },
+        "interjection": {
+          "questions": {
+            "kind": "What the message is"
+          },
+          "answers": {
+            "correction": "A correction",
+            "addition": "More work for later",
+            "side_question": "An unrelated question",
+            "other": "Something else"
+          }
+        },
+        "admission": {
+          "questions": {
+            "kind": "Kind of output",
+            "chunk": "Output part {{number}}"
+          },
+          "answers": {
+            "error": "An error",
+            "result": "A useful result",
+            "progress": "Progress output",
+            "warning": "Repeated warnings",
+            "passing": "Passed checks",
+            "other": "Something else"
+          }
+        },
+        "testLog": {
+          "questions": {
+            "part": "Log part {{number}}"
+          },
+          "answers": {
+            "needed": "Needed besides the summary",
+            "not_needed": "The summary is enough",
+            "unclear": "Can’t tell"
+          }
+        },
+        "forget": {
+          "questions": {
+            "still_needed": "Full output needed again"
+          }
+        },
+        "compaction": {
+          "questions": {
+            "kind": "Kind of result",
+            "result_needed": "Full result still needed",
+            "call_matters": "The call itself still matters"
+          },
+          "answers": {
+            "error": "An error",
+            "listing": "File names or matches",
+            "content": "Code or text",
+            "log": "Build or test output",
+            "data": "Looked-up facts",
+            "other": "Something else"
+          }
+        },
+        "skills": {
+          "questions": {
+            "skill": "Skill {{number}} would help"
+          }
+        },
+        "locate": {
+          "questions": {
+            "path": "File {{number}} is relevant"
+          }
+        },
+        "routing": {
+          "questions": {
+            "agent": "Kind of work",
+            "difficulty": "How hard the task is",
+            "reasoning": "Reasoning needed"
+          },
+          "answers": {
+            "other": "None of these"
+          },
+          "levels": {
+            "difficulty": {
+              "0": "Mechanical",
+              "1": "Routine",
+              "2": "Needs careful design",
+              "3": "Hard even for an expert"
+            },
+            "reasoning": {
+              "0": "Almost none",
+              "1": "Some",
+              "2": "A lot",
+              "3": "Deep, over many steps"
+            }
+          }
+        },
+        "publish": {
+          "questions": {
+            "share_worthy": "Worth sharing",
+            "kind": "Kind of note"
+          },
+          "answers": {
+            "finding": "A finding",
+            "dead_end": "A dead end",
+            "decision": "A decision",
+            "blocker": "A blocker",
+            "other": "Routine progress"
+          }
+        },
+        "deliver": {
+          "questions": {
+            "useful": "Helps the receiving bee"
+          }
+        },
+        "browser": {
+          "questions": {
+            "operation": "Next step",
+            "click_target": "What to click",
+            "type_text_target": "Where to type",
+            "select_target": "What to pick"
+          },
+          "answers": {
+            "CLICK": "Click",
+            "TYPE_TEXT": "Type text",
+            "SELECT": "Pick from a list",
+            "SCROLL_DOWN": "Scroll down",
+            "SCROLL_UP": "Scroll up",
+            "WAIT": "Wait for the page",
+            "DONE": "Finished",
+            "other": "No way forward",
+            "none": "Nothing fits"
+          }
+        },
+        "recall": {
+          "questions": {
+            "lesson": "Lesson {{number}} applies"
+          }
+        },
+        "capture": {
+          "questions": {
+            "correction": "Corrects a mistake",
+            "preference": "States a standing rule"
+          }
+        },
+        "outcome": {
+          "questions": {
+            "way_out": "Found another way that worked"
+          }
+        },
+        "worth": {
+          "questions": {
+            "lesson": "Lesson {{number}}"
+          },
+          "answers": {
+            "reusable": "Useful again",
+            "one_off": "Only this once",
+            "already_known": "Known already",
+            "unclear": "Can’t tell"
+          }
+        },
+        "merge": {
+          "questions": {
+            "kept": "Kept lesson {{number}}"
+          },
+          "answers": {
+            "same": "The same lesson",
+            "refines": "The new one is more precise",
+            "contradicts": "They contradict each other",
+            "unrelated": "About something else",
+            "unclear": "Can’t tell"
+          }
+        },
+        "applied": {
+          "questions": {
+            "lesson": "Lesson {{number}} followed"
+          }
+        },
+        "risk": {
+          "questions": {
+            "destructive": "Deletes or cannot be undone",
+            "requested": "You asked for it"
+          }
+        },
+        "drift": {
+          "questions": {
+            "course": "Direction of the work"
+          },
+          "answers": {
+            "on_track": "On track",
+            "detour": "A needed side step",
+            "drift": "Drifting away",
+            "loop": "Going in circles",
+            "other": "Can’t tell"
+          }
+        },
+        "completion": {
+          "questions": {
+            "claims_done": "Says the work is finished",
+            "needs_check": "Should be checked by running it"
+          }
+        },
+        "notify": {
+          "questions": {
+            "urgency": "When the agent needs it"
+          },
+          "answers": {
+            "now": "Right away",
+            "next_turn": "After the current step",
+            "drop": "Never",
+            "other": "Can’t tell"
+          }
+        },
+        "cache": {
+          "questions": {
+            "finished": "The conversation is over",
+            "open": "A question is waiting for you"
+          }
+        },
+        "rewind": {
+          "questions": {
+            "dead_end": "Same approach failing again",
+            "progress": "Making progress"
+          }
+        },
+        "goalMet": {
+          "questions": {
+            "achieved": "Goal fully reached",
+            "needs_user": "Can’t go on without you"
+          }
+        },
+        "outputDrift": {
+          "questions": {
+            "rule": "Goes against rule {{number}}"
+          }
+        },
+        "taskFrame": {
+          "questions": {
+            "change": "Change to the task"
+          },
+          "answers": {
+            "new_task": "A new task",
+            "constraint": "A new rule for the work",
+            "correction": "The approach is wrong",
+            "subgoal": "Next step of the same task",
+            "none": "No change"
+          }
+        },
+        "constraint": {
+          "questions": {
+            "constraint": "Goes against constraint {{number}}"
+          }
+        },
+        "capabilities": {
+          "questions": {
+            "capability": "Capability {{number}} is needed"
+          }
+        },
+        "diagnostics": {
+          "questions": {
+            "more_edits_coming": "More edits are coming",
+            "warnings_are_style": "Only style warnings"
+          }
+        },
+        "patch": {
+          "questions": {
+            "within_task": "Stays within the task",
+            "file": "File {{number}} needs changing for the task"
+          }
+        },
+        "review": {
+          "questions": {
+            "bug": "Finding {{number}} is a real bug",
+            "inScope": "Finding {{number}} is about this change"
+          }
+        },
+        "board": {
+          "questions": {
+            "phase": "What the agent is doing",
+            "needs_user": "Needs something from you",
+            "focus": "Item being worked on",
+            "event": "Event {{number}}",
+            "changed": "Something new to tell you"
+          },
+          "answers": {
+            "understanding": "Understanding the task",
+            "planning": "Planning",
+            "changing": "Making changes",
+            "checking": "Checking the work",
+            "fixing": "Fixing what the check found",
+            "waiting": "Waiting for you",
+            "wrapping_up": "Wrapping up",
+            "stuck": "Seems stuck",
+            "other": "Can’t tell",
+            "none": "None of them",
+            "key": "News worth telling",
+            "routine": "A routine step",
+            "unclear": "Can’t tell"
+          }
+        },
+        "relate": {
+          "questions": {
+            "relation": "Effect on the earlier finding"
+          },
+          "answers": {
+            "supersedes": "Replaces it",
+            "contradicts": "Contradicts it",
+            "supports": "Supports it",
+            "none": "No bearing on it"
+          }
+        },
+        "approval": {
+          "questions": {
+            "verdict": "What the step is"
+          },
+          "answers": {
+            "needed": "Needed for the task",
+            "beyond": "More than you asked for",
+            "unrelated": "Not part of the task",
+            "unclear": "Can’t tell"
+          }
+        }
       },
       "log": {
         "thisTurn": "This turn",

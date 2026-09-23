@@ -322,6 +322,7 @@
         "preflight": "Como este pedido deve ser tratado?",
         "interjection": "Esta interrupção é uma correção, um acompanhamento ou uma pergunta paralela?",
         "admission": "Quais trechos da saída da ferramenta devem entrar no contexto?",
+        "testLog": "Quais partes de um log de testes devem chegar ao modelo?",
         "forget": "A saída antiga completa da ferramenta ainda é necessária?",
         "compaction": "Quais resultados antigos podem ser podados?",
         "skills": "Quais habilidades são relevantes para esta tarefa?",
@@ -389,7 +390,12 @@
         "focus": "Item em andamento",
         "needsUser": "Precisa do usuário",
         "update": "Reescrever o painel",
-        "relation": "Relação"
+        "relation": "Relação",
+        "operation": "Próximo passo",
+        "target": "Elemento",
+        "probability": "Probabilidade",
+        "omit": "Partes do log omitidas",
+        "key": "Eventos que valem contar"
       },
       "values": {
         "true": "Sim",
@@ -459,7 +465,7 @@
         "constraint": "Nova restrição",
         "correction": "Correção",
         "subgoal": "Novo subobjetivo",
-        "unclear": "Mudança pouco clara",
+        "unclear": "Não dá para saber",
         "hold": "Adiar",
         "no_answer": "Sem resposta a tempo",
         "aborted": "Cancelado",
@@ -482,7 +488,19 @@
         "unrelated": "Sem relação",
         "preference": "Regra permanente",
         "approve": "Deixar executar",
-        "beyond": "Mais do que você pediu"
+        "beyond": "Mais do que você pediu",
+        "CLICK": "Clicar",
+        "TYPE_TEXT": "Digitar texto",
+        "SELECT": "Escolher de uma lista",
+        "SCROLL_DOWN": "Rolar para baixo",
+        "SCROLL_UP": "Rolar para cima",
+        "WAIT": "Esperar a página",
+        "DONE": "Concluído",
+        "BLOCKED": "Sem como avançar",
+        "listing": "Nomes de arquivo ou correspondências",
+        "content": "Código ou texto",
+        "log": "Saída de build ou de testes",
+        "data": "Fatos consultados"
       },
       "probabilityValue": "Probabilidade de “sim”: {{percent}}",
       "optionProbability": "{{option}} {{percent}}",
@@ -508,17 +526,365 @@
         "try_hive": "Hive se travar",
         "try_delegate": "Delegar partes"
       },
-      "answerIds": {
-        "turn_type": "Tipo de tarefa",
-        "is_side_question": "Pergunta paralela",
-        "needs_clarification": "Vago demais para agir",
-        "needs_files_changed": "Precisa alterar o código",
-        "needs_memory": "Anotações anteriores ajudariam",
-        "swarm_worthy": "Partes independentes",
-        "plan_first": "Grande ou arriscado",
-        "task_complexity": "Escopo",
-        "reasoning_depth": "Profundidade de raciocínio",
-        "tool_complexity": "Uso de ferramentas"
+      "answerWords": {
+        "preflight": {
+          "questions": {
+            "turn_type": "Tipo de tarefa",
+            "is_side_question": "Pergunta paralela",
+            "needs_clarification": "Vago demais para agir",
+            "needs_files_changed": "Precisa alterar o código",
+            "needs_memory": "Anotações anteriores ajudariam",
+            "swarm_worthy": "Partes independentes",
+            "plan_first": "Grande ou arriscado",
+            "task_complexity": "Escopo",
+            "reasoning_depth": "Profundidade de raciocínio",
+            "tool_complexity": "Uso de ferramentas"
+          },
+          "answers": {
+            "chat": "Conversa",
+            "chat_question": "Pergunta conceitual",
+            "quick_lookup": "Consulta rápida",
+            "single_edit": "Edição única",
+            "multi_step_task": "Tarefa em várias etapas",
+            "research": "Investigação",
+            "design_discussion": "Discussão de design",
+            "other": "Outra coisa"
+          },
+          "levels": {
+            "task_complexity": {
+              "0": "Uma pergunta",
+              "1": "Um ponto do código",
+              "2": "Vários pontos do código",
+              "3": "O código inteiro"
+            },
+            "reasoning_depth": {
+              "0": "Lembrar ou consultar",
+              "1": "Uma explicação simples",
+              "2": "Uma análise cuidadosa",
+              "3": "Raciocínio profundo"
+            },
+            "tool_complexity": {
+              "0": "Nenhum",
+              "1": "Uma ou duas leituras",
+              "2": "Várias chamadas com alterações",
+              "3": "Muitas chamadas com builds ou testes"
+            }
+          }
+        },
+        "interjection": {
+          "questions": {
+            "kind": "O que a mensagem é"
+          },
+          "answers": {
+            "correction": "Uma correção",
+            "addition": "Mais trabalho para depois",
+            "side_question": "Uma pergunta sem relação",
+            "other": "Outra coisa"
+          }
+        },
+        "admission": {
+          "questions": {
+            "kind": "Tipo de saída",
+            "chunk": "Parte {{number}} da saída"
+          },
+          "answers": {
+            "error": "Um erro",
+            "result": "Um resultado útil",
+            "progress": "Saída de progresso",
+            "warning": "Avisos repetidos",
+            "passing": "Verificações aprovadas",
+            "other": "Outra coisa"
+          }
+        },
+        "testLog": {
+          "questions": {
+            "part": "Parte {{number}} do log"
+          },
+          "answers": {
+            "needed": "Necessária além do resumo",
+            "not_needed": "O resumo basta",
+            "unclear": "Não dá para saber"
+          }
+        },
+        "forget": {
+          "questions": {
+            "still_needed": "A saída completa será necessária de novo"
+          }
+        },
+        "compaction": {
+          "questions": {
+            "kind": "Tipo de resultado",
+            "result_needed": "Ainda precisa do resultado completo",
+            "call_matters": "A chamada em si ainda importa"
+          },
+          "answers": {
+            "error": "Um erro",
+            "listing": "Nomes de arquivo ou correspondências",
+            "content": "Código ou texto",
+            "log": "Saída de build ou de testes",
+            "data": "Fatos consultados",
+            "other": "Outra coisa"
+          }
+        },
+        "skills": {
+          "questions": {
+            "skill": "A habilidade {{number}} ajudaria"
+          }
+        },
+        "locate": {
+          "questions": {
+            "path": "O arquivo {{number}} é relevante"
+          }
+        },
+        "routing": {
+          "questions": {
+            "agent": "Tipo de trabalho",
+            "difficulty": "Dificuldade da tarefa",
+            "reasoning": "Raciocínio necessário"
+          },
+          "answers": {
+            "other": "Nenhum destes"
+          },
+          "levels": {
+            "difficulty": {
+              "0": "Mecânica",
+              "1": "Rotineira",
+              "2": "Exige um design cuidadoso",
+              "3": "Difícil até para um especialista"
+            },
+            "reasoning": {
+              "0": "Quase nenhum",
+              "1": "Algum",
+              "2": "Muito",
+              "3": "Profundo, em muitas etapas"
+            }
+          }
+        },
+        "publish": {
+          "questions": {
+            "share_worthy": "Vale a pena compartilhar",
+            "kind": "Tipo de nota"
+          },
+          "answers": {
+            "finding": "Uma descoberta",
+            "dead_end": "Um beco sem saída",
+            "decision": "Uma decisão",
+            "blocker": "Um bloqueio",
+            "other": "Progresso de rotina"
+          }
+        },
+        "deliver": {
+          "questions": {
+            "useful": "Ajuda a abelha destinatária"
+          }
+        },
+        "browser": {
+          "questions": {
+            "operation": "Próximo passo",
+            "click_target": "Onde clicar",
+            "type_text_target": "Onde digitar",
+            "select_target": "O que escolher"
+          },
+          "answers": {
+            "CLICK": "Clicar",
+            "TYPE_TEXT": "Digitar texto",
+            "SELECT": "Escolher de uma lista",
+            "SCROLL_DOWN": "Rolar para baixo",
+            "SCROLL_UP": "Rolar para cima",
+            "WAIT": "Esperar a página",
+            "DONE": "Concluído",
+            "other": "Sem como avançar",
+            "none": "Nada serve"
+          }
+        },
+        "recall": {
+          "questions": {
+            "lesson": "A lição {{number}} se aplica"
+          }
+        },
+        "capture": {
+          "questions": {
+            "correction": "Corrige um erro",
+            "preference": "Define uma regra permanente"
+          }
+        },
+        "outcome": {
+          "questions": {
+            "way_out": "Achou outro caminho que funcionou"
+          }
+        },
+        "worth": {
+          "questions": {
+            "lesson": "Lição {{number}}"
+          },
+          "answers": {
+            "reusable": "Útil de novo",
+            "one_off": "Só desta vez",
+            "already_known": "Já conhecida",
+            "unclear": "Não dá para saber"
+          }
+        },
+        "merge": {
+          "questions": {
+            "kept": "Lição guardada {{number}}"
+          },
+          "answers": {
+            "same": "A mesma lição",
+            "refines": "A nova é mais precisa",
+            "contradicts": "Elas se contradizem",
+            "unrelated": "Fala de outra coisa",
+            "unclear": "Não dá para saber"
+          }
+        },
+        "applied": {
+          "questions": {
+            "lesson": "Lição {{number}} seguida"
+          }
+        },
+        "risk": {
+          "questions": {
+            "destructive": "Apaga ou não pode ser desfeito",
+            "requested": "Você pediu isso"
+          }
+        },
+        "drift": {
+          "questions": {
+            "course": "Rumo do trabalho"
+          },
+          "answers": {
+            "on_track": "No rumo certo",
+            "detour": "Um desvio necessário",
+            "drift": "Saindo do rumo",
+            "loop": "Andando em círculos",
+            "other": "Não dá para saber"
+          }
+        },
+        "completion": {
+          "questions": {
+            "claims_done": "Diz que o trabalho está pronto",
+            "needs_check": "Deveria ser verificado executando"
+          }
+        },
+        "notify": {
+          "questions": {
+            "urgency": "Quando o agente precisa saber"
+          },
+          "answers": {
+            "now": "Imediatamente",
+            "next_turn": "Depois do passo atual",
+            "drop": "Nunca",
+            "other": "Não dá para saber"
+          }
+        },
+        "cache": {
+          "questions": {
+            "finished": "A conversa terminou",
+            "open": "Uma pergunta está esperando por você"
+          }
+        },
+        "rewind": {
+          "questions": {
+            "dead_end": "A mesma abordagem falhando de novo",
+            "progress": "Fazendo progresso"
+          }
+        },
+        "goalMet": {
+          "questions": {
+            "achieved": "Objetivo totalmente alcançado",
+            "needs_user": "Não dá para continuar sem você"
+          }
+        },
+        "outputDrift": {
+          "questions": {
+            "rule": "Vai contra a regra {{number}}"
+          }
+        },
+        "taskFrame": {
+          "questions": {
+            "change": "Mudança na tarefa"
+          },
+          "answers": {
+            "new_task": "Uma nova tarefa",
+            "constraint": "Uma nova regra para o trabalho",
+            "correction": "A abordagem está errada",
+            "subgoal": "Próximo passo da mesma tarefa",
+            "none": "Nenhuma mudança"
+          }
+        },
+        "constraint": {
+          "questions": {
+            "constraint": "Vai contra a restrição {{number}}"
+          }
+        },
+        "capabilities": {
+          "questions": {
+            "capability": "A capacidade {{number}} é necessária"
+          }
+        },
+        "diagnostics": {
+          "questions": {
+            "more_edits_coming": "Vêm mais alterações",
+            "warnings_are_style": "Só avisos de estilo"
+          }
+        },
+        "patch": {
+          "questions": {
+            "within_task": "Fica dentro da tarefa",
+            "file": "A tarefa pede mudar o arquivo {{number}}"
+          }
+        },
+        "review": {
+          "questions": {
+            "bug": "O apontamento {{number}} é um bug real",
+            "inScope": "O apontamento {{number}} é sobre esta mudança"
+          }
+        },
+        "board": {
+          "questions": {
+            "phase": "O que o agente está fazendo",
+            "needs_user": "Precisa de algo de você",
+            "focus": "Item em andamento",
+            "event": "Evento {{number}}",
+            "changed": "Há novidades para contar"
+          },
+          "answers": {
+            "understanding": "Entendendo a tarefa",
+            "planning": "Planejando",
+            "changing": "Fazendo alterações",
+            "checking": "Verificando o trabalho",
+            "fixing": "Corrigindo o que a verificação encontrou",
+            "waiting": "Esperando por você",
+            "wrapping_up": "Finalizando",
+            "stuck": "Parece travado",
+            "other": "Não dá para saber",
+            "none": "Nenhum deles",
+            "key": "Uma novidade que vale contar",
+            "routine": "Um passo de rotina",
+            "unclear": "Não dá para saber"
+          }
+        },
+        "relate": {
+          "questions": {
+            "relation": "Efeito sobre a descoberta anterior"
+          },
+          "answers": {
+            "supersedes": "Substitui a anterior",
+            "contradicts": "Contradiz a anterior",
+            "supports": "Confirma a anterior",
+            "none": "Não afeta a anterior"
+          }
+        },
+        "approval": {
+          "questions": {
+            "verdict": "O que o passo é"
+          },
+          "answers": {
+            "needed": "Necessário para a tarefa",
+            "beyond": "Mais do que você pediu",
+            "unrelated": "Fora da tarefa",
+            "unclear": "Não dá para saber"
+          }
+        }
       },
       "log": {
         "thisTurn": "Este turno",

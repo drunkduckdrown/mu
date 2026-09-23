@@ -403,7 +403,7 @@
   "pleaseEnterApiKey": "Por favor, insira a Chave de API",
   "pleaseEnterBaseUrl": "Por favor, insira a URL Base",
   "pleaseSelectProvider": "Por favor, selecione um provedor de modelo",
-  "multiApiKeyTip": "💡 Para adicionar várias Chaves de API para rotação automática, configure na edição de plataforma depois",
+  "multiApiKeyTip": "Para adicionar várias Chaves de API para rotação automática, configure na edição de plataforma depois",
   "multiApiKeyEditTip": "Suporta múltiplas Chaves de API, uma por linha, o sistema fará a rotação automaticamente",
   "apiKeyPlaceholder": "Insira a(s) Chave(s) de API, uma por linha para múltiplas chaves",
   "editApiKey": "Editar Chaves de API",
@@ -648,7 +648,6 @@
   "updateLog": "Registro de Atualizações",
   "checkForUpdates": "Verificar atualizações",
   "checkingForUpdates": "Verificando atualizações...",
-  "includePrereleaseUpdates": "Incluir versões de teste",
   "saveModelConfigFailed": "Falha ao salvar a configuração do modelo",
   "healthCheck": "Verificação de Saúde",
   "clearStatus": "Limpar status",
@@ -960,7 +959,6 @@
   "cdP": {
     "title": "CDP (Chrome DevTools Protocol)"
   },
-  "updateReadyInstall": "{{version}} está pronto, instalar agora",
   "assistantAgentUnavailable": "O agente necessário está indisponível no momento.",
   "assistantAgentUnchecked": "O agente necessário ainda não foi verificado.",
   "assistantAgentMissing": "O agente necessário não está instalado.",

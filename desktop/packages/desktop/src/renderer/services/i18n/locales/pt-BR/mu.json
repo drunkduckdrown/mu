@@ -567,6 +567,10 @@
     "modelFailed": "A solicitação ao modelo falhou.",
     "turnRunning": "O mu ainda está trabalhando na mensagem anterior. Aguarde ou interrompa primeiro."
   },
+  "notices": {
+    "answerLost": "O mu não recebeu sua resposta e continuou como se você tivesse recusado.",
+    "bashMissing": "O mu precisa do Git for Windows para executar comandos. Depois de instalá-lo, envie sua mensagem de novo. Baixe aqui:"
+  },
   "errors": {
     "credential": "A chave contém caracteres que uma chave não pode ter, como espaços, aspas ou quebras de linha. Cole-a novamente.",
     "keyVariable": "{{name}} não pode guardar uma chave do juiz. Use TYPESAFE_API_KEY, AI_GATEWAY_API_KEY ou um nome que comece com MU_JUDGE_.",

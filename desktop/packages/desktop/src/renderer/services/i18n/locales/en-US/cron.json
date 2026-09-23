@@ -173,7 +173,7 @@
   },
   "error": {
     "alreadyExists": "This conversation already has a scheduled task \"{{name}}\" (ID: {{id}}). Please update the existing task instead of creating a new one.",
-    "missedJob": "⏰ Scheduled task \"{{name}}\" was not executed during system sleep.\nScheduled time: {{time}}\nThe timer has been restarted and will run at the next scheduled time.",
+    "missedJob": "Scheduled task \"{{name}}\" was not executed during system sleep.\nScheduled time: {{time}}\nThe timer has been restarted and will run at the next scheduled time.",
     "jobNotFound": "Task not found: {{id}}",
     "conversationNotFound": "Conversation not found",
     "scheduledTimePassed": "Scheduled time has passed",
