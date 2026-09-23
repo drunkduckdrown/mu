@@ -130,11 +130,11 @@ A real run: three bees, nine minutes, 117 candidates judged, 27 on the board, 16
 
 ## The plain-language board
 
-Someone who does not read code can still tell how far the agent has got. With the board on (`/board`, or the switch on the desktop app's board tab), `board.read` runs every few tool calls, after a check or a ticked acceptance item, and whenever the agent stops. A model that explains well then says three things in plain words: what is happening now, how many items of the checklist are done, and what waits on you. Earlier updates stay in order below; a finished run gets a summary.
+Frontier models get better at the work and worse at talking about it: each generation's progress reports read more like output for another machine, denser, more opaque, less like a person speaking. mu does not ask the working model to narrate itself. With the board on (`/board`, or the switch on the desktop app's board tab), `board.read` runs every few tool calls, after a check or a ticked acceptance item, and whenever the agent stops; the judge picks out, from the verdicts and the events, the few that are news. A model chosen for one thing only, that it speaks plainly (`/board model`), then says three things: what is happening now, how many items of the checklist are done, and what waits on you. Earlier updates stay in order below; a finished run gets a summary.
 
 <p align="center"><img src="docs/readme/board.png" width="960" alt="The desktop app's plain-language board: how far the work is, what is happening now, what happened before; context use and cache hit rate at the top"></p>
 
-These words are not an abbreviation of what the model said: the judge picks out, from the verdicts and the events, the few that are news, and the board follows the permission mode, the goal and the sub-agents. The two numbers at the top are context use and cache hit rate, the direct result of the context and cache decisions above.
+The working model keeps its own language for the work; what appears on the board can always be read at a glance. The board follows the permission mode, the goal and the sub-agents, and when the agent changes course, so does the wording. The two numbers at the top are context use and cache hit rate, the direct result of the context and cache decisions above.
 
 ## The desktop app
 
