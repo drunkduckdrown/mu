@@ -13,18 +13,49 @@ const WORDMARK = ["█  █  ", "█▄▄█▄ ", "█     "];
 const MAX_BOX_WIDTH = 78;
 const MIN_BOX_WIDTH = 44;
 
-/** Resolves to `<package>/package.json` from both `src/` and `dist/`. */
-function readVersion(): string {
-	try {
-		const raw = readFileSync(new URL("../../../package.json", import.meta.url), "utf8");
-		const version = (JSON.parse(raw) as { version?: unknown }).version;
-		return typeof version === "string" ? version : "0.0.0";
-	} catch {
-		return "0.0.0";
-	}
+export interface Versions {
+	/** mu's own: what `npm i -g mu-agent` installed, or what this source tree is released as. */
+	readonly mu: string;
+	/** The pi mu is built on. */
+	readonly pi: string;
 }
 
-export const KYRN_VERSION = readVersion();
+/**
+ * mu's version and pi's, from where each is written down. `judgeRoot` is the judgment layer's own folder:
+ *
+ *   npm package (mu-agent)   <package>/package.json: `version` is mu's, `muBuild.pi` is pi's (kyrn/npm/build.mjs)
+ *   source checkout          kyrn/npm/package.template.json is mu's, packages/coding-agent/package.json is pi's
+ *
+ * Two places that look right are not. The judgment layer's own package.json says 0.1.0, a number never released.
+ * pi's `VERSION` is read from PI_PACKAGE_DIR, which the launcher points at mu-agent's folder in the package, so
+ * there it is mu's version: mu 0.1.3 greeted with "v0.1.0 · built on pi 0.1.3".
+ */
+export function readVersions(judgeRoot: URL, fallbackPi = PI_VERSION): Versions {
+	const read = (path: string): Record<string, unknown> => {
+		try {
+			const parsed: unknown = JSON.parse(readFileSync(new URL(path, judgeRoot), "utf8"));
+			return typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {};
+		} catch {
+			return {};
+		}
+	};
+	const text = (value: unknown): string | undefined => (typeof value === "string" && value ? value : undefined);
+	const installed = read("../package.json");
+	// Only the npm build writes `muBuild`.
+	if (typeof installed.muBuild === "object" && installed.muBuild !== null) {
+		return {
+			mu: text(installed.version) ?? "0.0.0",
+			pi: text((installed.muBuild as { pi?: unknown }).pi) ?? fallbackPi,
+		};
+	}
+	return {
+		mu: text(read("../../kyrn/npm/package.template.json").version) ?? "0.0.0",
+		pi: text(read("../coding-agent/package.json").version) ?? fallbackPi,
+	};
+}
+
+/** The judgment layer's folder, from `src/` and from the bundle alike: the build rewrites `import.meta.url`. */
+export const VERSIONS = readVersions(new URL("../../../", import.meta.url));
 
 export type JudgeHealth = "checking" | { ok: boolean; latencyMs: number; error?: string };
 
@@ -173,8 +204,8 @@ export function registerWelcome(runtime: KyrnRuntime): void {
 						const model = current?.model;
 						return renderWelcome(
 							{
-								version: KYRN_VERSION,
-								piVersion: PI_VERSION,
+								version: VERSIONS.mu,
+								piVersion: VERSIONS.pi,
 								judge: runtime.judgeLabel,
 								health,
 								mode: runtime.mode("*"),

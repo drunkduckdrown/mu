@@ -1,12 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
-	type ExtensionCommandContext,
-	getAgentDir,
-	keyText,
-	VERSION as PI_VERSION,
-} from "@earendil-works/pi-coding-agent";
+import { type ExtensionCommandContext, getAgentDir, keyText } from "@earendil-works/pi-coding-agent";
 import { browserAdvice, findBrowser, thisBrowserHost } from "../../browser/chrome.ts";
 import type { DecisionMode } from "../../decision.ts";
 import { appLanguage, say } from "../../language.ts";
@@ -15,7 +10,7 @@ import { loadAgents } from "../agents.ts";
 import { promptsFor } from "../localized-prompts.ts";
 import { failOpen, type KyrnRuntime } from "../runtime.ts";
 import type { HarnessRoots } from "./inherit.ts";
-import { KYRN_VERSION } from "./welcome.ts";
+import { VERSIONS } from "./welcome.ts";
 
 const MODES: readonly string[] = ["off", "shadow", "active"];
 
@@ -26,7 +21,7 @@ const PROMPTS_DIR = fileURLToPath(new URL("../../../prompts", import.meta.url));
 const help = () => say({ zh: helpZh(), en: helpEn() });
 
 /** No aligned columns: Chinese is two cells wide in a terminal, so each line says "command: what it does". */
-const helpZh = () => `mu ${KYRN_VERSION} · 先判断再动手的编程代理，基于 pi ${PI_VERSION}
+const helpZh = () => `mu ${VERSIONS.mu} · 先判断再动手的编程代理，基于 pi ${VERSIONS.pi}
 
 从这里开始
   /status：判定器、各判定点的模式、没放进上下文的内容、最近的判定
@@ -75,7 +70,7 @@ const helpZh = () => `mu ${KYRN_VERSION} · 先判断再动手的编程代理，
 
 输入时：! 运行一条 shell 命令 · !! 运行但不放进上下文 · @ 附上一个文件`;
 
-const helpEn = () => `mu ${KYRN_VERSION} · judgment-first coding agent, built on pi ${PI_VERSION}
+const helpEn = () => `mu ${VERSIONS.mu} · judgment-first coding agent, built on pi ${VERSIONS.pi}
 
 Start here
   /status                  judge, modes, what was kept out of the context, recent verdicts

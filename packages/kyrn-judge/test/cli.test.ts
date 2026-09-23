@@ -1,8 +1,18 @@
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { visibleWidth } from "@earendil-works/pi-tui";
 import { describe, expect, it } from "vitest";
 import { parseConfig } from "../src/config.ts";
 import { DecisionEngine, defineDecision } from "../src/decision.ts";
-import { type Paint, renderWelcome, type WelcomeView } from "../src/extension/features/welcome.ts";
+import {
+	type Paint,
+	readVersions,
+	renderWelcome,
+	VERSIONS,
+	type WelcomeView,
+} from "../src/extension/features/welcome.ts";
 import { Judge } from "../src/judge.ts";
 import { MemoryLedger } from "../src/ledger.ts";
 import { threeZone } from "../src/policy.ts";
@@ -55,6 +65,38 @@ describe("welcome screen", () => {
 		expect(off.join("\n")).toContain("off · pi's stock behaviour everywhere");
 		expect(fresh.join("\n")).toContain("/login, then /model");
 		expect(fresh.join("\n")).toContain("checking");
+	});
+
+	// mu 0.1.3 from npm greeted with "v0.1.0 · built on pi 0.1.3": the judgment layer's own version, and pi's
+	// VERSION, which pi reads from the folder the launcher points it at, mu-agent's.
+	it("shows mu's version and pi's, from the npm package and from a source checkout", () => {
+		const pkg = mkdtempSync(join(tmpdir(), "mu-versions-"));
+		try {
+			writeFileSync(
+				join(pkg, "package.json"),
+				JSON.stringify({ name: "mu-agent", version: "0.1.4", muBuild: { pi: "0.86.0", judge: "0.1.0" } }),
+			);
+			mkdirSync(join(pkg, "judge", "dist"), { recursive: true });
+			writeFileSync(join(pkg, "judge", "package.json"), JSON.stringify({ name: "@kyrn/judge", version: "0.1.0" }));
+			// Where the bundled welcome.ts looks from: the build rewrites import.meta.url to its source's place in judge/.
+			const bundle = pathToFileURL(join(pkg, "judge", "dist", "kyrn-judge.js")).href;
+			const source = new URL("src/extension/features/welcome.ts", new URL("../", bundle));
+			// pi's own VERSION in the package is mu's: it must not be taken for pi's.
+			expect(readVersions(new URL("../../../", source), "0.1.4")).toEqual({ mu: "0.1.4", pi: "0.86.0" });
+		} finally {
+			rmSync(pkg, { recursive: true, force: true });
+		}
+
+		const repo = join(dirname(fileURLToPath(import.meta.url)), "../../..");
+		const versionOf = (path: string) =>
+			(JSON.parse(readFileSync(join(repo, path), "utf8")) as { version: string }).version;
+		expect(VERSIONS).toEqual({
+			mu: versionOf("kyrn/npm/package.template.json"),
+			pi: versionOf("packages/coding-agent/package.json"),
+		});
+		expect(renderWelcome({ ...view, version: "0.1.4", piVersion: "0.86.0" }, 100, plain).join("\n")).toContain(
+			"v0.1.4 · built on pi 0.86.0",
+		);
 	});
 });
 

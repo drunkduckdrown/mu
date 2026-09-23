@@ -85,47 +85,64 @@ check(
 const temp = join(home, "tmp");
 mkdirSync(temp);
 const heapCap = { ...env, NODE_OPTIONS: "--max-old-space-size=200", TMPDIR: temp, TMP: temp, TEMP: temp };
-const commands = await new Promise((resolve) => {
+const rpc = await new Promise((resolve) => {
 	const child = spawn(mu, ["--mode", "rpc", "--no-session"], { ...options, env: heapCap, stdio: ["pipe", "pipe", "pipe"] });
 	let out = "";
 	let err = "";
-	const timer = setTimeout(() => {
+	const seen = {};
+	// Later calls change nothing: the promise is settled by the first.
+	const done = (result) => {
+		clearTimeout(timer);
 		child.kill();
-		resolve({ error: `no answer in 90 s. stderr: ${err.slice(-800)}` });
-	}, 90_000);
+		resolve(result);
+	};
+	const timer = setTimeout(() => done({ ...seen, error: `no answer in 90 s. stderr: ${err.slice(-800)}` }), 90_000);
 	child.stdout.on("data", (data) => {
 		out += data;
-		for (const line of out.split("\n")) {
+		const lines = out.split("\n");
+		out = lines.pop() ?? "";
+		for (const line of lines) {
 			let message;
 			try {
 				message = JSON.parse(line);
 			} catch {
 				continue;
 			}
-			if (message.id !== "smoke") continue;
-			clearTimeout(timer);
-			child.kill();
-			resolve(message.success ? { names: message.data.commands.map((command) => `${command.source}:${command.name}`) } : { error: message.error });
+			if (message.id === "smoke") {
+				if (!message.success) return done({ error: message.error });
+				seen.names = message.data.commands.map((command) => `${command.source}:${command.name}`);
+			}
+			// /help answers with a notice whose first line names mu's version and pi's, as the welcome screen does.
+			if (message.type === "extension_ui_request" && message.method === "notify" && String(message.message).includes("judgment-first")) {
+				seen.help = String(message.message).split("\n")[0];
+			}
+			if (seen.names && seen.help) return done(seen);
 		}
 	});
 	child.stderr.on("data", (data) => {
 		err += data;
 	});
-	child.on("error", (error) => resolve({ error: error.message }));
-	// After an answer the promise is settled already, and this changes nothing.
+	child.on("error", (error) => done({ error: error.message }));
 	child.on("close", (code, signal) => {
-		clearTimeout(timer);
 		const heap = /Reached heap limit|heap out of memory/.test(err) ? ", out of heap" : "";
-		resolve({ error: `exited (${code ?? signal}${heap}) without an answer. stderr: ${err.slice(-800)}` });
+		done({ ...seen, error: `exited (${code ?? signal}${heap}) without an answer. stderr: ${err.slice(-800)}` });
 	});
 	child.stdin.write(`${JSON.stringify({ id: "smoke", type: "get_commands" })}\n`);
+	child.stdin.write(`${JSON.stringify({ id: "help", type: "prompt", message: "/help" })}\n`);
 });
+const names = rpc.names ?? [];
 const expected = ["extension:board", "extension:goal", "extension:permissions", "prompt:implement", "skill:skill:mu-browser"];
 check(
 	"judgment layer loaded in a 200 MB heap (RPC get_commands)",
-	!commands.error && expected.every((name) => commands.names.includes(name)),
-	commands.error ?? `${commands.names.length} commands, ${expected.filter((name) => !commands.names.includes(name)).join(", ") || "all expected ones"} ${expected.every((name) => commands.names.includes(name)) ? "present" : "missing"}`,
+	rpc.names !== undefined && expected.every((name) => names.includes(name)),
+	rpc.names === undefined
+		? rpc.error
+		: `${names.length} commands, ${expected.filter((name) => !names.includes(name)).join(", ") || "all expected ones"} ${expected.every((name) => names.includes(name)) ? "present" : "missing"}`,
 );
+// mu 0.1.3 said "mu 0.1.0 · …, built on pi 0.1.3": its judgment layer's own version, and pi's, read from mu-agent's folder.
+const versions = /^mu (\S+) \(pi ([^,)]+)/.exec(version.stdout.trim());
+const greeting = versions ? `mu ${versions[1]} · judgment-first coding agent, built on pi ${versions[2]}` : undefined;
+check("/help names mu's version and pi's, as mu version does", greeting !== undefined && rpc.help === greeting, rpc.help ?? rpc.error);
 
 try {
 	rmSync(home, { recursive: true, force: true });

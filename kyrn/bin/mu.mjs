@@ -1178,8 +1178,9 @@ export async function main(argv = process.argv.slice(2)) {
 		return 1;
 	}
 	if (command === "version") {
-		const version = (file) => JSON.parse(readText(path.join(root, "packages", file, "package.json"))).version;
-		out(`mu ${version("kyrn-judge")} (pi ${version("coding-agent")})`);
+		// mu's version is the one this tree is released as; the judgment layer's own package.json is never released.
+		const version = (file) => JSON.parse(readText(path.join(root, ...file.split("/")))).version;
+		out(`mu ${version("kyrn/npm/package.template.json")} (pi ${version("packages/coding-agent/package.json")})`);
 		return 0;
 	}
 
