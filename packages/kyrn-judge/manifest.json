@@ -658,34 +658,12 @@
 			"group": "tools",
 			"feature": "permissions",
 			"title": {
-				"zh": "JeV 替你审批",
-				"en": "JeV approves for you",
-				"zh-TW": "JeV 替你審批",
-				"ja-JP": "JeV があなたに代わって承認",
-				"ko-KR": "JeV가 대신 승인",
-				"de-DE": "JeV gibt für dich frei",
-				"fr-FR": "JeV approuve pour vous",
-				"es-ES": "JeV aprueba por ti",
-				"pt-BR": "O JeV aprova por você",
-				"ru-RU": "JeV одобряет за вас",
-				"uk-UA": "JeV схвалює за вас",
-				"tr-TR": "JeV sizin yerinize onaylar",
-				"fa-IR": "JeV به‌جای شما تأیید می‌کند"
+				"zh": "Jev 替你审批",
+				"en": "Jev approves for you"
 			},
 			"summary": {
-				"zh": "在「JeV 审批」模式下，命令、项目外的改动、对外操作和子代理先交给 JeV：它确信这是任务需要、也是你会预期的做法才放行，否则在状态栏问你。",
-				"en": "In JeV-approves mode, commands, changes outside the project, outside actions and sub-agents go to JeV first: only what it is sure the task needs, done as you would expect, runs without you; anything else asks you in the status bar.",
-				"zh-TW": "在「JeV 審批」模式下，指令、專案外的改動、對外操作和子代理都先交給 JeV：它確信是任務需要、做法也符合你預期的，才不問你直接執行；其餘都會在狀態列問你。",
-				"ja-JP": "「JeV が承認」モードでは、コマンド、プロジェクト外の変更、外部への操作、サブエージェントをまず JeV が審査します。タスクに必要で、あなたが期待するやり方だと確信できるものだけをそのまま実行し、それ以外はステータスバーであなたに確認します。",
-				"ko-KR": "JeV 승인 모드에서는 명령, 프로젝트 밖의 변경, 외부 작업, 하위 에이전트 실행이 먼저 JeV를 거칩니다. 작업에 필요하고 사용자가 예상하는 방식이라고 JeV가 확신하는 것만 사용자 확인 없이 실행되며, 그 밖의 것은 상태 표시줄에서 사용자에게 묻습니다.",
-				"de-DE": "Im Modus „JeV gibt frei“ gehen Befehle, Änderungen außerhalb des Projekts, Aktionen nach außen und Unteragenten zuerst an JeV: Nur was JeV sicher für die Aufgabe nötig hält und so ausgeführt wird, wie du es erwarten würdest, läuft ohne dich; bei allem anderen wirst du in der Statusleiste gefragt.",
-				"fr-FR": "En mode « JeV approuve », les commandes, les modifications hors du projet, les actions extérieures et les sous-agents passent d’abord par JeV : seul ce dont il est sûr que la tâche a besoin, fait comme vous l’attendez, s’exécute sans vous ; pour tout le reste, la barre d’état vous le demande.",
-				"es-ES": "En el modo «JeV aprueba», los comandos, los cambios fuera del proyecto, las acciones externas y los subagentes pasan primero por JeV: solo se ejecuta sin ti lo que JeV tiene claro que la tarea necesita, hecho como tú lo esperarías; todo lo demás te lo pregunta en la barra de estado.",
-				"pt-BR": "No modo “O JeV aprova”, comandos, alterações fora do projeto, ações externas e subagentes passam primeiro pelo JeV: só o que ele tem certeza de que a tarefa exige, feito como você esperaria, segue sem você; para todo o resto, a barra de status pergunta a você.",
-				"ru-RU": "В режиме «Одобряет JeV» команды, изменения за пределами проекта, внешние действия и субагенты сначала проходят через JeV. Без вас он пропускает только то, что точно нужно задаче и делается так, как вы ожидаете; обо всём остальном mu спрашивает вас в строке состояния.",
-				"uk-UA": "У режимі «Схвалює JeV» команди, зміни поза проєктом, зовнішні дії та субагенти спершу потрапляють до JeV: без вас виконується лише те, у чому він упевнений — воно потрібне завданню й робиться так, як ви очікуєте; щодо всього іншого вас запитують у рядку стану.",
-				"tr-TR": "“JeV onaylar” modunda komutlar, proje dışındaki değişiklikler, dış işlemler ve alt ajanlar önce JeV'e gider: yalnızca görevin gerektirdiğinden emin olduğu ve sizin beklediğiniz şekilde yapılan şeyler size sorulmadan çalışır; geri kalan her şey için durum çubuğunda size sorulur.",
-				"fa-IR": "در حالت «تأیید با JeV»، دستورها، تغییرات بیرون از پروژه، اقدام‌های بیرونی و عامل‌های فرعی اول به JeV می‌رسند: فقط آنچه JeV مطمئن است وظیفه به آن نیاز دارد و همان‌طور که انتظار دارید انجام می‌شود، بدون شما اجرا می‌شود؛ برای هر چیز دیگر در نوار وضعیت از شما پرسیده می‌شود."
+				"zh": "在「Jev 审批」模式下，命令、项目外的改动、对外操作和子代理先交给 Jev：它确信这是任务需要、也是你会预期的做法才放行，否则在状态栏问你。",
+				"en": "In Jev-approves mode, commands, changes outside the project, outside actions and sub-agents go to Jev first: only what it is sure the task needs, done as you would expect, runs without you; anything else asks you in the status bar."
 			}
 		},
 		{
@@ -1008,12 +986,34 @@
 			"group": "turn",
 			"feature": "goal",
 			"title": {
-				"zh": "目标是否达成（JeV 兜底）",
-				"en": "Goal reached (JeV fallback)"
+				"zh": "目标是否达成（Jev 兜底）",
+				"en": "Goal reached (Jev fallback)",
+				"zh-TW": "目標是否達成（Jev 備援）",
+				"ja-JP": "目標の達成（Jev による予備判定）",
+				"ko-KR": "목표 달성(Jev 보조)",
+				"de-DE": "Ziel erreicht (Jev als Reserve)",
+				"fr-FR": "Objectif atteint (repli sur Jev)",
+				"es-ES": "Objetivo alcanzado (Jev de reserva)",
+				"pt-BR": "Objetivo alcançado (Jev como apoio)",
+				"ru-RU": "Достижение цели (Jev на подстраховке)",
+				"uk-UA": "Чи досягнуто мети (підстраховка Jev)",
+				"tr-TR": "Hedefe ulaşıldı mı (yedek olarak Jev)",
+				"fa-IR": "تحقق هدف (Jev در نقش پشتیبان)"
 			},
 			"summary": {
-				"zh": "目标模式默认由大模型判断；这个判定点只在选了 JeV、或大模型没答上来时用：读结束语，判断目标是否达成、是否需要你拿主意。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
-				"en": "Goal mode is checked by a model by default; this decision is used when JeV is chosen or the model gives no answer: it reads the closing message for whether the goal holds and whether you are needed. An open acceptance item or an unverified edit always means not yet."
+				"zh": "目标模式默认由大模型判断；这个判定点只在选了 Jev、或大模型没答上来时用：读结束语，判断目标是否达成、是否需要你拿主意。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
+				"en": "Goal mode is checked by a model by default; this decision is used when Jev is chosen or the model gives no answer: it reads the closing message for whether the goal holds and whether you are needed. An open acceptance item or an unverified edit always means not yet.",
+				"zh-TW": "目標模式預設由大模型判斷；只有選了 Jev，或大模型沒給出答案時，才用這個判定點：讀最後的結束語，判斷目標是否達成、是否需要你。只要還有未完成的驗收項目，或有改動沒驗證過，一律算還沒達成。",
+				"ja-JP": "目標モードの達成チェックは、既定ではモデルが行います。この判定ポイントは、Jev を選んだ場合か、モデルが回答しなかった場合に使われます。最後のメッセージから、目標を達成したか、あなたの判断が必要かを読み取ります。未完了の受け入れ条件や未検証の編集が残っていれば、必ず未達成とします。",
+				"ko-KR": "목표 모드는 기본적으로 모델이 확인합니다. 이 판정 지점은 Jev를 선택했거나 모델이 답하지 않을 때 쓰이며, 마무리 메시지를 읽고 목표가 달성되었는지, 사용자가 나서야 하는지 판정합니다. 완료되지 않은 확인 항목이나 검증되지 않은 편집이 있으면 항상 아직 달성되지 않은 것으로 봅니다.",
+				"de-DE": "Im Zielmodus prüft standardmäßig ein Modell; dieser Entscheidungspunkt kommt zum Zug, wenn Jev gewählt ist oder das Modell keine Antwort gibt: Er liest aus der Abschlussnachricht, ob das Ziel erreicht ist und ob du gebraucht wirst. Ein offenes Abnahmekriterium oder eine nicht überprüfte Änderung heißt immer: noch nicht.",
+				"fr-FR": "Par défaut, le mode objectif est vérifié par un modèle ; ce point de décision sert quand Jev est choisi ou que le modèle ne répond pas : il lit le message de clôture pour savoir si l’objectif est atteint et si l’on a besoin de vous. Un critère d’acceptation encore ouvert ou une modification non vérifiée signifie toujours « pas encore ».",
+				"es-ES": "El modo objetivo lo comprueba un modelo de forma predeterminada; este punto de decisión se usa cuando se elige Jev o el modelo no responde: lee el mensaje final para ver si el objetivo se cumple y si te necesita. Un criterio de aceptación pendiente o una edición sin verificar siempre significa que aún no.",
+				"pt-BR": "Por padrão, o modo de objetivo é verificado por um modelo; este ponto de decisão é usado quando o Jev é escolhido ou o modelo não responde: ele lê a mensagem final para ver se o objetivo foi alcançado e se precisa de você. Um critério de aceitação em aberto ou uma edição não verificada sempre significa “ainda não”.",
+				"ru-RU": "В режиме цели проверку по умолчанию выполняет модель; эта точка решения используется, если выбран Jev или модель не ответила: Jev читает заключительное сообщение и решает, достигнута ли цель и нужно ли ваше участие. Невыполненный критерий приёмки или непроверенная правка всегда означают «ещё нет».",
+				"uk-UA": "У режимі мети перевірку типово виконує модель; ця точка рішення потрібна, коли вибрано Jev або модель не дала відповіді: тоді за заключним повідомленням визначається, чи досягнуто мети і чи потрібні ви. Невиконаний критерій приймання чи неперевірена правка завжди означають «ще ні».",
+				"tr-TR": "Hedef modunu varsayılan olarak bir model kontrol eder; bu karar noktası Jev seçildiğinde ya da model yanıt vermediğinde kullanılır: kapanış mesajını okuyarak hedefin karşılanıp karşılanmadığına ve size ihtiyaç olup olmadığına bakar. Açık bir kabul ölçütü ya da doğrulanmamış bir düzenleme her zaman “henüz değil” anlamına gelir.",
+				"fa-IR": "حالت هدف به‌طور پیش‌فرض با یک مدل بررسی می‌شود؛ این نقطهٔ تصمیم وقتی به کار می‌رود که Jev انتخاب شده باشد یا مدل پاسخی ندهد: پیام پایانی را می‌خواند تا ببیند هدف محقق شده است یا نه و آیا به شما نیاز هست. یک معیار پذیرشِ باز یا ویرایشی که راستی‌آزمایی نشده همیشه یعنی «هنوز نه»."
 			}
 		},
 		{
@@ -2011,19 +2011,8 @@
 				"fa-IR": "حالت‌های مجوز"
 			},
 			"summary": {
-				"zh": "完全访问、JeV 审批、最小权限三种模式，用 /permissions 随时切换；需要授权时在状态栏提示你，可以只允许这一次，或这次对话都允许。开着它时，危险命令的把关也归它管。",
-				"en": "Full access, JeV approves, or minimal permissions, switched any time with /permissions. When a step needs your permission the status bar asks; allow it once or for the whole conversation. While it is on, it also handles the risky command guard.",
-				"zh-TW": "完全存取、JeV 審批、最小權限三種模式，隨時可用 /permissions 切換。需要你授權時會在狀態列詢問，可以只允許這一次，或這次對話都允許。開啟時，危險指令的把關也由它負責。",
-				"ja-JP": "フルアクセス、JeV が承認、最小権限の 3 つのモードを、/permissions でいつでも切り替えられます。許可が必要なステップではステータスバーでお知らせし、「今回のみ許可」か「この会話中は許可」を選べます。オンの間は、危険なコマンドのチェックもこの機能が担当します。",
-				"ko-KR": "전체 접근, JeV 승인, 최소 권한 중 하나를 쓰며 /permissions로 언제든 전환합니다. 단계에 권한이 필요하면 상태 표시줄에서 묻고, 한 번만 허용하거나 대화 전체에 허용할 수 있습니다. 켜져 있는 동안에는 위험한 명령 차단도 이 기능이 맡습니다.",
-				"de-DE": "Vollzugriff, JeV gibt frei oder minimale Berechtigungen, jederzeit umschaltbar mit /permissions. Braucht ein Schritt deine Erlaubnis, fragt die Statusleiste; erlaube ihn einmal oder für die ganze Unterhaltung. Solange die Funktion eingeschaltet ist, übernimmt sie auch den Schutz vor riskanten Befehlen.",
-				"fr-FR": "Accès complet, JeV approuve ou autorisations minimales, à changer à tout moment avec /permissions. Quand une étape a besoin de votre autorisation, la barre d’état vous la demande : autorisez-la une fois, ou pour toute la conversation. Tant que cette fonction est activée, elle gère aussi la protection contre les commandes risquées.",
-				"es-ES": "Acceso completo, JeV aprueba o permisos mínimos; se cambia en cualquier momento con /permissions. Cuando un paso necesita tu permiso, te lo pide la barra de estado: permítelo una vez o para toda la conversación. Mientras esta función está activada, también se encarga de la protección contra comandos arriesgados.",
-				"pt-BR": "“Acesso total”, “O JeV aprova” ou “Permissões mínimas”, alternáveis a qualquer momento com /permissions. Quando um passo precisa da sua permissão, a barra de status pergunta; permita uma vez ou para a conversa inteira. Enquanto este recurso está ativado, ele também cuida da proteção contra comandos arriscados.",
-				"ru-RU": "Полный доступ, «Одобряет JeV» или минимальные разрешения; режим можно сменить в любой момент командой /permissions. Когда шагу нужно ваше разрешение, вопрос появляется в строке состояния: разрешите один раз или на весь диалог. Пока функция включена, защитой от опасных команд тоже занимается она.",
-				"uk-UA": "Повний доступ, «Схвалює JeV» або мінімальні дозволи; режим можна будь-коли змінити командою /permissions. Коли крок потребує вашого дозволу, запит з’являється в рядку стану: дозвольте один раз або на всю розмову. Поки функцію ввімкнено, вона також виконує роль захисту від ризикованих команд.",
-				"tr-TR": "Tam erişim, JeV onaylar ya da en az izin; /permissions ile istediğiniz zaman değiştirilebilir. Bir adım izninizi gerektirdiğinde durum çubuğunda size sorulur; bir kez ya da tüm konuşma için izin verebilirsiniz. Açıkken riskli komut korumasını da bu özellik üstlenir.",
-				"fa-IR": "سه حالتِ دسترسی کامل، تأیید با JeV و حداقل مجوز، که هر زمان با /permissions عوض می‌شوند. وقتی گامی به اجازهٔ شما نیاز دارد، نوار وضعیت از شما می‌پرسد؛ می‌توانید یک بار یا برای کل گفتگو اجازه دهید. تا وقتی روشن است، کار محافظ دستورهای پرخطر را هم انجام می‌دهد."
+				"zh": "完全访问、Jev 审批、最小权限三种模式，用 /permissions 随时切换；需要授权时在状态栏提示你，可以只允许这一次，或这次对话都允许。开着它时，危险命令的把关也归它管。",
+				"en": "Full access, Jev approves, or minimal permissions, switched any time with /permissions. When a step needs your permission the status bar asks; allow it once or for the whole conversation. While it is on, it also handles the risky command guard."
 			},
 			"defaultEnabled": true,
 			"options": [
@@ -2053,19 +2042,8 @@
 						{
 							"value": "jev",
 							"label": {
-								"zh": "JeV 审批",
-								"en": "JeV approves",
-								"zh-TW": "JeV 審批",
-								"ja-JP": "JeV が承認",
-								"ko-KR": "JeV 승인",
-								"de-DE": "JeV gibt frei",
-								"fr-FR": "JeV approuve",
-								"es-ES": "JeV aprueba",
-								"pt-BR": "O JeV aprova",
-								"ru-RU": "Одобряет JeV",
-								"uk-UA": "Схвалює JeV",
-								"tr-TR": "JeV onaylar",
-								"fa-IR": "تأیید با JeV"
+								"zh": "Jev 审批",
+								"en": "Jev approves"
 							}
 						},
 						{
@@ -3964,8 +3942,19 @@
 						"fa-IR": "بررسی‌کنندهٔ تحقق هدف"
 					},
 					"help": {
-						"zh": "大模型读目标、这一轮做了什么、最后一次测试的结果和结束语，给出结论和下一步；它没答上来时才退回 JeV。无论哪种，没勾的验收条件、改完没跑都算没达成。",
-						"en": "A model reads the goal, what the run did, the last test run and the closing message, and gives a verdict and the next step; JeV only when it gives no answer. Either way an open acceptance item or an unverified edit means not yet."
+						"zh": "大模型读目标、这一轮做了什么、最后一次测试的结果和结束语，给出结论和下一步；它没答上来时才退回 Jev。无论哪种，没勾的验收条件、改完没跑都算没达成。",
+						"en": "A model reads the goal, what the run did, the last test run and the closing message, and gives a verdict and the next step; Jev only when it gives no answer. Either way an open acceptance item or an unverified edit means not yet.",
+						"zh-TW": "大模型讀取目標、這次執行做了什麼、最後一次測試結果和結束語，給出結論和下一步；只有它沒給出答案時才改由 Jev 判斷。無論哪種，只要還有未完成的驗收項目，或有改動沒驗證過，都算還沒達成。",
+						"ja-JP": "モデルが目標、この実行で行ったこと、最後のテスト結果、最後のメッセージを読み、判断と次のステップを返します。Jev を使うのは、モデルが回答しなかった場合だけです。どちらの場合も、未完了の受け入れ条件や未検証の編集があれば未達成とします。",
+						"ko-KR": "모델이 목표, 이번 실행에서 한 일, 마지막 테스트 실행, 마무리 메시지를 읽고 결론과 다음 단계를 제시합니다. Jev는 모델이 답하지 않을 때만 씁니다. 어느 쪽이든 완료되지 않은 확인 항목이나 검증되지 않은 편집이 있으면 아직 달성되지 않은 것입니다.",
+						"de-DE": "Ein Modell liest das Ziel, was der Lauf getan hat, den letzten Testlauf und die Abschlussnachricht und gibt ein Urteil und den nächsten Schritt; Jev nur, wenn es keine Antwort gibt. In beiden Fällen heißt ein offenes Abnahmekriterium oder eine nicht überprüfte Änderung: noch nicht.",
+						"fr-FR": "Un modèle lit l’objectif, ce qu’a fait l’exécution, le dernier lancement des tests et le message de clôture, puis donne un jugement et l’étape suivante ; Jev seulement s’il ne répond pas. Dans les deux cas, un critère d’acceptation encore ouvert ou une modification non vérifiée signifie « pas encore ».",
+						"es-ES": "Un modelo lee el objetivo, lo que ha hecho la ejecución, la última ejecución de las pruebas y el mensaje final, y da un veredicto y el siguiente paso; Jev solo entra si el modelo no responde. En ambos casos, un criterio de aceptación pendiente o una edición sin verificar significa que aún no.",
+						"pt-BR": "Um modelo lê o objetivo, o que a execução fez, a última execução dos testes e a mensagem final, e dá um veredito e a próxima etapa; o Jev só entra quando o modelo não responde. De todo modo, um critério de aceitação em aberto ou uma edição não verificada significa “ainda não”.",
+						"ru-RU": "Модель читает цель, сделанное за запуск, результат последнего прогона тестов и заключительное сообщение, а затем выносит решение и называет следующий шаг; Jev — только если она не ответила. В обоих случаях невыполненный критерий приёмки или непроверенная правка означают «ещё нет».",
+						"uk-UA": "Модель читає мету, що зроблено під час запуску, останній запуск тестів і заключне повідомлення та дає рішення й наступний крок; Jev — лише коли вона не відповіла. В обох випадках невиконаний критерій приймання чи неперевірена правка означають «ще ні».",
+						"tr-TR": "Bir model hedefi, çalışmanın ne yaptığını, son test çalıştırmasını ve kapanış mesajını okur; bir karar verir ve sonraki adımı söyler. Jev yalnızca model yanıt vermediğinde devreye girer. Her iki durumda da açık bir kabul ölçütü ya da doğrulanmamış bir düzenleme “henüz değil” anlamına gelir.",
+						"fa-IR": "یک مدل هدف، کارهای انجام‌شده در این اجرا، آخرین اجرای آزمون و پیام پایانی را می‌خواند و نتیجه و گام بعدی را اعلام می‌کند؛ Jev فقط وقتی به کار می‌آید که مدل پاسخی ندهد. در هر دو حالت، یک معیار پذیرشِ باز یا ویرایشی که راستی‌آزمایی نشده یعنی «هنوز نه»."
 					},
 					"choices": [
 						{
@@ -3989,8 +3978,19 @@
 						{
 							"value": "jev",
 							"label": {
-								"zh": "JeV 判定器",
-								"en": "The JeV judge"
+								"zh": "Jev 判定器",
+								"en": "The Jev judge",
+								"zh-TW": "Jev 判定器",
+								"ja-JP": "Jev 判定器",
+								"ko-KR": "Jev 판정기",
+								"de-DE": "Der Jev-Judge",
+								"fr-FR": "Le juge Jev",
+								"es-ES": "El juez Jev",
+								"pt-BR": "O juiz Jev",
+								"ru-RU": "Судья Jev",
+								"uk-UA": "Суддя Jev",
+								"tr-TR": "Jev hakemi",
+								"fa-IR": "داور Jev"
 							}
 						}
 					]
@@ -4179,8 +4179,19 @@
 						"fa-IR": "حداکثر انتظار برای بررسی"
 					},
 					"help": {
-						"zh": "超时就退回 JeV 判定器，再退回只看事实。",
-						"en": "After that, JeV decides, and failing that the facts alone."
+						"zh": "超时就退回 Jev 判定器，再退回只看事实。",
+						"en": "After that, Jev decides, and failing that the facts alone.",
+						"zh-TW": "逾時就改由 Jev 判斷，Jev 也不行就只看事實。",
+						"ja-JP": "それを過ぎると Jev が判定し、それもできなければ事実だけで判断します。",
+						"ko-KR": "이 시간이 지나면 Jev가 판정하고, 그것도 안 되면 사실만 보고 정합니다.",
+						"de-DE": "Danach entscheidet Jev, und wenn auch das nicht klappt, allein die Fakten.",
+						"fr-FR": "Au-delà, Jev décide, et à défaut les faits seuls.",
+						"es-ES": "Después decide Jev y, si tampoco responde, solo los hechos.",
+						"pt-BR": "Depois disso, quem decide é o Jev e, se ele falhar, apenas os fatos.",
+						"ru-RU": "После этого решает Jev, а если и он не ответит — одни факты.",
+						"uk-UA": "Після цього вирішує Jev, а якщо не вийде й у нього — самі факти.",
+						"tr-TR": "Sonrasında Jev karar verir; o da olmazsa yalnızca olgulara bakılır.",
+						"fa-IR": "پس از آن Jev داوری می‌کند، و اگر آن هم نشد، فقط واقعیت‌ها ملاک است."
 					}
 				},
 				{
@@ -4351,8 +4362,19 @@
 				"fa-IR": "تابلوی ساده"
 			},
 			"summary": {
-				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。JeV 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关；第一次打开时选一个模型来讲，之后可以换。",
-				"en": "Tells you in plain words how far the work is, what is happening now and what waits on you. JeV picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it)."
+				"zh": "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。Jev 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关；第一次打开时选一个模型来讲，之后可以换。",
+				"en": "Tells you in plain words how far the work is, what is happening now and what waits on you. Jev picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it).",
+				"zh-TW": "用白話告訴你工作做到哪、現在在做什麼、有什麼在等你。Jev 從發生的事裡挑出要點，由會說人話的模型來寫；一次執行做完後再總結一遍。只給你看，不進模型的上下文。每個專案各自開關（/board on、/board off）；第一次開啟時選一個寫看板的模型（/board model 可以更換）。",
+				"ja-JP": "作業の進み具合、今起きていること、あなたの対応を待っていることを、やさしい言葉で伝えます。起きたことから Jev が要点を選び、わかりやすい言葉で話すモデルが書き、実行が終わるともう一度まとめます。あなただけに表示され、モデルのコンテキストには入りません。プロジェクトごとに切り替えます（/board on、/board off）。初回は書き手のモデルを選びます（/board model で変更できます）。",
+				"ko-KR": "작업이 어디까지 왔는지, 지금 무슨 일이 일어나고 있는지, 무엇이 사용자를 기다리는지 쉬운 말로 알려 줍니다. Jev가 일어난 일에서 새 소식을 고르고 쉬운 말 모델이 글을 쓰며, 끝난 실행은 한 번 더 정리합니다. 사용자에게만 보이며 모델의 컨텍스트에는 들어가지 않습니다. 프로젝트마다 켜고 끕니다(/board on, /board off). 처음 켤 때 보드를 작성할 모델을 고릅니다(/board model로 변경).",
+				"de-DE": "Sagt dir in einfachen Worten, wie weit die Arbeit ist, was gerade passiert und was auf dich wartet. Jev wählt die Neuigkeiten aus dem Geschehen aus, ein Klartext-Modell schreibt, und ein abgeschlossener Lauf wird noch einmal zusammengefasst. Nur für dich, nie im Kontext des Modells. Pro Projekt schaltbar (/board on, /board off); beim ersten Mal wählst du das Modell, das es schreibt (/board model ändert es).",
+				"fr-FR": "Vous dit en mots simples où en est le travail, ce qui se passe en ce moment et ce qui vous attend. Jev choisit les nouveautés parmi ce qui s’est passé, un modèle qui parle simplement rédige, et une exécution terminée est résumée une dernière fois. Pour vous seul, jamais dans le contexte du modèle. S’active par projet (/board on, /board off) ; la première fois, vous choisissez le modèle qui le rédige (/board model permet d’en changer).",
+				"es-ES": "Te cuenta con palabras sencillas cuánto ha avanzado el trabajo, qué está pasando ahora y qué espera de ti. Jev elige las novedades entre lo ocurrido, un modelo que habla en lenguaje claro redacta el tablero y, cuando termina una ejecución, se resume una vez más. Solo para ti: nunca entra en el contexto del modelo. Se activa por proyecto (/board on, /board off); la primera vez eliges el modelo que lo escribe (/board model lo cambia).",
+				"pt-BR": "Conta em palavras simples até onde o trabalho chegou, o que está acontecendo agora e o que depende de você. O Jev escolhe as novidades entre o que aconteceu, um modelo que fala em linguagem simples escreve, e uma execução concluída ganha mais um resumo. Só para você, nunca entra no contexto do modelo. Ativado por projeto (/board on, /board off); na primeira vez, você escolhe o modelo que o escreve (/board model muda isso).",
+				"ru-RU": "Простыми словами рассказывает, насколько продвинулась работа, что происходит сейчас и что нужно от вас. Jev отбирает новости из произошедшего, модель пишет обычным языком, а по завершении запуска подводится итог. Только для вас, в контекст модели не попадает. Включается для каждого проекта отдельно (/board on, /board off); при первом включении вы выбираете модель, которая её пишет (сменить — /board model).",
+				"uk-UA": "Простими словами розповідає, наскільки просунулася робота, що відбувається зараз і що чекає на вас. Jev відбирає новини з того, що сталося, а текст пише модель, що говорить простими словами; завершений запуск ще раз підсумовується. Лише для вас і ніколи не потрапляє в контекст моделі. Вмикається окремо для кожного проєкту (/board on, /board off); першого разу ви вибираєте модель, яка його пише (/board model її змінює).",
+				"tr-TR": "İşin ne kadar ilerlediğini, şu an ne olduğunu ve neyin sizi beklediğini sade bir dille anlatır. Olanlardan haberleri Jev seçer, sade konuşan bir model yazar; biten bir çalışma bir kez daha özetlenir. Yalnızca sizin içindir, asla modelin bağlamına girmez. Proje başına açılıp kapatılır (/board on, /board off); ilk seferde panoyu yazacak modeli siz seçersiniz (/board model ile değiştirilir).",
+				"fa-IR": "با زبان ساده به شما می‌گوید کار تا کجا پیش رفته، الان چه اتفاقی می‌افتد و چه چیزی منتظر شماست. Jev خبرها را از میان رویدادها انتخاب می‌کند، مدلی که ساده حرف می‌زند می‌نویسد، و اجرای تمام‌شده یک بار دیگر جمع‌بندی می‌شود. فقط برای شماست و هرگز وارد زمینهٔ مدل نمی‌شود. برای هر پروژه جداگانه روشن و خاموش می‌شود (/board on، /board off)؛ بار اول، مدلی را که آن را می‌نویسد انتخاب می‌کنید (/board model آن را عوض می‌کند)."
 			},
 			"defaultEnabled": true,
 			"options": [
@@ -6527,7 +6549,7 @@
 				"fa-IR": "سرورهای MCP"
 			},
 			"summary": {
-				"zh": "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：JeV 认定任务需要，或模型主动申请，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 JeV 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在设置文件里可以把某个服务器设为常开。",
+				"zh": "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：Jev 认定任务需要，或模型主动申请，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 Jev 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在设置文件里可以把某个服务器设为常开。",
 				"en": "A built-in MCP client (stdio and Streamable HTTP). Each server is a catalog entry that stays hidden: its process starts and its tools register only when the judge finds the task needs it or the model asks through find_capability. Tool lists are cached, so the judge has a description before a server ever ran. A server defined by a project asks before its first start, and again when its definition changes. \"exposure\": \"always\" under mcp.servers in mu.json keeps a server open.",
 				"zh-TW": "內建的 MCP 用戶端（stdio 與 Streamable HTTP）。每個伺服器都是能力目錄裡的一項，預設隱藏：判定器認定任務需要它，或模型透過 find_capability 要求時，才啟動它的程序並註冊它的工具。工具清單會快取，所以伺服器即使從未執行過，判定器也有描述可以判斷。專案定義的伺服器第一次啟動前會先問你，定義變了也會再問。在 mu.json 的 mcp.servers 下為伺服器加上 \"exposure\": \"always\"，就能讓它常駐開啟。",
 				"ja-JP": "組み込みの MCP クライアントです（stdio と Streamable HTTP）。各サーバーはカタログの項目として非表示になっており、タスクに必要だと判定器が判定したとき、またはモデルが find_capability で求めたときにだけ、プロセスが起動してツールが登録されます。ツール一覧はキャッシュされるため、サーバーを一度も起動していなくても判定器は説明を参照できます。プロジェクトで定義されたサーバーは、初回の起動前と、定義が変わったときに確認します。mu.json の mcp.servers で \"exposure\": \"always\" を指定すると、そのサーバーは常に開いたままになります。",

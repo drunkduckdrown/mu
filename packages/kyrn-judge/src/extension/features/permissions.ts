@@ -40,9 +40,9 @@ const KIND_TEXT: Readonly<Record<PermissionKind, { zh: string; en: string }>> = 
 
 const REASON_TEXT: Readonly<Record<Exclude<AskReason, "flagged">, { zh: string; en: string }>> = {
 	ask: { zh: "最小权限模式：每一步都先问你。", en: "Minimal permissions: every step asks you first." },
-	unsure: { zh: "JeV 拿不准这一步是不是你要的。", en: "JeV is not sure this step is what you want." },
-	beyond: { zh: "JeV 认为这一步超出了你的要求。", en: "JeV thinks this goes beyond what you asked for." },
-	unrelated: { zh: "JeV 认为这一步和当前任务无关。", en: "JeV thinks this is not part of the task." },
+	unsure: { zh: "Jev 拿不准这一步是不是你要的。", en: "Jev is not sure this step is what you want." },
+	beyond: { zh: "Jev 认为这一步超出了你的要求。", en: "Jev thinks this goes beyond what you asked for." },
+	unrelated: { zh: "Jev 认为这一步和当前任务无关。", en: "Jev thinks this is not part of the task." },
 	protected: {
 		zh: "这会动到 mu 自己的设置，只能由你决定。",
 		en: "This touches mu's own settings; only you can allow it.",
@@ -78,8 +78,8 @@ function protectedPaths(roots: HarnessRoots | undefined): string[] {
  * status bar. Without anyone to ask (print mode, a sub-agent), what would be
  * asked is refused with a reason the model can report.
  *
- * The risk guard's rules are part of this: in JeV mode a flagged command runs
- * only when JeV is sure the user asked for it; in the other modes the flag is
+ * The risk guard's rules are part of this: in Jev mode a flagged command runs
+ * only when Jev is sure the user asked for it; in the other modes the flag is
  * shown with the question, or, in full access, nothing is asked at all.
  */
 export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | undefined): void {
@@ -149,7 +149,7 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 		return undefined;
 	};
 
-	/** Asks JeV. True when it approves. */
+	/** Asks Jev. True when it approves. */
 	const jevApproves = async (
 		event: ToolCallEvent,
 		need: PermissionNeed,
@@ -159,7 +159,7 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 		const call = `${event.toolName}: ${clip(describeCall(event.toolName, event.input), 400)}`;
 		const userMessage = clip(runtime.turn.userMessage, 400);
 		runtime.progress(
-			say({ zh: `JeV 在审批：${clip(need.summary, 60)}`, en: `JeV is reviewing: ${clip(need.summary, 60)}` }),
+			say({ zh: `Jev 在审批：${clip(need.summary, 60)}`, en: `Jev is reviewing: ${clip(need.summary, 60)}` }),
 			"permission_review",
 			{ summary: clip(need.summary, 60) },
 		);
@@ -169,7 +169,7 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 				{ command: clip(describeCall(event.toolName, event.input), 400), userMessage, flag },
 				{ signal: ctx.signal },
 			);
-			// The user chose JeV to decide, so its verdict counts in shadow too; no verdict means asking.
+			// The user chose Jev to decide, so its verdict counts in shadow too; no verdict means asking.
 			return { approved: (decision.judged ?? decision.outcome) === "allow", reason: "flagged" };
 		}
 		const frame = runtime.frame;
@@ -303,7 +303,7 @@ export function registerPermissions(runtime: KyrnRuntime, roots: HarnessRoots | 
 
 	pi.registerCommand("permissions", {
 		description: say({
-			zh: "mu 不问你就能做多少事：/permissions full（完全访问）| jev（JeV 审批）| ask（最小权限），不带参数就弹出选择；/permissions reset 忘掉这次对话里允许过的操作",
+			zh: "mu 不问你就能做多少事：/permissions full（完全访问）| jev（Jev 审批）| ask（最小权限），不带参数就弹出选择；/permissions reset 忘掉这次对话里允许过的操作",
 			en: "How much mu may do without asking: /permissions full | jev | ask, or a picker. /permissions reset forgets what you allowed for this conversation",
 		}),
 		handler: async (args, ctx) => {

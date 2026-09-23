@@ -8,9 +8,9 @@ import { isShellTool } from "../extension/shell-tools.ts";
  *
  * - `full`: nothing is asked. What the user said not to do still stops a call
  *   (the constraint gate is about the user's words, not about permission).
- * - `jev`: JeV approves for the user. Reading and editing inside the project
+ * - `jev`: Jev approves for the user. Reading and editing inside the project
  *   go ahead, as the task itself; a command, a change outside the project, an
- *   action on the outside world or a sub-agent goes to JeV, and only what JeV
+ *   action on the outside world or a sub-agent goes to Jev, and only what Jev
  *   does not approve reaches the user.
  * - `ask`: minimal permissions. Reading goes ahead; everything else asks.
  */
@@ -28,11 +28,11 @@ export const MODE_TEXT: Readonly<
 		enDescription: "Runs everything without asking. What you said not to do is still stopped.",
 	},
 	jev: {
-		zh: "JeV 审批",
-		en: "JeV approves",
-		zhDescription: "项目里的读和改直接做；命令、项目外的改动、对外操作由 JeV 替你审批，它拿不准的才问你。",
+		zh: "Jev 审批",
+		en: "Jev approves",
+		zhDescription: "项目里的读和改直接做；命令、项目外的改动、对外操作由 Jev 替你审批，它拿不准的才问你。",
 		enDescription:
-			"Reads and edits in the project go ahead; JeV approves commands, changes outside the project and outside actions for you, and asks you only when it is not sure.",
+			"Reads and edits in the project go ahead; Jev approves commands, changes outside the project and outside actions for you, and asks you only when it is not sure.",
 	},
 	ask: {
 		zh: "最小权限",
@@ -71,9 +71,9 @@ export interface PermissionNeed {
 	readonly summary: string;
 	/** What an "allow for this conversation" covers. Undefined: this call can only be allowed once. */
 	readonly grant?: { readonly key: string; readonly label: string };
-	/** Never approved by JeV or a grant: the user decides, every time. */
+	/** Never approved by Jev or a grant: the user decides, every time. */
 	readonly protected?: string;
-	/** In the project folder (edits) — the one thing JeV mode lets through without a judgment. */
+	/** In the project folder (edits) — the one thing Jev mode lets through without a judgment. */
 	readonly inProject?: boolean;
 }
 

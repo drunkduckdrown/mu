@@ -101,7 +101,7 @@ describe("what needs permission", () => {
 	});
 
 	it("reads the mode by any of its names, and nothing else", () => {
-		expect(["full", "yolo", "JeV", "auto", "ask", "minimal", "read-only", "最小权限"].map(parseMode)).toEqual([
+		expect(["full", "yolo", "Jev", "auto", "ask", "minimal", "read-only", "最小权限"].map(parseMode)).toEqual([
 			"full",
 			"full",
 			"jev",
@@ -239,7 +239,7 @@ describe("permission modes in a session", () => {
 		expect(results(harness)[0]).toContain("The user did not allow this (npm install left-pad)");
 	});
 
-	it("JeV approves: edits in the project go ahead, a command JeV is sure of runs, and what it doubts reaches the user with why", async () => {
+	it("Jev approves: edits in the project go ahead, a command Jev is sure of runs, and what it doubts reaches the user with why", async () => {
 		const questions: string[] = [];
 		const { harness, ran, asked, of } = await start(
 			(request): Record<string, Answer> => {
@@ -263,16 +263,16 @@ describe("permission modes in a session", () => {
 		expect(of("permissions.approved")).toEqual([expect.objectContaining({ summary: "npm test -- a", by: "jev" })]);
 		expect(asked).toHaveLength(1);
 		expect(asked[0].title).toContain("npm publish");
-		expect(asked[0].title).toContain("JeV thinks this goes beyond what you asked for.");
+		expect(asked[0].title).toContain("Jev thinks this goes beyond what you asked for.");
 		expect(of("permissions.request")[0]).toMatchObject({ reason: "beyond", mode: "jev" });
 		expect(of("progress")).toContainEqual({
-			step: "JeV is reviewing: npm test -- a",
+			step: "Jev is reviewing: npm test -- a",
 			code: "permission_review",
 			params: { summary: "npm test -- a" },
 		});
 	});
 
-	it("JeV approves: a sure 'needed' is required, and without anyone to ask the rest is refused", async () => {
+	it("Jev approves: a sure 'needed' is required, and without anyone to ask the rest is refused", async () => {
 		const { harness, ran } = await start(
 			(request): Record<string, Answer> =>
 				"verdict" in request.questions ? { verdict: verdict("needed", 0.6) } : {},
@@ -284,7 +284,7 @@ describe("permission modes in a session", () => {
 		expect(results(harness)[0]).toContain("there is nobody to ask here");
 	});
 
-	it("JeV approves: a flagged command runs only when JeV is sure the user asked for it", async () => {
+	it("Jev approves: a flagged command runs only when Jev is sure the user asked for it", async () => {
 		const { harness, ran, of } = await start(
 			(request): Record<string, Answer> =>
 				"requested" in request.questions ? { destructive: yes, requested: yes } : {},
@@ -330,7 +330,7 @@ describe("permission modes in a session", () => {
 		expect(judged.count).toBe(0);
 	});
 
-	it("mu's own settings are the user's to allow, even when JeV would, and never for the whole conversation", async () => {
+	it("mu's own settings are the user's to allow, even when Jev would, and never for the whole conversation", async () => {
 		const dir = mkdtempSync(join(tmpdir(), "mu-permissions-"));
 		dirs.push(dir);
 		const { harness, ran, asked } = await start(
@@ -352,7 +352,7 @@ describe("permission modes in a session", () => {
 			agentDir: dir,
 			pick: (options) => options.find((option) => option.startsWith("Allow for this conversation")),
 		});
-		expect(first.of("permissions.mode")[0]).toMatchObject({ mode: "jev", label: "JeV approves" });
+		expect(first.of("permissions.mode")[0]).toMatchObject({ mode: "jev", label: "Jev approves" });
 		await first.harness.session.prompt("/permissions minimal");
 		expect(first.of("permissions.mode").at(-1)).toMatchObject({ mode: "ask" });
 		expect(first.notes.at(-1)).toContain("Permissions: Minimal permissions");

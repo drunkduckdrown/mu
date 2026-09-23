@@ -284,10 +284,10 @@ export const MANIFEST: HarnessManifest = {
 			id: "tool.approval",
 			group: "tools",
 			feature: "permissions",
-			title: { zh: "JeV 替你审批", en: "JeV approves for you" },
+			title: { zh: "Jev 替你审批", en: "Jev approves for you" },
 			summary: {
-				zh: "在「JeV 审批」模式下，命令、项目外的改动、对外操作和子代理先交给 JeV：它确信这是任务需要、也是你会预期的做法才放行，否则在状态栏问你。",
-				en: "In JeV-approves mode, commands, changes outside the project, outside actions and sub-agents go to JeV first: only what it is sure the task needs, done as you would expect, runs without you; anything else asks you in the status bar.",
+				zh: "在「Jev 审批」模式下，命令、项目外的改动、对外操作和子代理先交给 Jev：它确信这是任务需要、也是你会预期的做法才放行，否则在状态栏问你。",
+				en: "In Jev-approves mode, commands, changes outside the project, outside actions and sub-agents go to Jev first: only what it is sure the task needs, done as you would expect, runs without you; anything else asks you in the status bar.",
 			},
 		},
 		{
@@ -384,10 +384,10 @@ export const MANIFEST: HarnessManifest = {
 			id: "goal.met",
 			group: "turn",
 			feature: "goal",
-			title: { zh: "目标是否达成（JeV 兜底）", en: "Goal reached (JeV fallback)" },
+			title: { zh: "目标是否达成（Jev 兜底）", en: "Goal reached (Jev fallback)" },
 			summary: {
-				zh: "目标模式默认由大模型判断；这个判定点只在选了 JeV、或大模型没答上来时用：读结束语，判断目标是否达成、是否需要你拿主意。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
-				en: "Goal mode is checked by a model by default; this decision is used when JeV is chosen or the model gives no answer: it reads the closing message for whether the goal holds and whether you are needed. An open acceptance item or an unverified edit always means not yet.",
+				zh: "目标模式默认由大模型判断；这个判定点只在选了 Jev、或大模型没答上来时用：读结束语，判断目标是否达成、是否需要你拿主意。还有没勾掉的验收条件、或改完没跑过，一律算没达成。",
+				en: "Goal mode is checked by a model by default; this decision is used when Jev is chosen or the model gives no answer: it reads the closing message for whether the goal holds and whether you are needed. An open acceptance item or an unverified edit always means not yet.",
 			},
 		},
 		{
@@ -714,8 +714,8 @@ export const MANIFEST: HarnessManifest = {
 			name: "permissions",
 			title: { zh: "权限模式", en: "Permission modes" },
 			summary: {
-				zh: "完全访问、JeV 审批、最小权限三种模式，用 /permissions 随时切换；需要授权时在状态栏提示你，可以只允许这一次，或这次对话都允许。开着它时，危险命令的把关也归它管。",
-				en: "Full access, JeV approves, or minimal permissions, switched any time with /permissions. When a step needs your permission the status bar asks; allow it once or for the whole conversation. While it is on, it also handles the risky command guard.",
+				zh: "完全访问、Jev 审批、最小权限三种模式，用 /permissions 随时切换；需要授权时在状态栏提示你，可以只允许这一次，或这次对话都允许。开着它时，危险命令的把关也归它管。",
+				en: "Full access, Jev approves, or minimal permissions, switched any time with /permissions. When a step needs your permission the status bar asks; allow it once or for the whole conversation. While it is on, it also handles the risky command guard.",
 			},
 			defaultEnabled: true,
 			options: [
@@ -725,7 +725,7 @@ export const MANIFEST: HarnessManifest = {
 					default: "jev",
 					choices: [
 						{ value: "full", label: { zh: "完全访问", en: "Full access" } },
-						{ value: "jev", label: { zh: "JeV 审批", en: "JeV approves" } },
+						{ value: "jev", label: { zh: "Jev 审批", en: "Jev approves" } },
 						{ value: "ask", label: { zh: "最小权限", en: "Minimal permissions" } },
 					],
 					label: { zh: "新对话的默认模式", en: "Mode of a new conversation" },
@@ -1271,12 +1271,12 @@ export const MANIFEST: HarnessManifest = {
 					default: "model",
 					label: { zh: "谁来判断目标是否达成", en: "Who checks whether the goal holds" },
 					help: {
-						zh: "大模型读目标、这一轮做了什么、最后一次测试的结果和结束语，给出结论和下一步；它没答上来时才退回 JeV。无论哪种，没勾的验收条件、改完没跑都算没达成。",
-						en: "A model reads the goal, what the run did, the last test run and the closing message, and gives a verdict and the next step; JeV only when it gives no answer. Either way an open acceptance item or an unverified edit means not yet.",
+						zh: "大模型读目标、这一轮做了什么、最后一次测试的结果和结束语，给出结论和下一步；它没答上来时才退回 Jev。无论哪种，没勾的验收条件、改完没跑都算没达成。",
+						en: "A model reads the goal, what the run did, the last test run and the closing message, and gives a verdict and the next step; Jev only when it gives no answer. Either way an open acceptance item or an unverified edit means not yet.",
 					},
 					choices: [
 						{ value: "model", label: { zh: "大模型（推荐）", en: "A model (recommended)" } },
-						{ value: "jev", label: { zh: "JeV 判定器", en: "The JeV judge" } },
+						{ value: "jev", label: { zh: "Jev 判定器", en: "The Jev judge" } },
 					],
 				},
 				{
@@ -1311,8 +1311,8 @@ export const MANIFEST: HarnessManifest = {
 					unit: ms,
 					label: { zh: "判断最多等多久", en: "Longest wait for the check" },
 					help: {
-						zh: "超时就退回 JeV 判定器，再退回只看事实。",
-						en: "After that, JeV decides, and failing that the facts alone.",
+						zh: "超时就退回 Jev 判定器，再退回只看事实。",
+						en: "After that, Jev decides, and failing that the facts alone.",
 					},
 				},
 				{
@@ -1363,8 +1363,8 @@ export const MANIFEST: HarnessManifest = {
 			name: "board",
 			title: { zh: "人话看板", en: "Plain-language board" },
 			summary: {
-				zh: "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。JeV 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关；第一次打开时选一个模型来讲，之后可以换。",
-				en: "Tells you in plain words how far the work is, what is happening now and what waits on you. JeV picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it).",
+				zh: "用大白话告诉你项目推进到哪、现在在干什么、有什么要你确认。Jev 从发生的事里挑出要点，会说人话的模型来写；一轮做完再总结一遍。只给人看，不进模型的上下文。每个项目单独开关；第一次打开时选一个模型来讲，之后可以换。",
+				en: "Tells you in plain words how far the work is, what is happening now and what waits on you. Jev picks the news from what happened, a plain-speaking model writes, and a finished run is summed up once more. For you only, never in the model's context. Switched per project (/board on, /board off); the first time, you pick the model that writes it (/board model changes it).",
 			},
 			defaultEnabled: true,
 			options: [
@@ -1983,7 +1983,7 @@ export const MANIFEST: HarnessManifest = {
 			name: "mcp",
 			title: { zh: "MCP 服务器", en: "MCP servers" },
 			summary: {
-				zh: "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：JeV 认定任务需要，或模型主动申请，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 JeV 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在设置文件里可以把某个服务器设为常开。",
+				zh: "内置的 MCP 客户端（stdio 与 Streamable HTTP）。每个服务器是能力目录里的一项，默认隐藏：Jev 认定任务需要，或模型主动申请，才启动进程并注册它的工具。工具清单会缓存，服务器没跑过 Jev 也有描述可判。项目里定义的服务器第一次启动前要你点头，定义变了会再问。在设置文件里可以把某个服务器设为常开。",
 				en: 'A built-in MCP client (stdio and Streamable HTTP). Each server is a catalog entry that stays hidden: its process starts and its tools register only when the judge finds the task needs it or the model asks through find_capability. Tool lists are cached, so the judge has a description before a server ever ran. A server defined by a project asks before its first start, and again when its definition changes. "exposure": "always" under mcp.servers in mu.json keeps a server open.',
 			},
 			defaultEnabled: true,

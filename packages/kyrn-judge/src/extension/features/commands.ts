@@ -46,7 +46,7 @@ const helpZh = () => `mu ${KYRN_VERSION} · 先判断再动手的编程代理，
     /goal clear 结束
   /board on|off：为这个项目打开或关闭人话看板，用大白话讲进展、正在做什么、什么在等你；
     /board 查看，/board model 换个模型来讲
-  /permissions [模式]：mu 不问你就能做多少事，可选 full（完全访问）、jev（JeV 审批，由 JeV 替你批，
+  /permissions [模式]：mu 不问你就能做多少事，可选 full（完全访问）、jev（Jev 审批，由 Jev 替你批，
     拿不准才问你）、ask（最小权限，除了读都要问你）
   /capabilities：装了哪些能力，判定器为这次任务打开了哪些
   /ledger [条数]：最近几条判定和用时
@@ -95,7 +95,7 @@ Judgment layer
                            for one (or shows the running goal), /goal clear ends it
   /board on|off            the plain-language board for this project: progress, what is happening, what
                            waits on you, written for a person; /board shows it, /board model picks who writes it
-  /permissions [mode]      how much mu may do without asking: full (full access), jev (JeV approves for you,
+  /permissions [mode]      how much mu may do without asking: full (full access), jev (Jev approves for you,
                            asks you only when it is not sure), ask (minimal: everything but reading asks)
   /capabilities            what is installed, and what the judge has opened for this task
   /ledger [n]              the last n verdicts with timing
