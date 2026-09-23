@@ -742,6 +742,23 @@ describe("mu import", () => {
 		expect(plan.error === undefined && plan.env.MU_CODING_AGENT_DIR).toBe("D:\\mu-test");
 	});
 
+	it("takes a checkout's sources through tsx on a runtime that does not strip types, as the app's Electron may not", () => {
+		const source = `${WIN_ROOT}\\packages\\kyrn-judge\\src\\import\\cli.ts`;
+		const electron = {
+			...importArgs,
+			platform: "win32" as const,
+			root: WIN_ROOT,
+			home: WIN_HOME,
+			execPath: "C:\\Program Files\\mu\\mu.exe",
+			stripsTypes: false,
+		};
+		expect(planImport({ ...electron, fs: disk({ ...winInstalled, [source]: "" }) })).toMatchObject({
+			command: "C:\\Program Files\\mu\\mu.exe",
+			args: [`${WIN_TSX}\\dist\\cli.mjs`, "--tsconfig", `${WIN_ROOT}\\tsconfig.json`, source, "--list"],
+		});
+		expect(planImport({ ...electron, fs: disk({ [source]: "" }) }).error).toContain("npm ci --ignore-scripts");
+	});
+
 	it.skipIf(process.platform === "win32")("imports through the launcher without tsx", () => {
 		const dir = temp();
 		const transcript = join(dir, "claude", "projects", "p", "0b9c6f7e-1111-4222-8333-444455556666.jsonl");

@@ -126,7 +126,9 @@ export function planImport(input: {
 	root: string;
 	home: string;
 	execPath: string;
-	fs: { exists(path: string): boolean; isDir(path: string): boolean };
+	/** Whether the Node that runs mu strips TypeScript types itself (process.features.typescript). Default true. */
+	stripsTypes?: boolean;
+	fs: { exists(path: string): boolean; isDir(path: string): boolean; readFile(path: string): string };
 }): { error?: undefined; command: string; args: string[]; env: Record<string, string>; agentDir: string } | { error: string };
 
 export function linkPath(input: { platform: Platform; env: Env; home: string }): string;

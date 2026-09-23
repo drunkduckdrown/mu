@@ -566,10 +566,11 @@ export function planJudge({ platform, env, argv, bin, wsl = false }) {
 
 /**
  * `mu import`: Claude Code and Codex conversations into mu's sessions (packages/kyrn-judge/src/import). The importer
- * needs nothing but Node, so a checkout runs its TypeScript with Node's own type stripping (on by default from
- * 22.18) and the npm package runs its build, judge/dist/import.js. Neither needs tsx.
+ * needs nothing but Node: the npm package runs its build, judge/dist/import.js, and a checkout its TypeScript with
+ * Node's own type stripping (on by default from 22.18). A runtime that does not strip types (`stripsTypes` false;
+ * an Electron that runs mu as Node may not) takes the sources through tsx, as pi runs in a checkout.
  */
-export function planImport({ platform, env, argv, root, home, execPath, fs }) {
+export function planImport({ platform, env, argv, root, home, execPath, fs, stripsTypes = true }) {
 	const path = pathFor(platform);
 	let entry;
 	if (layoutOf({ root, platform, exists: fs.exists }) === "package") {
@@ -581,7 +582,12 @@ export function planImport({ platform, env, argv, root, home, execPath, fs }) {
 	} else {
 		const source = path.join(root, "packages", "kyrn-judge", "src", "import", "cli.ts");
 		if (!fs.exists(source)) return { error: `mu import is missing from this checkout (${source})` };
-		entry = ["--disable-warning=ExperimentalWarning", source];
+		if (stripsTypes) entry = ["--disable-warning=ExperimentalWarning", source];
+		else {
+			const tsx = resolveTsx({ root, platform, exists: fs.exists, readFile: fs.readFile });
+			if (!tsx) return { error: installHint({ root, platform }) };
+			entry = [tsx, "--tsconfig", path.join(root, "tsconfig.json"), source];
+		}
 	}
 	const agentDir = agentDirFor({ env, muDir: muHome({ home, platform, isDir: fs.isDir }), platform });
 	const childEnv = {};
@@ -1109,7 +1115,8 @@ export async function main(argv = process.argv.slice(2)) {
 			root,
 			home,
 			execPath: process.execPath,
-			fs: { exists: existsSync, isDir },
+			stripsTypes: Boolean(process.features.typescript),
+			fs: { exists: existsSync, isDir, readFile: readText },
 		});
 		if (plan.error) {
 			err(plan.error);
