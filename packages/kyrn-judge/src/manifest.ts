@@ -106,7 +106,7 @@ export const MANIFEST: HarnessManifest = {
 		{
 			value: "off",
 			label: { zh: "关闭", en: "Off" },
-			help: { zh: "不提问，行为与原版 pi 相同。", en: "Not asked. Behaves like plain pi." },
+			help: { zh: "不提问，这个判定点关闭。", en: "Not asked; this decision is off." },
 		},
 	],
 	decisions: [

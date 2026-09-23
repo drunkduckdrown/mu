@@ -162,19 +162,8 @@
 				"fa-IR": "خاموش"
 			},
 			"help": {
-				"zh": "不提问，行为与原版 pi 相同。",
-				"en": "Not asked. Behaves like plain pi.",
-				"zh-TW": "不提問，行為與原版 pi 相同。",
-				"ja-JP": "問い合わせません。素の pi と同じ動作です。",
-				"ko-KR": "질문하지 않습니다. 기본 pi처럼 동작합니다.",
-				"de-DE": "Wird nicht gefragt. Verhält sich wie das normale pi.",
-				"fr-FR": "Non consulté. Se comporte comme pi d’origine.",
-				"es-ES": "No se consulta. Funciona como pi sin cambios.",
-				"pt-BR": "Não é consultado. Funciona como o pi original.",
-				"ru-RU": "Судья не опрашивается. Всё как в обычном pi.",
-				"uk-UA": "Суддю не запитують. Усе як у звичайному pi.",
-				"tr-TR": "Soru sorulmaz. Sade pi gibi davranır.",
-				"fa-IR": "پرسیده نمی‌شود. مانند pi ساده رفتار می‌کند."
+				"zh": "不提问，这个判定点关闭。",
+				"en": "Not asked; this decision is off."
 			}
 		}
 	],
