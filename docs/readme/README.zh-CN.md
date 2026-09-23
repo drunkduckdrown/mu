@@ -94,7 +94,7 @@ mu
 | `/checkpoints`、`/rewind` | 看检查点；退回到某一个 |
 | `/agents`、`/swarm` | 派子代理；看正在干活的每一只 |
 | `/browse`、`/jobs` | 内置浏览器；后台命令 |
-| `/import` | 导入 Claude Code 或 Codex 的对话 |
+| `/import-chat` | 导入 Claude Code 或 Codex 的对话 |
 | `/doctor` | 检查配置和连接 |
 
 ## 隐私

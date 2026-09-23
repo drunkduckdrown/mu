@@ -94,7 +94,7 @@ Type `/` in the composer; in the desktop app the command palette (⌘K) finds th
 | `/checkpoints`, `/rewind` | List the checkpoints; go back to one |
 | `/agents`, `/swarm` | Send sub-agents; watch every one at work |
 | `/browse`, `/jobs` | The built-in browser; background jobs |
-| `/import` | Import a Claude Code or Codex conversation |
+| `/import-chat` | Import a Claude Code or Codex conversation |
 | `/doctor` | Check the setup and the connections |
 
 ## Privacy
