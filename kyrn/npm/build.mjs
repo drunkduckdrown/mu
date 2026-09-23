@@ -20,12 +20,13 @@
 //                      desktop app's subscription sign-in, and dist/import.js is `mu import`
 //   docs/, examples/   pi's documentation, which the agent reads when asked about itself
 //   package.json       names the app mu (piConfig), so pi keeps its files in ~/.mu
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import {
 	chmodSync,
 	cpSync,
 	existsSync,
 	mkdirSync,
+	mkdtempSync,
 	readdirSync,
 	readFileSync,
 	rmSync,
@@ -33,8 +34,9 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { isBuiltin } from "node:module";
+import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = resolve(here, "..", "..");
@@ -47,14 +49,74 @@ const OPTIONAL = new Set(["bufferutil", "utf-8-validate", "kerberos", "supports-
 /** pi's bundle, where judge/dist/auth.js (`mu auth`) finds pi: the index of pi's public API. */
 const PI_BUNDLE_INDEX = "../../dist/bundle/index.js";
 
+/** From judge/dist/, where the judgment layer's bundle is, to the chunks of pi's bundle. */
+const PI_BUNDLE_CHUNKS = "../../dist/bundle/chunks";
+
 /**
  * The module names pi hands to an extension from its own bundle (packages/coding-agent/src/core/extensions/
- * virtual-modules.ts). The judgment layer leaves exactly these to pi and carries everything else it imports:
+ * virtual-modules.ts). The judgment layer takes exactly these from pi and carries everything else it imports:
  * esbuild's own `external` would also leave every subpath of a name, and pi has none of those to give.
  */
 export function virtualModuleNames(source) {
 	const body = source.slice(source.indexOf("VIRTUAL_MODULES"));
 	return [...body.matchAll(/^\s*(?:"([^"]+)"|([A-Za-z_$][\w$]*)):\s*bundled/gm)].map((match) => match[1] ?? match[2]);
+}
+
+/**
+ * The chunk of pi's bundle that defines VIRTUAL_MODULES, the one copy of pi's modules that pi hands to every
+ * extension. pi's loader imports this chunk and reads VIRTUAL_MODULES from it by name (core/extensions/loader.ts),
+ * so the chunk exports it by that name. Its file name carries a hash, so it is looked up in each build of pi.
+ */
+export function hostModulesChunk(bundleDir) {
+	const chunks = join(bundleDir, "chunks");
+	const found = readdirSync(chunks).filter(
+		(name) =>
+			name.endsWith(".js") &&
+			/\bexport\s*\{[^}]*\bVIRTUAL_MODULES\b[^}]*\}/.test(readFileSync(join(chunks, name), "utf8")),
+	);
+	if (found.length !== 1) {
+		throw new Error(
+			`pi's bundle should have one chunk that exports VIRTUAL_MODULES; found ${found.length === 0 ? "none" : found.join(", ")}`,
+		);
+	}
+	return found[0];
+}
+
+/**
+ * How the judgment layer gets pi's modules: from VIRTUAL_MODULES in pi's own bundle, the same objects jiti would
+ * hand it. The bundle then imports nothing that Node would have to look for in a node_modules folder, and pi's
+ * loader imports it natively.
+ *
+ * Why it matters: an extension that Node cannot import is transpiled by jiti with Babel before it runs. For the
+ * judgment layer's 3 MB bundle that took more than 500 MB of heap and, on a 1 GB server, minutes of CPU, until V8
+ * ran out of memory before the first frame (mu 0.1.3). Nothing was cached either, because the process died first.
+ *
+ * Each name becomes a small CommonJS module, `module.exports = VIRTUAL_MODULES[name]`. esbuild then reads every
+ * imported binding off pi's module object where it is used, as jiti's transpiled code did: a binding stays live,
+ * and no list of names has to be kept here.
+ */
+export function piHostPlugin({ provided, hostImport }) {
+	return {
+		name: "pi-host",
+		setup(builder) {
+			builder.onResolve({ filter: /^[^./]/ }, (args) =>
+				provided.has(args.path) ? { path: args.path, namespace: "pi-host" } : undefined,
+			);
+			builder.onLoad({ filter: /.*/, namespace: "pi-host" }, (args) => ({
+				contents: `module.exports = require("pi-host-modules").VIRTUAL_MODULES[${JSON.stringify(args.path)}];`,
+				loader: "js",
+			}));
+			builder.onResolve({ filter: /^pi-host-modules$/, namespace: "pi-host" }, () => ({
+				path: "pi-host-modules",
+				namespace: "pi-host-modules",
+			}));
+			builder.onLoad({ filter: /.*/, namespace: "pi-host-modules" }, () => ({
+				contents: `export { VIRTUAL_MODULES } from ${JSON.stringify(hostImport)};`,
+				loader: "js",
+			}));
+			builder.onResolve({ filter: /.*/, namespace: "pi-host-modules" }, (args) => ({ path: args.path, external: true }));
+		},
+	};
 }
 
 /**
@@ -97,14 +159,10 @@ function readJson(path) {
 async function buildJudge(out) {
 	const { build } = await import("esbuild");
 	const provided = new Set(virtualModuleNames(readFileSync(join(codingAgent, "src/core/extensions/virtual-modules.ts"), "utf8")));
+	const hostImport = `${PI_BUNDLE_CHUNKS}/${hostModulesChunk(piBundle())}`;
 	const judgeRoot = join(out, "judge");
 	const plugins = [
-		{
-			name: "pi-provides",
-			setup(builder) {
-				builder.onResolve({ filter: /^[^./]/ }, (args) => (provided.has(args.path) ? { path: args.path, external: true } : undefined));
-			},
-		},
+		piHostPlugin({ provided, hostImport }),
 		{
 			name: "source-urls",
 			setup(builder) {
@@ -144,12 +202,16 @@ async function buildJudge(out) {
 		// `mu doctor` looks for a browser with the same code the browser feature uses.
 		await build({ ...common, entryPoints: { chrome: join(judgeSource, "src/browser/chrome.ts") }, outdir: join(judgeRoot, "dist") }),
 	];
+	// Node imports the bundle only when it finds everything the bundle imports: its own modules and pi's host chunk.
+	// An optional module that a dependency requires inside a try is looked for when that code runs, and may be missing.
 	for (const result of results) {
 		for (const output of Object.values(result.metafile.outputs)) {
 			for (const imported of output.imports) {
-				if (imported.external && !isBuiltin(imported.path) && !provided.has(imported.path) && !OPTIONAL.has(imported.path)) {
-					throw new Error(`the judge bundle leaves ${imported.path} to be found at run time, and nothing provides it`);
-				}
+				if (!imported.external || isBuiltin(imported.path) || imported.path === hostImport) continue;
+				if (OPTIONAL.has(imported.path) && imported.kind === "require-call") continue;
+				throw new Error(
+					`the judge bundle leaves ${imported.path} (${imported.kind}) to be found at run time: Node could not import the bundle, and pi would transpile all of it with Babel at every start`,
+				);
 			}
 		}
 	}
@@ -214,12 +276,18 @@ async function buildJudge(out) {
 	return judgePackage.version;
 }
 
-function copyPi(out) {
-	const dist = join(codingAgent, "dist");
-	if (!existsSync(join(dist, "bundle", "cli.js"))) {
+/** pi's Node bundle, from `npm run build`: the package carries it, and the judgment layer takes pi's modules from it. */
+function piBundle() {
+	const bundle = join(codingAgent, "dist", "bundle");
+	if (!existsSync(join(bundle, "cli.js"))) {
 		throw new Error("pi's bundle is missing (packages/coding-agent/dist/bundle/cli.js). Run `npm run build` first.");
 	}
-	cpSync(join(dist, "bundle"), join(out, "dist", "bundle"), { recursive: true });
+	return bundle;
+}
+
+function copyPi(out) {
+	const dist = join(codingAgent, "dist");
+	cpSync(piBundle(), join(out, "dist", "bundle"), { recursive: true });
 	for (const folder of ["modes/interactive/theme", "modes/interactive/assets"]) {
 		cpSync(join(dist, folder), join(out, "dist", folder), { recursive: true });
 	}
@@ -251,6 +319,30 @@ function copyLauncher(out) {
 	}
 }
 
+/**
+ * The staged judgment layer has to be a module that Node imports as it is, next to the pi it is packed with: when
+ * Node cannot, pi's loader transpiles all of it with Babel at every start, which a 1 GB machine does not survive.
+ * A child process with a small heap imports it, which also runs every module's top level against pi's modules.
+ */
+function checkNativeImport(file) {
+	const home = mkdtempSync(join(tmpdir(), "mu-build-"));
+	try {
+		const script = `const m = await import(${JSON.stringify(pathToFileURL(file).href)}); if (typeof m.default !== "function") throw new Error("the default export is not an extension factory");`;
+		const result = spawnSync(process.execPath, ["--max-old-space-size=128", "--input-type=module", "-e", script], {
+			cwd: home,
+			env: { PATH: process.env.PATH ?? "", HOME: home, USERPROFILE: home, PI_OFFLINE: "1" },
+			encoding: "utf8",
+			timeout: 60_000,
+		});
+		if (result.status !== 0) {
+			const why = (result.error?.message ?? result.stderr).trim().split("\n").slice(-6).join("\n");
+			throw new Error(`Node cannot import ${relative(repo, file)} by itself, so pi would transpile it at every start:\n${why}`);
+		}
+	} finally {
+		rmSync(home, { recursive: true, force: true });
+	}
+}
+
 function gitCommit() {
 	try {
 		return execFileSync("git", ["rev-parse", "--short=9", "HEAD"], { cwd: repo, encoding: "utf8" }).trim();
@@ -263,7 +355,8 @@ export async function main(argv = process.argv.slice(2)) {
 	const out = join(repo, ".artifacts", "npm", "mu-agent");
 	rmSync(out, { recursive: true, force: true });
 	mkdirSync(out, { recursive: true });
-	// While working on the judgment layer's bundle: that part alone, which needs no build of pi.
+	// While working on the judgment layer's bundle: that part alone. It is built against pi's bundle, which has to be
+	// built, but not staged.
 	if (argv.includes("--judge-only")) {
 		console.log(`Built ${relative(repo, join(out, "judge"))} (judge ${await buildJudge(out)})`);
 		return 0;
@@ -271,6 +364,7 @@ export async function main(argv = process.argv.slice(2)) {
 
 	const pi = copyPi(out);
 	const judgeVersion = await buildJudge(out);
+	checkNativeImport(join(out, "judge", "dist", "kyrn-judge.js"));
 	copyLauncher(out);
 	cpSync(join(repo, "LICENSE"), join(out, "LICENSE"));
 	cpSync(join(here, "README.md"), join(out, "README.md"));
