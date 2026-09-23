@@ -466,6 +466,8 @@ describe("Claude Code transcripts", () => {
 			"summary (12345): This session is being continued. Summary: the refactor started and the module was renamed.",
 			"user: Rename the module",
 			"assistant: Renamed.",
+			// Where the conversation came from, said again for whoever reads from the compaction on.
+			`custom ${IMPORT_MARKER}`,
 			"user: Now update the imports",
 			"assistant: Imports updated.",
 		]);
@@ -575,6 +577,7 @@ describe("Codex rollouts", () => {
 		);
 		expect(contextOf(converted)).toEqual([
 			expect.stringMatching(/^summary \(5000\): The test was fixed with a patch\.$/),
+			`custom ${IMPORT_MARKER}`,
 			"user: Run the tests again",
 			"assistant: All tests pass.",
 		]);

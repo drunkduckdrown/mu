@@ -603,7 +603,13 @@ export class SessionBuilder {
 		this.items.forEach((item, index) => {
 			if (item.kind !== "compaction" && item.key && !byKey.has(item.key)) byKey.set(item.key, index);
 		});
-		this.counts.entries = this.items.length + 2;
+		// Neither a model nor pi's transcript view shows what came before the last compaction, apart from its summary:
+		// the marker is repeated after it.
+		let lastCompaction = -1;
+		this.items.forEach((item, index) => {
+			if (item.kind === "compaction") lastCompaction = index;
+		});
+		this.counts.entries = this.items.length + 2 + (lastCompaction >= 0 ? 1 : 0);
 
 		const header: SessionHeader = {
 			type: "session",
@@ -664,6 +670,11 @@ export class SessionBuilder {
 				entries.push(compaction);
 			}
 			parentId = id;
+			if (index === lastCompaction) {
+				const again: CustomMessageEntry<ImportOrigin> = { ...marker, id: newId(), parentId, timestamp };
+				entries.push(again);
+				parentId = again.id;
+			}
 		});
 		return [header, ...entries];
 	}
