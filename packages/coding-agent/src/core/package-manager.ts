@@ -7,6 +7,7 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
+	realpathSync,
 	rmSync,
 	statSync,
 	writeFileSync,
@@ -309,15 +310,33 @@ function splitPatterns(entries: string[]): { plain: string[]; patterns: string[]
 	return { plain, patterns };
 }
 
+/**
+ * Resource walks follow symlinked folders, so each folder is entered once, by its real path. Without this a link
+ * back up (`skills/loop -> ..`) is walked again at every level until the path is too long, and two such links make
+ * the walk exponential: startup then never gets to the first frame.
+ */
+function enterOnce(dir: string, visited: Set<string>): boolean {
+	let real: string;
+	try {
+		real = realpathSync(dir);
+	} catch {
+		return false;
+	}
+	if (visited.has(real)) return false;
+	visited.add(real);
+	return true;
+}
+
 function collectFiles(
 	dir: string,
 	filePattern: RegExp,
 	skipNodeModules = true,
 	ignoreMatcher?: IgnoreMatcher,
 	rootDir?: string,
+	visited = new Set<string>(),
 ): string[] {
 	const files: string[] = [];
-	if (!existsSync(dir)) return files;
+	if (!existsSync(dir) || !enterOnce(dir, visited)) return files;
 
 	const root = rootDir ?? dir;
 	const ig = ignoreMatcher ?? ignore();
@@ -348,7 +367,7 @@ function collectFiles(
 			if (ig.ignores(ignorePath)) continue;
 
 			if (isDir) {
-				files.push(...collectFiles(fullPath, filePattern, skipNodeModules, ig, root));
+				files.push(...collectFiles(fullPath, filePattern, skipNodeModules, ig, root, visited));
 			} else if (isFile && filePattern.test(entry.name)) {
 				files.push(fullPath);
 			}
@@ -367,9 +386,10 @@ function collectSkillEntries(
 	mode: SkillDiscoveryMode,
 	ignoreMatcher?: IgnoreMatcher,
 	rootDir?: string,
+	visited = new Set<string>(),
 ): string[] {
 	const entries: string[] = [];
-	if (!existsSync(dir)) return entries;
+	if (!existsSync(dir) || !enterOnce(dir, visited)) return entries;
 
 	const root = rootDir ?? dir;
 	const ig = ignoreMatcher ?? ignore();
@@ -432,7 +452,7 @@ function collectSkillEntries(
 			if (!isDir) continue;
 			if (ig.ignores(`${relPath}/`)) continue;
 
-			entries.push(...collectSkillEntries(fullPath, mode, ig, root));
+			entries.push(...collectSkillEntries(fullPath, mode, ig, root, visited));
 		}
 	} catch {
 		// Ignore errors
