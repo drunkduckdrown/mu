@@ -260,6 +260,24 @@ test("keeps the top-level path and sha512 in step with the file they name", asyn
 	assert.equal(scalarValue(fields.find((field) => field.key === "sha512").raw), sha512("the installer"));
 });
 
+test("adds the size electron-builder leaves out of the Windows installer's entry", (t) => {
+	const { root, write, run } = workspace(t);
+	const exe = "the installer";
+	write("dist/mu-0.1.3-win-x64.exe", exe);
+	const fixture = scalarValue(parseUpdateInfo(WIN_X64).find((field) => field.key === "sha512").raw);
+	const written = WIN_X64.replaceAll(fixture, sha512(exe));
+	const feed = write("x64/latest.yml", written);
+
+	const result = run("--out", "updates/latest.yml", "--assets", "dist", feed);
+	assert.equal(result.status, 0, result.stderr);
+	assert.equal(
+		readFileSync(join(root, "updates/latest.yml"), "utf8"),
+		written.replace(`    sha512: ${sha512(exe)}\n`, `    sha512: ${sha512(exe)}\n    size: ${exe.length}\n`),
+	);
+	// Only the size was missing: the installer did not change after the feed was written.
+	assert.doesNotMatch(result.stdout, /changed after the feed was written/);
+});
+
 test("refuses a feed that lists a file the release does not have", (t) => {
 	const { root, write, run } = workspace(t);
 	write("dist/mu-0.1.3-win-x64.exe", "the installer");

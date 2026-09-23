@@ -16,7 +16,9 @@
 //   updater that reads only `path` then gets the build that runs on both architectures.
 // - With --assets, every listed file must be among the release's files in that folder, and its sha512 and size come
 //   from that copy: the macOS job signs and staples the disk image after electron-builder wrote the feed. A file that
-//   changed also loses its blockMapSize, and its .blockmap beside --out is deleted, since it no longer matches.
+//   changed also loses its blockMapSize, and its .blockmap beside --out is deleted, since it no longer matches. A file
+//   listed without a size (electron-builder writes none for the Windows installer) gets one: the app shows it before
+//   it asks to download.
 //
 // The feed files are YAML, but only what electron-builder writes is read (top-level scalars, block scalars such as
 // releaseNotes, and the `files` list of flat mappings); anything else is an error rather than a guess. Values pass
@@ -174,6 +176,7 @@ export async function refreshFromAssets(fields, assetsDir) {
 		const actual = await digest(file);
 		const shaField = fieldOf(entry, "sha512");
 		const sizeField = fieldOf(entry, "size");
+		if (!sizeField) entry.splice(entry.indexOf(shaField) + 1, 0, { key: "size", raw: String(actual.size) });
 		const sameSize = !sizeField || Number(scalarValue(sizeField.raw)) === actual.size;
 		if (scalarValue(shaField.raw) === actual.sha512 && sameSize) continue;
 		shaField.raw = actual.sha512;
