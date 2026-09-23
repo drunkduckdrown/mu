@@ -7,8 +7,13 @@
  * - one answer of the model is written as several records, one per content block, all with the same `message.id`.
  *   With parallel tool calls the later blocks and their results hang off the side of the chain (the next turn goes on
  *   from the first result), so every record of an answer on the path is taken, with the results of all its calls.
+ *   Tools start while the answer is still streaming, so results can be written between the records of one answer:
+ *   an answer is put together from all its records and written where it began, its results after it. (An id alone
+ *   does not make an answer: some providers reuse ids. A record continues the answer before it when nothing came
+ *   between them, or while that answer still has calls waiting for their results.)
  * - a compaction starts a new root (`compact_boundary`, no parent); its `logicalParentUuid` leads on to what was
- *   compacted, which pi keeps before its own compaction entry.
+ *   compacted, which pi keeps before its own compaction entry. When that record is not in the file, the message
+ *   written just before the compaction is where the conversation stood.
  * Sub-agent records (`isSidechain`) are left out of a main transcript. A sub-agent's own transcript, where every
  * record is a sidechain, is imported as a conversation of its own.
  */
@@ -178,12 +183,23 @@ export async function readClaudeCode(path: string, options: ReadOptions = {}): P
 		if (inScope(item) && (item.type === "user" || item.type === "assistant")) leaf = item;
 	}
 	const chosen = new Set<string>();
+	const position = new Map(records.map((item, index) => [item.uuid, index]));
+	const messageBefore = (item: TreeRecord): TreeRecord | undefined => {
+		for (let index = (position.get(item.uuid) ?? 0) - 1; index >= 0; index--) {
+			const earlier = records[index];
+			if (inScope(earlier) && (earlier.type === "user" || earlier.type === "assistant")) return earlier;
+		}
+		return undefined;
+	};
 	for (let current = leaf; current && !chosen.has(current.uuid); ) {
 		chosen.add(current.uuid);
 		// A compaction boundary has no parent; what it compacted is its logical parent.
 		const next = current.parent ?? current.logicalParent;
-		const found = next ? byUuid.get(next) : undefined;
-		if (next && !found) builder.drop("links to records that are not in the file");
+		let found = next ? byUuid.get(next) : undefined;
+		if (next && !found) {
+			if (!current.parent) found = messageBefore(current);
+			if (!found) builder.drop("links to records that are not in the file");
+		}
 		current = found;
 	}
 	// Every record of an answer on the path, and the results of every call in those answers.
@@ -233,33 +249,45 @@ export async function readClaudeCode(path: string, options: ReadOptions = {}): P
 	let name: string | undefined;
 	let firstCommand: string | undefined;
 	let boundary: { tokens: number; at: number; keep: string[] } | undefined;
-	let open:
-		| { id: string; blocks: AssistantBlock[]; model: string; at: number; key: string; stop?: StopReason }
-		| undefined;
-	let waiting: (() => void)[] = [];
-	const flush = () => {
-		if (open) {
-			const { blocks, model: used, at: when, key, stop } = open;
-			open = undefined;
-			builder.assistant({ blocks, model: used, at: when, key, stopReason: stop });
+	// The records of each answer, under the answer's first record.
+	const answerParts = new Map<string, TreeRecord[]>();
+	const partOf = new Map<string, string>();
+	let current: { id: string; first: string; waiting: Set<string>; interrupted: boolean } | undefined;
+	for (const item of ordered) {
+		const message = messageOf(item);
+		if (item.type === "assistant") {
+			if (item.data.isApiErrorMessage === true || message.model === "<synthetic>") {
+				current = undefined;
+				continue;
+			}
+			const id = str(message.id) ?? item.uuid;
+			const continues =
+				current !== undefined && current.id === id && (!current.interrupted || current.waiting.size > 0);
+			if (!current || !continues) {
+				current = { id, first: item.uuid, waiting: new Set(), interrupted: false };
+				answerParts.set(item.uuid, []);
+			}
+			answerParts.get(current.first)?.push(item);
+			partOf.set(item.uuid, current.first);
+			for (const block of blocksOf(message)) {
+				const callId = str(block.id);
+				if (block.type === "tool_use" && callId) current.waiting.add(callId);
+			}
+		} else if (item.type === "user" && current) {
+			const blocks = blocksOf(message);
+			for (const block of blocks)
+				if (block.type === "tool_result") current.waiting.delete(str(block.tool_use_id) ?? "");
+			current.interrupted = true;
+			// Something the person said ends the answer before it.
+			if (item.data.isMeta !== true && blocks.some((block) => block.type !== "tool_result")) current = undefined;
 		}
-		const run = waiting;
-		waiting = [];
-		for (const step of run) step();
-	};
-	// Notices written between the records of one answer go after it: pi keeps an answer whole.
-	const afterAnswer = (step: () => void) => {
-		if (open) waiting.push(step);
-		else step();
-	};
+	}
 
 	const assistantRecord = (item: TreeRecord) => {
 		const message = messageOf(item);
 		const used = str(message.model) ?? "";
-		const blocks = blocksOf(message);
 		if (item.data.isApiErrorMessage === true) {
-			flush();
-			const text = blocks
+			const text = blocksOf(message)
 				.map((block) => str(block.text) ?? "")
 				.join("\n")
 				.trim();
@@ -270,36 +298,44 @@ export async function readClaudeCode(path: string, options: ReadOptions = {}): P
 			builder.drop("Claude Code's own placeholder answers");
 			return;
 		}
+		// A later record of an answer was written with its first one.
+		if (partOf.get(item.uuid) !== item.uuid) return;
 		if (used) model = used;
-		const id = str(message.id) ?? item.uuid;
-		if (!open || open.id !== id) {
-			flush();
-			open = { id, blocks: [], model: used, at, key: item.uuid };
-		}
-		const answer = open;
-		for (const block of blocks) {
-			if (block.type === "text") answer.blocks.push({ type: "text", text: str(block.text) ?? "" });
-			else if (block.type === "thinking" || block.type === "redacted_thinking") builder.drop("thinking");
-			else if (block.type === "tool_use")
-				answer.blocks.push({
-					type: "toolCall",
-					id: str(block.id) ?? item.uuid,
-					name: str(block.name) ?? "unknown",
-					arguments: toolArguments(block.input),
-				});
-			else if (block.type === "image") {
-				builder.drop("images");
-				answer.blocks.push({ type: "text", text: IMAGE_MARKER });
-			} else {
-				counts.asText++;
-				answer.blocks.push({ type: "text", text: unknownBlockText(block) });
+		const blocks: AssistantBlock[] = [];
+		const callIds = new Set<string>();
+		let stop: StopReason | undefined;
+		for (const part of answerParts.get(item.uuid) ?? [item]) {
+			const partMessage = messageOf(part);
+			if (partMessage.stop_reason === "max_tokens") stop = "length";
+			for (const block of blocksOf(partMessage)) {
+				if (block.type === "text") blocks.push({ type: "text", text: str(block.text) ?? "" });
+				else if (block.type === "thinking" || block.type === "redacted_thinking") builder.drop("thinking");
+				else if (block.type === "tool_use") {
+					const callId = str(block.id) ?? part.uuid;
+					if (callIds.has(callId)) {
+						builder.drop("repeated tool calls");
+						continue;
+					}
+					callIds.add(callId);
+					blocks.push({
+						type: "toolCall",
+						id: callId,
+						name: str(block.name) ?? "unknown",
+						arguments: toolArguments(block.input),
+					});
+				} else if (block.type === "image") {
+					builder.drop("images");
+					blocks.push({ type: "text", text: IMAGE_MARKER });
+				} else {
+					counts.asText++;
+					blocks.push({ type: "text", text: unknownBlockText(block) });
+				}
 			}
 		}
-		if (message.stop_reason === "max_tokens") answer.stop = "length";
+		builder.assistant({ blocks, model: used, at, key: item.uuid, stopReason: stop });
 	};
 
 	const userRecord = (item: TreeRecord) => {
-		flush();
 		const blocks = blocksOf(messageOf(item));
 		if (item.data.isCompactSummary === true) {
 			const summary = blocks.map((block) => str(block.text) ?? "").join("\n");
@@ -368,7 +404,6 @@ export async function readClaudeCode(path: string, options: ReadOptions = {}): P
 	const systemRecord = (item: TreeRecord, index: number) => {
 		const subtype = str(item.data.subtype);
 		if (subtype === "compact_boundary") {
-			flush();
 			const metadata = record(item.data.compactMetadata);
 			const head = str(record(metadata?.preservedSegment)?.headUuid);
 			const start = head ? orderedIds.indexOf(head) : -1;
@@ -381,8 +416,7 @@ export async function readClaudeCode(path: string, options: ReadOptions = {}): P
 			return;
 		}
 		if (subtype === "local_command") {
-			const text = str(item.data.content) ?? "";
-			afterAnswer(() => builder.context(text, at, item.uuid));
+			builder.context(str(item.data.content) ?? "", at, item.uuid);
 			return;
 		}
 		builder.drop("Claude Code status records");
@@ -404,13 +438,12 @@ export async function readClaudeCode(path: string, options: ReadOptions = {}): P
 							);
 			const typed = attachment.commandMode === "prompt" && attachment.isMeta !== true;
 			if (typed) {
-				flush();
 				const text = words.map((block) => (block.type === "text" ? block.text : "")).join("\n");
 				if (name === undefined && text.trim()) name = firstLine(text);
 				builder.user(words, at, item.uuid);
 			} else {
 				const text = words.map((block) => (block.type === "text" ? block.text : IMAGE_MARKER)).join("\n");
-				afterAnswer(() => builder.context(text, at, item.uuid));
+				builder.context(text, at, item.uuid);
 			}
 			return;
 		}
@@ -420,7 +453,7 @@ export async function readClaudeCode(path: string, options: ReadOptions = {}): P
 		}
 		const text = attachmentText(attachment);
 		if (text === undefined) builder.drop("Claude Code reminders and state");
-		else afterAnswer(() => builder.context(text, at, item.uuid));
+		else builder.context(text, at, item.uuid);
 	};
 
 	ordered.forEach((item, index) => {
@@ -433,7 +466,6 @@ export async function readClaudeCode(path: string, options: ReadOptions = {}): P
 		else if (item.type === "system") systemRecord(item, index);
 		else attachmentRecord(item);
 	});
-	flush();
 	if (boundary) builder.drop("compactions without their summary");
 
 	cwd ??= records.map((item) => str(item.data.cwd)).find((dir) => dir !== undefined);

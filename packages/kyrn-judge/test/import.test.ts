@@ -482,6 +482,74 @@ describe("Claude Code transcripts", () => {
 		expect(converted.counts.compactions).toBe(1);
 	});
 
+	it("keeps an answer whole when results were written between its records", async () => {
+		// Tools start while the answer streams: the result of the second call is written before the third call.
+		const converted = await readClaudeCode(
+			writeLines(join(temp(), "s.jsonl"), [
+				user("u1", null, 1, "Check three files"),
+				assistant("a1", "u1", 2, "m1", [
+					{ type: "tool_use", id: "toolu_1", name: "Read", input: { file_path: "/a" } },
+				]),
+				assistant("a2", "a1", 2, "m1", [
+					{ type: "tool_use", id: "toolu_2", name: "Read", input: { file_path: "/b" } },
+				]),
+				result("r2", "a2", 3, "toolu_2", "b"),
+				assistant("a3", "r2", 3, "m1", [
+					{ type: "tool_use", id: "toolu_3", name: "Read", input: { file_path: "/c" } },
+				]),
+				user("r13", "a1", 4, [
+					{ type: "tool_result", tool_use_id: "toolu_1", content: "a" },
+					{ type: "tool_result", tool_use_id: "toolu_3", content: "c" },
+				]),
+				assistant("a4", "r13", 5, "m2", [{ type: "text", text: "All three read." }]),
+			]),
+		);
+		expect(contextOf(converted).slice(1)).toEqual([
+			"user: Check three files",
+			"assistant: [Read toolu_1] [Read toolu_2] [Read toolu_3]",
+			"result toolu_2: b",
+			"result toolu_1: a",
+			"result toolu_3: c",
+			"assistant: All three read.",
+		]);
+		expect(converted.counts).toMatchObject({ missingResults: 0, toolResults: 3 });
+		expect(converted.counts.dropped["repeated tool results"]).toBeUndefined();
+	});
+
+	it("does not take an id for an answer: some providers use one id for every answer", async () => {
+		const converted = await readClaudeCode(
+			writeLines(join(temp(), "r.jsonl"), [
+				user("u1", null, 1, "List the files"),
+				assistant("a1", "u1", 2, "same", [
+					{ type: "tool_use", id: "toolu_1", name: "Bash", input: { command: "ls" } },
+				]),
+				result("r1", "a1", 3, "toolu_1", "a b"),
+				assistant("a2", "r1", 4, "same", [{ type: "text", text: "Two files." }]),
+				user("u2", "a2", 5, "Thanks"),
+				assistant("a3", "u2", 6, "same", [{ type: "text", text: "You are welcome." }]),
+			]),
+		);
+		expect(contextOf(converted).slice(1)).toEqual([
+			"user: List the files",
+			"assistant: [Bash toolu_1]",
+			"result toolu_1: a b",
+			"assistant: Two files.",
+			"user: Thanks",
+			"assistant: You are welcome.",
+		]);
+	});
+
+	it("joins a compaction whose compacted part is not linked to the message written before it", async () => {
+		const records = compactedSession().map((line) =>
+			(line as Extra).uuid === "b1" ? { ...(line as Extra), logicalParentUuid: "not-in-this-file" } : line,
+		);
+		const converted = await readClaudeCode(writeLines(join(temp(), "j.jsonl"), records));
+		// The whole conversation is still in the file, and the model reads the same as before.
+		expect(sessionEntries(converted).filter((entry) => entry.type === "message")).toHaveLength(8);
+		expect(contextOf(converted)[1]).toBe("user: Rename the module");
+		expect(converted.counts.dropped["links to records that are not in the file"]).toBeUndefined();
+	});
+
 	it("reads past lines it does not understand and keeps unknown blocks as text", async () => {
 		const converted = await readClaudeCode(writeLines(join(temp(), "u.jsonl"), sessionWithUnknownRecords()));
 		expect(contextOf(converted)).toEqual([
