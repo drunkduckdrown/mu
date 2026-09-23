@@ -2,7 +2,7 @@
 
 **A coding agent that thinks before it acts.** A small, fast judge makes the routine calls. The big model keeps its attention for the work.
 
-> **Early development.** mu works day to day for its authors, but names, settings and file formats may still change. Source, docs and the desktop app: [github.com/qybaihe/MU](https://github.com/qybaihe/MU) (README in English, 简体中文, 繁體中文, 日本語 and 한국어).
+> **Early development.** mu works day to day for its authors, but names, settings and file formats may still change. Source, docs and the desktop app: [github.com/qybaihe/mu](https://github.com/qybaihe/mu) (README in English, 简体中文, 繁體中文, 日本語 and 한국어).
 
 ## Install
 

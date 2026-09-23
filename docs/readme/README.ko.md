@@ -87,7 +87,7 @@ Node.js 22.19 이상이 필요합니다. 패키지 이름은 `mu-agent`, 명령�
 Node.js 22.19 이상(24 권장), npm, git이 필요합니다.
 
 ```bash
-git clone https://github.com/qybaihe/MU.git
+git clone https://github.com/qybaihe/mu.git
 cd MU
 npm install
 kyrn/bin/mu            # Windows: kyrn\bin\mu.cmd

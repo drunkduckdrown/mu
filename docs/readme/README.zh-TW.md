@@ -87,7 +87,7 @@ mu
 你需要 Node.js 22.19 或更新版本（建議 24）、npm 和 git。
 
 ```bash
-git clone https://github.com/qybaihe/MU.git
+git clone https://github.com/qybaihe/mu.git
 cd MU
 npm install
 kyrn/bin/mu            # Windows: kyrn\bin\mu.cmd

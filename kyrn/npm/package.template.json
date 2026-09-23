@@ -11,13 +11,13 @@
 		"configDir": ".mu"
 	},
 	"keywords": ["coding-agent", "ai", "llm", "cli", "terminal", "agent", "judge", "pi"],
-	"homepage": "https://github.com/qybaihe/MU",
+	"homepage": "https://github.com/qybaihe/mu",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/qybaihe/MU.git"
+		"url": "git+https://github.com/qybaihe/mu.git"
 	},
 	"bugs": {
-		"url": "https://github.com/qybaihe/MU/issues"
+		"url": "https://github.com/qybaihe/mu/issues"
 	},
 	"license": "MIT",
 	"engines": {
