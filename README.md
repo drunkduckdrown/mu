@@ -1,105 +1,188 @@
 <p align="center">
   <img src="desktop/resources/app.png" width="96" alt="mu">
 </p>
+<h1 align="center">mu</h1>
 <p align="center">μ · Only what's needed.</p>
+<p align="center">A coding agent with a judgment kernel. Built on <a href="https://github.com/earendil-works/pi">pi</a>.</p>
+
+<p align="center">
+  <a href="https://github.com/qybaihe/mu/actions/workflows/ci.yml"><img src="https://github.com/qybaihe/mu/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/qybaihe/mu/actions/workflows/desktop.yml"><img src="https://github.com/qybaihe/mu/actions/workflows/desktop.yml/badge.svg" alt="Desktop app"></a>
+  <a href="https://www.npmjs.com/package/mu-agent"><img src="https://img.shields.io/npm/v/mu-agent?label=mu-agent" alt="npm"></a>
+</p>
 
 <p align="center">
   <b>English</b> · <a href="docs/readme/README.zh-CN.md">简体中文</a> · <a href="docs/readme/README.zh-TW.md">繁體中文</a> · <a href="docs/readme/README.ja.md">日本語</a> · <a href="docs/readme/README.ko.md">한국어</a>
 </p>
 
-# mu
+A coding agent makes hundreds of decisions per session that are not about the code: what stays in the context, whether a command is safe, whether a finding is worth telling another agent, when the work is done. Left to the big model, they cost tokens, latency and attention. Left to fixed rules, they are wrong too often. mu gives them to a **judge**: a small, fast model that answers one bounded question at a time, at 35 decision points in every turn. The big model keeps its attention for the work.
 
-mu is a coding agent with a judgment kernel: a deep fork of pi, a layer of judgment called Jev, and a desktop app.
+- **mu**: the command line. Everything pi does, plus the judgment kernel.
+- **mu desktop**: a native app that carries mu and its runtime. Download, connect a model, start.
+- **Jev**: the judge. Yes/no, choice and score questions, a probability per answer, every verdict in a ledger. A local judge (Laya) or any LLM can take a decision point instead.
 
-- **mu**: the command line. Everything pi does, plus Jev's judgment layer.
-- **mu desktop**: a native desktop app that carries mu inside it. Download and run.
-- **Jev**: a small judge model that answers in about a hundred milliseconds. The big model does the work; at each decision point, Jev answers one question: what is needed now?
+> Early development. Its authors use it every day; nothing has been released yet. Names, settings and formats may still change.
 
-> Early development. Its authors use it every day, but nothing has been released yet. Names, settings and file formats may still change.
+## A turn
 
-## Install
+```
+ you ──▶ input.preflight · task.frame · input.interjection
+           │
+           ▼
+         model ──▶ tool call ──▶ tool.risk · tool.constraint · tool.approval ──▶ runs
+           ▲                                                                     │
+           │    tool.admission   chunk by chunk: into the context, or archived behind a pointer
+           │    context.forget · context.compact   when the context grows        │
+           └─────────────────────────────────────────────────────────────────────┘
 
-**Desktop.** GitHub Actions builds the installers and publishes them under [Releases](https://github.com/qybaihe/mu/releases): macOS (Apple silicon / Intel), Windows (x64 / Arm), Linux (x64 / Arm). The app carries its runtime and mu itself, so there is no Node to install and nothing to configure. Open it, connect a model (an API key or a subscription sign-in) and Jev's key, and start.
+ turn ends ──▶ turn.completion · turn.drift · turn.rewind · memory.applied · board.read · cache.warming
+```
+
+Every name is a decision point. Each one is asked as a short question about a small state; the answer changes what the model does next, never whether it asks you. Rules are the floor: a dangerous-looking command is caught by rules first, and the judge only vouches that you asked for it.
+
+## Decision points
+
+Each decision point is `active`, `shadow` (asked and logged, changes nothing: for comparing judges before switching one on) or `off`, and each can name its own judge: `jev`, `laya` (local), `llm:<provider>/<model>`, or a cascade such as `laya,jev`.
+
+**Input**
+
+| Decision point | Question | Effect |
+| --- | --- | --- |
+| `input.preflight` | What kind of message is this, and how much thinking does it need? | A one-line hint to the model; optionally the turn's thinking level |
+| `task.frame` | A new task, a hard constraint, a correction, a subgoal, or no change? | Only a change rewrites the task frame: goal, your constraints word for word with their source, acceptance criteria |
+| `input.interjection` | A message arrives while the agent works: interrupt now, or after this step? | The turn is cut, or the message waits |
+
+**Context**
+
+| Decision point | Question | Effect |
+| --- | --- | --- |
+| `skills.disclosure` | Which skills are relevant to this task? | Only those enter the prompt; the rest stay findable |
+| `capability.disclosure` | Does this task need an installed pack or MCP server? | It is opened, and its process started, only then |
+| `tool.admission` | Per chunk of a long tool output: does this matter now? | What matters enters the context; the rest is archived behind a pointer |
+| `tool.admission.test-log` | In a test log, what is repetition? | Exact repeats are folded once, losslessly; optionally the judge selects from the rest |
+| `context.forget` | Above a context threshold, which tool results are stale? | Each becomes a one-line tombstone in outgoing requests |
+| `context.compact` | Keep or prune this passage? | Compaction by judgment; no summary is written |
+| `memory.recall` | Which lessons apply to this task? | They are brought into the turn |
+| `memory.capture` | Does this message correct the agent or set a rule? | It becomes a lesson |
+| `memory.outcome` | After going in circles, did the way out deserve a lesson? | A lesson from the run, not from you |
+| `memory.worth` | A lesson the model or a sub-agent proposes: useful again, a one-off, or known already? | Kept or dropped |
+| `memory.merge` | The same as an existing lesson, more precise, or contradicting it? | No duplicates; the more precise one replaces the older |
+| `memory.applied` | Were the recalled lessons followed this turn? | A lesson recalled often and never followed retires |
+| `cache.warming` | Will you be back before the prompt cache expires? | The cache is refreshed, or left to expire |
+
+**Tools and safety**
+
+| Decision point | Question | Effect |
+| --- | --- | --- |
+| `tool.risk` | A command the rules flag: did you ask for it? | Unsure means asking you |
+| `tool.approval` | In the *Jev approves* mode: does the task clearly need this command, this change outside the project, this outside action, this sub-agent? | Only what it is sure of runs; the rest asks you |
+| `tool.constraint` | Before a call that changes something: does it cross a constraint you stated? | The call is stopped |
+| `files.locate` | Which files match what you describe? | Candidates ranked, instead of a string of greps |
+| `browser.step` | Observe, one judgment, act: what is the next operation, on which element? | The built-in browser moves one step |
+| `review.triage` | For each finding of `/review`: does it change behaviour, and is it about this change? | Findings ranked P0 to P3 |
+| `diagnostics.delivery` | New language-server diagnostics after an edit: tell now, at the next pause, or never? | Errors reach the model; style warnings do not |
+
+**Turn**
+
+| Decision point | Question | Effect |
+| --- | --- | --- |
+| `turn.drift` | Every few steps: does the work still serve the goal? | Rules catch circles; the judge catches drift |
+| `turn.rewind` | The same failure again and again: is this approach a dead end? | Back to a checkpoint |
+| `turn.completion` | The model says it is done: did anything verify that? | One nudge if not |
+| `output.drift` | While the model writes: does the tail of its output cross your constraints? | Experimental; corrected mid-stream |
+| `goal.met` | In goal mode, when the big model gives no answer: is the condition met? | The fallback for `/goal` |
+| `board.read` | Where do things stand, in multiple choice? | Feeds the plain-language board |
+| `notify.routing` | An event such as the context budget: tell the model now, later, or never? | The model is told at the right time |
+
+**Teamwork**
+
+| Decision point | Question | Effect |
+| --- | --- | --- |
+| `swarm.routing` | Which role, model tier and thinking level for this delegated task? | The sub-agent that fits |
+| `swarm.patch` | Did the sub-agent's patch stay within its task? | Judged from the task, the paths and the line counts |
+| `hive.publish` | Is a bee's finding worth the shared board? | Published, or kept to itself |
+| `hive.deliver` | Does a note on the board matter to this bee's work? | Delivered only then |
+| `hive.relate` | Does a new finding replace, contradict or support an earlier one? | Corrections and disputes reach the bees that hold the old note |
+
+## Judges
+
+- **Jev** (hosted). Bounded questions with probabilities. Measured from the authors' own sessions: one warm question in about 0.3 s over HTTP/2; 16 chunks of tool output judged in one request in 0.44 s, the state billed once. Verdicts, probabilities and timings go to the ledger: `mu ledger`, or the judgments tab of the desktop app.
+- **Laya** (local). A 322M-parameter judge that runs on your machine and never touches the network. Nothing is downloaded without your consent. Reliable on simple predicates, weaker on meta-judgments: run it in shadow next to Jev and read the ledger before giving it a decision point.
+- **Any LLM**, as a tier: `llm:<provider>/<model>`.
+
+What this buys, in the authors' own sessions: the context never fills, because tool output enters chunk by chunk and stale results are dropped without a summary; in failing test logs, 51% of the bytes were exact repeats and are folded losslessly; the prompt cache stays warm because the kernel guesses when you will be back.
+
+## The hive
+
+Every multi-agent system answers the same question: should what one agent knows be told to another? The usual answers are none (report to the main agent only), everything (the whole history in a group chat or a hand-off), each agent's own big model, or fixed rules and the environment. mu's answer: the judge is the gate.
+
+A hive is two to six bees, each with its own focus. Bees read code, run commands and browse; they never edit, the main model makes the change. Each time a bee finishes saying something, `hive.publish` asks once: is there a finding, a dead end, a decision or a blocker here worth sharing? What is worth it goes on a shared, append-only board. For each new note, `hive.deliver` asks once per other bee: does this touch its focus? If so, the note is delivered, marked *a finding, not an instruction*.
+
+Because the board only grows, a later conclusion can overturn an earlier one: a bee reports that the tests will not run, then clears an environment variable and they do. `hive.relate` reads the relation between two notes: *supersedes*, *contradicts* or *supports*. A superseded conclusion becomes a correction, delivered to every bee that holds the old one. Two notes that contradict each other both stay, marked as a dispute; if nobody settles it within a minute, a verifying bee is sent.
+
+<p align="center"><img src="docs/readme/swarm.png" width="960" alt="The desktop app's hive tab: what four bees are doing, the map of deliveries between them, and each delivery's words"></p>
+
+The desktop app's hive tab is where this happens. One row per bee: role, model, what it is doing or has just said. The map draws who delivered a finding to whom: the more went along a line, the thicker it is; corrections and disputes have their own marks; a finding lights its line the moment it arrives. The flow lists every delivery's words; the judgments list every verdict. The hive card in the conversation carries the map in miniature and opens this tab.
+
+A real run: three bees, nine minutes, 117 candidates judged, 27 on the board, 16 delivered to the bee that needed them. Every verdict is in the run's log.
+
+`/swarm` shows what each bee is doing; `/swarm stop` asks for reports now; `/swarm kill` ends them. A bee out of time is asked for its report and ended if none comes; a stuck model or tool is handled by the watchdog. A hive always returns.
+
+## The plain-language board
+
+Someone who does not read code can still tell how far the agent has got. With the board on (`/board`, or the switch on the desktop app's board tab), `board.read` runs every few tool calls, after a check or a ticked acceptance item, and whenever the agent stops. A model that explains well then says three things in plain words: what is happening now, how many items of the checklist are done, and what waits on you. Earlier updates stay in order below; a finished run gets a summary.
+
+<p align="center"><img src="docs/readme/board.png" width="960" alt="The desktop app's plain-language board: how far the work is, what is happening now, what happened before; context use and cache hit rate at the top"></p>
+
+These words are not an abbreviation of what the model said: the judge picks out, from the verdicts and the events, the few that are news, and the board follows the permission mode, the goal and the sub-agents. The two numbers at the top are context use and cache hit rate, the direct result of the context and cache decisions above.
+
+## The desktop app
+
+A native app with mu and its runtime inside: no Node to install, nothing downloaded at the first start. Everything the command line has, plus a work panel beside the conversation:
+
+**board** · **judgments** (the ledger live: every verdict with its question) · **hive** · **lessons** · **files** · **preview** · **source** · **browser** (the built-in browser the agent drives, one step at a time, with its goal, pause and stop)
+
+The permission mode and the goal sit in the composer; `⌘K` opens the command palette. Model sign-in happens in the app: ChatGPT, Claude, Grok and Google (Gemini CLI / Antigravity) subscriptions, or an API key for any provider pi supports. Claude Code and Codex CLI conversations can be imported and continued.
+
+Builds for macOS (Apple silicon / Intel), Windows (x64 / Arm) and Linux (x64 / Arm) are made by GitHub Actions and published under [Releases](https://github.com/qybaihe/mu/releases).
 
 <!-- Keep this line until the app is signed and notarized -->
 If macOS says the developer cannot be verified: right-click the app in Finder and choose Open, once.
 
-**Command line.**
+## Command line
 
 ```bash
 npm i -g mu-agent
-mu
+mu            # an interactive session in the current directory
+mu doctor     # checks the installation, the judges and the connections
 ```
 
-Node 22.19 or newer. The desktop app and the command line share the accounts, settings and lessons in `~/.mu`.
-
-## Where Jev is
-
-You do not notice Jev. It never asks you one more question on the model's behalf, and it adds no button to the interface; it only changes what the model does next. In every turn, it is here:
-
-- **When you speak.** Whether this message is a new task, a follow-up or a correction, before any work starts; whether to interrupt when you say something while the agent is busy.
-- **Before acting.** Whether a command could do something irreversible; whether it passes the rules you set; in the *Jev approves* permission mode, what needs your approval and what does not.
-- **When a tool returns.** What belongs in the context and what is repetition and noise; in a test log, the failures stay and the repeats go; stale results are let go.
-- **As the context grows.** What can be dropped without writing a summary; whether a cache about to expire is worth keeping warm. This is why the cache hit rate stays high and the context never fills up.
-- **When a turn ends.** Whether the work is done, checked by the big model with Jev as the fallback; whether the agent drifted from the task; whether to go back to a checkpoint.
-- **When learning.** Your corrections, the traps the agent worked around, the lessons sub-agents bring back: whether they are worth keeping, whether they are the same as an existing lesson or contradict it, whether they were followed this time. A lesson nobody follows retires on its own.
-- **With several agents.** Which role a task goes to; whether a sub-agent's patch stayed within its bounds; which finding in a hive is worth passing to another bee.
-
-More than thirty decision points, each chosen separately in the settings: Jev, a local judge (Laya, a model that runs on your machine and never touches the network), or off. Every verdict goes to a ledger that the desktop app's side panel shows.
-
-## The hive
-
-Every multi-agent system has to answer the same question: should what one agent knows be told to another? There are four common answers: pass nothing and report only to the main agent; pass everything, the whole history in a group chat or a hand-off; let each agent's own big model decide; or rely on fixed rules and the environment (subscriptions, git). mu's answer is a fifth: let Jev be the gate.
-
-A hive is two to six bees, each with its own focus, that read code, run commands and browse; bees never edit, the main model makes the change. Each time a bee finishes saying something, Jev judges once: is there anything here worth sharing, and is it a finding, a dead end, a decision or a blocker? What is worth it goes on a shared board. For each new note on the board, Jev judges once more per other bee: is this related to its focus? If so, the note is delivered to it, marked "a finding, not an instruction".
-
-The board only grows, so a later conclusion can overturn an earlier one: a bee first says the tests will not run, then clears an environment variable and they do. Jev reads the relation between two notes (supersedes, contradicts, supports). A superseded conclusion becomes a correction, delivered to every bee that holds the old one; two notes that contradict each other both stay, marked as a dispute, and if nobody settles it within a minute a verifying bee is sent to find out.
-
-<p align="center"><img src="docs/readme/swarm.png" width="960" alt="The desktop app's hive tab: what four bees are doing, the map of connections between them, and each delivery's words"></p>
-
-The desktop app's hive tab is where all of this happens. One row per bee: its role, its model, what it is doing or has just said. The map draws who delivered a finding to whom: the more went along a line, the thicker it is; corrections and disputes have their own marks; a finding lights its line the moment it arrives. The flow lists every delivery's words, and the judgments list every verdict Jev gave. The hive card in the conversation carries the map in miniature and opens this tab.
-
-A real run: three bees, nine minutes, Jev judged 117 candidates, 27 went on the board, 16 were delivered to the bee that needed them. Every verdict is written to the run's log, so it can be reviewed afterwards.
-
-`/swarm` shows what each bee is doing right now, `/swarm stop` asks them to report now, `/swarm kill` ends them at once. A bee out of time is asked for its report and ended if none comes; a stuck model or tool is handled by the watchdog. A hive always returns.
-
-## The plain-language board
-
-Someone who does not read code can still tell how far the agent has got. Turn the board on (`/board`, or the switch at the top of the desktop app's board tab), and every few steps it says three things in plain words: what is happening now, how many items on the checklist are done, and what waits on you; below, every earlier update stays in order. When a run ends, the board sums it up.
-
-<p align="center"><img src="docs/readme/board.png" width="960" alt="The desktop app's plain-language board: how far the work is, what is happening now, what happened before; context use and cache hit rate at the top"></p>
-
-These words are not an abbreviation of what the model said. Jev picks out, from the verdicts and the events, the few that are actually news, and a model that explains well tells them; the board follows the permission mode, the goal and the sub-agents, and when the agent changes course, so does the wording. The two numbers at the top are how much of the context is in use and the cache hit rate: the result of the calls Jev makes about context and cache, and your measure of how much further this turn can go.
-
-## Also
-
-- **Three permission modes.** Full access, Jev approves, minimal; switch any time from the composer.
-- **Goals.** `/goal <condition>` keeps the agent working until the condition holds; `/goal clear` ends it.
-- **Lessons.** Append-only, editable, retirable; shared between the command line and the desktop app.
-- **Subscription sign-in.** ChatGPT, Claude, Grok, and Google sign-in for Gemini CLI / Antigravity, inside the app.
-- **Conversations you bring along.** Claude Code and Codex CLI conversations can be imported and continued.
-- **Built-in browser, background jobs, MCP.** The agent works through a browser one step at a time; dev servers and long builds run in the background; MCP servers start when needed.
-
-## Commands
-
-Type `/` in the composer; in the desktop app the command palette (⌘K) finds them too.
+Node 22.19 or newer. `mu -p "prompt"` runs once and prints; `mu -c` continues the last session. `mu import --list` finds your Claude Code and Codex conversations, `mu import <file>` brings them in. `mu ledger [n]` prints what the judge decided in the last n sessions. The command line and the desktop app share accounts, settings and lessons.
 
 | Command | What it does |
 | --- | --- |
-| `/goal <condition>` | Keep working until the condition holds |
+| `/status` | The judges, each decision point's mode, what was kept out of the context, the latest verdicts |
+| `/mu judge <judges>` | Which judges answer, in which order: `laya`, `laya,jev`, `llm:<provider>/<model>` |
+| `/mu route <point> <judge>` | One decision point on its own judge |
+| `/mu mode <point> <off\|shadow\|active>` | Switch one decision point |
+| `/frame` | The task frame: goal, your constraints with their source, acceptance criteria |
+| `/goal <condition>` | Keep working until the condition holds; `/goal clear` ends it |
 | `/permissions` | Full access / Jev approves / minimal |
-| `/board` | Turn the plain-language board on or off |
-| `/remember`, `/lessons`, `/forget` | Keep a lesson, list the lessons, retire one |
-| `/review`, `/commit` | Review the change with findings ranked by severity; write the commits |
+| `/board` | The plain-language board on or off |
+| `/remember`, `/lessons`, `/forget` | Keep a lesson, list them, retire one |
+| `/review`, `/commit` | Review the change with findings ranked P0 to P3; write the commits |
 | `/checkpoints`, `/rewind` | List the checkpoints; go back to one |
 | `/agents`, `/swarm` | Send sub-agents; watch every one at work |
 | `/browse`, `/jobs` | The built-in browser; background jobs |
+| `/capabilities`, `/ledger` | Installed capabilities and which are open; the latest verdicts |
 | `/import-chat` | Import a Claude Code or Codex conversation |
 | `/doctor` | Check the setup and the connections |
 
+pi's own commands (`/model`, `/thinking`, `/login`, `/resume`, `/tree`, `/fork`, `/compact`, `/export` and the rest) are unchanged. `MU_JUDGE=laya,jev mu` overrides the judges for one run.
+
 ## Privacy
 
-Keys stay on this machine, in `~/.mu`. mu never downloads a model or a runtime for you: anything that needs a download asks first. Jev sees only the pieces a verdict needs.
+Keys stay on this machine. mu never downloads a model or a runtime on its own; anything that needs a download asks first. The judge sees only the fields a question needs; every verdict is logged locally, and you can read them all.
 
 ## Development
 
@@ -109,8 +192,8 @@ npm run check                  # formatting, lint, types
 ./test.sh                      # tests (the ones that need a model are skipped without a key)
 ```
 
-The desktop app is in `desktop/`: `bun install`, then `KYRN_ROOT="$(cd .. && pwd)" bun run start` runs the development build against the mu in this repository (run `npm install` at the root first). The repository layout and the contribution rules are in [AGENTS.md](AGENTS.md).
+The desktop app is in `desktop/`: `bun install`, then `KYRN_ROOT="$(cd .. && pwd)" bun run start` runs the development build against the mu in this repository (run `npm install` at the root first). Layout and contribution rules: [AGENTS.md](AGENTS.md).
 
 ## Credits and license
 
-mu is built on [pi](https://github.com/earendil-works/pi) (the coding agent, MIT; the root [LICENSE](LICENSE) covers `packages/` and `kyrn/`) and [AionUi](https://github.com/iOfficeAI/AionUi) (the desktop app, Apache 2.0; `desktop/` keeps its [LICENSE](desktop/LICENSE)). We are grateful to both. Third-party code in the judgment layer is listed in [THIRD_PARTY_NOTICES.md](packages/kyrn-judge/THIRD_PARTY_NOTICES.md).
+mu is built on [pi](https://github.com/earendil-works/pi) (the coding agent, MIT; the root [LICENSE](LICENSE) covers `packages/` and `kyrn/`) and [AionUi](https://github.com/iOfficeAI/AionUi) (the desktop app, Apache 2.0; `desktop/` keeps its [LICENSE](desktop/LICENSE)). We are grateful to both. Third-party code in the judgment kernel is listed in [THIRD_PARTY_NOTICES.md](packages/kyrn-judge/THIRD_PARTY_NOTICES.md).
