@@ -25,6 +25,19 @@ on:
       - 'desktop/**'
       - '.github/workflows/desktop.yml'
   workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build, or all'
+        type: choice
+        default: all
+        options:
+          - all
+          - windows-x64
+          - windows-arm64
+          - macos-arm64
+          - macos-x64
+          - linux-x64
+          - linux-arm64
 
 permissions:
   contents: read
@@ -68,6 +81,8 @@ jobs:
   build:
     name: Build ${{ matrix.platform }}
     needs: harness
+    # A manual run can build one platform. A push still builds every one.
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.platform == 'all' || inputs.platform == matrix.platform }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     strategy:
