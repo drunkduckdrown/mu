@@ -9,7 +9,7 @@
   "apiKey": "API-Schlüssel",
   "keyHelp": "Nach dem Speichern wird der Schlüssel nie wieder angezeigt. Er bleibt auf diesem Computer und ist nur für dein Konto lesbar.",
   "keyKeep": "Leer lassen, um den gespeicherten Schlüssel zu behalten",
-  "endpointRule": "Verwende HTTPS; HTTP nur für diesen Rechner (127.0.0.1, localhost) oder eine private Netzadresse (z. B. 192.168.x.x, 10.x.x.x, 172.16–31.x.x). Keine Benutzernamen, Passwörter, Abfrageparameter oder Fragmente in der Adresse.",
+  "endpointRule": "Verwende HTTPS; HTTP nur für diesen Rechner (127.0.0.1, localhost). Keine Benutzernamen, Passwörter, Abfrageparameter oder Fragmente in der Adresse.",
   "sections": {
     "judges": "Judges",
     "judgeTiers": "Judge-Stufen",
@@ -120,7 +120,7 @@
     },
     "model": "Judge-Modell",
     "baseUrl": "Basis-URL",
-    "baseUrlHelp": "Die System-One-Adresse. Leer lassen für TypeSafes eigene. HTTP ist für diesen Rechner und für private Netzadressen erlaubt.",
+    "baseUrlHelp": "Leer lassen, dann gilt TypeSafes eigene Adresse.",
     "customTier": "Ein Judge, den du selbst hinzugefügt hast. Ändern kannst du ihn in der Einstellungsdatei von mu.",
     "endpointDefault": "Standardadresse des Dienstes",
     "types": {

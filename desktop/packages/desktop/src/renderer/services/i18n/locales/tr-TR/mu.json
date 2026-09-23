@@ -9,7 +9,7 @@
   "apiKey": "API anahtarı",
   "keyHelp": "Kaydedildikten sonra bir daha gösterilmez. Yalnızca bu bilgisayarda kalır ve yalnızca sizin hesabınız okuyabilir.",
   "keyKeep": "Kayıtlı anahtarı korumak için boş bırakın",
-  "endpointRule": "HTTPS kullanın; HTTP yalnızca bu makine (127.0.0.1, localhost) veya özel ağ adresi (ör. 192.168.x.x, 10.x.x.x, 172.16–31.x.x) için. Adreste kullanıcı adı, şifre, sorgu veya parça bulunmamalı.",
+  "endpointRule": "HTTPS kullanın; HTTP yalnızca bu makine için (127.0.0.1, localhost). Adreste kullanıcı adı, şifre, sorgu veya parça bulunmamalı.",
   "sections": {
     "judges": "Hakemler",
     "judgeTiers": "Hakem kademeleri",
@@ -120,7 +120,7 @@
     },
     "model": "Hakem modeli",
     "baseUrl": "Temel URL",
-    "baseUrlHelp": "System One adresi. TypeSafe'in kendi adresi için boş bırakın. HTTP bu makine ve özel ağ adresleri için kullanılabilir.",
+    "baseUrlHelp": "Boş bırakılırsa TypeSafe'in kendi adresi kullanılır.",
     "customTier": "Kendi eklediğiniz bir hakem. Değiştirmek için mu'nun ayar dosyasını düzenleyin.",
     "endpointDefault": "Hizmetin varsayılan adresi",
     "types": {

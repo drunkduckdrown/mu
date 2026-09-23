@@ -9,7 +9,7 @@
   "apiKey": "Clave de API",
   "keyHelp": "Una vez guardada, la clave no se vuelve a mostrar. Se queda en este ordenador y solo tu cuenta puede leerla.",
   "keyKeep": "Déjalo vacío para conservar la clave guardada",
-  "endpointRule": "Usa HTTPS, o HTTP hacia este ordenador (127.0.0.1, localhost) o una dirección de red privada (por ejemplo 192.168.x.x, 10.x.x.x, 172.16–31.x.x). Sin nombre de usuario, contraseña, consulta ni fragmento en la dirección.",
+  "endpointRule": "Usa HTTPS, o HTTP solo hacia este ordenador (127.0.0.1, localhost). Sin nombre de usuario, contraseña, consulta ni fragmento en la dirección.",
   "sections": {
     "judges": "Jueces",
     "judgeTiers": "Niveles de jueces",
@@ -120,7 +120,7 @@
     },
     "model": "Modelo del juez",
     "baseUrl": "URL base",
-    "baseUrlHelp": "La dirección de System One. Déjalo vacío para usar la de TypeSafe. HTTP está permitido para este ordenador y para una dirección de red privada.",
+    "baseUrlHelp": "Déjalo vacío para usar la dirección de TypeSafe.",
     "customTier": "Un juez que añadiste tú. Se cambia en el archivo de ajustes de mu.",
     "endpointDefault": "Dirección predeterminada del servicio",
     "types": {
